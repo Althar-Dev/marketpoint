@@ -1,7 +1,7 @@
-
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { 
   Sidebar, 
   SidebarContent, 
@@ -18,14 +18,14 @@ import {
   LayoutDashboard, 
   History, 
   Smartphone, 
-  Settings, 
   LogOut, 
   Zap,
   User,
   Bell,
   Terminal,
   CreditCard,
-  Globe
+  Globe,
+  Home
 } from "lucide-react"
 import { Toaster } from "@/components/ui/toaster"
 
@@ -35,22 +35,24 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen w-full bg-background">
         <Sidebar className="border-r border-white/5">
           <SidebarHeader className="h-20 flex items-center px-6">
-            <div className="flex items-center gap-2 group cursor-pointer">
+            <Link href="/" className="flex items-center gap-2 group cursor-pointer">
               <div className="p-2 rounded-xl bg-primary shadow-[0_0_20px_rgba(71,137,244,0.4)] transition-transform group-hover:scale-110">
                 <Zap className="h-6 w-6 text-white fill-white" />
               </div>
               <span className="font-headline text-2xl font-bold tracking-tight text-foreground">
-                STS<span className="text-primary">Gateway</span>
+                STS<span className="text-primary">Point</span>
               </span>
-            </div>
+            </Link>
           </SidebarHeader>
           <SidebarContent className="px-4 py-6">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton isActive tooltip="Dashboard" className="h-12 text-lg">
-                  <LayoutDashboard className="h-5 w-5" />
-                  <span>Dashboard</span>
-                </SidebarMenuButton>
+                <Link href="/client">
+                  <SidebarMenuButton isActive tooltip="Dashboard" className="h-12 text-lg">
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span>Dashboard</span>
+                  </SidebarMenuButton>
+                </Link>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton tooltip="PPOB Services" className="h-12 text-lg">
@@ -75,6 +77,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   <History className="h-5 w-5" />
                   <span>Transactions</span>
                 </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <Link href="/">
+                  <SidebarMenuButton tooltip="Back to Landing" className="h-12 text-lg">
+                    <Home className="h-5 w-5" />
+                    <span>Landing Page</span>
+                  </SidebarMenuButton>
+                </Link>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
