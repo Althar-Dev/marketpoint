@@ -50,15 +50,15 @@ export default function ClientDashboard() {
 
   return (
     <DashboardLayout>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
         {stats.map((stat, i) => (
           <Card key={i} className="shadow-none border-border overflow-hidden">
-            <CardContent className="p-6 flex items-center justify-between">
+            <CardContent className="p-4 md:p-6 flex items-center justify-between gap-2">
               <div className="space-y-1 overflow-hidden">
-                <p className="text-xs md:text-sm text-muted-foreground font-medium truncate">{stat.title}</p>
+                <p className="text-[10px] md:text-sm text-muted-foreground font-medium truncate">{stat.title}</p>
                 <div className="flex items-baseline gap-1">
-                  {stat.prefix && <span className="text-xs font-bold text-muted-foreground">{stat.prefix}</span>}
-                  <h3 className="point-number text-lg md:text-2xl font-bold whitespace-nowrap">
+                  {stat.prefix && <span className="text-[10px] md:text-xs font-bold text-muted-foreground">{stat.prefix}</span>}
+                  <h3 className="point-number text-sm md:text-2xl font-bold whitespace-nowrap">
                     {isClient ? (
                       <>
                         <span className="hidden lg:inline">{formatFull(stat.value)}</span>
@@ -68,11 +68,11 @@ export default function ClientDashboard() {
                       '---'
                     )}
                   </h3>
-                  {stat.suffix && <span className="text-xs font-bold text-muted-foreground">{stat.suffix}</span>}
+                  {stat.suffix && <span className="text-[10px] md:text-xs font-bold text-muted-foreground">{stat.suffix}</span>}
                 </div>
               </div>
-              <div className={`p-3 rounded-xl bg-secondary/50 shrink-0 ${stat.color}`}>
-                <stat.icon className="h-5 w-5 md:h-6 md:w-6" />
+              <div className={`p-2 md:p-3 rounded-xl bg-secondary/50 shrink-0 ${stat.color}`}>
+                <stat.icon className="h-4 w-4 md:h-6 md:w-6" />
               </div>
             </CardContent>
           </Card>
