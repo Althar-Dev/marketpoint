@@ -1,11 +1,30 @@
+'use client';
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Zap, ShieldCheck, Terminal, Globe, ArrowRight } from "lucide-react"
 
 export default function LandingPage() {
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="px-4 md:px-6 h-20 flex items-center border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
+      <header 
+        className={`px-4 md:px-6 h-20 flex items-center fixed top-0 w-full z-50 transition-all duration-300 ${
+          isScrolled 
+            ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm" 
+            : "bg-transparent border-transparent"
+        }`}
+      >
         <Link className="flex items-center justify-center gap-2 group" href="#">
           <div className="p-1.5 rounded-lg bg-primary group-hover:scale-110 transition-transform">
             <Zap className="h-5 w-5 text-primary-foreground fill-primary-foreground" />
