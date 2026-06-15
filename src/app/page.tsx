@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Zap, ShieldCheck, Terminal, Globe, ArrowRight } from "lucide-react"
+import { ShieldCheck, Terminal, Globe, ArrowRight } from "lucide-react"
+import { AppIcon } from "@/components/icon"
 
 export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -26,8 +27,8 @@ export default function LandingPage() {
         }`}
       >
         <Link className="flex items-center justify-center gap-2 group" href="#">
-          <div className="p-1.5 rounded-lg bg-primary group-hover:scale-110 transition-transform">
-            <Zap className="h-5 w-5 text-primary-foreground fill-primary-foreground" />
+          <div className="transition-transform group-hover:scale-110">
+            <AppIcon size={40} />
           </div>
           <span className="font-headline text-lg md:text-xl font-bold tracking-tight">STS<span className="text-primary">Point</span></span>
         </Link>
@@ -78,7 +79,7 @@ export default function LandingPage() {
               </div>
               <div className="flex flex-col items-center space-y-4 text-center">
                 <div className="p-4 rounded-2xl bg-accent/10 border border-accent/20">
-                  <Zap className="h-8 w-8 text-accent" />
+                  <Globe className="h-8 w-8 text-accent" />
                 </div>
                 <h3 className="text-xl md:text-2xl font-headline font-bold">Real-time PPOB</h3>
                 <p className="text-muted-foreground text-sm md:text-base">Instant processing for Pulsa, PLN, and 50+ other digital services nationwide.</p>
@@ -109,7 +110,7 @@ export default function LandingPage() {
       <footer className="py-10 border-t border-border bg-secondary/30 flex justify-center">
         <div className="container px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-primary" />
+            <AppIcon size={24} />
             <span className="font-headline font-bold">STSPoint</span>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground">© 2024 STSPoint. All rights reserved.</p>

@@ -19,7 +19,6 @@ import {
   History, 
   Smartphone, 
   LogOut, 
-  Zap,
   User,
   Bell,
   Terminal,
@@ -28,6 +27,7 @@ import {
   Home
 } from "lucide-react"
 import { Toaster } from "@/components/ui/toaster"
+import { AppIcon } from "@/components/icon"
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -36,8 +36,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <Sidebar className="border-r border-border bg-sidebar">
           <SidebarHeader className="h-20 flex items-center px-6">
             <Link href="/" className="flex items-center gap-2 group cursor-pointer">
-              <div className="p-2 rounded-xl bg-primary shadow-sm transition-transform group-hover:scale-110">
-                <Zap className="h-6 w-6 text-primary-foreground fill-primary-foreground" />
+              <div className="transition-transform group-hover:scale-110">
+                <AppIcon size={44} />
               </div>
               <span className="font-headline text-2xl font-bold tracking-tight text-foreground">
                 STS<span className="text-primary">Point</span>
