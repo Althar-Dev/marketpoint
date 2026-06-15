@@ -38,8 +38,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background font-body">
         <Sidebar collapsible="icon" className="border-r border-border bg-sidebar shadow-none">
-          <SidebarHeader className="h-16 md:h-20 flex items-center justify-center px-4 md:px-6 border-b border-border">
-            <Link href="/" className="flex items-center justify-center gap-2 group cursor-pointer w-full">
+          <SidebarHeader className="h-16 md:h-20 flex items-center justify-center p-0 group-data-[collapsible=icon]:p-0 border-b border-border">
+            <Link href="/" className="flex items-center justify-center gap-2 group cursor-pointer w-full px-4 group-data-[collapsible=icon]:px-0">
               <AppIcon size={32} className="shrink-0" />
               <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-foreground group-data-[collapsible=icon]:hidden whitespace-nowrap">
                 STS<span className="text-primary">Point</span>
@@ -47,7 +47,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </Link>
           </SidebarHeader>
           
-          <SidebarContent className="px-3 py-4 space-y-4">
+          <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-2">
             <SidebarGroup>
               <SidebarGroupLabel className="px-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60 group-data-[collapsible=icon]:hidden">Overview</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -111,10 +111,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="p-4 border-t border-border">
+          <SidebarFooter className="p-4 border-t border-border group-data-[collapsible=icon]:p-2">
             <SidebarMenu>
               <SidebarMenuItem>
-                <div className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background shadow-none transition-colors hover:bg-secondary/30 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:border-none group-data-[collapsible=icon]:bg-transparent">
+                <div className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background shadow-none transition-colors hover:bg-secondary/30 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:border-none group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:justify-center">
                   <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
                     <User className="h-4 w-4 text-primary" />
                   </div>
