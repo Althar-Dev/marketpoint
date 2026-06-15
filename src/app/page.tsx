@@ -22,15 +22,13 @@ export default function LandingPage() {
       <header 
         className={`px-4 md:px-6 h-20 flex items-center fixed top-0 w-full z-50 transition-all duration-300 ${
           isScrolled 
-            ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm" 
+            ? "bg-white/90 backdrop-blur-md border-b border-border" 
             : "bg-transparent border-transparent"
         }`}
       >
         <div className="container mx-auto flex items-center">
           <Link className="flex items-center justify-center gap-2 group" href="#">
-            <div className="transition-transform group-hover:scale-110">
-              <AppIcon size={40} />
-            </div>
+            <AppIcon size={40} />
             <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-foreground">
               STS<span className="text-primary">Point</span>
             </span>
@@ -39,7 +37,7 @@ export default function LandingPage() {
             <Link className="hidden sm:block text-sm font-medium hover:text-primary transition-colors" href="#features">Features</Link>
             <Link className="hidden sm:block text-sm font-medium hover:text-primary transition-colors" href="#api">API Docs</Link>
             <Link href="/client">
-              <Button variant="outline" size="sm" className="md:size-default border-primary/20 hover:bg-primary/10 text-primary">
+              <Button variant="outline" size="sm" className="md:size-default border-primary/20 hover:bg-primary/5 text-primary">
                 Console
               </Button>
             </Link>
@@ -59,11 +57,11 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
                 <Link href="/client" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full h-14 px-8 text-lg font-bold gap-2 bg-primary hover:bg-primary/90">
+                  <Button size="lg" className="w-full h-14 px-8 text-lg font-bold gap-2 bg-primary hover:bg-primary/90 shadow-none">
                     Start Integration <ArrowRight className="h-5 w-5" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg border-border">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg border-border shadow-none">
                   API Documentation
                 </Button>
               </div>
@@ -71,7 +69,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="features" className="w-full py-20 md:py-24 bg-secondary/50 border-y border-border flex justify-center">
+        <section id="features" className="w-full py-20 md:py-24 bg-secondary/30 border-y border-border flex justify-center">
           <div className="container px-4 md:px-6">
             <div className="grid gap-8 md:gap-12 lg:grid-cols-3">
               <div className="flex flex-col items-center space-y-4 text-center">
@@ -101,17 +99,17 @@ export default function LandingPage() {
 
         <section id="cta" className="w-full py-20 md:py-24 flex justify-center">
           <div className="container px-4 md:px-6">
-            <div className="glass-card p-8 md:p-12 rounded-3xl flex flex-col items-center text-center space-y-6">
+            <div className="bg-white border border-border p-8 md:p-12 rounded-3xl flex flex-col items-center text-center space-y-6">
               <h2 className="text-2xl font-headline font-bold tracking-tight sm:text-3xl md:text-4xl">Ready to scale your transactions?</h2>
               <p className="max-w-[600px] text-sm md:text-base text-muted-foreground">Join 1000+ developers using STSPoint for their daily transactional needs.</p>
               <Link href="/client" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full h-12 px-10">Create Free Account</Button>
+                <Button size="lg" className="w-full h-12 px-10 shadow-none">Create Free Account</Button>
               </Link>
             </div>
           </div>
         </section>
       </main>
-      <footer className="py-10 border-t border-border bg-secondary/30 flex justify-center">
+      <footer className="py-10 border-t border-border bg-secondary/10 flex justify-center">
         <div className="container px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
             <AppIcon size={24} />

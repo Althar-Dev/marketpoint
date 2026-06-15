@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,7 +21,7 @@ const chartData = [
 export function StatsCards() {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      <Card className="glass-card">
+      <Card className="shadow-none border border-border">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Total Balance</CardTitle>
           <CreditCard className="h-4 w-4 text-primary" />
@@ -35,7 +34,7 @@ export function StatsCards() {
         </CardContent>
       </Card>
 
-      <Card className="glass-card">
+      <Card className="shadow-none border border-border">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Success Rate</CardTitle>
           <ShieldCheck className="h-4 w-4 text-accent" />
@@ -46,7 +45,7 @@ export function StatsCards() {
         </CardContent>
       </Card>
 
-      <Card className="glass-card md:col-span-2">
+      <Card className="shadow-none border border-border md:col-span-2">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Transaction Volume (7D)</CardTitle>
         </CardHeader>
@@ -55,7 +54,7 @@ export function StatsCards() {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
                   <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                 </linearGradient>
               </defs>

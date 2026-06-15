@@ -31,7 +31,7 @@ export function AchievementLedger() {
   )
 
   return (
-    <Card className="glass-card">
+    <Card className="shadow-none border border-border">
       <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <CardTitle className="font-headline text-xl">Recent Transactions</CardTitle>
         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -39,12 +39,12 @@ export function AchievementLedger() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="Search..." 
-              className="pl-9 w-full md:w-[200px] lg:w-[300px] bg-background/50"
+              className="pl-9 w-full md:w-[200px] lg:w-[300px] bg-background shadow-none"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Badge variant="outline" className="h-10 px-3 gap-2 cursor-pointer hover:bg-white/5 transition-colors hidden sm:flex">
+          <Badge variant="outline" className="h-10 px-3 gap-2 cursor-pointer hover:bg-secondary transition-colors hidden sm:flex">
             <Filter className="h-3 w-3" /> Filter
           </Badge>
         </div>
@@ -53,7 +53,7 @@ export function AchievementLedger() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent">
+              <TableRow className="hover:bg-transparent border-b">
                 <TableHead className="min-w-[180px]">Activity</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Amount</TableHead>
@@ -62,7 +62,7 @@ export function AchievementLedger() {
             </TableHeader>
             <TableBody>
               {filtered.map((item) => (
-                <TableRow key={item.id} className="transition-colors group">
+                <TableRow key={item.id} className="transition-colors border-b last:border-0">
                   <TableCell className="font-medium">{item.activity}</TableCell>
                   <TableCell className="text-muted-foreground whitespace-nowrap">{item.date}</TableCell>
                   <TableCell>

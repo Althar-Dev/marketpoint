@@ -24,7 +24,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 227 72% 63%;
     --radius: 0.75rem;
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 227 72% 63%;
     --sidebar-primary-foreground: 0 0% 98%;
@@ -45,7 +45,7 @@
 }
 
 .glass-card {
-  @apply bg-card/70 backdrop-blur-md border border-border/50 shadow-lg;
+  @apply bg-card border border-border shadow-none;
 }
 
 .point-number {
