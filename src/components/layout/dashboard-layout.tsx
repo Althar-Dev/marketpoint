@@ -116,7 +116,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem>
                 <div className="flex items-center gap-3 p-2 rounded-xl border border-border bg-background shadow-none transition-all hover:bg-secondary/30 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:border-none group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:justify-center">
                   <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
-                    <User className="h-4 w-4 text-primary" />
+                    <User className="h-4 w-4 text-primary group-data-[collapsible=icon]:hidden" />
+                    <Settings className="h-4 w-4 text-primary hidden group-data-[collapsible=icon]:block" />
                   </div>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
                     <p className="text-xs font-bold truncate">Merchant Admin</p>
