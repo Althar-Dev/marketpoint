@@ -26,28 +26,30 @@ export default function LandingPage() {
             : "bg-transparent border-transparent"
         }`}
       >
-        <Link className="flex items-center justify-center gap-2 group" href="#">
-          <div className="transition-transform group-hover:scale-110">
-            <AppIcon size={40} />
-          </div>
-          <span className="font-headline text-lg md:text-xl font-bold tracking-tight">STS<span className="text-primary">Point</span></span>
-        </Link>
-        <nav className="ml-auto flex gap-3 sm:gap-6 items-center">
-          <Link className="hidden sm:block text-sm font-medium hover:text-primary transition-colors" href="#features">Features</Link>
-          <Link className="hidden sm:block text-sm font-medium hover:text-primary transition-colors" href="#api">API Docs</Link>
-          <Link href="/client">
-            <Button variant="outline" size="sm" className="md:size-default border-primary/20 hover:bg-primary/10 text-primary">
-              Console
-            </Button>
+        <div className="container mx-auto flex items-center">
+          <Link className="flex items-center justify-center gap-2 group" href="#">
+            <div className="transition-transform group-hover:scale-110">
+              <AppIcon size={40} />
+            </div>
+            <span className="font-headline text-lg md:text-xl font-bold tracking-tight">STS<span className="text-primary">Point</span></span>
           </Link>
-        </nav>
+          <nav className="ml-auto flex gap-3 sm:gap-6 items-center">
+            <Link className="hidden sm:block text-sm font-medium hover:text-primary transition-colors" href="#features">Features</Link>
+            <Link className="hidden sm:block text-sm font-medium hover:text-primary transition-colors" href="#api">API Docs</Link>
+            <Link href="/client">
+              <Button variant="outline" size="sm" className="md:size-default border-primary/20 hover:bg-primary/10 text-primary">
+                Console
+              </Button>
+            </Link>
+          </nav>
+        </div>
       </header>
       <main className="flex-1">
-        <section className="w-full py-16 md:py-24 lg:py-32 xl:py-48 flex items-center justify-center relative overflow-hidden">
+        <section className="w-full min-h-[85vh] flex items-center justify-center relative overflow-hidden pt-20 pb-12 md:py-24 lg:py-32">
           <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent -z-10" />
           <div className="container px-4 md:px-6 text-center">
-            <div className="space-y-6">
-              <h1 className="text-3xl font-headline font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
+            <div className="space-y-6 max-w-4xl mx-auto">
+              <h1 className="text-4xl font-headline font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
                 The Next Gen <span className="text-primary">PPOB</span> & <br className="hidden sm:block" /> Payment Gateway <span className="text-accent">Open API</span>
               </h1>
               <p className="mx-auto max-w-[700px] text-muted-foreground text-base md:text-xl/relaxed lg:text-2xl/relaxed">
