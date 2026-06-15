@@ -36,48 +36,48 @@ export function AchievementLedger() {
   )
 
   return (
-    <Card className="shadow-none border border-border">
-      <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <CardTitle className="font-headline text-xl">Recent Transactions</CardTitle>
+    <Card className="shadow-none border border-border overflow-hidden">
+      <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 md:p-6">
+        <CardTitle className="font-headline text-lg md:text-xl">Recent Transactions</CardTitle>
         <div className="flex items-center gap-2 w-full md:w-auto">
           <div className="relative flex-1 md:flex-none">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="Search..." 
-              className="pl-9 w-full md:w-[200px] lg:w-[300px] bg-background shadow-none"
+              className="pl-9 w-full md:w-[200px] lg:w-[300px] bg-background shadow-none h-9 text-sm"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Badge variant="outline" className="h-10 px-3 gap-2 cursor-pointer hover:bg-secondary transition-colors hidden sm:flex">
-            <Filter className="h-3 w-3" /> Filter
+          <Badge variant="outline" className="h-9 px-3 gap-2 cursor-pointer hover:bg-secondary transition-colors hidden sm:flex font-medium">
+            <Filter className="h-3.5 w-3.5" /> Filter
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="p-0 sm:p-6 sm:pt-0">
-        <div className="overflow-x-auto">
-          <Table>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto scrollbar-hide">
+          <Table className="min-w-[600px] md:min-w-full">
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b">
-                <TableHead className="min-w-[180px]">Activity</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="px-4 py-3 text-xs uppercase tracking-wider">Activity</TableHead>
+                <TableHead className="px-4 py-3 text-xs uppercase tracking-wider">Date</TableHead>
+                <TableHead className="px-4 py-3 text-xs uppercase tracking-wider">Amount</TableHead>
+                <TableHead className="px-4 py-3 text-xs uppercase tracking-wider">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((item) => (
-                <TableRow key={item.id} className="transition-colors border-b last:border-0">
-                  <TableCell className="font-medium">{item.activity}</TableCell>
-                  <TableCell className="text-muted-foreground whitespace-nowrap">{item.date}</TableCell>
-                  <TableCell>
-                    <span className={`point-number font-bold flex items-center gap-1 ${item.points > 0 ? 'text-accent' : 'text-primary'}`}>
+                <TableRow key={item.id} className="transition-colors border-b last:border-0 hover:bg-muted/30">
+                  <TableCell className="px-4 py-4 font-medium text-sm">{item.activity}</TableCell>
+                  <TableCell className="px-4 py-4 text-muted-foreground text-xs whitespace-nowrap">{item.date}</TableCell>
+                  <TableCell className="px-4 py-4">
+                    <span className={`point-number font-bold flex items-center gap-1 text-sm ${item.points > 0 ? 'text-accent' : 'text-primary'}`}>
                       {item.points > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                       {mounted ? Math.abs(item.points).toLocaleString() : "..."}
                     </span>
                   </TableCell>
-                  <TableCell>
-                    <Badge variant={item.status === 'Success' ? 'secondary' : 'outline'} className="text-[10px] uppercase tracking-tighter">
+                  <TableCell className="px-4 py-4">
+                    <Badge variant={item.status === 'Success' ? 'secondary' : 'outline'} className="text-[10px] font-bold uppercase tracking-tighter px-2 py-0">
                       {item.status}
                     </Badge>
                   </TableCell>

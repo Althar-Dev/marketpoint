@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TrendingUp, CreditCard, Activity, ShieldCheck } from "lucide-react"
+import { TrendingUp, CreditCard, ShieldCheck } from "lucide-react"
 import { 
   Area, 
   AreaChart, 
@@ -20,34 +20,34 @@ const chartData = [
 
 export function StatsCards() {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
       <Card className="shadow-none border border-border">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Total Balance</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Total Balance</CardTitle>
           <CreditCard className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
-          <div className="point-number text-3xl font-bold text-primary">Rp 12,45M</div>
-          <p className="text-xs text-accent mt-1 flex items-center gap-1 font-medium">
+          <div className="point-number text-2xl md:text-3xl font-bold text-primary">Rp 12,45M</div>
+          <p className="text-[10px] md:text-xs text-accent mt-1 flex items-center gap-1 font-medium">
             <TrendingUp className="h-3 w-3" /> +8% from yesterday
           </p>
         </CardContent>
       </Card>
 
       <Card className="shadow-none border border-border">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Success Rate</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Success Rate</CardTitle>
           <ShieldCheck className="h-4 w-4 text-accent" />
         </CardHeader>
         <CardContent>
-          <div className="point-number text-3xl font-bold">99.8%</div>
-          <p className="text-xs text-muted-foreground mt-1">SLA compliant</p>
+          <div className="point-number text-2xl md:text-3xl font-bold">99.8%</div>
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-1">SLA compliant</p>
         </CardContent>
       </Card>
 
-      <Card className="shadow-none border border-border md:col-span-2">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Transaction Volume (7D)</CardTitle>
+      <Card className="shadow-none border border-border sm:col-span-2">
+        <CardHeader className="pb-2 space-y-0">
+          <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Transaction Volume (7D)</CardTitle>
         </CardHeader>
         <CardContent className="h-[80px] p-0 overflow-hidden">
           <ResponsiveContainer width="100%" height="100%">
