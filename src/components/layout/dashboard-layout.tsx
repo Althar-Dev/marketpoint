@@ -37,7 +37,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background font-body">
         <Sidebar className="border-r border-border bg-sidebar shadow-none">
-          <SidebarHeader className="h-16 md:h-20 flex items-center px-4 md:px-6 border-b border-border">
+          <SidebarHeader className="h-16 md:h-20 flex items-center justify-center px-4 md:px-6 border-b border-border">
             <Link href="/" className="flex items-center gap-2 group cursor-pointer">
               <AppIcon size={32} />
               <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-foreground">
