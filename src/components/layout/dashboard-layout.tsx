@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -36,11 +37,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background font-body">
-        <Sidebar className="border-r border-border bg-sidebar shadow-none">
+        <Sidebar collapsible="icon" className="border-r border-border bg-sidebar shadow-none">
           <SidebarHeader className="h-16 md:h-20 flex items-center justify-center px-4 md:px-6 border-b border-border">
             <Link href="/" className="flex items-center justify-center gap-2 group cursor-pointer w-full">
-              <AppIcon size={32} />
-              <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-foreground">
+              <AppIcon size={32} className="shrink-0" />
+              <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-foreground group-data-[collapsible=icon]:hidden whitespace-nowrap">
                 STS<span className="text-primary">Point</span>
               </span>
             </Link>
@@ -48,7 +49,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           
           <SidebarContent className="px-3 py-4 space-y-4">
             <SidebarGroup>
-              <SidebarGroupLabel className="px-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60">Overview</SidebarGroupLabel>
+              <SidebarGroupLabel className="px-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60 group-data-[collapsible=icon]:hidden">Overview</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
@@ -60,9 +61,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     </Link>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="History" className="h-10 text-sm">
+                    <SidebarMenuButton tooltip="Transaction History" className="h-10 text-sm">
                       <History className="h-4 w-4" />
-                      <span className="font-medium">Transaction History</span>
+                      <span className="font-medium">History</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -70,19 +71,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
 
             <SidebarGroup>
-              <SidebarGroupLabel className="px-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60">Merchant Services</SidebarGroupLabel>
+              <SidebarGroupLabel className="px-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60 group-data-[collapsible=icon]:hidden">Merchant Services</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="PPOB" className="h-10 text-sm">
+                    <SidebarMenuButton tooltip="PPOB Services" className="h-10 text-sm">
                       <Smartphone className="h-4 w-4" />
-                      <span className="font-medium">PPOB Services</span>
+                      <span className="font-medium">PPOB</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton tooltip="Payment Gateway" className="h-10 text-sm">
                       <CreditCard className="h-4 w-4" />
-                      <span className="font-medium">Payment Gateway</span>
+                      <span className="font-medium">Gateway</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -90,19 +91,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
 
             <SidebarGroup>
-              <SidebarGroupLabel className="px-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60">Developer Tools</SidebarGroupLabel>
+              <SidebarGroupLabel className="px-4 text-[10px] uppercase tracking-widest font-bold text-muted-foreground/60 group-data-[collapsible=icon]:hidden">Developer Tools</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton tooltip="API Management" className="h-10 text-sm">
                       <Terminal className="h-4 w-4" />
-                      <span className="font-medium">Open API Keys</span>
+                      <span className="font-medium">API Keys</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Documentation" className="h-10 text-sm">
+                    <SidebarMenuButton tooltip="API Documentation" className="h-10 text-sm">
                       <Globe className="h-4 w-4" />
-                      <span className="font-medium">API Documentation</span>
+                      <span className="font-medium">Docs</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -113,23 +114,23 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <SidebarFooter className="p-4 border-t border-border">
             <SidebarMenu>
               <SidebarMenuItem>
-                <div className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background shadow-none transition-colors hover:bg-secondary/30">
+                <div className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background shadow-none transition-colors hover:bg-secondary/30 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:border-none group-data-[collapsible=icon]:bg-transparent">
                   <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
                     <User className="h-4 w-4 text-primary" />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
                     <p className="text-xs font-bold truncate">Merchant Admin</p>
                     <p className="text-[10px] text-muted-foreground truncate">Professional Plan</p>
                   </div>
-                  <button className="text-muted-foreground hover:text-primary transition-colors">
+                  <button className="text-muted-foreground hover:text-primary transition-colors group-data-[collapsible=icon]:hidden">
                     <Settings className="h-4 w-4" />
                   </button>
                 </div>
               </SidebarMenuItem>
               <SidebarMenuItem className="mt-2">
-                <SidebarMenuButton className="h-9 text-xs text-muted-foreground hover:text-destructive">
+                <SidebarMenuButton tooltip="Sign Out" className="h-9 text-xs text-muted-foreground hover:text-destructive">
                   <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
+                  <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
