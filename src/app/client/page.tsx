@@ -5,12 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
   ArrowUpRight, 
   ArrowDownRight, 
-  Smartphone, 
-  Zap, 
-  Wifi, 
-  Tv, 
-  CreditCard, 
-  MoreHorizontal,
   Wallet,
   TrendingUp,
   Activity
@@ -29,15 +23,6 @@ export default function ClientDashboard() {
     { title: "Wallet Balance", value: "IDR 12.450.000", icon: Wallet, color: "text-primary" },
     { title: "Today Revenue", value: "IDR 850.000", icon: TrendingUp, color: "text-green-600" },
     { title: "Active Keys", value: "4 Active", icon: Activity, color: "text-accent" },
-  ]
-
-  const services = [
-    { name: "Pulsa", icon: Smartphone, color: "bg-blue-50 text-blue-600" },
-    { name: "PLN Token", icon: Zap, color: "bg-yellow-50 text-yellow-600" },
-    { name: "Data Package", icon: Wifi, color: "bg-purple-50 text-purple-600" },
-    { name: "Streaming", icon: Tv, color: "bg-red-50 text-red-600" },
-    { name: "E-Wallet", icon: CreditCard, color: "bg-green-50 text-green-600" },
-    { name: "Others", icon: MoreHorizontal, color: "bg-gray-50 text-gray-600" },
   ]
 
   const transactions = [
@@ -63,20 +48,6 @@ export default function ClientDashboard() {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="font-headline text-lg md:text-xl font-bold px-1">Quick Services</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-          {services.map((service, i) => (
-            <button key={i} className="flex flex-col items-center justify-center p-4 md:p-6 bg-background border border-border rounded-2xl hover:bg-secondary/30 transition-colors space-y-3 group">
-              <div className={`p-3 md:p-4 rounded-2xl transition-transform group-hover:scale-110 ${service.color}`}>
-                <service.icon className="h-6 w-6 md:h-8 md:w-8" />
-              </div>
-              <span className="text-xs md:text-sm font-semibold">{service.name}</span>
-            </button>
-          ))}
-        </div>
       </div>
 
       <Card className="shadow-none border-border">
