@@ -31,7 +31,9 @@ export default function LandingPage() {
             <div className="transition-transform group-hover:scale-110">
               <AppIcon size={40} />
             </div>
-            <span className="font-headline text-lg md:text-xl font-bold tracking-tight">STS<span className="text-primary">Point</span></span>
+            <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-foreground">
+              STS<span className="text-primary">Point</span>
+            </span>
           </Link>
           <nav className="ml-auto flex gap-3 sm:gap-6 items-center">
             <Link className="hidden sm:block text-sm font-medium hover:text-primary transition-colors" href="#features">Features</Link>
@@ -45,7 +47,7 @@ export default function LandingPage() {
         </div>
       </header>
       <main className="flex-1">
-        <section className="w-full min-h-[85vh] flex items-center justify-center relative overflow-hidden pt-20 pb-12 md:py-24 lg:py-32">
+        <section className="w-full min-h-screen flex items-center justify-center relative overflow-hidden pt-20 pb-12">
           <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent -z-10" />
           <div className="container px-4 md:px-6 text-center">
             <div className="space-y-6 max-w-4xl mx-auto">
