@@ -61,8 +61,8 @@ export default function ClientDashboard() {
                   <h3 className="point-number text-lg md:text-2xl font-bold whitespace-nowrap">
                     {isClient ? (
                       <>
-                        <span className="hidden xl:inline">{formatFull(stat.value)}</span>
-                        <span className="inline xl:hidden">{formatShort(stat.value)}</span>
+                        <span className="hidden lg:inline">{formatFull(stat.value)}</span>
+                        <span className="inline lg:hidden">{formatShort(stat.value)}</span>
                       </>
                     ) : (
                       '---'
@@ -116,8 +116,8 @@ export default function ClientDashboard() {
                           {tx.amount > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                           {isClient ? (
                             <>
-                              <span className="hidden lg:inline">{formatFull(Math.abs(tx.amount))}</span>
-                              <span className="inline lg:hidden">{formatShort(Math.abs(tx.amount))}</span>
+                              <span className="hidden md:inline">{formatFull(Math.abs(tx.amount))}</span>
+                              <span className="inline md:hidden">{formatShort(Math.abs(tx.amount))}</span>
                             </>
                           ) : (
                             Math.abs(tx.amount)
