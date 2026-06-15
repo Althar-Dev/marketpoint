@@ -17,12 +17,15 @@ import {
 import { 
   LayoutDashboard, 
   History, 
-  Gift, 
+  Smartphone, 
   Settings, 
   LogOut, 
   Zap,
   User,
-  Bell
+  Bell,
+  Terminal,
+  CreditCard,
+  Globe
 } from "lucide-react"
 import { Toaster } from "@/components/ui/toaster"
 
@@ -37,7 +40,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Zap className="h-6 w-6 text-white fill-white" />
               </div>
               <span className="font-headline text-2xl font-bold tracking-tight text-foreground">
-                STS<span className="text-primary">Point</span>
+                STS<span className="text-primary">Gateway</span>
               </span>
             </div>
           </SidebarHeader>
@@ -50,21 +53,27 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
+                <SidebarMenuButton tooltip="PPOB Services" className="h-12 text-lg">
+                  <Smartphone className="h-5 w-5" />
+                  <span>PPOB Services</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Payment Gateway" className="h-12 text-lg">
+                  <CreditCard className="h-5 w-5" />
+                  <span>Merchant Hub</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="API Management" className="h-12 text-lg">
+                  <Terminal className="h-5 w-5" />
+                  <span>Open API</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
                 <SidebarMenuButton tooltip="History" className="h-12 text-lg">
                   <History className="h-5 w-5" />
-                  <span>Ledger</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Perks" className="h-12 text-lg">
-                  <Gift className="h-5 w-5" />
-                  <span>Perks</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Settings" className="h-12 text-lg">
-                  <Settings className="h-5 w-5" />
-                  <span>Preferences</span>
+                  <span>Transactions</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -75,8 +84,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-medium truncate">Alexander Sterling</p>
-                <p className="text-xs text-muted-foreground truncate">Elite Member</p>
+                <p className="text-sm font-medium truncate">Merchant Admin</p>
+                <p className="text-xs text-muted-foreground truncate">Verified Partner</p>
               </div>
               <SidebarMenuButton className="w-8 h-8 p-0 flex items-center justify-center">
                 <LogOut className="h-4 w-4" />
@@ -89,7 +98,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <header className="h-20 flex items-center justify-between px-8 border-b border-white/5 sticky top-0 z-40 bg-background/80 backdrop-blur-md">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
-              <h1 className="font-headline text-xl font-medium text-muted-foreground">Main Overview</h1>
+              <h1 className="font-headline text-xl font-medium text-muted-foreground">Network Status: Online</h1>
             </div>
             <div className="flex items-center gap-4">
               <button className="relative p-2 rounded-lg hover:bg-white/5 transition-colors">
@@ -98,8 +107,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </button>
               <div className="h-8 w-px bg-white/10" />
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20">
-                <Zap className="h-4 w-4 text-accent fill-accent" />
-                <span className="point-number font-bold text-accent">2,850 Pts</span>
+                <Globe className="h-4 w-4 text-accent" />
+                <span className="point-number font-bold text-accent">IDR 12.450.000</span>
               </div>
             </div>
           </header>

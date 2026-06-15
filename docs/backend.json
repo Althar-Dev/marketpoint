@@ -1,0 +1,58 @@
+
+{
+  "entities": {
+    "Wallet": {
+      "title": "User Wallet",
+      "description": "Stores user balance and currency info.",
+      "type": "object",
+      "properties": {
+        "balance": { "type": "number", "description": "Current available balance" },
+        "currency": { "type": "string", "description": "Currency code (e.g., IDR)" },
+        "userId": { "type": "string", "description": "Owner UID" }
+      },
+      "required": ["balance", "currency", "userId"]
+    },
+    "Transaction": {
+      "title": "Transaction Ledger",
+      "description": "Record of PPOB or Gateway transactions.",
+      "type": "object",
+      "properties": {
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["PPOB", "TOPUP", "GATEWAY"] },
+        "status": { "type": "string", "enum": ["PENDING", "SUCCESS", "FAILED"] },
+        "description": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["amount", "type", "status", "timestamp"]
+    },
+    "ApiKey": {
+      "title": "Developer API Key",
+      "description": "Keys for Open API access.",
+      "type": "object",
+      "properties": {
+        "key": { "type": "string" },
+        "label": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "REVOKED"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["key", "label", "status"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{userId}/wallet": {
+      "schema": "Wallet",
+      "description": "Individual user wallet document"
+    },
+    "/users/{userId}/transactions": {
+      "schema": "Transaction",
+      "description": "Collection of user transaction history"
+    },
+    "/users/{userId}/apiKeys": {
+      "schema": "ApiKey",
+      "description": "Collection of developer API keys"
+    }
+  }
+}
