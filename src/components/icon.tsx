@@ -9,7 +9,7 @@ interface AppIconProps {
 export function AppIcon({ className, size = 32 }: AppIconProps) {
   return (
     <Image
-      src="/logo.png"
+      src="/img/logo.png"
       alt="STSPoint Logo"
       width={size}
       height={size}
