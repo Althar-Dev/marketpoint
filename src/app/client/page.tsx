@@ -20,9 +20,9 @@ export default function ClientDashboard() {
   }, [])
 
   const stats = [
-    { title: "Wallet Balance", value: "IDR 12.450.000", icon: Wallet, color: "text-primary" },
-    { title: "Today Revenue", value: "IDR 850.000", icon: TrendingUp, color: "text-green-600" },
-    { title: "Active Keys", value: "4 Active", icon: Activity, color: "text-accent" },
+    { title: "Wallet Balance", value: 12450000, prefix: "IDR ", icon: Wallet, color: "text-primary" },
+    { title: "Today Revenue", value: 850000, prefix: "IDR ", icon: TrendingUp, color: "text-green-600" },
+    { title: "Active Keys", value: 4, suffix: " Active", icon: Activity, color: "text-accent" },
   ]
 
   const transactions = [
@@ -32,17 +32,46 @@ export default function ClientDashboard() {
     { id: "TX-9009", type: "PPOB - Pulsa", amount: -10000, status: "FAILED", date: "Yesterday, 12:45" },
   ]
 
+  const formatShort = (val: number) => {
+    if (val >= 1000000) {
+      const formatted = (val / 1000000).toFixed(val % 1000000 === 0 ? 0 : 1).replace('.', ',');
+      return `${formatted} JT`;
+    }
+    if (val >= 1000) {
+      const formatted = (val / 1000).toFixed(val % 1000 === 0 ? 0 : 1).replace('.', ',');
+      return `${formatted} RB`;
+    }
+    return val.toString();
+  }
+
+  const formatFull = (val: number) => {
+    return val.toLocaleString('id-ID');
+  }
+
   return (
     <DashboardLayout>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         {stats.map((stat, i) => (
-          <Card key={i} className="shadow-none border-border">
+          <Card key={i} className="shadow-none border-border overflow-hidden">
             <CardContent className="p-6 flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-xs md:text-sm text-muted-foreground font-medium">{stat.title}</p>
-                <h3 className="point-number text-lg md:text-2xl font-bold">{stat.value}</h3>
+              <div className="space-y-1 overflow-hidden">
+                <p className="text-xs md:text-sm text-muted-foreground font-medium truncate">{stat.title}</p>
+                <div className="flex items-baseline gap-1">
+                  {stat.prefix && <span className="text-xs font-bold text-muted-foreground">{stat.prefix}</span>}
+                  <h3 className="point-number text-lg md:text-2xl font-bold whitespace-nowrap">
+                    {isClient ? (
+                      <>
+                        <span className="hidden xl:inline">{formatFull(stat.value)}</span>
+                        <span className="inline xl:hidden">{formatShort(stat.value)}</span>
+                      </>
+                    ) : (
+                      '---'
+                    )}
+                  </h3>
+                  {stat.suffix && <span className="text-xs font-bold text-muted-foreground">{stat.suffix}</span>}
+                </div>
               </div>
-              <div className={`p-3 rounded-xl bg-secondary/50 ${stat.color}`}>
+              <div className={`p-3 rounded-xl bg-secondary/50 shrink-0 ${stat.color}`}>
                 <stat.icon className="h-5 w-5 md:h-6 md:w-6" />
               </div>
             </CardContent>
@@ -53,13 +82,11 @@ export default function ClientDashboard() {
       <Card className="shadow-none border-border">
         <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 md:p-6 border-b border-border">
           <CardTitle className="text-lg md:text-xl font-headline font-bold">Recent Transactions</CardTitle>
-          <Button variant="outline" size="sm" className="w-full md:w-auto text-xs md:text-sm">View Full History</Button>
+          <Button variant="outline" size="sm" className="w-full md:w-auto text-xs md:text-sm h-9 md:h-8">View Full History</Button>
         </CardHeader>
         <CardContent className="p-0">
-          {/* KUNCI: block, max-w-[calc(100vw-2rem)] atau sesuaikan dengan padding halaman Anda */}
            <div className="block w-full max-w-[calc(100vw-32px)] md:max-w-full overflow-x-auto">
               <table className="w-full min-w-[600px] text-sm text-left table-fixed"> 
-                {/* Ganti table-auto menjadi table-fixed jika kolom masih melar */}
                 <thead>
                   <tr className="bg-secondary/20 text-muted-foreground border-b border-border">
                     <th className="w-[120px] px-4 md:px-6 py-3 font-medium whitespace-nowrap">Transaction ID</th>
@@ -87,7 +114,14 @@ export default function ClientDashboard() {
                       <td className="px-4 md:px-6 py-4 text-right whitespace-nowrap">
                         <span className={`point-number font-bold flex items-center justify-end gap-1 ${tx.amount > 0 ? 'text-green-600' : 'text-primary'}`}>
                           {tx.amount > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                          {isClient ? Math.abs(tx.amount).toLocaleString() : Math.abs(tx.amount)}
+                          {isClient ? (
+                            <>
+                              <span className="hidden lg:inline">{formatFull(Math.abs(tx.amount))}</span>
+                              <span className="inline lg:hidden">{formatShort(Math.abs(tx.amount))}</span>
+                            </>
+                          ) : (
+                            Math.abs(tx.amount)
+                          )}
                         </span>
                       </td>
                     </tr>
