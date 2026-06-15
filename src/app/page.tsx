@@ -4,11 +4,11 @@ import { Zap, ShieldCheck, Terminal, Globe, ArrowRight } from "lucide-react"
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-20 flex items-center border-b border-white/5 bg-background/50 backdrop-blur-md sticky top-0 z-50">
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="px-4 lg:px-6 h-20 flex items-center border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <Link className="flex items-center justify-center gap-2 group" href="#">
           <div className="p-1.5 rounded-lg bg-primary group-hover:scale-110 transition-transform">
-            <Zap className="h-5 w-5 text-white fill-white" />
+            <Zap className="h-5 w-5 text-primary-foreground fill-primary-foreground" />
           </div>
           <span className="font-headline text-xl font-bold tracking-tight">STS<span className="text-primary">Point</span></span>
         </Link>
@@ -24,10 +24,10 @@ export default function LandingPage() {
       </header>
       <main className="flex-1">
         <section className="w-full py-24 md:py-32 lg:py-48 flex items-center justify-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent -z-10" />
           <div className="container px-4 md:px-6 text-center">
             <div className="space-y-6">
-              <h1 className="text-4xl font-headline font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
+              <h1 className="text-4xl font-headline font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
                 The Next Gen <span className="text-primary">PPOB</span> & <br/> Payment Gateway <span className="text-accent">Open API</span>
               </h1>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-2xl/relaxed">
@@ -35,11 +35,11 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Link href="/client">
-                  <Button size="lg" className="h-14 px-8 text-lg font-bold gap-2">
+                  <Button size="lg" className="h-14 px-8 text-lg font-bold gap-2 bg-primary hover:bg-primary/90">
                     Start Integration <ArrowRight className="h-5 w-5" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-white/10">
+                <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-border">
                   Read API Documentation
                 </Button>
               </div>
@@ -47,7 +47,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="features" className="w-full py-24 bg-white/5 border-y border-white/5 flex justify-center">
+        <section id="features" className="w-full py-24 bg-secondary/50 border-y border-border flex justify-center">
           <div className="container px-4 md:px-6">
             <div className="grid gap-12 lg:grid-cols-3">
               <div className="flex flex-col items-center space-y-4 text-center">
@@ -87,7 +87,7 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="py-12 border-t border-white/5 bg-card/20 flex justify-center">
+      <footer className="py-12 border-t border-border bg-secondary/30 flex justify-center">
         <div className="container px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
