@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { 
   Table, 
   TableBody, 
@@ -25,6 +25,11 @@ const allocations = [
 
 export function AchievementLedger() {
   const [search, setSearch] = useState("")
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const filtered = allocations.filter(item => 
     item.activity.toLowerCase().includes(search.toLowerCase())
@@ -68,7 +73,7 @@ export function AchievementLedger() {
                   <TableCell>
                     <span className={`point-number font-bold flex items-center gap-1 ${item.points > 0 ? 'text-accent' : 'text-primary'}`}>
                       {item.points > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                      {Math.abs(item.points).toLocaleString()}
+                      {mounted ? Math.abs(item.points).toLocaleString() : "..."}
                     </span>
                   </TableCell>
                   <TableCell>
