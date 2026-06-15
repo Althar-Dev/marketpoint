@@ -105,25 +105,25 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </Sidebar>
 
         <SidebarInset className="flex flex-col bg-background">
-          <header className="h-20 flex items-center justify-between px-8 border-b border-border sticky top-0 z-40 bg-background/80 backdrop-blur-md">
-            <div className="flex items-center gap-4">
+          <header className="h-20 flex items-center justify-between px-4 md:px-8 border-b border-border sticky top-0 z-40 bg-background/80 backdrop-blur-md">
+            <div className="flex items-center gap-2 md:gap-4">
               <SidebarTrigger />
-              <h1 className="font-headline text-xl font-medium text-muted-foreground">Network Status: <span className="text-green-600">Online</span></h1>
+              <h1 className="font-headline text-sm md:text-xl font-medium text-muted-foreground whitespace-nowrap">Status: <span className="text-green-600 font-bold">Online</span></h1>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <button className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
                 <Bell className="h-5 w-5 text-muted-foreground" />
                 <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-accent rounded-full border-2 border-background" />
               </button>
-              <div className="h-8 w-px bg-border" />
+              <div className="h-8 w-px bg-border hidden md:block" />
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20">
-                <Globe className="h-4 w-4 text-accent" />
-                <span className="point-number font-bold text-accent">IDR 12.450.000</span>
+                <Globe className="h-4 w-4 text-accent hidden sm:block" />
+                <span className="point-number text-xs md:text-base font-bold text-accent whitespace-nowrap">IDR 12.450.000</span>
               </div>
             </div>
           </header>
-          <main className="flex-1 p-8 overflow-y-auto">
-            <div className="max-w-7xl mx-auto space-y-10">
+          <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+            <div className="max-w-7xl mx-auto space-y-8 md:space-y-10">
               {children}
             </div>
           </main>
