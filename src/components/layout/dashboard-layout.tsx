@@ -154,16 +154,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Bell className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                 <span className="absolute top-2 right-2 h-2 w-2 bg-accent rounded-full border-2 border-background" />
               </button>
-              
-              <div className="flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-xl bg-accent/10 border border-accent/20">
-                <div className="h-7 w-7 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
-                  <Globe className="h-4 w-4 text-accent" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-accent/70 font-bold uppercase leading-none mb-0.5">Balance</span>
-                  <span className="point-number text-sm md:text-base font-bold text-accent whitespace-nowrap leading-none">IDR 12.450.000</span>
-                </div>
-              </div>
             </div>
           </header>
           
