@@ -56,44 +56,46 @@ export default function ClientDashboard() {
           <Button variant="outline" size="sm" className="w-full md:w-auto text-xs md:text-sm">View Full History</Button>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="w-full overflow-x-auto scrollbar-hide">
-            <table className="w-full min-w-[600px] text-sm text-left">
-              <thead>
-                <tr className="bg-secondary/20 text-muted-foreground border-b border-border">
-                  <th className="px-4 md:px-6 py-3 font-medium">Transaction ID</th>
-                  <th className="px-4 md:px-6 py-3 font-medium">Type</th>
-                  <th className="px-4 md:px-6 py-3 font-medium">Date</th>
-                  <th className="px-4 md:px-6 py-3 font-medium">Status</th>
-                  <th className="px-4 md:px-6 py-3 font-medium text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {transactions.map((tx, i) => (
-                  <tr key={i} className="hover:bg-secondary/10 transition-colors">
-                    <td className="px-4 md:px-6 py-4 font-mono text-xs md:text-sm">{tx.id}</td>
-                    <td className="px-4 md:px-6 py-4 font-medium">{tx.type}</td>
-                    <td className="px-4 md:px-6 py-4 text-muted-foreground whitespace-nowrap">{tx.date}</td>
-                    <td className="px-4 md:px-6 py-4">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] md:text-xs font-bold ${
-                        tx.status === "SUCCESS" ? "bg-green-100 text-green-700" :
-                        tx.status === "PENDING" ? "bg-yellow-100 text-yellow-700" :
-                        "bg-red-100 text-red-700"
-                      }`}>
-                        {tx.status}
-                      </span>
-                    </td>
-                    <td className="px-4 md:px-6 py-4 text-right">
-                      <span className={`point-number font-bold flex items-center justify-end gap-1 ${tx.amount > 0 ? 'text-green-600' : 'text-primary'}`}>
-                        {tx.amount > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                        {isClient ? Math.abs(tx.amount).toLocaleString() : Math.abs(tx.amount)}
-                      </span>
-                    </td>
+          {/* KUNCI: block, max-w-[calc(100vw-2rem)] atau sesuaikan dengan padding halaman Anda */}
+           <div className="block w-full max-w-[calc(100vw-32px)] md:max-w-full overflow-x-auto">
+              <table className="w-full min-w-[600px] text-sm text-left table-fixed"> 
+                {/* Ganti table-auto menjadi table-fixed jika kolom masih melar */}
+                <thead>
+                  <tr className="bg-secondary/20 text-muted-foreground border-b border-border">
+                    <th className="w-[120px] px-4 md:px-6 py-3 font-medium whitespace-nowrap">Transaction ID</th>
+                    <th className="w-[150px] px-4 md:px-6 py-3 font-medium whitespace-nowrap">Type</th>
+                    <th className="w-[120px] px-4 md:px-6 py-3 font-medium whitespace-nowrap">Date</th>
+                    <th className="w-[100px] px-4 md:px-6 py-3 font-medium whitespace-nowrap">Status</th>
+                    <th className="w-[110px] px-4 md:px-6 py-3 font-medium text-right whitespace-nowrap">Amount</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {transactions.map((tx, i) => (
+                    <tr key={i} className="hover:bg-secondary/10 transition-colors">
+                      <td className="px-4 md:px-6 py-4 font-mono text-xs md:text-sm whitespace-nowrap">{tx.id}</td>
+                      <td className="px-4 md:px-6 py-4 font-medium whitespace-nowrap">{tx.type}</td>
+                      <td className="px-4 md:px-6 py-4 text-muted-foreground whitespace-nowrap">{tx.date}</td>
+                      <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] md:text-xs font-bold ${
+                          tx.status === "SUCCESS" ? "bg-green-100 text-green-700" :
+                          tx.status === "PENDING" ? "bg-yellow-100 text-yellow-700" :
+                          "bg-red-100 text-red-700"
+                        }`}>
+                          {tx.status}
+                        </span>
+                      </td>
+                      <td className="px-4 md:px-6 py-4 text-right whitespace-nowrap">
+                        <span className={`point-number font-bold flex items-center justify-end gap-1 ${tx.amount > 0 ? 'text-green-600' : 'text-primary'}`}>
+                          {tx.amount > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                          {isClient ? Math.abs(tx.amount).toLocaleString() : Math.abs(tx.amount)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
       </Card>
     </DashboardLayout>
   )

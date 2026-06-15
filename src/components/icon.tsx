@@ -13,7 +13,7 @@ export function AppIcon({ className, size = 32 }: AppIconProps) {
       alt="STSPoint Logo"
       width={size}
       height={size}
-      className={cn("object-contain", className)}
+      className={cn("object-contain transition-transform duration-300 group-hover:scale-110", className)}
       priority
     />
   );
