@@ -3,7 +3,7 @@ import './globals.css';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
-  title: 'STSPoint | PPOB & Gateway Open API',
+  title: 'STSGateway | PPOB & Gateway Open API',
   description: 'Scalable PPOB solutions and Payment Gateway with Open API integration.',
 };
 

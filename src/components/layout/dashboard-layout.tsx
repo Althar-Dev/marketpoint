@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -42,7 +41,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <Link href="/" className="flex items-center justify-center gap-2 group cursor-pointer w-full px-4 group-data-[collapsible=icon]:px-0">
               <AppIcon size={32} className="shrink-0" />
               <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-foreground group-data-[collapsible=icon]:hidden whitespace-nowrap">
-                STS<span className="text-primary">Point</span>
+                STS<span className="text-primary">Gateway</span>
               </span>
             </Link>
           </SidebarHeader>

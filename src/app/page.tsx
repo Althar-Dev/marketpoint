@@ -30,7 +30,7 @@ export default function LandingPage() {
           <Link className="flex items-center justify-center gap-2 group" href="#">
             <AppIcon size={40} />
             <span className="font-headline text-lg md:text-xl font-bold tracking-tight text-foreground">
-              STS<span className="text-primary">Point</span>
+              STS<span className="text-primary">Gateway</span>
             </span>
           </Link>
           <nav className="ml-auto flex gap-3 sm:gap-6 items-center">
@@ -101,7 +101,7 @@ export default function LandingPage() {
           <div className="container px-4 md:px-6">
             <div className="bg-white border border-border p-8 md:p-12 rounded-3xl flex flex-col items-center text-center space-y-6">
               <h2 className="text-2xl font-headline font-bold tracking-tight sm:text-3xl md:text-4xl">Ready to scale your transactions?</h2>
-              <p className="max-w-[600px] text-sm md:text-base text-muted-foreground">Join 1000+ developers using STSPoint for their daily transactional needs.</p>
+              <p className="max-w-[600px] text-sm md:text-base text-muted-foreground">Join 1000+ developers using STSGateway for their daily transactional needs.</p>
               <Link href="/client" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full h-12 px-10 shadow-none">Create Free Account</Button>
               </Link>
@@ -113,9 +113,9 @@ export default function LandingPage() {
         <div className="container px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
             <AppIcon size={24} />
-            <span className="font-headline font-bold">STSPoint</span>
+            <span className="font-headline font-bold">STSGateway</span>
           </div>
-          <p className="text-xs md:text-sm text-muted-foreground">© 2024 STSPoint. All rights reserved.</p>
+          <p className="text-xs md:text-sm text-muted-foreground">© 2024 STSGateway. All rights reserved.</p>
           <div className="flex gap-4">
             <Link className="text-xs md:text-sm hover:text-primary" href="#">Privacy</Link>
             <Link className="text-xs md:text-sm hover:text-primary" href="#">Terms</Link>
