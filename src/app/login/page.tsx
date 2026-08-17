@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { useAuth } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,32 +11,97 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const googleBtnRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
 
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
-  const triggerGoogleSignIn = async () => {
+  const handleGoogleResponse = async (response: any) => {
     try {
       setLoading(true);
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
-      await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credential(response.credential);
+      await signInWithCredential(auth, credential);
       router.push("/");
     } catch (error: any) {
-      if (error.code !== 'auth/popup-closed-by-user') {
-        toast({
-          variant: "destructive",
-          title: "Gagal Masuk Google",
-          description: error.message || "Terjadi kesalahan saat masuk.",
-        });
-      }
+      toast({
+        variant: "destructive",
+        title: "Gagal Masuk Google",
+        description: error.message || "Terjadi kesalahan saat masuk.",
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const initGsi = () => {
+      if (window.google && !initializedRef.current) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: "393407803323-3s0pbm02sn3k9hiigo3o97k88efi69gd.apps.googleusercontent.com",
+            callback: handleGoogleResponse,
+            auto_select: false,
+            ux_mode: 'popup',
+            cancel_on_tap_outside: true,
+            // Menghindari FedCM issues di lingkungan dev tertentu
+            itp_support: true 
+          });
+
+          if (googleBtnRef.current) {
+            window.google.accounts.id.renderButton(googleBtnRef.current, {
+              type: "standard",
+              theme: "outline",
+              size: "large",
+              text: "signin_with",
+              shape: "rectangular",
+            });
+          }
+          initializedRef.current = true;
+        } catch (err) {
+          console.error("GSI Init Error:", err);
+        }
+      }
+    };
+
+    if (window.google) {
+      initGsi();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initGsi;
+      document.body.appendChild(script);
+      return () => {
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+      };
+    }
+  }, []);
+
+  const triggerGoogleSignIn = () => {
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          const hiddenBtn = googleBtnRef.current?.querySelector<HTMLElement>('div[role="button"], iframe');
+          if (hiddenBtn) {
+            hiddenBtn.click();
+          }
+        }
+      });
     }
   };
 
@@ -136,6 +201,8 @@ export default function SignInPage() {
                 <span className="bg-white px-3 text-muted-foreground">ATAU</span>
               </div>
             </div>
+
+            <div ref={googleBtnRef} className="hidden" aria-hidden="true" />
 
             <Button
               type="button"
