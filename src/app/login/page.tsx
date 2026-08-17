@@ -22,6 +22,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const googleBtnRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
 
   const auth = useAuth();
   const router = useRouter();
@@ -46,11 +47,12 @@ export default function SignInPage() {
 
   useEffect(() => {
     const initGsi = () => {
-      if (window.google) {
+      if (window.google && !initializedRef.current) {
         window.google.accounts.id.initialize({
           client_id: "393407803323-3s0pbm02sn3k9hiigo3o97k88efi69gd.apps.googleusercontent.com",
           callback: handleGoogleResponse,
           auto_select: false,
+          ux_mode: 'popup',
           cancel_on_tap_outside: true
         });
 
@@ -63,31 +65,39 @@ export default function SignInPage() {
             shape: "rectangular",
           });
         }
+        initializedRef.current = true;
       }
     };
 
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = initGsi;
-    document.body.appendChild(script);
-
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
+    if (window.google) {
+      initGsi();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initGsi;
+      document.body.appendChild(script);
+      return () => {
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+      };
+    }
   }, []);
 
   const triggerGoogleSignIn = () => {
     if (window.google?.accounts?.id) {
-      const hiddenBtn = googleBtnRef.current?.querySelector<HTMLElement>('div[role="button"], iframe');
-      if (hiddenBtn) {
-        hiddenBtn.click();
-      } else {
-        window.google.accounts.id.prompt();
-      }
+      // Mencoba prompt resmi terlebih dahulu
+      window.google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // Jika prompt gagal, coba klik tombol tersembunyi
+          const hiddenBtn = googleBtnRef.current?.querySelector<HTMLElement>('div[role="button"], iframe');
+          if (hiddenBtn) {
+            hiddenBtn.click();
+          }
+        }
+      });
     }
   };
 
