@@ -47,8 +47,8 @@ export default function SignUpPage() {
         createdAt: serverTimestamp(),
       }, { merge: true });
 
-      // Inisialisasi Wallet
-      setDoc(doc(db, "users", user.uid, "wallet"), {
+      // Inisialisasi Wallet (users/{userId}/wallet/info)
+      setDoc(doc(db, "users", user.uid, "wallet", "info"), {
         balance: 0,
         currency: "IDR",
         userId: user.uid,
@@ -78,6 +78,7 @@ export default function SignUpPage() {
         auto_select: false,
         cancel_on_tap_outside: true,
         ux_mode: 'popup',
+        itp_support: true,
       });
 
       if (googleBtnRef.current) {
@@ -85,6 +86,7 @@ export default function SignUpPage() {
           type: "standard",
           theme: "outline",
           size: "large",
+          text: "signup_with",
         });
       }
     }
@@ -113,8 +115,8 @@ export default function SignUpPage() {
         createdAt: serverTimestamp(),
       }, { merge: true });
 
-      // Inisialisasi Wallet
-      setDoc(doc(db, "users", user.uid, "wallet"), {
+      // Inisialisasi Wallet (users/{userId}/wallet/info)
+      setDoc(doc(db, "users", user.uid, "wallet", "info"), {
         balance: 0,
         currency: "IDR",
         userId: user.uid,
@@ -141,6 +143,7 @@ export default function SignUpPage() {
       <Script 
         src="https://accounts.google.com/gsi/client" 
         onLoad={initializeGoogleAuth}
+        strategy="afterInteractive"
       />
       <div className="hidden lg:flex lg:w-1/2 -mt-56 relative bg-[#E8F4FD] items-center justify-center p-12 overflow-hidden">
         <div className="relative w-full h-full max-w-lg transition-transform hover:scale-105 duration-700">
