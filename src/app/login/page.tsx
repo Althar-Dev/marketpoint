@@ -22,11 +22,40 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const googleBtnRef = useRef<HTMLDivElement>(null);
-  const initializedRef = useRef(false);
 
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Memuat script Google Identity Services
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: "393407803323-3s0pbm02sn3k9hiigo3o97k88efi69gd.apps.googleusercontent.com",
+          callback: handleGoogleResponse,
+        });
+
+        // Render tombol resmi GIS di container tersembunyi
+        if (googleBtnRef.current) {
+          window.google.accounts.id.renderButton(googleBtnRef.current, {
+            type: "standard",
+            theme: "outline",
+            size: "large",
+          });
+        }
+      }
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const handleGoogleResponse = async (response: any) => {
     try {
@@ -45,63 +74,18 @@ export default function SignInPage() {
     }
   };
 
-  useEffect(() => {
-    const initGsi = () => {
-      if (window.google && !initializedRef.current) {
-        try {
-          window.google.accounts.id.initialize({
-            client_id: "393407803323-3s0pbm02sn3k9hiigo3o97k88efi69gd.apps.googleusercontent.com",
-            callback: handleGoogleResponse,
-            auto_select: false,
-            ux_mode: 'popup',
-            cancel_on_tap_outside: true,
-            // Menghindari FedCM issues di lingkungan dev tertentu
-            itp_support: true 
-          });
-
-          if (googleBtnRef.current) {
-            window.google.accounts.id.renderButton(googleBtnRef.current, {
-              type: "standard",
-              theme: "outline",
-              size: "large",
-              text: "signin_with",
-              shape: "rectangular",
-            });
-          }
-          initializedRef.current = true;
-        } catch (err) {
-          console.error("GSI Init Error:", err);
-        }
-      }
-    };
-
-    if (window.google) {
-      initGsi();
-    } else {
-      const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = initGsi;
-      document.body.appendChild(script);
-      return () => {
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-      };
-    }
-  }, []);
-
+  // Fungsi memicu klik pada tombol GIS tersembunyi
   const triggerGoogleSignIn = () => {
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          const hiddenBtn = googleBtnRef.current?.querySelector<HTMLElement>('div[role="button"], iframe');
-          if (hiddenBtn) {
-            hiddenBtn.click();
-          }
-        }
-      });
+    if (!googleBtnRef.current) return;
+
+    const hiddenBtn = googleBtnRef.current.querySelector<HTMLElement>(
+      'div[role="button"], iframe'
+    );
+
+    if (hiddenBtn) {
+      hiddenBtn.click();
+    } else {
+      window.google?.accounts?.id?.prompt();
     }
   };
 
@@ -202,8 +186,10 @@ export default function SignInPage() {
               </div>
             </div>
 
+            {/* Container GIS Button Tersembunyi */}
             <div ref={googleBtnRef} className="hidden" aria-hidden="true" />
 
+            {/* Tombol Custom Shadcn */}
             <Button
               type="button"
               variant="outline"
@@ -229,7 +215,7 @@ export default function SignInPage() {
                   fill="#EA4335"
                 />
               </svg>
-              Masuk Dengan Google
+              Masuk dengan Google
             </Button>
           </div>
           
