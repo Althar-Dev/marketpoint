@@ -2,12 +2,6 @@
 
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
 
 export function MarketFooter() {
   const footerLinks = {
@@ -147,49 +141,40 @@ export function MarketFooter() {
           </div>
         </div>
 
-        {/* Security & Payment Partners Carousel */}
-        <div className="py-12 border-t border-border flex flex-col items-center gap-8">
+        {/* Security & Payment Partners Marquee */}
+        <div className="py-12 border-t border-border flex flex-col items-center gap-8 overflow-hidden">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Metode Pembayaran</p>
-          <div className="w-full max-w-5xl">
-            <Carousel
-              plugins={[
-                Autoplay({
-                  delay: 2000,
-                }),
-              ]}
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-4 flex items-center">
-                {paymentMethods.map((method, i) => (
-                  <CarouselItem key={i} className="pl-4 basis-1/3 sm:basis-1/4 md:basis-1/6 lg:basis-[12.5%]">
-                    <div className="h-10 w-full flex items-center justify-center p-1 group">
-                      <img 
-                        src={method.src} 
-                        className="h-full w-auto object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" 
-                        alt={method.alt} 
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
+          <div className="relative w-full max-w-5xl overflow-hidden group">
+            {/* The Marquee Container */}
+            <div className="flex animate-marquee gap-12 items-center py-2">
+              {/* Double items for seamless scrolling */}
+              {[...paymentMethods, ...paymentMethods].map((method, i) => (
+                <div key={i} className="h-8 md:h-10 w-auto flex-shrink-0 transition-all duration-300 grayscale opacity-40 hover:grayscale-0 hover:opacity-100">
+                  <img 
+                    src={method.src} 
+                    className="h-full w-auto object-contain" 
+                    alt={method.alt} 
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Fading Gradients */}
+            <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none z-10" />
+            <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none z-10" />
           </div>
         </div>
 
         {/* Copyright & Logo Bottom */}
         <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6">
            <div className="flex items-center gap-3">
-           <img 
-            src="/assets/img/logo.png" 
-            alt="MarketPoint Logo" 
-            className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
-          />
-              <div className="h-6 w-px bg-border hidden md:block" />
-              <p className="text-[10px] text-muted-foreground font-medium">© 2026 <strong>MarketPoint</strong>. All Rights Reserved.</p>
+            <img 
+              src="/assets/img/logo.png" 
+              alt="MarketPoint Logo" 
+              className="h-8 w-auto object-contain"
+            />
+            <div className="h-6 w-px bg-border hidden md:block" />
+            <p className="text-[10px] text-muted-foreground font-medium">© 2026 <strong>MarketPoint</strong>. All Rights Reserved.</p>
            </div>
            <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
               <Link href="/terms-of-service" className="hover:text-[#00AA5B]">Syarat & Ketentuan</Link>
