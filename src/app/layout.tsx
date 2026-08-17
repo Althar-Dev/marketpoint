@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { Inter, Space_Grotesk } from 'next/font/google';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: {
@@ -34,6 +35,10 @@ export default function RootLayout({
         <FirebaseClientProvider>
           {children}
         </FirebaseClientProvider>
+        <Script 
+          src="https://accounts.google.com/gsi/client" 
+          strategy="beforeInteractive"
+        />
       </body>
     </html>
   );
