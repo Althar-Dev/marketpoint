@@ -25,7 +25,7 @@ export default function SignInPage() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/client");
+      router.push("/");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -41,7 +41,7 @@ export default function SignInPage() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      router.push("/client");
+      router.push("/");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -54,7 +54,7 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex bg-white font-body">
       {/* Left Side: Illustration (Desktop Only) */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-[#E8F4FD] items-center justify-center p-12 xl:p-20 overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 -mt-32 relative bg-[#E8F4FD] items-center justify-center p-12 xl:p-20 overflow-hidden">
         <div className="relative w-full h-full max-w-lg transition-transform hover:scale-105 duration-700">
           <Image 
             src="/assets/img/auth.png" 
@@ -65,9 +65,6 @@ export default function SignInPage() {
           />
         </div>
         <div className="absolute bottom-12 left-12 right-12 xl:bottom-20 xl:left-20 xl:right-20 space-y-3">
-          <div className="inline-block px-3 py-1 rounded-full bg-[#00AA5B]/10 text-[#00AA5B] text-[10px] font-black uppercase tracking-widest mb-1">
-            Ecosystem Digital
-          </div>
           <h2 className="text-3xl xl:text-4xl font-black font-headline tracking-tighter text-black">MarketPoint</h2>
           <p className="text-sm xl:text-base font-medium text-black/70 max-w-md leading-relaxed">Jelajahi ekosistem infrastruktur digital dan API terlengkap untuk pertumbuhan bisnis Anda.</p>
         </div>
@@ -84,7 +81,7 @@ export default function SignInPage() {
             <div className="flex items-center gap-2 mb-6">
               <img src="/assets/img/logo.png" alt="MarketPoint Logo" className="h-8 md:h-9 w-auto" />
               <div className="h-5 w-px bg-border mx-1" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Masuk</span>
+              <span className="text-[10px] font-black tracking-widest text-muted-foreground/50">Masuk</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold font-headline tracking-tight text-foreground">Selamat Datang</h1>
             <p className="text-muted-foreground text-xs md:text-sm font-medium">Masuk ke dashboard MarketPoint Anda sekarang.</p>
@@ -93,7 +90,7 @@ export default function SignInPage() {
           <div className="space-y-5">
             <form onSubmit={handleEmailSignIn} className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Alamat Email</Label>
+                <Label htmlFor="email" className="text-[10px] font-bold tracking-wider text-muted-foreground/70">Alamat Email</Label>
                 <Input 
                   id="email" 
                   type="email" 
@@ -101,12 +98,12 @@ export default function SignInPage() {
                   required 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-xl h-11 bg-muted/30 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-sm"
+                  className="rounded-xl h-10 bg-muted/30 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-sm"
                 />
               </div>
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Kata Sandi</Label>
+                  <Label htmlFor="password" className="text-[10px] font-bold tracking-wider text-muted-foreground/70">Kata Sandi</Label>
                   <Link href="#" className="text-[10px] text-[#00AA5B] font-bold hover:underline">Lupa Sandi?</Link>
                 </div>
                 <Input 
@@ -116,12 +113,12 @@ export default function SignInPage() {
                   required 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="rounded-xl h-11 bg-muted/30 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-sm"
+                  className="rounded-xl h-10 bg-muted/30 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-sm"
                 />
               </div>
               <Button 
                 type="submit" 
-                className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#00AA5B]/10 mt-2"
+                className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#00AA5B]/10 mt-2"
                 disabled={loading}
               >
                 {loading ? "Memproses..." : "Masuk Sekarang"}
@@ -132,7 +129,7 @@ export default function SignInPage() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
               </div>
-              <div className="relative flex justify-center text-[9px] font-bold uppercase tracking-widest">
+              <div className="relative flex justify-center text-[9px] font-bold tracking-widest">
                 <span className="bg-white px-3 text-muted-foreground">Atau Lanjutkan Dengan</span>
               </div>
             </div>
@@ -140,7 +137,7 @@ export default function SignInPage() {
             <Button 
               variant="outline" 
               type="button" 
-              className="w-full h-11 rounded-xl font-bold border-border hover:bg-muted/50 transition-all active:scale-95 flex items-center justify-center gap-2.5 text-sm" 
+              className="w-full h-10 rounded-xl font-bold border-border hover:bg-muted/50 transition-all active:scale-95 flex items-center justify-center gap-2.5 text-sm" 
               onClick={handleGoogleSignIn}
             >
               <Icon icon="logos:google-icon" className="h-4 w-4" />
