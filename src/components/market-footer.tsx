@@ -14,8 +14,8 @@ export function MarketFooter() {
       { label: "Marketplace API", href: "/docs" },
     ],
     jual: [
-      { label: "Pusat Seller", href: "/signin" },
-      { label: "Daftar Merchant", href: "/signup" },
+      { label: "Pusat Seller", href: "/login" },
+      { label: "Daftar Merchant", href: "/register" },
       { label: "Syarat & Ketentuan Merchant", href: "/terms-of-service" },
     ],
     bantuan: [

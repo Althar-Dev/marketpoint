@@ -105,7 +105,7 @@ export function MarketHeader() {
 
           <div className="flex items-center">
             <Button asChild size="sm" className="h-9 px-5 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-lg bg-[#00AA5B] shadow-[#00AA5B]/10 hover:bg-[#00AA5B]/90 transition-all">
-              <Link href="/signin">Masuk</Link>
+              <Link href="/login">Masuk</Link>
             </Button>
           </div>
         </div>
