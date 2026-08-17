@@ -68,8 +68,8 @@ export default function SignInPage() {
       const result = await signInWithCredential(auth, credential);
       const user = result.user;
 
-      // Simpan akun ke Firebase Firestore
-      await setDoc(doc(db, "users", user.uid), {
+      // Simpan data user ke Firestore
+      setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
@@ -77,8 +77,8 @@ export default function SignInPage() {
         lastLogin: serverTimestamp(),
       }, { merge: true });
 
-      // Inisialisasi Wallet jika belum ada (sesuai backend.json)
-      await setDoc(doc(db, "users", user.uid, "wallet", "info"), {
+      // Inisialisasi Wallet (Path sesuai backend.json: /users/{userId}/wallet)
+      setDoc(doc(db, "users", user.uid, "wallet"), {
         balance: 0,
         currency: "IDR",
         userId: user.uid,
@@ -110,7 +110,14 @@ export default function SignInPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      const user = result.user;
+
+      // Update last login di Firestore
+      setDoc(doc(db, "users", user.uid), {
+        lastLogin: serverTimestamp(),
+      }, { merge: true });
+
       router.push("/");
     } catch (error: any) {
       toast({

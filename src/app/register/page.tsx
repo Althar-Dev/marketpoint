@@ -69,8 +69,8 @@ export default function SignUpPage() {
       const result = await signInWithCredential(auth, credential);
       const user = result.user;
 
-      // Simpan akun ke Firebase Firestore
-      await setDoc(doc(db, "users", user.uid), {
+      // Simpan data user ke Firestore
+      setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
@@ -78,8 +78,8 @@ export default function SignUpPage() {
         createdAt: serverTimestamp(),
       }, { merge: true });
 
-      // Inisialisasi Wallet untuk user baru (sesuai backend.json)
-      await setDoc(doc(db, "users", user.uid, "wallet", "info"), {
+      // Inisialisasi Wallet (Path sesuai backend.json: /users/{userId}/wallet)
+      setDoc(doc(db, "users", user.uid, "wallet"), {
         balance: 0,
         currency: "IDR",
         userId: user.uid,
@@ -120,16 +120,16 @@ export default function SignUpPage() {
       
       const user = userCredential.user;
       
-      // Simpan akun ke Firebase Firestore (Email Sign Up)
-      await setDoc(doc(db, "users", user.uid), {
+      // Simpan data user ke Firestore
+      setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: name,
         createdAt: serverTimestamp(),
       }, { merge: true });
 
-      // Inisialisasi Wallet
-      await setDoc(doc(db, "users", user.uid, "wallet", "info"), {
+      // Inisialisasi Wallet (Path sesuai backend.json: /users/{userId}/wallet)
+      setDoc(doc(db, "users", user.uid, "wallet"), {
         balance: 0,
         currency: "IDR",
         userId: user.uid,
