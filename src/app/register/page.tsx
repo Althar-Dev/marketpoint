@@ -29,12 +29,18 @@ export default function SignUpPage() {
   useEffect(() => {
     if (typeof window !== "undefined" && window.google) {
       window.google.accounts.id.initialize({
-        client_id: "934212543066-5m2b3p3q4g8h9m9o5p3q4g8h9m9o5p3q.apps.googleusercontent.com",
+        client_id: "393407803323-3s0pbm02sn3k9hiigo3o97k88efi69gd.apps.googleusercontent.com",
         callback: handleGoogleResponse,
       });
       window.google.accounts.id.renderButton(
         document.getElementById("google-signup-btn"),
-        { theme: "outline", size: "large", width: "100%", text: "signup_with" }
+        { 
+          theme: "outline", 
+          size: "large", 
+          width: "400", 
+          text: "signup_with",
+          shape: "rectangular"
+        }
       );
     }
   }, []);
@@ -80,8 +86,7 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen flex bg-white font-body">
-      {/* Left Side: Illustration */}
-      <div className="hidden lg:flex lg:w-1/2 -mt-48 relative bg-[#E8F4FD] items-center justify-center p-12 overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 -mt-56 relative bg-[#E8F4FD] items-center justify-center p-12 overflow-hidden">
         <div className="relative w-full h-full max-w-lg transition-transform hover:scale-105 duration-700">
           <Image 
             src="/assets/img/auth.png" 
@@ -100,7 +105,6 @@ export default function SignUpPage() {
         </div>
       </div>
 
-      {/* Right Side: Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-4 md:p-8 lg:p-12 bg-white">
         <div className="w-full max-w-[400px] space-y-6">
           <div className="space-y-2">
@@ -168,7 +172,7 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            <div id="google-signup-btn" className="w-full min-h-[40px] flex justify-center"></div>
+            <div id="google-signup-btn" className="w-full min-h-[40px] flex justify-center overflow-hidden rounded-xl"></div>
           </div>
           
           <div className="pt-5 border-t border-border flex justify-center">
