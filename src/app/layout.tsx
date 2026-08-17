@@ -3,6 +3,7 @@ import './globals.css';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import Script from 'next/script';
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: {
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body className="font-body antialiased bg-background text-foreground overflow-x-hidden">
         <FirebaseClientProvider>
           {children}
+          <Toaster />
         </FirebaseClientProvider>
         <Script 
           src="https://accounts.google.com/gsi/client" 
