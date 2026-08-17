@@ -43,10 +43,10 @@ export function MarketHeader() {
   }, []);
 
   const navLinks = [
-    { title: "API Bridge", href: "/market?cat=api" },
-    { title: "Source Code", href: "/market?cat=source" },
-    { title: "Bot Automation", href: "/market?cat=bot" },
-    { title: "AI GenKit", href: "/market?cat=ai" },
+    { title: "API Bridge", href: "/s?cat=api" },
+    { title: "Source Code", href: "/s?cat=source" },
+    { title: "Bot Automation", href: "/s?cat=bot" },
+    { title: "AI GenKit", href: "/s?cat=ai" },
   ];
 
   const handleLogout = async () => {

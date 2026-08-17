@@ -9,11 +9,11 @@ export function MarketBottomNav() {
   const pathname = usePathname();
 
   const navItems = [
-    { label: "Beranda", icon: Home, href: "/market" },
-    { label: "Feed", icon: LayoutGrid, href: "/market/feed" },
-    { label: "Official", icon: ShoppingBag, href: "/market/mall" },
-    { label: "Transaksi", icon: History, href: "/market/transactions" },
-    { label: "Akun", icon: User, href: "/market/profile" },
+    { label: "Beranda", icon: Home, href: "/" },
+    { label: "Feed", icon: LayoutGrid, href: "/feed" },
+    { label: "Official", icon: ShoppingBag, href: "/mall" },
+    { label: "Transaksi", icon: History, href: "/transactions" },
+    { label: "Akun", icon: User, href: "/profile" },
   ];
 
   return (

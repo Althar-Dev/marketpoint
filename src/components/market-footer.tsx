@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 export function MarketFooter() {
   const footerLinks = {
     beli: [
-      { label: "Kategori", href: "/market" },
-      { label: "Top Up & Tagihan", href: "/market" },
+      { label: "Kategori", href: "/" },
+      { label: "Top Up & Tagihan", href: "/" },
       { label: "STS GenKit AI", href: "/ai" },
       { label: "Marketplace API", href: "/docs" },
     ],
