@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -69,8 +68,8 @@ export default function SignInPage() {
           <div className="inline-block px-3 py-1 rounded-full bg-[#00AA5B]/10 text-[#00AA5B] text-[10px] font-black uppercase tracking-widest mb-2">
             Ecosystem Digital
           </div>
-          <h2 className="text-4xl font-black font-headline tracking-tighter text-[#006430]">MarketPoint</h2>
-          <p className="text-base font-medium text-[#006430]/70 max-w-md leading-relaxed">Jelajahi ekosistem infrastruktur digital dan API terlengkap untuk pertumbuhan bisnis Anda yang lebih cepat.</p>
+          <h2 className="text-4xl font-black font-headline tracking-tighter text-black">MarketPoint</h2>
+          <p className="text-base font-medium text-black/70 max-w-md leading-relaxed">Jelajahi ekosistem infrastruktur digital dan API terlengkap untuk pertumbuhan bisnis Anda yang lebih cepat.</p>
         </div>
         
         {/* Decorative elements */}

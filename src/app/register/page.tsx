@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -71,7 +70,7 @@ export default function SignUpPage() {
             priority
           />
         </div>
-        <div className="absolute bottom-20 left-20 right-20 space-y-4 text-[#006430]">
+        <div className="absolute bottom-20 left-20 right-20 space-y-4 text-black">
           <div className="inline-block px-3 py-1 rounded-full bg-[#00AA5B]/10 text-[#00AA5B] text-[10px] font-black uppercase tracking-widest mb-2">
             Professional Platform
           </div>
