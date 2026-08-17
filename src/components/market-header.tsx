@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -9,7 +8,9 @@ import {
   ChevronDown,
   Bell,
   MessageCircle,
-  LayoutGrid
+  LayoutGrid,
+  User as UserIcon,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,9 +20,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useUser, useAuth } from "@/firebase";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function MarketHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, loading } = useUser();
+  const auth = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -35,6 +48,14 @@ export function MarketHeader() {
     { title: "Bot Automation", href: "/market?cat=bot" },
     { title: "AI GenKit", href: "/market?cat=ai" },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+    } catch (error) {
+      console.error("Error signing out", error);
+    }
+  };
 
   return (
     <header className={cn(
@@ -104,9 +125,50 @@ export function MarketHeader() {
           </div>
 
           <div className="flex items-center">
-            <Button asChild size="sm" className="h-9 px-5 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-lg bg-[#00AA5B] shadow-[#00AA5B]/10 hover:bg-[#00AA5B]/90 transition-all">
-              <Link href="/login">Masuk</Link>
-            </Button>
+            {loading ? (
+              <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center outline-none group">
+                    <Avatar className="h-8 w-8 rounded-full border border-border transition-transform group-hover:scale-105">
+                      <AvatarImage src={user.photoURL || undefined} alt={user.displayName || "User"} />
+                      <AvatarFallback className="bg-[#00AA5B] text-white text-[10px] font-bold">
+                        {user.displayName?.substring(0, 2).toUpperCase() || user.email?.substring(0, 2).toUpperCase() || "MP"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 mt-2 rounded-xl border-border p-2">
+                  <DropdownMenuLabel className="px-2 py-1.5">
+                    <div className="flex flex-col space-y-0.5">
+                      <p className="text-xs font-bold text-foreground truncate">{user.displayName || "User MarketPoint"}</p>
+                      <p className="text-[10px] font-medium text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="rounded-lg py-2 cursor-pointer focus:bg-muted">
+                    <Link href="/profile" className="flex items-center gap-2 text-xs font-bold">
+                      <UserIcon className="w-3.5 h-3.5 opacity-50" />
+                      Profil Saya
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="rounded-lg py-2 cursor-pointer focus:bg-destructive/5 text-destructive focus:text-destructive"
+                  >
+                    <div className="flex items-center gap-2 text-xs font-bold">
+                      <LogOut className="w-3.5 h-3.5 opacity-50" />
+                      Keluar
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild size="sm" className="h-9 px-5 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-lg bg-[#00AA5B] shadow-[#00AA5B]/10 hover:bg-[#00AA5B]/90 transition-all">
+                <Link href="/login">Masuk</Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>
