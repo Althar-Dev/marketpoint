@@ -1,11 +1,4 @@
-# **App Name**: STSPoint
-
-## Core Features:
-
-- Points Dashboard: A sleek, real-time visualization of current point balances and recent point trends for the user.
-- Interactive Achievement Ledger: A high-fidelity scrollable list of historical point allocations with filter and search capabilities.
-- Dynamic Perks Gallery: A grid-based view showcasing redeemable items and perks available for purchase with accumulated points.
-- Automated Redemption Logic: Back-end processing that handles the instant validation and calculation of point deductions during a perk redemption.
+# **App Name**: MarketPoint
 
 ## Style Guidelines:
 
