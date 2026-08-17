@@ -122,15 +122,15 @@ export function MarketFooter() {
             
             <div className="space-y-4">
               <h4 className="font-bold text-sm text-foreground">Unduh Aplikasi</h4>
-              <div className="flex flex-col gap-2">
-                 <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-white hover:bg-muted transition-all">
+              <div className="flex flex-col gap-2 items-start">
+                 <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-white hover:bg-muted transition-all w-fit min-w-[135px]">
                    <Icon icon="logos:google-play-icon" className="w-4 h-4" />
                    <div className="text-left">
                      <p className="text-[8px] font-bold text-muted-foreground uppercase leading-none">Get it on</p>
                      <p className="text-[10px] font-bold text-foreground leading-none mt-0.5">Google Play</p>
                    </div>
                  </button>
-                 <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-white hover:bg-muted transition-all">
+                 <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-white hover:bg-muted transition-all w-fit min-w-[135px]">
                    <Icon icon="logos:apple-app-store" className="w-4 h-4" />
                    <div className="text-left">
                      <p className="text-[8px] font-bold text-muted-foreground uppercase leading-none">Download on the</p>
