@@ -66,7 +66,7 @@ export default function SignInPage() {
       toast({
         variant: "destructive",
         title: "Gagal Masuk Google",
-        description: error.message || "Terjadi kesalahan saat masuk.",
+        description: "Terjadi kesalahan saat masuk dengan Google.",
       });
     } finally {
       setLoading(false);
@@ -78,7 +78,8 @@ export default function SignInPage() {
       window.google.accounts.id.initialize({
         client_id: "620953736474-l19n5ca8ke0nlhfkojh13e1fi0ppqc8o.apps.googleusercontent.com",
         callback: handleGoogleResponse,
-        itp_support: true
+        itp_support: true,
+        ux_mode: 'popup'
       });
 
       if (googleBtnRef.current) {
@@ -118,10 +119,18 @@ export default function SignInPage() {
 
       router.push("/");
     } catch (error: any) {
+      let message = "Email atau kata sandi salah.";
+      
+      if (error.code === 'auth/invalid-email') message = "Format email tidak valid.";
+      if (error.code === 'auth/user-disabled') message = "Akun ini telah dinonaktifkan.";
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        message = "Email atau kata sandi salah.";
+      }
+
       toast({
         variant: "destructive",
         title: "Gagal Masuk",
-        description: error.message || "Email atau password salah.",
+        description: message,
       });
     } finally {
       setLoading(false);

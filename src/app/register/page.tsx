@@ -66,7 +66,7 @@ export default function SignUpPage() {
       toast({
         variant: "destructive",
         title: "Gagal Daftar Google",
-        description: error.message || "Terjadi kesalahan saat mendaftar.",
+        description: "Terjadi kesalahan saat mendaftar dengan Google.",
       });
     } finally {
       setLoading(false);
@@ -78,7 +78,8 @@ export default function SignUpPage() {
       window.google.accounts.id.initialize({
         client_id: "620953736474-l19n5ca8ke0nlhfkojh13e1fi0ppqc8o.apps.googleusercontent.com",
         callback: handleGoogleResponse,
-        itp_support: true
+        itp_support: true,
+        ux_mode: 'popup'
       });
 
       if (googleBtnRef.current) {
@@ -127,10 +128,16 @@ export default function SignUpPage() {
       });
       router.push("/");
     } catch (error: any) {
+      let message = "Terjadi kesalahan saat membuat akun.";
+      
+      if (error.code === 'auth/email-already-in-use') message = "Email sudah terdaftar. Silakan masuk.";
+      if (error.code === 'auth/weak-password') message = "Kata sandi terlalu lemah. Gunakan minimal 6 karakter.";
+      if (error.code === 'auth/invalid-email') message = "Format email tidak valid.";
+      
       toast({
         variant: "destructive",
         title: "Gagal Mendaftar",
-        description: error.message || "Terjadi kesalahan saat membuat akun.",
+        description: message,
       });
     } finally {
       setLoading(false);
