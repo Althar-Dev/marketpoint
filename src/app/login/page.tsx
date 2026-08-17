@@ -9,7 +9,6 @@ import { useAuth } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Icon } from "@iconify/react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -54,67 +53,79 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white">
-      {/* Left Side: Image (Desktop Only) */}
-      <div className="hidden lg:block lg:w-1/2 relative bg-[#F8F9FA]">
-        <Image 
-          src="/assets/img/auth.png" 
-          alt="MarketPoint Auth" 
-          fill 
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-        <div className="absolute bottom-12 left-12 right-12 text-white space-y-2">
-          <h2 className="text-3xl font-black font-headline tracking-tighter">MarketPoint</h2>
-          <p className="text-sm font-medium opacity-90 max-w-sm">Jelajahi ekosistem infrastruktur digital dan API terlengkap untuk kebutuhan bisnis Anda.</p>
+    <div className="min-h-screen flex bg-white font-body">
+      {/* Left Side: Illustration (Desktop Only) */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-[#E8F4FD] items-center justify-center p-20 overflow-hidden">
+        <div className="relative w-full h-full max-w-xl transition-transform hover:scale-105 duration-700">
+          <Image 
+            src="/assets/img/auth.png" 
+            alt="MarketPoint Auth Illustration" 
+            fill 
+            className="object-contain"
+            priority
+          />
         </div>
+        <div className="absolute bottom-20 left-20 right-20 space-y-4">
+          <div className="inline-block px-3 py-1 rounded-full bg-[#00AA5B]/10 text-[#00AA5B] text-[10px] font-black uppercase tracking-widest mb-2">
+            Ecosystem Digital
+          </div>
+          <h2 className="text-4xl font-black font-headline tracking-tighter text-[#006430]">MarketPoint</h2>
+          <p className="text-base font-medium text-[#006430]/70 max-w-md leading-relaxed">Jelajahi ekosistem infrastruktur digital dan API terlengkap untuk pertumbuhan bisnis Anda yang lebih cepat.</p>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#00AA5B]/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#00AA5B]/10 rounded-full blur-3xl" />
       </div>
 
       {/* Right Side: Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 bg-muted/10">
-        <Card className="w-full max-w-[400px] shadow-none border-border rounded-2xl overflow-hidden bg-white">
-          <CardHeader className="space-y-2 text-center pt-8">
-            <div className="flex justify-center mb-4">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-white">
+        <div className="w-full max-w-[420px] space-y-8">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-8">
               <img src="/assets/img/logo.png" alt="MarketPoint Logo" className="h-10 w-auto" />
+              <div className="h-6 w-px bg-border mx-1" />
+              <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/50">Masuk</span>
             </div>
-            <CardTitle className="text-2xl font-bold font-headline">Selamat Datang</CardTitle>
-            <CardDescription>Masuk ke akun MarketPoint Anda</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            <h1 className="text-3xl font-bold font-headline tracking-tight text-foreground">Selamat Datang Kembali</h1>
+            <p className="text-muted-foreground text-sm font-medium">Masuk ke dashboard MarketPoint Anda untuk mulai mengelola infrastruktur digital.</p>
+          </div>
+          
+          <div className="space-y-6">
             <form onSubmit={handleEmailSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Alamat Email</Label>
                 <Input 
                   id="email" 
                   type="email" 
-                  placeholder="nama@email.com" 
+                  placeholder="nama@perusahaan.com" 
                   required 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-xl h-11"
+                  className="rounded-xl h-12 bg-muted/30 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all"
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link href="#" className="text-xs text-[#00AA5B] hover:underline">Lupa password?</Link>
+                  <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Kata Sandi</Label>
+                  <Link href="#" className="text-xs text-[#00AA5B] font-bold hover:underline">Lupa Sandi?</Link>
                 </div>
                 <Input 
                   id="password" 
                   type="password" 
+                  placeholder="••••••••"
                   required 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="rounded-xl h-11"
+                  className="rounded-xl h-12 bg-muted/30 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all"
                 />
               </div>
               <Button 
                 type="submit" 
-                className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold"
+                className="w-full h-12 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-base transition-all active:scale-95 shadow-lg shadow-[#00AA5B]/20"
                 disabled={loading}
               >
-                {loading ? "Memproses..." : "Masuk"}
+                {loading ? "Memproses..." : "Masuk Sekarang"}
               </Button>
             </form>
             
@@ -122,28 +133,31 @@ export default function SignInPage() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-muted-foreground font-medium">Atau lanjutkan dengan</span>
+              <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest">
+                <span className="bg-white px-4 text-muted-foreground">Atau Lanjutkan Dengan</span>
               </div>
             </div>
 
             <Button 
               variant="outline" 
               type="button" 
-              className="w-full h-11 rounded-xl font-bold border-border" 
+              className="w-full h-12 rounded-xl font-bold border-border hover:bg-muted/50 transition-all active:scale-95 flex items-center justify-center gap-3" 
               onClick={handleGoogleSignIn}
             >
-              <Icon icon="logos:google-icon" className="mr-2 h-4 w-4" />
-              Google
+              <Icon icon="logos:google-icon" className="h-5 w-5" />
+              Akun Google
             </Button>
-          </CardContent>
-          <CardFooter className="pb-8 flex justify-center text-sm text-muted-foreground">
-            Belum punya akun?{" "}
-            <Link href="/register" className="ml-1 font-bold text-[#00AA5B] hover:underline">
-              Daftar
-            </Link>
-          </CardFooter>
-        </Card>
+          </div>
+          
+          <div className="pt-6 border-t border-border flex justify-center">
+            <p className="text-sm text-muted-foreground font-medium">
+              Baru di MarketPoint?{" "}
+              <Link href="/register" className="font-bold text-[#00AA5B] hover:underline">
+                Buat Akun Gratis
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
