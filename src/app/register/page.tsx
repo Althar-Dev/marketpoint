@@ -87,7 +87,7 @@ export default function SignUpPage() {
 
       toast({
         title: "Berhasil Mendaftar",
-        description: "Selamat datang di MarketPoint!",
+        description: `Selamat datang di MarketPoint, ${user.displayName}!`,
       });
       router.push("/");
     } catch (error: any) {

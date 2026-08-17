@@ -84,6 +84,11 @@ export default function SignInPage() {
         userId: user.uid,
       }, { merge: true });
 
+      toast({
+        title: "Berhasil Masuk",
+        description: `Selamat datang kembali, ${user.displayName}!`,
+      });
+
       router.push("/");
     } catch (error: any) {
       toast({
