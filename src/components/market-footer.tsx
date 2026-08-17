@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Icon } from "@iconify/react";
+import { cn } from "@/lib/utils";
 
 export function MarketFooter() {
   const footerLinks = {
@@ -149,7 +150,13 @@ export function MarketFooter() {
             <div className="flex animate-marquee gap-12 items-center py-2">
               {/* Double items for seamless scrolling */}
               {[...paymentMethods, ...paymentMethods].map((method, i) => (
-                <div key={i} className="h-8 md:h-10 w-auto flex-shrink-0 transition-all duration-300 grayscale opacity-40 hover:grayscale-0 hover:opacity-100">
+                <div 
+                  key={i} 
+                  className={cn(
+                    "w-auto flex-shrink-0 transition-all duration-300 grayscale opacity-40 hover:grayscale-0 hover:opacity-100",
+                    (method.alt === "BSS" || method.alt === "Permata") ? "h-6 mt-2" : "h-8 md:h-10"
+                  )}
+                >
                   <img 
                     src={method.src} 
                     className="h-full w-auto object-contain" 
