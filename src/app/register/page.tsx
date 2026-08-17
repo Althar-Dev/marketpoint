@@ -32,14 +32,21 @@ export default function SignUpPage() {
   const { toast } = useToast();
 
   const handleGoogleResponse = async (response: any) => {
+    if (!response || !response.credential) {
+      console.error("GIS Credential missing");
+      return;
+    }
     try {
       setLoading(true);
+      // 1. Tentukan kredensial dari Token GIS
       const credential = GoogleAuthProvider.credential(response.credential);
+
+      // 2. Masuk ke Firebase Auth menggunakan Kredensial GIS
       const result = await signInWithCredential(auth, credential);
       const user = result.user;
 
-      // Simpan data user ke Firestore
-      setDoc(doc(db, "users", user.uid), {
+      // 3. Simpan data user ke Firestore
+      await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
@@ -47,8 +54,8 @@ export default function SignUpPage() {
         createdAt: serverTimestamp(),
       }, { merge: true });
 
-      // Inisialisasi Wallet (users/{userId}/wallet/info)
-      setDoc(doc(db, "users", user.uid, "wallet", "info"), {
+      // 4. Inisialisasi Wallet (users/{userId}/wallet/info)
+      await setDoc(doc(db, "users", user.uid, "wallet", "info"), {
         balance: 0,
         currency: "IDR",
         userId: user.uid,
@@ -56,10 +63,11 @@ export default function SignUpPage() {
 
       toast({
         title: "Berhasil Mendaftar",
-        description: `Selamat datang di MarketPoint, ${user.displayName}!`,
+        description: `Selamat datang di MarketPoint, ${user.displayName || user.email}!`,
       });
       router.push("/");
     } catch (error: any) {
+      console.error("Gagal daftar GIS - Firebase:", error);
       toast({
         variant: "destructive",
         title: "Gagal Daftar Google",
@@ -71,32 +79,32 @@ export default function SignUpPage() {
   };
 
   const initializeGoogleAuth = () => {
-    if (window.google) {
+    if (typeof window !== "undefined" && window.google?.accounts?.id) {
       window.google.accounts.id.initialize({
-        client_id: "393407803323-3s0pbm02sn3k9hiigo3o97k88efi69gd.apps.googleusercontent.com",
+        client_id: "620953736474-l19n5ca8ke0nlhfkojh13e1fi0ppqc8o.apps.googleusercontent.com",
         callback: handleGoogleResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-        ux_mode: 'popup',
-        itp_support: true,
       });
 
       if (googleBtnRef.current) {
+        googleBtnRef.current.innerHTML = "";
         window.google.accounts.id.renderButton(googleBtnRef.current, {
           type: "standard",
           theme: "outline",
           size: "large",
+          width: "360",
           text: "signup_with",
+          shape: "rectangular",
+          logo_alignment: "left",
         });
       }
     }
   };
 
-  const triggerGoogleSignUp = () => {
-    if (window.google) {
-      window.google.accounts.id.prompt();
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.google?.accounts?.id) {
+      initializeGoogleAuth();
     }
-  };
+  }, []);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,11 +112,11 @@ export default function SignUpPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName: name });
-      
+
       const user = userCredential.user;
-      
+
       // Simpan data user ke Firestore
-      setDoc(doc(db, "users", user.uid), {
+      await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: name,
@@ -116,7 +124,7 @@ export default function SignUpPage() {
       }, { merge: true });
 
       // Inisialisasi Wallet (users/{userId}/wallet/info)
-      setDoc(doc(db, "users", user.uid, "wallet", "info"), {
+      await setDoc(doc(db, "users", user.uid, "wallet", "info"), {
         balance: 0,
         currency: "IDR",
         userId: user.uid,
@@ -140,17 +148,17 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen flex bg-white font-body">
-      <Script 
-        src="https://accounts.google.com/gsi/client" 
+      <Script
+        src="https://accounts.google.com/gsi/client"
         onLoad={initializeGoogleAuth}
         strategy="afterInteractive"
       />
       <div className="hidden lg:flex lg:w-1/2 -mt-56 relative bg-[#E8F4FD] items-center justify-center p-12 overflow-hidden">
         <div className="relative w-full h-full max-w-lg transition-transform hover:scale-105 duration-700">
-          <Image 
-            src="/assets/img/auth.png" 
-            alt="MarketPoint Auth Illustration" 
-            fill 
+          <Image
+            src="/assets/img/auth.png"
+            alt="MarketPoint Auth Illustration"
+            fill
             className="object-contain"
             priority
             data-ai-hint="auth illustration"
@@ -175,15 +183,15 @@ export default function SignUpPage() {
             <h1 className="text-2xl font-bold font-headline tracking-tight text-foreground">Mulai Perjalanan</h1>
             <p className="text-muted-foreground text-xs font-medium">Buat akun MarketPoint sekarang secara gratis.</p>
           </div>
-          
+
           <div className="space-y-5">
             <form onSubmit={handleSignUp} className="space-y-3.5">
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-[10px] font-bold tracking-wider text-muted-foreground/70">NAMA LENGKAP</Label>
-                <Input 
-                  id="name" 
-                  placeholder="John Doe" 
-                  required 
+                <Input
+                  id="name"
+                  placeholder="John Doe"
+                  required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="rounded-xl h-10 bg-muted/30 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-sm"
@@ -191,11 +199,11 @@ export default function SignUpPage() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-[10px] font-bold tracking-wider text-muted-foreground/70">ALAMAT EMAIL</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="nama@perusahaan.com" 
-                  required 
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="nama@perusahaan.com"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="rounded-xl h-10 bg-muted/30 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-sm"
@@ -203,25 +211,25 @@ export default function SignUpPage() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="password" className="text-[10px] font-bold tracking-wider text-muted-foreground/70">KATA SANDI</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
+                <Input
+                  id="password"
+                  type="password"
                   placeholder="••••••••"
-                  required 
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="rounded-xl h-10 bg-muted/30 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-sm"
                 />
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#00AA5B]/10 mt-3"
                 disabled={loading}
               >
                 {loading ? "Memproses..." : "Daftar Akun Gratis"}
               </Button>
             </form>
-            
+
             <div className="relative py-2">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
@@ -231,25 +239,25 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            <div ref={googleBtnRef} className="hidden" aria-hidden="true" />
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={triggerGoogleSignUp}
-              disabled={loading}
-              className="w-full h-10 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 border-border hover:bg-muted/50 transition-all active:scale-95"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
-              </svg>
-              Daftar dengan Google
-            </Button>
+            <div className="relative w-full h-10">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={loading}
+                className="w-full h-10 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 border-border hover:bg-muted/50 transition-all active:scale-95"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
+                </svg>
+                Daftar dengan Google
+              </Button>
+              <div ref={googleBtnRef} className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer" />
+            </div>
           </div>
-          
+
           <div className="pt-5 border-t border-border flex justify-center">
             <p className="text-xs text-muted-foreground font-medium">
               Sudah punya akun?{" "}
