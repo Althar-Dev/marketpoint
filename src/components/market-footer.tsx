@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -13,7 +14,7 @@ export function MarketFooter() {
       { label: "Marketplace API", href: "/docs" },
     ],
     jual: [
-      { label: "Pusat Seller", href: "/console" },
+      { label: "Pusat Seller", href: "/signin" },
       { label: "Daftar Merchant", href: "/signup" },
       { label: "Syarat & Ketentuan Merchant", href: "/terms-of-service" },
     ],
