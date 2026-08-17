@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useAuth } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,93 +11,32 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
-
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const googleBtnRef = useRef<HTMLDivElement>(null);
-  const initializedRef = useRef(false);
 
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleGoogleResponse = async (response: any) => {
+  const triggerGoogleSignIn = async () => {
     try {
       setLoading(true);
-      const credential = GoogleAuthProvider.credential(response.credential);
-      await signInWithCredential(auth, credential);
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      await signInWithPopup(auth, provider);
       router.push("/");
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Gagal Masuk Google",
-        description: error.message || "Terjadi kesalahan saat masuk.",
-      });
+      if (error.code !== 'auth/popup-closed-by-user') {
+        toast({
+          variant: "destructive",
+          title: "Gagal Masuk Google",
+          description: error.message || "Terjadi kesalahan saat masuk.",
+        });
+      }
     } finally {
       setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const initGsi = () => {
-      if (window.google && !initializedRef.current) {
-        window.google.accounts.id.initialize({
-          client_id: "393407803323-3s0pbm02sn3k9hiigo3o97k88efi69gd.apps.googleusercontent.com",
-          callback: handleGoogleResponse,
-          auto_select: false,
-          ux_mode: 'popup',
-          cancel_on_tap_outside: true
-        });
-
-        if (googleBtnRef.current) {
-          window.google.accounts.id.renderButton(googleBtnRef.current, {
-            type: "standard",
-            theme: "outline",
-            size: "large",
-            text: "signin_with",
-            shape: "rectangular",
-          });
-        }
-        initializedRef.current = true;
-      }
-    };
-
-    if (window.google) {
-      initGsi();
-    } else {
-      const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = initGsi;
-      document.body.appendChild(script);
-      return () => {
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-      };
-    }
-  }, []);
-
-  const triggerGoogleSignIn = () => {
-    if (window.google?.accounts?.id) {
-      // Mencoba prompt resmi terlebih dahulu
-      window.google.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Jika prompt gagal, coba klik tombol tersembunyi
-          const hiddenBtn = googleBtnRef.current?.querySelector<HTMLElement>('div[role="button"], iframe');
-          if (hiddenBtn) {
-            hiddenBtn.click();
-          }
-        }
-      });
     }
   };
 
@@ -198,8 +137,6 @@ export default function SignInPage() {
               </div>
             </div>
 
-            <div ref={googleBtnRef} className="hidden" aria-hidden="true" />
-
             <Button
               type="button"
               variant="outline"
@@ -225,7 +162,7 @@ export default function SignInPage() {
                   fill="#EA4335"
                 />
               </svg>
-              Google
+              Masuk Dengan Google
             </Button>
           </div>
           
