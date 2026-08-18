@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 import { 
   Settings, 
   ChevronRight, 
@@ -119,9 +120,9 @@ export default function ProfilePage() {
         {/* Profile Header */}
         <div className="px-4 py-4 flex items-center justify-between bg-white sticky top-0 z-30">
           <h1 className="text-lg font-bold">Akun</h1>
-          <button className="p-2 hover:bg-muted rounded-full transition-colors">
+          <Link href="/settings" className="p-2 hover:bg-muted rounded-full transition-colors">
             <Settings className="w-5 h-5 text-foreground" />
-          </button>
+          </Link>
         </div>
 
         {/* User Info Section */}
