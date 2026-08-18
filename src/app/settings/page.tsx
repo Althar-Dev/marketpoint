@@ -98,21 +98,21 @@ export default function SettingsPage() {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
-          <div className="px-4 py-2 flex items-center justify-between">
+          <div className="px-4 py-1.5 flex items-center justify-between">
             <Skeleton className="h-5 w-5 rounded-full" />
-            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-4 w-24" />
             <Skeleton className="h-5 w-5 rounded-full" />
           </div>
-          <div className="px-4 py-6 space-y-8">
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-20 w-20 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-40" />
-                <Skeleton className="h-3 w-32" />
-                <Skeleton className="h-3 w-48" />
+          <div className="px-4 py-4 space-y-6">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-16 w-16 rounded-full" />
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-36" />
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-3 w-40" />
               </div>
             </div>
-            <Skeleton className="h-32 w-full rounded-2xl" />
+            <Skeleton className="h-28 w-full rounded-2xl" />
           </div>
         </main>
         <MarketBottomNav />
@@ -126,63 +126,63 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-white flex flex-col font-body text-[#212121]">
       <main className="flex-1 w-full pb-24 max-w-2xl mx-auto bg-white min-h-screen">
         {/* Header */}
-        <div className="px-4 py-2 flex items-center justify-between bg-white sticky top-0 z-30">
-          <div className="flex items-center gap-4">
-            <Link href="/profile" className="p-1 hover:bg-muted rounded-full transition-colors">
-              <ChevronLeft className="w-6 h-6" />
+        <div className="px-4 py-1.5 flex items-center justify-between bg-white sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <Link href="/profile" className="p-1 hover:bg-muted rounded-full transition-colors text-foreground">
+              <ChevronLeft className="w-5 h-5" />
             </Link>
-            <h1 className="text-lg font-bold">Akun Saya</h1>
+            <h1 className="text-base font-bold">Akun Saya</h1>
           </div>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Menu className="w-6 h-6" />
+          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+            <Menu className="w-5 h-5" />
           </Button>
         </div>
 
         {/* User Identity Section */}
-        <section className="px-4 py-6 relative">
+        <section className="px-4 py-4 relative">
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20 border-none shadow-sm ring-2 ring-muted/20">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-16 w-16 border-none shadow-sm ring-2 ring-muted/20">
                 <AvatarImage src={user.photoURL || undefined} />
-                <AvatarFallback className="bg-[#00AA5B] text-white text-3xl font-bold uppercase">
+                <AvatarFallback className="bg-[#00AA5B] text-white text-2xl font-bold uppercase">
                   {displayName.substring(0, 1) || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="space-y-0.5">
+              <div className="space-y-0">
                 {isEditing ? (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1.5">
                     <Input 
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      className="h-8 text-sm font-bold border-[#00AA5B]"
+                      className="h-7 text-xs font-bold border-[#00AA5B]"
                       autoFocus
                     />
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={handleUpdateProfile} disabled={updating} className="h-7 text-[10px] bg-[#00AA5B] hover:bg-[#00AA5B]/90">Simpan</Button>
-                      <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-7 text-[10px]">Batal</Button>
+                    <div className="flex gap-1.5">
+                      <Button size="sm" onClick={handleUpdateProfile} disabled={updating} className="h-6 text-[9px] px-2 bg-[#00AA5B] hover:bg-[#00AA5B]/90">Simpan</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-6 text-[9px] px-2">Batal</Button>
                     </div>
                   </div>
                 ) : (
-                  <h2 className="text-xl font-bold text-[#2E3137]">{displayName || "Pengguna Baru"}</h2>
+                  <h2 className="text-lg font-bold text-[#2E3137]">{displayName || "Pengguna Baru"}</h2>
                 )}
-                <p className="text-xs text-[#6C727C]">6288976577650</p>
-                <p className="text-xs text-[#6C727C]">{user.email}</p>
+                <p className="text-[11px] text-[#6C727C]">6288976577650</p>
+                <p className="text-[11px] text-[#6C727C]">{user.email}</p>
               </div>
             </div>
             {!isEditing && (
               <button 
                 onClick={() => setIsEditing(true)}
-                className="p-2 hover:bg-muted rounded-full border border-border shadow-sm transition-all"
+                className="p-1.5 hover:bg-muted rounded-full border border-border shadow-sm transition-all text-[#6C727C]"
               >
-                <Pencil className="w-4 h-4 text-[#6C727C]" />
+                <Pencil className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
         </section>
 
         {/* Account Settings List */}
-        <section className="pb-4">
-          <h3 className="px-4 text-base font-bold text-[#2E3137] mb-2">Pengaturan Akun</h3>
+        <section className="pb-3">
+          <h3 className="px-4 text-[13px] font-bold text-[#2E3137] mb-1.5">Pengaturan Akun</h3>
           <div className="divide-y divide-border/50">
             {[
               { title: "Daftar Alamat", desc: "Atur alamat pengiriman belanjaan", icon: MapPin },
@@ -194,14 +194,14 @@ export default function SettingsPage() {
             ].map((menu, idx) => (
               <button 
                 key={idx}
-                className="w-full px-4 py-4 flex items-center gap-4 hover:bg-muted/30 transition-all text-left active:bg-muted/50"
+                className="w-full px-4 py-3 flex items-center gap-3.5 hover:bg-muted/30 transition-all text-left active:bg-muted/50"
               >
                 <div className="bg-white rounded-lg flex items-center justify-center">
-                  <menu.icon className="w-6 h-6 text-[#2E3137]" />
+                  <menu.icon className="w-5 h-5 text-[#2E3137]" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-bold text-[#2E3137]">{menu.title}</p>
-                  <p className="text-[11px] text-[#6C727C]">{menu.desc}</p>
+                  <p className="text-[10px] text-[#6C727C]">{menu.desc}</p>
                 </div>
               </button>
             ))}
@@ -209,17 +209,17 @@ export default function SettingsPage() {
         </section>
 
         {/* Logout Section */}
-        <section className="border-t border-border mt-4">
+        <section className="border-t border-border mt-3">
           <button 
             onClick={handleLogout}
-            className="w-full px-4 py-5 flex items-center gap-4 hover:bg-destructive/5 transition-all text-left active:bg-destructive/10"
+            className="w-full px-4 py-4 flex items-center gap-3.5 hover:bg-destructive/5 transition-all text-left active:bg-destructive/10"
           >
             <div className="bg-white rounded-lg flex items-center justify-center">
-              <LogOut className="w-6 h-6 text-destructive" />
+              <LogOut className="w-5 h-5 text-destructive" />
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-destructive">Keluar Akun</p>
-              <p className="text-[11px] text-muted-foreground">Keluar dari sesi MarketPoint saat ini</p>
+              <p className="text-[10px] text-muted-foreground">Keluar dari sesi MarketPoint saat ini</p>
             </div>
           </button>
         </section>
