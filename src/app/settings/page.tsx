@@ -85,7 +85,7 @@ export default function SettingsPage() {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
-          <div className="px-4 py-5 flex items-center justify-between">
+          <div className="px-4 py-3 flex items-center justify-between">
             <Skeleton className="h-6 w-6 rounded-full" />
             <Skeleton className="h-6 w-32" />
             <Skeleton className="h-6 w-6 rounded-full" />
@@ -113,7 +113,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-white flex flex-col font-body text-[#212121]">
       <main className="flex-1 w-full pb-24 max-w-2xl mx-auto bg-white min-h-screen">
         {/* Header */}
-        <div className="px-4 py-5 flex items-center justify-between bg-white sticky top-0 z-30">
+        <div className="px-4 py-2 flex items-center justify-between bg-white sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <Link href="/profile" className="p-1 hover:bg-muted rounded-full transition-colors">
               <ChevronLeft className="w-6 h-6" />
@@ -199,7 +199,7 @@ export default function SettingsPage() {
         <section className="border-t border-border">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="app-settings" className="border-none">
-              <AccordionTrigger className="px-4 py-6 hover:no-underline font-bold text-base text-[#2E3137]">
+              <AccordionTrigger className="px-4 py-4 hover:no-underline font-bold text-base text-[#2E3137]">
                 Pengaturan Aplikasi
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-6 space-y-4">

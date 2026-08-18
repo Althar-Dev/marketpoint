@@ -68,9 +68,9 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
-          <div className="px-4 py-4 flex items-center justify-between">
-            <Skeleton className="h-7 w-20" />
-            <Skeleton className="h-9 w-9 rounded-full" />
+          <div className="px-4 py-2 flex items-center justify-between">
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-8 w-8 rounded-full" />
           </div>
           
           <div className="px-4 py-2 flex items-center gap-4">
@@ -118,7 +118,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-white flex flex-col font-body">
       <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
         {/* Profile Header */}
-        <div className="px-4 py-4 flex items-center justify-between bg-white sticky top-0 z-30">
+        <div className="px-4 py-2 flex items-center justify-between bg-white sticky top-0 z-30">
           <h1 className="text-lg font-bold">Akun</h1>
           <Link href="/settings" className="p-2 hover:bg-muted rounded-full transition-colors">
             <Settings className="w-5 h-5 text-foreground" />
@@ -156,7 +156,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Subscription / Plus Banner */}
+        {/* Plus Banner */}
         <div className="px-4 py-4">
           <div className="bg-white border border-border rounded-xl p-3.5 flex items-center justify-between cursor-pointer hover:bg-muted/30 transition-all shadow-sm">
             <div className="flex items-center gap-3">
