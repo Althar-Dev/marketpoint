@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import { MarketBottomNav } from "@/components/market-bottom-nav";
@@ -10,21 +10,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { 
   ChevronLeft, 
-  User, 
-  Shield, 
-  Bell, 
-  HelpCircle, 
-  Info,
-  Smartphone,
+  Menu,
+  Pencil,
+  ChevronRight,
+  MapPin,
+  Landmark,
   CreditCard,
-  Lock,
-  ChevronRight
+  Shield,
+  Bell,
+  Sun,
+  Wallet,
+  Coins,
+  Banknote
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function SettingsPage() {
   const { user, loading: authLoading } = useUser();
@@ -33,7 +43,15 @@ export default function SettingsPage() {
   const { toast } = useToast();
 
   const [displayName, setDisplayName] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
+
+  const walletRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "users", user.uid, "wallet", "info");
+  }, [db, user]);
+
+  const { data: wallet, loading: walletLoading } = useDoc(walletRef);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -43,10 +61,8 @@ export default function SettingsPage() {
     }
   }, [user, authLoading, router]);
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdateProfile = async () => {
     if (!user) return;
-
     setUpdating(true);
     try {
       await updateProfile(user, { displayName });
@@ -55,11 +71,11 @@ export default function SettingsPage() {
         displayName,
         updatedAt: new Date().toISOString(),
       });
-
       toast({
         title: "Profil Diperbarui",
-        description: "Informasi profil Anda berhasil disimpan.",
+        description: "Nama profil Anda berhasil disimpan.",
       });
+      setIsEditing(false);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -71,17 +87,25 @@ export default function SettingsPage() {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || (user && walletLoading && !wallet)) {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
-          <div className="px-4 py-4 flex items-center gap-4 border-b border-border">
+          <div className="px-4 py-5 flex items-center justify-between">
             <Skeleton className="h-6 w-6 rounded-full" />
             <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-6 w-6 rounded-full" />
           </div>
-          <div className="p-4 space-y-6">
-            <Skeleton className="h-40 w-full rounded-2xl" />
-            <Skeleton className="h-60 w-full rounded-2xl" />
+          <div className="px-4 py-6 space-y-8">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-20 w-20 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+            </div>
+            <Skeleton className="h-32 w-full rounded-2xl" />
           </div>
         </main>
         <MarketBottomNav />
@@ -92,130 +116,148 @@ export default function SettingsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex flex-col font-body">
-      <main className="flex-1 w-full pb-24 max-w-2xl mx-auto bg-white min-h-screen shadow-sm">
-        {/* Settings Header */}
-        <div className="px-4 py-5 flex items-center gap-4 bg-white sticky top-0 z-30 border-b border-border/60">
-          <Link href="/profile" className="p-1.5 hover:bg-muted rounded-full transition-colors">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
-          </Link>
-          <h1 className="text-lg font-bold tracking-tight">Pengaturan</h1>
-        </div>
-
-        <div className="p-4 space-y-8">
-          {/* Account Section */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 px-1">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Informasi Profil</h2>
-            </div>
-            
-            <form onSubmit={handleUpdateProfile} className="space-y-5 bg-white rounded-2xl border border-border/80 p-5 shadow-sm">
-              <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Nama Lengkap</Label>
-                <Input
-                  id="displayName"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Nama Anda"
-                  className="rounded-xl h-11 border-border bg-muted/20 focus:bg-white focus:ring-[#00AA5B]/10 transition-all text-sm font-medium"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Email</Label>
-                <div className="relative group">
-                  <Input
-                    value={user.email || ""}
-                    disabled
-                    className="rounded-xl h-11 border-border/50 bg-muted/40 text-muted-foreground/70 text-sm font-medium cursor-not-allowed pr-10"
-                  />
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/30" />
-                </div>
-                <p className="text-[9px] text-muted-foreground/60 italic ml-1">Email dikelola oleh sistem Google Auth.</p>
-              </div>
-
-              <Button 
-                type="submit" 
-                disabled={updating}
-                className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs transition-all active:scale-[0.97] shadow-lg shadow-[#00AA5B]/10"
-              >
-                {updating ? "Menyimpan..." : "Simpan Perubahan"}
-              </Button>
-            </form>
-          </section>
-
-          {/* Security & System Section */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 px-1">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Sistem & Keamanan</h2>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-border/80 overflow-hidden shadow-sm">
-              {[
-                { label: "Keamanan Akun", icon: Shield, desc: "Verifikasi 2 langkah & kunci", badge: "Aman" },
-                { label: "Notifikasi", icon: Bell, desc: "Push, email, & pesan promo" },
-                { label: "Metode Pembayaran", icon: CreditCard, desc: "Kelola kartu & saldo digital" },
-                { label: "Privasi Akun", icon: Lock, desc: "Kontrol data & visibilitas" },
-              ].map((item, idx) => (
-                <button 
-                  key={idx}
-                  className="w-full px-5 py-4 flex items-center justify-between hover:bg-muted/30 transition-all border-b border-border/50 last:border-0 group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-xl bg-muted/50 flex items-center justify-center group-hover:bg-[#00AA5B]/10 transition-colors">
-                      <item.icon className="w-4.5 h-4.5 text-foreground/70 group-hover:text-[#00AA5B] transition-colors" />
-                    </div>
-                    <div className="text-left">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold text-foreground">{item.label}</p>
-                        {item.badge && <span className="text-[8px] bg-[#00AA5B]/10 text-[#00AA5B] px-1.5 py-0.5 rounded font-black uppercase">{item.badge}</span>}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground">{item.desc}</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-foreground transition-all" />
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* Support Section */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 px-1">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Dukungan</h2>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-border/80 overflow-hidden shadow-sm">
-              {[
-                { label: "Pusat Bantuan", icon: HelpCircle, desc: "FAQ & Hubungi Kami" },
-                { label: "Tentang MarketPoint", icon: Info, desc: "Ketentuan & Kebijakan Privasi" },
-              ].map((item, idx) => (
-                <button 
-                  key={idx}
-                  className="w-full px-5 py-4 flex items-center justify-between hover:bg-muted/30 transition-all border-b border-border/50 last:border-0 group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-xl bg-muted/50 flex items-center justify-center group-hover:bg-[#00AA5B]/10 transition-colors">
-                      <item.icon className="w-4.5 h-4.5 text-foreground/70 group-hover:text-[#00AA5B] transition-colors" />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-bold text-foreground">{item.label}</p>
-                      <p className="text-[10px] text-muted-foreground">{item.desc}</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-foreground transition-all" />
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <div className="pt-10 pb-4 flex flex-col items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-muted/30 flex items-center justify-center">
-              <Smartphone className="w-4 h-4 text-muted-foreground/40" />
-            </div>
-            <p className="text-[9px] text-muted-foreground/50 font-black uppercase tracking-[0.3em]">MarketPoint PRO v1.0.0</p>
+    <div className="min-h-screen bg-white flex flex-col font-body text-[#212121]">
+      <main className="flex-1 w-full pb-24 max-w-2xl mx-auto bg-white min-h-screen">
+        {/* Header */}
+        <div className="px-4 py-5 flex items-center justify-between bg-white sticky top-0 z-30">
+          <div className="flex items-center gap-4">
+            <Link href="/profile" className="p-1 hover:bg-muted rounded-full transition-colors">
+              <ChevronLeft className="w-6 h-6" />
+            </Link>
+            <h1 className="text-lg font-bold">Akun Saya</h1>
           </div>
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <Menu className="w-6 h-6" />
+          </Button>
         </div>
+
+        {/* User Identity Section */}
+        <section className="px-4 py-6 relative">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-20 w-20 border-none shadow-sm ring-2 ring-muted/20">
+                <AvatarImage src={user.photoURL || undefined} />
+                <AvatarFallback className="bg-[#FF9E8E] text-white text-3xl font-bold uppercase">
+                  {displayName.substring(0, 1) || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="space-y-0.5">
+                {isEditing ? (
+                  <div className="flex flex-col gap-2">
+                    <Input 
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="h-8 text-sm font-bold border-[#00AA5B]"
+                      autoFocus
+                    />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={handleUpdateProfile} disabled={updating} className="h-7 text-[10px] bg-[#00AA5B] hover:bg-[#00AA5B]/90">Simpan</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-7 text-[10px]">Batal</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <h2 className="text-xl font-bold text-[#2E3137]">{displayName || "Pengguna Baru"}</h2>
+                )}
+                <p className="text-xs text-[#6C727C]">6288976577650</p>
+                <p className="text-xs text-[#6C727C]">{user.email}</p>
+              </div>
+            </div>
+            {!isEditing && (
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="p-2 hover:bg-muted rounded-full border border-border shadow-sm transition-all"
+              >
+                <Pencil className="w-4 h-4 text-[#6C727C]" />
+              </button>
+            )}
+          </div>
+        </section>
+
+        {/* Membership Banner */}
+        <section className="px-4 pb-6">
+          <div className="border border-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-muted/30 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="bg-[#004B3D] text-white px-2 py-0.5 rounded text-[8px] font-black italic tracking-tighter">PLUS</div>
+              <div>
+                <p className="text-xs font-bold text-[#2E3137]">Nikmati Gratis Ongkir tanpa batas!</p>
+                <p className="text-[10px] text-[#6C727C]">Min. belanja Rp0, bebas biaya aplikasi--</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[#6C727C]" />
+          </div>
+        </section>
+
+        {/* Saldo & Points Card */}
+        <section className="px-4 pb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-[#2E3137]">Saldo & Points</h3>
+            <Link href="#" className="text-[11px] font-bold text-[#00AA5B]">Lihat Semua</Link>
+          </div>
+          <div className="grid grid-cols-3 gap-0 border border-border rounded-2xl overflow-hidden shadow-sm divide-x divide-border">
+            {[
+              { label: "GoPay & Coins", value: "Aktifkan", icon: Wallet, color: "text-[#00AED6]" },
+              { label: "MarketPoint Card", value: "Daftar", icon: CreditCard, color: "text-[#00AA5B]" },
+              { label: "Saldo MarketPoint", value: `Rp${wallet?.balance?.toLocaleString('id-ID') || 0}`, icon: Banknote, color: "text-[#00AA5B]" },
+            ].map((item, idx) => (
+              <div key={idx} className="flex flex-col items-center justify-center p-4 py-6 bg-white hover:bg-muted/10 transition-colors">
+                <item.icon className={cn("w-6 h-6 mb-3", item.color)} />
+                <span className={cn("text-xs font-bold mb-0.5", item.value.startsWith('Rp') ? 'text-[#2E3137]' : item.color)}>
+                  {item.value}
+                </span>
+                <span className="text-[9px] text-[#6C727C] text-center leading-tight">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Account Settings List */}
+        <section className="pb-8">
+          <h3 className="px-4 text-base font-bold text-[#2E3137] mb-2">Pengaturan Akun</h3>
+          <div className="divide-y divide-border/50">
+            {[
+              { title: "Daftar Alamat", desc: "Atur alamat pengiriman belanjaan", icon: MapPin },
+              { title: "Rekening Bank", desc: "Tarik Saldo MarketPoint ke rekening tujuan", icon: Landmark },
+              { title: "Pembayaran Instan", desc: "E-Wallet, kartu kredit, & debit instan terdaftar", icon: CreditCard },
+              { title: "Keamanan Akun", desc: "Kata sandi, PIN, & verifikasi data diri", icon: Shield },
+              { title: "Notifikasi", desc: "Atur segala jenis pesan notifikasi", icon: Bell },
+              { title: "Mode Tampilan", desc: "Aktifkan tampilan buta warna di MarketPoint", icon: Sun },
+            ].map((menu, idx) => (
+              <button 
+                key={idx}
+                className="w-full px-4 py-4 flex items-center gap-4 hover:bg-muted/30 transition-all text-left active:bg-muted/50"
+              >
+                <div className="bg-white rounded-lg flex items-center justify-center">
+                  <menu.icon className="w-6 h-6 text-[#2E3137]" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-[#2E3137]">{menu.title}</p>
+                  <p className="text-[11px] text-[#6C727C]">{menu.desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* App Settings Accordion */}
+        <section className="border-t border-border">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="app-settings" className="border-none">
+              <AccordionTrigger className="px-4 py-6 hover:no-underline font-bold text-base text-[#2E3137]">
+                Pengaturan Aplikasi
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-6 space-y-4">
+                <div className="flex items-center justify-between text-sm text-[#6C727C]">
+                  <span>Versi Aplikasi</span>
+                  <span className="font-medium">1.0.0 (Build 2026)</span>
+                </div>
+                <div className="flex items-center justify-between text-sm text-[#6C727C]">
+                  <span>Bahasa</span>
+                  <span className="font-medium">Bahasa Indonesia</span>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </section>
       </main>
 
       <MarketBottomNav />
