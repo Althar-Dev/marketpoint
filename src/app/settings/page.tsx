@@ -99,20 +99,27 @@ export default function SettingsPage() {
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
           <div className="px-4 py-1.5 flex items-center justify-between">
-            <Skeleton className="h-5 w-5 rounded-full" />
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-5 w-5 rounded-full" />
+            <Skeleton className="h-4 w-4 rounded-full" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-4 rounded-full" />
           </div>
-          <div className="px-4 py-4 space-y-6">
+          <div className="px-4 py-4 space-y-5">
             <div className="flex items-center gap-3">
-              <Skeleton className="h-16 w-16 rounded-full" />
-              <div className="space-y-1.5">
-                <Skeleton className="h-4 w-36" />
-                <Skeleton className="h-3 w-28" />
-                <Skeleton className="h-3 w-40" />
+              <Skeleton className="h-14 w-14 rounded-full" />
+              <div className="space-y-1">
+                <Skeleton className="h-3.5 w-32" />
+                <Skeleton className="h-2.5 w-24" />
+                <Skeleton className="h-2.5 w-36" />
               </div>
             </div>
-            <Skeleton className="h-28 w-full rounded-2xl" />
+            <div className="space-y-2 mt-4">
+              <Skeleton className="h-3 w-28 ml-1" />
+              <div className="space-y-1">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="h-12 w-full rounded-xl" />
+                ))}
+              </div>
+            </div>
           </div>
         </main>
         <MarketBottomNav />

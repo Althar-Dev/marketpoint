@@ -68,40 +68,40 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
           <div className="px-4 py-1.5 flex items-center justify-between">
-            <Skeleton className="h-5 w-16" />
-            <Skeleton className="h-7 w-7 rounded-full" />
+            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-6 w-6 rounded-full" />
           </div>
           
           <div className="px-4 py-2 flex items-center gap-3">
-            <Skeleton className="h-14 w-14 rounded-full" />
-            <div className="flex-1 space-y-1.5">
-              <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="flex-1 space-y-1">
+              <Skeleton className="h-3.5 w-24" />
               <div className="flex gap-2">
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-2.5 w-16" />
+                <Skeleton className="h-2.5 w-16" />
               </div>
             </div>
           </div>
 
-          <div className="px-4 py-3">
-            <Skeleton className="h-14 w-full rounded-xl" />
+          <div className="px-4 py-2">
+            <Skeleton className="h-12 w-full rounded-xl" />
           </div>
 
-          <div className="px-4 pb-4 grid grid-cols-2 gap-3">
-            <Skeleton className="h-9 w-full rounded-xl" />
-            <Skeleton className="h-9 w-full rounded-xl" />
+          <div className="px-4 pb-3 grid grid-cols-2 gap-3">
+            <Skeleton className="h-8 w-full rounded-xl" />
+            <Skeleton className="h-8 w-full rounded-xl" />
           </div>
 
-          <div className="h-2 bg-muted/30 w-full" />
+          <div className="h-1.5 bg-muted/20 w-full" />
           
-          <div className="py-1.5 space-y-0.5">
+          <div className="py-1 space-y-0.5">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="px-5 h-12 flex items-center justify-between">
+              <div key={i} className="px-5 h-11 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Skeleton className="h-4.5 w-4.5 rounded-md" />
-                  <Skeleton className="h-3.5 w-32" />
+                  <Skeleton className="h-4 w-4 rounded-md" />
+                  <Skeleton className="h-3 w-28" />
                 </div>
-                <Skeleton className="h-3.5 w-3.5" />
+                <Skeleton className="h-3 w-3" />
               </div>
             ))}
           </div>
