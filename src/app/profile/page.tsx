@@ -8,6 +8,7 @@ import { MarketFooter } from "@/components/market-footer";
 import { MarketBottomNav } from "@/components/market-bottom-nav";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Settings, 
@@ -37,7 +38,7 @@ export default function ProfilePage() {
     return doc(db, "users", user.uid, "wallet", "info");
   }, [db, user]);
 
-  const { data: wallet } = useDoc(walletRef);
+  const { data: wallet, loading: walletLoading } = useDoc(walletRef);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -62,18 +63,60 @@ export default function ProfilePage() {
     }
   };
 
-  if (authLoading || !user) {
+  if (authLoading || (user && walletLoading && !wallet)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+      <div className="min-h-screen bg-white flex flex-col font-body">
+        <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
+          <div className="px-4 py-4 flex items-center justify-between">
+            <Skeleton className="h-7 w-20" />
+            <Skeleton className="h-9 w-9 rounded-full" />
+          </div>
+          
+          <div className="px-4 py-2 flex items-center gap-4">
+            <Skeleton className="h-16 w-16 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-5 w-32" />
+              <div className="flex gap-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            </div>
+          </div>
+
+          <div className="px-4 py-4">
+            <Skeleton className="h-16 w-full rounded-xl" />
+          </div>
+
+          <div className="px-4 pb-6 grid grid-cols-2 gap-3">
+            <Skeleton className="h-10 w-full rounded-xl" />
+            <Skeleton className="h-10 w-full rounded-xl" />
+          </div>
+
+          <div className="h-2 bg-muted/30 w-full" />
+          
+          <div className="py-2 space-y-1">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="px-5 h-14 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-5 w-5 rounded-md" />
+                  <Skeleton className="h-4 w-40" />
+                </div>
+                <Skeleton className="h-4 w-4" />
+              </div>
+            ))}
+          </div>
+        </main>
+        <MarketBottomNav />
       </div>
     );
   }
 
+  if (!user) return null;
+
   return (
     <div className="min-h-screen bg-white flex flex-col font-body">
       <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
-        {/* Profile Header - Clean Top Bar */}
+        {/* Profile Header */}
         <div className="px-4 py-4 flex items-center justify-between bg-white sticky top-0 z-30">
           <h1 className="text-lg font-bold">Akun</h1>
           <button className="p-2 hover:bg-muted rounded-full transition-colors">
