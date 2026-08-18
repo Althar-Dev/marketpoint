@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from "@/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import { MarketBottomNav } from "@/components/market-bottom-nav";
@@ -20,18 +20,14 @@ import {
   CreditCard,
   Shield,
   Bell,
-  Sun
+  Sun,
+  LogOut
 } from "lucide-react";
 import Link from "next/link";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 export default function SettingsPage() {
   const { user, loading: authLoading } = useUser();
+  const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
@@ -81,14 +77,31 @@ export default function SettingsPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      toast({
+        title: "Berhasil Keluar",
+        description: "Sampai jumpa kembali di MarketPoint!",
+      });
+      router.push("/login");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Gagal Keluar",
+        description: "Terjadi gangguan pada sistem.",
+      });
+    }
+  };
+
   if (authLoading || (user && walletLoading && !wallet)) {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <Skeleton className="h-6 w-6 rounded-full" />
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-6 w-6 rounded-full" />
+          <div className="px-4 py-2 flex items-center justify-between">
+            <Skeleton className="h-5 w-5 rounded-full" />
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-5 w-5 rounded-full" />
           </div>
           <div className="px-4 py-6 space-y-8">
             <div className="flex items-center gap-4">
@@ -168,7 +181,7 @@ export default function SettingsPage() {
         </section>
 
         {/* Account Settings List */}
-        <section className="pb-8">
+        <section className="pb-4">
           <h3 className="px-4 text-base font-bold text-[#2E3137] mb-2">Pengaturan Akun</h3>
           <div className="divide-y divide-border/50">
             {[
@@ -195,25 +208,20 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* App Settings Accordion */}
-        <section className="border-t border-border">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="app-settings" className="border-none">
-              <AccordionTrigger className="px-4 py-4 hover:no-underline font-bold text-base text-[#2E3137]">
-                Pengaturan Aplikasi
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-6 space-y-4">
-                <div className="flex items-center justify-between text-sm text-[#6C727C]">
-                  <span>Versi Aplikasi</span>
-                  <span className="font-medium">1.0.0 (Build 2026)</span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-[#6C727C]">
-                  <span>Bahasa</span>
-                  <span className="font-medium">Bahasa Indonesia</span>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+        {/* Logout Section */}
+        <section className="border-t border-border mt-4">
+          <button 
+            onClick={handleLogout}
+            className="w-full px-4 py-5 flex items-center gap-4 hover:bg-destructive/5 transition-all text-left active:bg-destructive/10"
+          >
+            <div className="bg-white rounded-lg flex items-center justify-center">
+              <LogOut className="w-6 h-6 text-destructive" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-destructive">Keluar Akun</p>
+              <p className="text-[11px] text-muted-foreground">Keluar dari sesi MarketPoint saat ini</p>
+            </div>
+          </button>
         </section>
       </main>
 
