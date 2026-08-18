@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc, useAuth, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
-import { MarketFooter } from "@/components/market-footer";
 import { MarketBottomNav } from "@/components/market-bottom-nav";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -230,7 +229,6 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      <MarketFooter />
       <MarketBottomNav />
     </div>
   );
