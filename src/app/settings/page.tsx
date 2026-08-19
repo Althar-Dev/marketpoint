@@ -7,6 +7,8 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from "@/fireb
 import { doc, updateDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import { MarketBottomNav } from "@/components/market-bottom-nav";
+import { MarketHeader } from "@/components/market-header";
+import { MarketFooter } from "@/components/market-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -150,20 +152,26 @@ export default function SettingsPage() {
   // Render Desktop View
   if (!isMobile) {
     return (
-      <DesktopSettings 
-        user={user}
-        displayName={displayName}
-        setDisplayName={setDisplayName}
-        isEditing={isEditing}
-        setIsEditing={setIsEditing}
-        handleUpdateProfile={handleUpdateProfile}
-        handleLogout={handleLogout}
-        updating={updating}
-      />
+      <div className="flex flex-col min-h-screen">
+        <MarketHeader />
+        <main className="flex-1 pt-16 bg-[#F8FAFC]">
+          <DesktopSettings 
+            user={user}
+            displayName={displayName}
+            setDisplayName={setDisplayName}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            handleUpdateProfile={handleUpdateProfile}
+            handleLogout={handleLogout}
+            updating={updating}
+          />
+        </main>
+        <MarketFooter />
+      </div>
     );
   }
 
-  // Render Mobile View (Existing)
+  // Render Mobile View
   return (
     <div className="min-h-screen bg-white flex flex-col font-body text-[#212121]">
       <main className="flex-1 w-full pb-24 max-w-2xl mx-auto bg-white min-h-screen">

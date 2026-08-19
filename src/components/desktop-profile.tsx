@@ -43,9 +43,9 @@ export function DesktopProfile({ user, wallet, handleLogout }: DesktopProfilePro
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-body text-[#1E293B]">
+    <div className="bg-[#F8FAFC] font-body text-[#1E293B]">
       <div className="max-w-screen-xl mx-auto flex gap-6 p-8">
-        {/* Sidebar Nav - Professional Width */}
+        {/* Sidebar Nav */}
         <aside className="w-60 shrink-0 space-y-6">
           <div className="flex items-center gap-3 px-2">
             <Avatar className="h-10 w-10 ring-1 ring-border">
@@ -92,10 +92,9 @@ export function DesktopProfile({ user, wallet, handleLogout }: DesktopProfilePro
           </div>
         </aside>
 
-        {/* Main Dashboard - Precise Grid */}
+        {/* Main Dashboard */}
         <main className="flex-1 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Identity - Clean & Neat */}
             <Card className="lg:col-span-2 border border-border/50 shadow-sm bg-white rounded-xl">
               <CardContent className="p-6 flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -126,7 +125,6 @@ export function DesktopProfile({ user, wallet, handleLogout }: DesktopProfilePro
               </CardContent>
             </Card>
 
-            {/* Wallet Card - Professional & Not Tacky */}
             <Card className="border border-border/50 shadow-sm bg-[#1E293B] text-white rounded-xl">
               <CardContent className="p-6 flex flex-col justify-between h-full">
                 <div>
@@ -147,7 +145,6 @@ export function DesktopProfile({ user, wallet, handleLogout }: DesktopProfilePro
             </Card>
           </div>
 
-          {/* Service Grid - Adjusted Size */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: "Buka Toko", desc: "Mulai Jualan", icon: Store, color: "text-blue-600", bg: "bg-blue-50" },
@@ -167,7 +164,6 @@ export function DesktopProfile({ user, wallet, handleLogout }: DesktopProfilePro
             ))}
           </div>
 
-          {/* Activity Section - Neat List */}
           <Card className="border border-border/50 shadow-sm bg-white rounded-xl">
             <div className="p-4 border-b border-border/50 flex items-center justify-between">
               <h3 className="text-[13px] font-bold text-[#0F172A]">Aktivitas Terakhir</h3>

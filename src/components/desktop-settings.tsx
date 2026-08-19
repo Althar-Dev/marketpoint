@@ -58,9 +58,9 @@ export function DesktopSettings({
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-body text-[#1E293B]">
+    <div className="bg-[#F8FAFC] font-body text-[#1E293B]">
       <div className="max-w-screen-xl mx-auto p-8 space-y-6">
-        {/* Nav Header - Refined */}
+        {/* Nav Header */}
         <div className="flex items-center justify-between border-b border-border/50 pb-6">
           <div className="flex items-center gap-4">
             <Button asChild variant="ghost" className="h-8 w-8 p-0 rounded-lg hover:bg-white border border-border/30">
@@ -80,7 +80,7 @@ export function DesktopSettings({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Main Card - Adjusted Sizes */}
+          {/* Main Card */}
           <Card className="lg:col-span-8 border border-border/50 shadow-sm bg-white rounded-xl">
             <div className="p-6 border-b border-border/50 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -159,7 +159,6 @@ export function DesktopSettings({
                 </div>
               </div>
 
-              {/* Service Config List */}
               <div className="pt-8 border-t border-border/50 space-y-4">
                 <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Konfigurasi</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -185,7 +184,6 @@ export function DesktopSettings({
             </CardContent>
           </Card>
 
-          {/* Sidebar Auxiliary Card - Adjusted */}
           <aside className="lg:col-span-4 space-y-6">
             <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden">
               <div className="p-4 border-b border-border/50">
