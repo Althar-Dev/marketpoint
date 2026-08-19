@@ -4,7 +4,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { 
   User, 
   MapPinned, 
@@ -49,135 +49,135 @@ export function DesktopSettings({
   updating
 }: DesktopSettingsProps) {
   const settingsMenu = [
-    { title: "Manajemen Alamat", desc: "Atur alamat pengiriman prioritas Anda", icon: MapPinned },
-    { title: "Rekening & Saldo", desc: "Kelola penarikan dana ke rekening bank", icon: Building2 },
-    { title: "Metode Pembayaran", desc: "Kartu kredit, debit, dan e-wallet aktif", icon: CreditCard },
-    { title: "Keamanan & Privasi", desc: "Autentikasi dua faktor dan enkripsi data", icon: Shield },
-    { title: "Preferensi Notifikasi", desc: "Personalisasi pemberitahuan transaksi", icon: Bell },
-    { title: "Pengaturan Tampilan", desc: "Kustomisasi tema dan aksesibilitas visual", icon: Sun },
+    { title: "Manajemen Alamat", desc: "Atur alamat pengiriman prioritas", icon: MapPinned },
+    { title: "Rekening & Saldo", desc: "Kelola penarikan dana bank", icon: Building2 },
+    { title: "Metode Pembayaran", desc: "Kartu kredit & e-wallet aktif", icon: CreditCard },
+    { title: "Keamanan & Privasi", desc: "Autentikasi & enkripsi data", icon: Shield },
+    { title: "Preferensi Notifikasi", desc: "Personalisasi pemberitahuan", icon: Bell },
+    { title: "Pengaturan Tampilan", desc: "Kustomisasi tema & visual", icon: Sun },
   ];
 
   return (
-    <div className="min-h-screen bg-[#F4F7F9] font-body text-[#212121]">
-      <div className="max-w-screen-xl mx-auto p-10 space-y-10">
-        {/* Navigation Header */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-[#F8FAFC] font-body text-[#1E293B]">
+      <div className="max-w-screen-xl mx-auto p-8 space-y-6">
+        {/* Nav Header - Refined */}
+        <div className="flex items-center justify-between border-b border-border/50 pb-6">
           <div className="flex items-center gap-4">
-            <Button asChild variant="ghost" className="rounded-2xl h-12 w-12 p-0 hover:bg-white shadow-sm border border-border/20 transition-all">
+            <Button asChild variant="ghost" className="h-8 w-8 p-0 rounded-lg hover:bg-white border border-border/30">
               <Link href="/profile">
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="w-4 h-4" />
               </Link>
             </Button>
-            <div className="space-y-0.5">
-              <h1 className="text-3xl font-black font-headline tracking-tighter">Pengaturan Akun</h1>
-              <p className="text-xs text-[#6C727C] font-bold uppercase tracking-[0.2em]">Personalisasi & Keamanan</p>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight">Pengaturan Akun</h1>
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Informasi Personal & Keamanan</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-border/40 shadow-sm">
-            <CheckCircle2 className="w-4 h-4 text-[#00AA5B]" />
-            <span className="text-[11px] font-black tracking-widest uppercase">Verified Account</span>
+          <div className="bg-white border border-[#00AA5B]/20 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-sm">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#00AA5B]" />
+            <span className="text-[10px] font-bold text-[#00AA5B] uppercase tracking-wider">Akun Terverifikasi</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* Main Configuration Card */}
-          <Card className="lg:col-span-8 border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
-            <CardHeader className="p-10 pb-0 flex flex-row items-center justify-between">
-              <CardTitle className="text-xl font-black font-headline tracking-tight flex items-center gap-3">
-                <User className="w-5 h-5 text-[#00AA5B]" /> Data Identitas
-              </CardTitle>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Main Card - Adjusted Sizes */}
+          <Card className="lg:col-span-8 border border-border/50 shadow-sm bg-white rounded-xl">
+            <div className="p-6 border-b border-border/50 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <User className="w-4 h-4 text-[#00AA5B]" />
+                <h3 className="text-[13px] font-bold">Data Identitas</h3>
+              </div>
               {!isEditing && (
-                <Button onClick={() => setIsEditing(true)} variant="outline" className="rounded-xl h-10 px-6 font-black text-xs border-border/60 hover:bg-[#F4F7F9] transition-all">
+                <Button onClick={() => setIsEditing(true)} variant="outline" className="h-8 px-4 text-[11px] font-bold rounded-lg border-border/60">
                   UBAH DATA
                 </Button>
               )}
-            </CardHeader>
-            <CardContent className="p-10 space-y-12">
-              <div className="flex flex-col md:flex-row items-start gap-12">
-                <div className="relative group">
-                  <Avatar className="h-40 w-40 border-[8px] border-[#F4F7F9] shadow-2xl transition-transform group-hover:scale-105 duration-500">
+            </div>
+            
+            <CardContent className="p-8 space-y-10">
+              <div className="flex flex-col md:flex-row gap-10">
+                <div className="relative group shrink-0">
+                  <Avatar className="h-32 w-32 ring-4 ring-[#F8FAFC] transition-transform group-hover:scale-[1.02]">
                     <AvatarImage src={user.photoURL || undefined} />
-                    <AvatarFallback className="bg-[#00AA5B] text-white text-5xl font-black uppercase">
+                    <AvatarFallback className="bg-[#00AA5B] text-white text-4xl font-bold uppercase">
                       {displayName.substring(0, 1) || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <button className="absolute bottom-2 right-2 bg-white h-12 w-12 rounded-2xl flex items-center justify-center shadow-xl border border-border hover:bg-[#F4F7F9] transition-all">
-                    <Camera className="w-5 h-5" />
+                  <button className="absolute bottom-1 right-1 bg-white h-9 w-9 rounded-lg flex items-center justify-center shadow-lg border border-border hover:bg-[#F8FAFC]">
+                    <Camera className="w-4 h-4" />
                   </button>
                 </div>
 
-                <div className="flex-1 w-full space-y-8">
-                  <div className="grid grid-cols-1 gap-8">
-                    <div className="space-y-2.5">
-                      <label className="text-[10px] font-black text-[#6C727C] uppercase tracking-[0.3em] ml-1">Nama Lengkap Anda</label>
-                      <div className="relative group">
-                        <Input 
-                          value={displayName}
-                          onChange={(e) => setDisplayName(e.target.value)}
-                          disabled={!isEditing}
-                          className={cn(
-                            "h-14 rounded-2xl font-black text-base px-6 transition-all duration-300",
-                            isEditing 
-                              ? "border-[#00AA5B] ring-4 ring-[#00AA5B]/5 bg-white" 
-                              : "border-transparent bg-[#F4F7F9] text-[#212121]/70"
-                          )}
-                        />
-                        {isEditing && (
-                          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
-                            <Button onClick={handleUpdateProfile} disabled={updating} className="h-9 px-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-xs rounded-xl shadow-lg shadow-[#00AA5B]/20">SIMPAN</Button>
-                            <Button onClick={() => setIsEditing(false)} variant="ghost" className="h-9 px-4 font-black text-xs rounded-xl">BATAL</Button>
-                          </div>
+                <div className="flex-1 space-y-6">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Nama Lengkap</label>
+                    <div className="relative">
+                      <Input 
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        disabled={!isEditing}
+                        className={cn(
+                          "h-10 text-[13px] font-bold px-4 rounded-lg transition-all",
+                          isEditing 
+                            ? "border-[#00AA5B] ring-2 ring-[#00AA5B]/5 bg-white" 
+                            : "border-transparent bg-[#F8FAFC] text-foreground/70"
                         )}
+                      />
+                      {isEditing && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                          <Button onClick={handleUpdateProfile} disabled={updating} size="sm" className="h-7 px-3 bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-[10px] font-bold rounded-md">SIMPAN</Button>
+                          <Button onClick={() => setIsEditing(false)} variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-bold rounded-md">BATAL</Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Email</label>
+                      <div className="relative">
+                        <Input 
+                          value={user.email} 
+                          readOnly 
+                          className="h-10 text-[12px] px-4 rounded-lg border-transparent bg-[#F8FAFC] text-foreground/40 font-semibold cursor-not-allowed"
+                        />
+                        <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-20" />
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-2.5">
-                        <label className="text-[10px] font-black text-[#6C727C] uppercase tracking-[0.3em] ml-1">E-mail Terdaftar</label>
-                        <div className="relative group">
-                          <Input 
-                            value={user.email} 
-                            readOnly 
-                            className="h-14 rounded-2xl border-transparent bg-[#F4F7F9] font-bold text-sm px-6 text-[#212121]/50 cursor-not-allowed"
-                          />
-                          <Mail className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6C727C] opacity-30" />
-                        </div>
-                      </div>
-                      <div className="space-y-2.5">
-                        <label className="text-[10px] font-black text-[#6C727C] uppercase tracking-[0.3em] ml-1">Nomor Seluler</label>
-                        <div className="relative group">
-                          <Input 
-                            value="6288976577650" 
-                            readOnly 
-                            className="h-14 rounded-2xl border-transparent bg-[#F4F7F9] font-bold text-sm px-6 text-[#212121]/50 cursor-not-allowed"
-                          />
-                          <Phone className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6C727C] opacity-30" />
-                        </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Telepon</label>
+                      <div className="relative">
+                        <Input 
+                          value="6288976577650" 
+                          readOnly 
+                          className="h-10 text-[12px] px-4 rounded-lg border-transparent bg-[#F8FAFC] text-foreground/40 font-semibold cursor-not-allowed"
+                        />
+                        <Phone className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-20" />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Account Services List */}
-              <div className="pt-10 border-t border-border/40 space-y-6">
-                <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#6C727C] ml-1">Konfigurasi Layanan</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Service Config List */}
+              <div className="pt-8 border-t border-border/50 space-y-4">
+                <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Konfigurasi</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {settingsMenu.map((menu, idx) => (
                     <button 
                       key={idx}
-                      className="group p-6 rounded-[24px] border border-border/40 hover:border-[#00AA5B]/30 hover:bg-[#00AA5B]/5 transition-all flex items-center justify-between text-left"
+                      className="group p-4 rounded-xl border border-border/50 hover:border-[#00AA5B]/30 hover:bg-[#F8FAFC] transition-all flex items-center justify-between text-left"
                     >
-                      <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-2xl bg-[#F4F7F9] flex items-center justify-center group-hover:bg-[#00AA5B] group-hover:text-white transition-all duration-300">
-                          <menu.icon className="w-6 h-6 transition-transform group-hover:scale-110" />
+                      <div className="flex items-center gap-4">
+                        <div className="w-9 h-9 rounded-lg bg-[#F8FAFC] flex items-center justify-center group-hover:bg-[#00AA5B] group-hover:text-white transition-all">
+                          <menu.icon className="w-4.5 h-4.5" />
                         </div>
                         <div>
-                          <p className="text-sm font-black tracking-tight">{menu.title}</p>
-                          <p className="text-[10px] text-[#6C727C] font-medium group-hover:text-[#212121] transition-colors">{menu.desc}</p>
+                          <p className="text-[12px] font-bold">{menu.title}</p>
+                          <p className="text-[10px] text-muted-foreground group-hover:text-foreground/70">{menu.desc}</p>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-[#6C727C] opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                     </button>
                   ))}
                 </div>
@@ -185,40 +185,40 @@ export function DesktopSettings({
             </CardContent>
           </Card>
 
-          {/* Sidebar Auxiliary Card */}
-          <aside className="lg:col-span-4 space-y-8">
-            <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
-              <CardHeader className="p-8 pb-4">
-                <CardTitle className="text-[11px] font-black uppercase tracking-[0.4em] text-[#6C727C]">Legal & Support</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0 space-y-2">
+          {/* Sidebar Auxiliary Card - Adjusted */}
+          <aside className="lg:col-span-4 space-y-6">
+            <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden">
+              <div className="p-4 border-b border-border/50">
+                <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Bantuan & Legal</h4>
+              </div>
+              <div className="p-1.5 space-y-1">
                 {[
-                  { title: "Mengenai MarketPoint", icon: Info },
-                  { title: "Syarat & Ketentuan Layanan", icon: FileText },
-                  { title: "Kebijakan Privasi Global", icon: Lock },
+                  { title: "Mengenai Kami", icon: Info },
+                  { title: "Syarat & Ketentuan", icon: FileText },
+                  { title: "Kebijakan Privasi", icon: Lock },
                 ].map((item, idx) => (
-                  <button key={idx} className="w-full flex items-center justify-between px-6 py-4 rounded-2xl hover:bg-[#F4F7F9] transition-all group">
-                    <div className="flex items-center gap-4">
-                      <item.icon className="w-4.5 h-4.5 text-[#6C727C] group-hover:text-[#212121] transition-colors" />
-                      <span className="text-xs font-black tracking-tight">{item.title}</span>
+                  <button key={idx} className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-[#F8FAFC] transition-all group">
+                    <div className="flex items-center gap-3">
+                      <item.icon className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+                      <span className="text-[12px] font-bold">{item.title}</span>
                     </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-[#6C727C] opacity-20 group-hover:opacity-50" />
+                    <ChevronRight className="w-3 h-3 text-muted-foreground opacity-20 group-hover:opacity-50" />
                   </button>
                 ))}
-              </CardContent>
+              </div>
             </Card>
 
-            <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-[#00AA5B]/5 border border-[#00AA5B]/10">
-              <CardContent className="p-8 space-y-4">
-                <div className="w-12 h-12 bg-[#00AA5B] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[#00AA5B]/20">
-                  <Shield className="w-6 h-6" />
+            <Card className="border-none shadow-sm bg-[#00AA5B]/5 border border-[#00AA5B]/10 rounded-xl">
+              <CardContent className="p-6 space-y-4">
+                <div className="w-10 h-10 bg-[#00AA5B] rounded-lg flex items-center justify-center text-white">
+                  <Shield className="w-5 h-5" />
                 </div>
-                <div className="space-y-1">
-                  <h4 className="font-black tracking-tight">Butuh Bantuan?</h4>
-                  <p className="text-xs text-[#6C727C] font-medium leading-relaxed">Tim ahli kami siap membantu Anda 24/7 untuk masalah teknis atau akun.</p>
+                <div>
+                  <h4 className="text-[13px] font-bold">MarketPoint Care</h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">Butuh bantuan teknis? Tim kami siap melayani Anda 24/7.</p>
                 </div>
-                <Button className="w-full bg-[#212121] hover:bg-[#000] text-white rounded-xl h-11 font-black text-[10px] tracking-widest uppercase">
-                   HUBUNGI CARE
+                <Button className="w-full bg-[#1E293B] hover:bg-black text-white rounded-lg h-9 text-[10px] font-bold tracking-wider uppercase">
+                   HUBUNGI KAMI
                 </Button>
               </CardContent>
             </Card>
@@ -226,9 +226,9 @@ export function DesktopSettings({
             <Button 
               onClick={handleLogout}
               variant="outline"
-              className="w-full h-14 rounded-[28px] border-destructive/20 text-destructive hover:bg-destructive/5 font-black text-xs tracking-[0.2em] uppercase transition-all active:scale-95 flex items-center gap-3 shadow-sm"
+              className="w-full h-10 rounded-lg border-destructive/20 text-destructive hover:bg-destructive/5 text-[11px] font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-3 shadow-sm"
             >
-              <LogOut className="w-5 h-5" /> KELUAR AKUN
+              <LogOut className="w-4 h-4" /> KELUAR AKUN
             </Button>
           </aside>
         </div>
