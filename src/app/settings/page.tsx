@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { DesktopSettings } from "@/components/desktop-settings";
 import { 
   ChevronLeft, 
   Menu,
@@ -40,6 +43,8 @@ export default function SettingsPage() {
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
 
   const [displayName, setDisplayName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -53,6 +58,7 @@ export default function SettingsPage() {
   const { data: wallet, loading: walletLoading } = useDoc(walletRef);
 
   useEffect(() => {
+    setMounted(true);
     if (!authLoading && !user) {
       router.push("/login");
     } else if (user) {
@@ -103,7 +109,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (authLoading || (user && walletLoading && !wallet)) {
+  if (!mounted || authLoading || (user && walletLoading && !wallet)) {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
@@ -121,19 +127,16 @@ export default function SettingsPage() {
                 <Skeleton className="h-2 w-32" />
               </div>
             </div>
-            <div className="space-y-3 mt-4">
-              <Skeleton className="h-3 w-24 ml-1" />
-              <div className="space-y-2">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <div key={i} className="flex gap-4 items-center h-10 px-1">
-                    <Skeleton className="h-5 w-5 rounded-md" />
-                    <div className="flex-1 space-y-1">
-                      <Skeleton className="h-3 w-32" />
-                      <Skeleton className="h-2 w-48" />
-                    </div>
+            <div className="space-y-2 mt-4">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="flex gap-4 items-center h-10 px-1">
+                  <Skeleton className="h-5 w-5 rounded-md" />
+                  <div className="flex-1 space-y-1">
+                    <Skeleton className="h-3 w-32" />
+                    <Skeleton className="h-2 w-48" />
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         </main>
@@ -144,6 +147,23 @@ export default function SettingsPage() {
 
   if (!user) return null;
 
+  // Render Desktop View
+  if (!isMobile) {
+    return (
+      <DesktopSettings 
+        user={user}
+        displayName={displayName}
+        setDisplayName={setDisplayName}
+        isEditing={isEditing}
+        setIsEditing={setIsEditing}
+        handleUpdateProfile={handleUpdateProfile}
+        handleLogout={handleLogout}
+        updating={updating}
+      />
+    );
+  }
+
+  // Render Mobile View (Existing)
   return (
     <div className="min-h-screen bg-white flex flex-col font-body text-[#212121]">
       <main className="flex-1 w-full pb-24 max-w-2xl mx-auto bg-white min-h-screen">
@@ -161,7 +181,7 @@ export default function SettingsPage() {
         </div>
 
         {/* User Identity Section */}
-        <section className="px-4 py-4 relative">
+        <section className="px-4 py-3 relative">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="h-14 w-14 border-none shadow-sm ring-2 ring-muted/20">
@@ -185,7 +205,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 ) : (
-                  <h2 className="text-[15px] font-bold text-[#2E3137]">{displayName || "Pengguna Baru"}</h2>
+                  <h2 className="text-[14px] font-bold text-[#2E3137]">{displayName || "Pengguna Baru"}</h2>
                 )}
                 <p className="text-[10px] text-[#6C727C]">6288976577650</p>
                 <p className="text-[10px] text-[#6C727C]">{user.email}</p>
@@ -203,8 +223,8 @@ export default function SettingsPage() {
         </section>
 
         {/* Account Settings List */}
-        <section className="pb-2">
-          <h3 className="px-4 text-[12px] font-bold text-[#2E3137] mb-2">Pengaturan Akun</h3>
+        <section className="pb-1">
+          <h3 className="px-4 text-[11px] font-bold text-[#2E3137] mb-2">Pengaturan Akun</h3>
           <div className="divide-y divide-border/50">
             {[
               { title: "Daftar Alamat", desc: "Atur alamat pengiriman belanjaan", icon: MapPinned },
@@ -216,14 +236,14 @@ export default function SettingsPage() {
             ].map((menu, idx) => (
               <button 
                 key={idx}
-                className="w-full px-5 py-3 flex items-center gap-4 hover:bg-muted/30 transition-all text-left active:bg-muted/50 group"
+                className="w-full px-5 py-2.5 flex items-center gap-4 hover:bg-muted/30 transition-all text-left active:bg-muted/50 group"
               >
                 <div className="flex-shrink-0">
-                  <menu.icon className="w-5 h-5 text-[#2E3137] opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <menu.icon className="w-4.5 h-4.5 text-[#2E3137] opacity-80 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-bold text-[#2E3137] leading-tight">{menu.title}</p>
-                  <p className="text-[10px] text-[#6C727C] mt-0.5">{menu.desc}</p>
+                  <p className="text-[12px] font-bold text-[#2E3137] leading-tight">{menu.title}</p>
+                  <p className="text-[9px] text-[#6C727C] mt-0.5">{menu.desc}</p>
                 </div>
               </button>
             ))}
@@ -231,13 +251,13 @@ export default function SettingsPage() {
         </section>
 
         {/* Seputar MarketPoint Dropdown */}
-        <section className="border-t border-border mt-2 px-4">
+        <section className="border-t border-border mt-1 px-4">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="seputar" className="border-none">
-              <AccordionTrigger className="hover:no-underline py-3.5 text-[12px] font-bold text-[#2E3137] focus:outline-none">
+              <AccordionTrigger className="hover:no-underline py-3 text-[11px] font-bold text-[#2E3137] focus:outline-none">
                 Seputar MarketPoint
               </AccordionTrigger>
-              <AccordionContent className="pt-0 pb-3">
+              <AccordionContent className="pt-0 pb-2">
                 <div className="space-y-0.5">
                   {[
                     { title: "Kenali MarketPoint", icon: Info, href: "/about" },
@@ -247,10 +267,10 @@ export default function SettingsPage() {
                     <Link 
                       key={idx}
                       href={item.href}
-                      className="flex items-center gap-4 py-2.5 px-1 hover:bg-muted/30 transition-all text-left active:bg-muted/50 rounded-lg group"
+                      className="flex items-center gap-4 py-2 px-1 hover:bg-muted/30 transition-all text-left active:bg-muted/50 rounded-lg group"
                     >
-                      <item.icon className="w-4 h-4 text-[#6C727C] group-hover:text-primary transition-colors" />
-                      <span className="text-[13px] font-medium text-[#2E3137]">{item.title}</span>
+                      <item.icon className="w-3.5 h-3.5 text-[#6C727C] group-hover:text-primary transition-colors" />
+                      <span className="text-[12px] font-medium text-[#2E3137]">{item.title}</span>
                     </Link>
                   ))}
                 </div>
@@ -260,17 +280,17 @@ export default function SettingsPage() {
         </section>
 
         {/* Logout Section */}
-        <section className="border-t border-border mt-1">
+        <section className="border-t border-border mt-0.5">
           <button 
             onClick={handleLogout}
-            className="w-full px-5 py-3.5 flex items-center gap-4 hover:bg-destructive/5 transition-all text-left active:bg-destructive/10"
+            className="w-full px-5 py-3 flex items-center gap-4 hover:bg-destructive/5 transition-all text-left active:bg-destructive/10"
           >
             <div className="flex-shrink-0">
-              <LogOut className="w-5 h-5 text-destructive opacity-80" />
+              <LogOut className="w-4.5 h-4.5 text-destructive opacity-80" />
             </div>
             <div className="flex-1">
-              <p className="text-[13px] font-bold text-destructive leading-tight">Keluar Akun</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Keluar dari sesi MarketPoint saat ini</p>
+              <p className="text-[12px] font-bold text-destructive leading-tight">Keluar Akun</p>
+              <p className="text-[9px] text-muted-foreground mt-0.5">Keluar dari sesi MarketPoint saat ini</p>
             </div>
           </button>
         </section>

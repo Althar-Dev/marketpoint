@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { DesktopProfile } from "@/components/desktop-profile";
 import Link from "next/link";
 import { 
   Settings, 
@@ -32,6 +35,8 @@ export default function ProfilePage() {
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
   
   const walletRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -41,6 +46,7 @@ export default function ProfilePage() {
   const { data: wallet, loading: walletLoading } = useDoc(walletRef);
 
   useEffect(() => {
+    setMounted(true);
     if (!authLoading && !user) {
       router.push("/login");
     }
@@ -63,7 +69,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (authLoading || (user && walletLoading && !wallet)) {
+  if (!mounted || authLoading || (user && walletLoading && !wallet)) {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
@@ -71,7 +77,6 @@ export default function ProfilePage() {
             <Skeleton className="h-4 w-12" />
             <Skeleton className="h-6 w-6 rounded-full" />
           </div>
-          
           <div className="px-4 py-2 flex items-center gap-3">
             <Skeleton className="h-12 w-12 rounded-full" />
             <div className="flex-1 space-y-1">
@@ -82,18 +87,14 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-
           <div className="px-4 py-2">
-            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-10 w-full rounded-xl" />
           </div>
-
           <div className="px-4 pb-3 grid grid-cols-2 gap-3">
             <Skeleton className="h-8 w-full rounded-xl" />
             <Skeleton className="h-8 w-full rounded-xl" />
           </div>
-
           <div className="h-1.5 bg-muted/20 w-full" />
-          
           <div className="py-1 space-y-0.5">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="px-5 h-11 flex items-center justify-between">
@@ -113,6 +114,12 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
+  // Render Desktop View
+  if (!isMobile) {
+    return <DesktopProfile user={user} wallet={wallet} handleLogout={handleLogout} />;
+  }
+
+  // Render Mobile View (Existing)
   return (
     <div className="min-h-screen bg-white flex flex-col font-body">
       <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
@@ -155,8 +162,8 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Plus Banner */}
-        <div className="px-4 py-3">
+        {/* Action Banners */}
+        <div className="px-4 py-2">
           <div className="bg-white border border-border rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-muted/30 transition-all shadow-sm">
             <div className="flex items-center gap-2.5">
               <div className="bg-[#00AA5B]/10 px-1.5 py-0.5 rounded-md">
@@ -164,24 +171,23 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-[11px] font-bold">Gabung MarketPoint Plus!</p>
-                <p className="text-[9px] text-muted-foreground">Bebas biaya aplikasi & gratis ongkir sepuasnya.</p>
+                <p className="text-[9px] text-muted-foreground">Bebas biaya aplikasi & gratis ongkir.</p>
               </div>
             </div>
             <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="px-4 pb-4 grid grid-cols-2 gap-3">
-          <Button variant="outline" className="h-9 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
+        <div className="px-4 pb-3 grid grid-cols-2 gap-3">
+          <Button variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
             Buka Toko Gratis <ChevronRight className="w-3 h-3 opacity-40" />
           </Button>
-          <Button variant="outline" className="h-9 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
+          <Button variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
             Daftar Affiliate <ChevronRight className="w-3 h-3 opacity-40" />
           </Button>
         </div>
 
-        <div className="h-2 bg-muted/30 w-full" />
+        <div className="h-1.5 bg-muted/20 w-full" />
 
         {/* Menu Groups */}
         <div className="py-1">
@@ -194,10 +200,10 @@ export default function ProfilePage() {
           ].map((item, idx) => (
             <button 
               key={idx}
-              className="w-full px-5 h-12 flex items-center justify-between hover:bg-muted/30 transition-all active:bg-muted/50"
+              className="w-full px-5 h-11 flex items-center justify-between hover:bg-muted/30 transition-all active:bg-muted/50"
             >
-              <div className="flex items-center gap-3.5">
-                <item.icon className="w-4.5 h-4.5 text-foreground opacity-70" />
+              <div className="flex items-center gap-3">
+                <item.icon className="w-4 h-4 text-foreground opacity-70" />
                 <span className="text-sm font-medium">{item.label}</span>
               </div>
               <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-30" />
@@ -205,7 +211,7 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        <div className="h-2 bg-muted/30 w-full" />
+        <div className="h-1.5 bg-muted/20 w-full" />
 
         <div className="py-1">
           {[
@@ -217,10 +223,10 @@ export default function ProfilePage() {
             <button 
               key={idx}
               onClick={item.onClick}
-              className="w-full px-5 h-12 flex items-center justify-between hover:bg-muted/30 transition-all active:bg-muted/50"
+              className="w-full px-5 h-11 flex items-center justify-between hover:bg-muted/30 transition-all active:bg-muted/50"
             >
-              <div className="flex items-center gap-3.5">
-                <item.icon className={`w-4.5 h-4.5 ${item.color || 'text-foreground'} opacity-70`} />
+              <div className="flex items-center gap-3">
+                <item.icon className={`w-4 h-4 ${item.color || 'text-foreground'} opacity-70`} />
                 <span className={`text-sm font-medium ${item.color || 'text-foreground'}`}>{item.label}</span>
               </div>
               {!item.onClick && <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-30" />}
