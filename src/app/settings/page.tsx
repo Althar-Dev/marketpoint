@@ -15,8 +15,8 @@ import {
   ChevronLeft, 
   Menu,
   Pencil,
-  MapPin,
-  Landmark,
+  MapPinned,
+  Building2,
   CreditCard,
   Shield,
   Bell,
@@ -112,7 +112,7 @@ export default function SettingsPage() {
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-4 w-4 rounded-full" />
           </div>
-          <div className="px-4 py-4 space-y-5">
+          <div className="px-4 py-3 space-y-4">
             <div className="flex items-center gap-3">
               <Skeleton className="h-12 w-12 rounded-full" />
               <div className="space-y-1">
@@ -121,13 +121,13 @@ export default function SettingsPage() {
                 <Skeleton className="h-2 w-32" />
               </div>
             </div>
-            <div className="space-y-4 mt-4">
+            <div className="space-y-3 mt-4">
               <Skeleton className="h-3 w-24 ml-1" />
               <div className="space-y-2">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="flex gap-4 items-center">
-                    <Skeleton className="h-8 w-8 rounded-lg" />
-                    <div className="flex-1 space-y-1.5">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="flex gap-4 items-center h-10 px-1">
+                    <Skeleton className="h-5 w-5 rounded-md" />
+                    <div className="flex-1 space-y-1">
                       <Skeleton className="h-3 w-32" />
                       <Skeleton className="h-2 w-48" />
                     </div>
@@ -207,8 +207,8 @@ export default function SettingsPage() {
           <h3 className="px-4 text-[12px] font-bold text-[#2E3137] mb-2">Pengaturan Akun</h3>
           <div className="divide-y divide-border/50">
             {[
-              { title: "Daftar Alamat", desc: "Atur alamat pengiriman belanjaan", icon: MapPin },
-              { title: "Rekening Bank", desc: "Tarik Saldo MarketPoint ke rekening tujuan", icon: Landmark },
+              { title: "Daftar Alamat", desc: "Atur alamat pengiriman belanjaan", icon: MapPinned },
+              { title: "Rekening Bank", desc: "Tarik Saldo MarketPoint ke rekening tujuan", icon: Building2 },
               { title: "Pembayaran Instan", desc: "E-Wallet, kartu kredit, & debit instan terdaftar", icon: CreditCard },
               { title: "Keamanan Akun", desc: "Kata sandi, PIN, & verifikasi data diri", icon: Shield },
               { title: "Notifikasi", desc: "Atur segala jenis pesan notifikasi", icon: Bell },
