@@ -123,14 +123,17 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-4 mt-4">
               <Skeleton className="h-3 w-24 ml-1" />
-              <div className="space-y-1">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <Skeleton key={i} className="h-10 w-full rounded-xl" />
+              <div className="space-y-2">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="flex gap-4 items-center">
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-3 w-32" />
+                      <Skeleton className="h-2 w-48" />
+                    </div>
+                  </div>
                 ))}
               </div>
-            </div>
-            <div className="mt-4">
-              <Skeleton className="h-10 w-full rounded-xl" />
             </div>
           </div>
         </main>
@@ -201,7 +204,7 @@ export default function SettingsPage() {
 
         {/* Account Settings List */}
         <section className="pb-2">
-          <h3 className="px-4 text-[12px] font-bold text-[#2E3137] mb-1">Pengaturan Akun</h3>
+          <h3 className="px-4 text-[12px] font-bold text-[#2E3137] mb-2">Pengaturan Akun</h3>
           <div className="divide-y divide-border/50">
             {[
               { title: "Daftar Alamat", desc: "Atur alamat pengiriman belanjaan", icon: MapPin },
@@ -213,14 +216,14 @@ export default function SettingsPage() {
             ].map((menu, idx) => (
               <button 
                 key={idx}
-                className="w-full px-4 py-2 flex items-center gap-3.5 hover:bg-muted/30 transition-all text-left active:bg-muted/50"
+                className="w-full px-5 py-3 flex items-center gap-4 hover:bg-muted/30 transition-all text-left active:bg-muted/50 group"
               >
-                <div className="bg-white rounded-lg flex items-center justify-center">
-                  <menu.icon className="w-4.5 h-4.5 text-[#2E3137]" />
+                <div className="flex-shrink-0">
+                  <menu.icon className="w-5 h-5 text-[#2E3137] opacity-80 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-bold text-[#2E3137]">{menu.title}</p>
-                  <p className="text-[9px] text-[#6C727C]">{menu.desc}</p>
+                  <p className="text-[13px] font-bold text-[#2E3137] leading-tight">{menu.title}</p>
+                  <p className="text-[10px] text-[#6C727C] mt-0.5">{menu.desc}</p>
                 </div>
               </button>
             ))}
@@ -231,7 +234,7 @@ export default function SettingsPage() {
         <section className="border-t border-border mt-2 px-4">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="seputar" className="border-none">
-              <AccordionTrigger className="hover:no-underline py-3 text-[12px] font-bold text-[#2E3137] focus:outline-none">
+              <AccordionTrigger className="hover:no-underline py-3.5 text-[12px] font-bold text-[#2E3137] focus:outline-none">
                 Seputar MarketPoint
               </AccordionTrigger>
               <AccordionContent className="pt-0 pb-3">
@@ -244,7 +247,7 @@ export default function SettingsPage() {
                     <Link 
                       key={idx}
                       href={item.href}
-                      className="flex items-center gap-3.5 py-2 px-0 hover:bg-muted/30 transition-all text-left active:bg-muted/50 rounded-lg group"
+                      className="flex items-center gap-4 py-2.5 px-1 hover:bg-muted/30 transition-all text-left active:bg-muted/50 rounded-lg group"
                     >
                       <item.icon className="w-4 h-4 text-[#6C727C] group-hover:text-primary transition-colors" />
                       <span className="text-[13px] font-medium text-[#2E3137]">{item.title}</span>
@@ -260,14 +263,14 @@ export default function SettingsPage() {
         <section className="border-t border-border mt-1">
           <button 
             onClick={handleLogout}
-            className="w-full px-4 py-3 flex items-center gap-3.5 hover:bg-destructive/5 transition-all text-left active:bg-destructive/10"
+            className="w-full px-5 py-3.5 flex items-center gap-4 hover:bg-destructive/5 transition-all text-left active:bg-destructive/10"
           >
-            <div className="bg-white rounded-lg flex items-center justify-center">
-              <LogOut className="w-4.5 h-4.5 text-destructive" />
+            <div className="flex-shrink-0">
+              <LogOut className="w-5 h-5 text-destructive opacity-80" />
             </div>
             <div className="flex-1">
-              <p className="text-[13px] font-bold text-destructive">Keluar Akun</p>
-              <p className="text-[9px] text-muted-foreground">Keluar dari sesi MarketPoint saat ini</p>
+              <p className="text-[13px] font-bold text-destructive leading-tight">Keluar Akun</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Keluar dari sesi MarketPoint saat ini</p>
             </div>
           </button>
         </section>
