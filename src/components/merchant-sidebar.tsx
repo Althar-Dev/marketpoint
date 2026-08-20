@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { 
   LayoutDashboard, 
   Package, 
@@ -31,7 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useDoc, useUser, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
-import { Avatar, AvatarFallback, AvatarImage } from "@/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function MerchantSidebar() {
   const pathname = usePathname();

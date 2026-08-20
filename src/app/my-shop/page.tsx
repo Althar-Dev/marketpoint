@@ -51,26 +51,32 @@ export default function MerchantDashboard() {
   }, []);
 
   useEffect(() => {
+    // Tunggu sampai semua data selesai loading
     if (!mounted || authLoading || userLoading || shopLoading) return;
 
+    // Jika tidak ada user, lempar ke login
     if (!user) {
       router.push("/login");
       return;
     }
 
+    // Single source of truth: Cek flag di user document DAN cek keberadaan shop document
     const hasShopFlag = userData?.hasShop === true;
     const hasShopDoc = !!shop;
 
+    // Hanya redirect ke setup jika KEDUANYA dipastikan tidak ada
     if (!hasShopFlag && !hasShopDoc) {
       router.replace("/my-shop/setup");
     }
   }, [userData, userLoading, shop, shopLoading, user, authLoading, router, mounted]);
 
+  // Tampilan kosong saat memproses data, tanpa loader mengganggu
   if (!mounted || authLoading || userLoading || shopLoading || !user) {
     return <div className="min-h-screen bg-[#F8FAFC]" />;
   }
 
-  if (!shop) return null;
+  // Jika data toko belum siap tapi terdeteksi punya toko, tampilkan layar kosong sebentar
+  if (!shop) return <div className="min-h-screen bg-[#F8FAFC]" />;
 
   return (
     <main className="flex-1 p-3 md:p-6 lg:p-8">
@@ -79,7 +85,7 @@ export default function MerchantDashboard() {
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h1 className="text-lg font-bold tracking-tight">Dashboard penjual</h1>
+            <h1 className="text-lg font-bold tracking-tight text-[#212121]">Dashboard penjual</h1>
             <p className="text-[11px] text-muted-foreground">Kelola operasional dan pantau pertumbuhan toko.</p>
           </div>
           <div className="flex gap-2">
@@ -145,7 +151,7 @@ export default function MerchantDashboard() {
                      { label: "Chat baru", value: "0", color: "text-[#00AA5B]" },
                    ].map((stat, idx) => (
                      <div key={idx} className="p-3 rounded-lg bg-muted/20 border border-transparent hover:border-[#00AA5B]/10 transition-all cursor-pointer">
-                        <p className="text-lg font-black mb-0.5">{stat.value}</p>
+                        <p className="text-lg font-black mb-0.5 text-[#212121]">{stat.value}</p>
                         <p className={`text-[9px] font-bold ${stat.color} opacity-60`}>{stat.label}</p>
                      </div>
                    ))}
@@ -170,7 +176,7 @@ export default function MerchantDashboard() {
                  <div className="w-10 h-10 bg-muted/30 rounded-full flex items-center justify-center mb-3">
                     <ShoppingBag className="w-5 h-5 text-muted-foreground opacity-20" />
                  </div>
-                 <h3 className="text-[11px] font-bold text-foreground">Belum ada data penjualan</h3>
+                 <h3 className="text-[11px] font-bold text-[#212121]">Belum ada data penjualan</h3>
                  <p className="text-[9px] text-muted-foreground max-w-[200px] mt-0.5 leading-relaxed">
                    Promosikan produkmu untuk mendapatkan pesanan pertama.
                  </p>
@@ -216,7 +222,7 @@ export default function MerchantDashboard() {
                            <MessageSquare className="w-3.5 h-3.5 text-orange-600" />
                         </div>
                         <div>
-                           <p className="text-[10px] font-bold leading-none group-hover:text-[#00AA5B] transition-colors">Respon chat cepat</p>
+                           <p className="text-[10px] font-bold leading-none text-[#212121] group-hover:text-[#00AA5B] transition-colors">Respon chat cepat</p>
                            <p className="text-[9px] text-muted-foreground mt-1 leading-normal">Balas chat pembeli secepat mungkin.</p>
                         </div>
                      </div>
@@ -225,7 +231,7 @@ export default function MerchantDashboard() {
                            <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
                         </div>
                         <div>
-                           <p className="text-[10px] font-bold leading-none group-hover:text-[#00AA5B] transition-colors">Pantau statistik</p>
+                           <p className="text-[10px] font-bold leading-none text-[#212121] group-hover:text-[#00AA5B] transition-colors">Pantau statistik</p>
                            <p className="text-[9px] text-muted-foreground mt-1 leading-normal">Lihat perkembangan kunjungan toko.</p>
                         </div>
                      </div>
