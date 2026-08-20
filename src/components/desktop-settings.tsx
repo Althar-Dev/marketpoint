@@ -145,9 +145,9 @@ export function DesktopSettings({
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-1 pl-6 space-y-0.5">
-                    <p className="text-[11px] text-[#00AA5B] font-bold py-1 px-2 rounded-lg bg-[#00AA5B]/5 cursor-pointer">Pengaturan Profil</p>
+                    <p className="text-[11px] text-[#00AA5B] font-bold py-1 px-2 rounded-lg bg-[#00AA5B]/5 cursor-pointer">Pengaturan</p>
                     <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Wishlist</p>
-                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Ulasan</p>
+                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Toko Favorit</p>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
