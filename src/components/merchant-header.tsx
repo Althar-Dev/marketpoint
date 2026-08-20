@@ -24,12 +24,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser, useAuth } from "@/firebase";
 import { useSidebar } from "@/components/ui/sidebar";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 export function MerchantHeader() {
   const { user } = useUser();
   const auth = useAuth();
   const { toggleSidebar } = useSidebar();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     try {
@@ -39,19 +41,51 @@ export function MerchantHeader() {
     }
   };
 
+  const getPageInfo = (path: string) => {
+    switch (path) {
+      case "/my-shop": 
+        return { title: "Dashboard penjual", sub: "Kelola operasional dan pantau pertumbuhan toko." };
+      case "/my-shop/setup": 
+        return { title: "Pengaturan profil toko", sub: "Lengkapi identitas dan lokasi toko." };
+      case "/my-shop/orders": 
+        return { title: "Pesanan toko", sub: "Kelola pesanan masuk dan pengiriman." };
+      case "/my-shop/products": 
+        return { title: "Daftar produk", sub: "Atur katalog produk digital Anda." };
+      case "/my-shop/stats": 
+        return { title: "Statistik toko", sub: "Pantau performa penjualan Anda." };
+      case "/my-shop/wallet": 
+        return { title: "Saldo toko", sub: "Manajemen keuangan dan penarikan saldo." };
+      case "/my-shop/chat": 
+        return { title: "Chat pembeli", sub: "Balas pesan dari calon pembeli." };
+      default: 
+        return { title: "Seller center", sub: "MarketPoint merchant dashboard." };
+    }
+  };
+
+  const info = getPageInfo(pathname);
+
   return (
-    <header className="h-14 border-b border-border/50 bg-white sticky top-0 z-40 px-3 md:px-6 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2 flex-1">
+    <header className="h-16 border-b border-border/50 bg-white sticky top-0 z-40 px-3 md:px-6 flex items-center justify-between gap-3 shrink-0">
+      <div className="flex items-center gap-4 flex-1 min-w-0">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={toggleSidebar} 
-          className="h-8 w-8 text-muted-foreground"
+          className="h-8 w-8 text-muted-foreground shrink-0"
         >
           <PanelLeft className="h-4 w-4" />
         </Button>
 
-        <div className="hidden md:flex items-center flex-1 max-w-sm relative group">
+        <div className="flex flex-col min-w-0">
+          <h1 className="text-sm md:text-base font-bold tracking-tight text-[#212121] truncate leading-tight">
+            {info.title}
+          </h1>
+          <p className="text-[10px] text-muted-foreground truncate hidden md:block">
+            {info.sub}
+          </p>
+        </div>
+
+        <div className="hidden xl:flex items-center flex-1 max-w-xs relative group ml-4">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-[#00AA5B] transition-colors">
             <Search className="w-3.5 h-3.5" />
           </div>
@@ -62,7 +96,7 @@ export function MerchantHeader() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-3">
+      <div className="flex items-center gap-2 md:gap-3 shrink-0">
         <div className="flex items-center gap-0.5 border-r border-border/50 pr-2 md:pr-3">
           <Button size="icon" variant="ghost" className="rounded-lg h-8 w-8 text-muted-foreground relative">
             <MessageSquare className="w-4 h-4" />
@@ -76,9 +110,9 @@ export function MerchantHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 outline-none group hover:bg-muted/30 p-1 rounded-lg transition-all">
-              <Avatar className="h-7 w-7 rounded-md border border-border shadow-sm">
+              <Avatar className="h-8 w-8 rounded-md border border-border shadow-sm">
                 <AvatarImage src={user?.photoURL || undefined} />
-                <AvatarFallback className="bg-[#00AA5B] text-white text-[9px] font-bold">
+                <AvatarFallback className="bg-[#00AA5B] text-white text-[10px] font-bold">
                   {user?.displayName?.substring(0, 2).toUpperCase() || "SE"}
                 </AvatarFallback>
               </Avatar>

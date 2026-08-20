@@ -79,7 +79,7 @@ export default function MerchantSetupPage() {
         body: formData,
       });
       
-      const data = await res.json();
+      const data = await res.ok ? await res.json() : { error: 'Gagal mengunggah' };
       
       if (res.ok && data.url) {
         if (type === 'logo') {
@@ -158,16 +158,11 @@ export default function MerchantSetupPage() {
     }
   };
 
-  if (!mounted || authLoading) return null;
+  if (!mounted || authLoading || !user) return <div className="min-h-screen bg-[#F8FAFC]" />;
 
   return (
     <div className="p-3 md:p-6 lg:p-8">
       <div className="max-w-screen-md mx-auto">
-        <div className="mb-6 space-y-1">
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Pengaturan profil toko</h1>
-          <p className="text-[11px] text-muted-foreground">Lengkapi identitas dan lokasi toko untuk mulai berjualan.</p>
-        </div>
-
         <div className="space-y-5">
           <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white">
             <CardContent className="p-0">

@@ -51,51 +51,39 @@ export default function MerchantDashboard() {
   }, []);
 
   useEffect(() => {
-    // Tunggu sampai semua data selesai loading
     if (!mounted || authLoading || userLoading || shopLoading) return;
 
-    // Jika tidak ada user, lempar ke login
     if (!user) {
       router.push("/login");
       return;
     }
 
-    // Single source of truth: Cek flag di user document DAN cek keberadaan shop document
     const hasShopFlag = userData?.hasShop === true;
     const hasShopDoc = !!shop;
 
-    // Hanya redirect ke setup jika KEDUANYA dipastikan tidak ada
     if (!hasShopFlag && !hasShopDoc) {
       router.replace("/my-shop/setup");
     }
   }, [userData, userLoading, shop, shopLoading, user, authLoading, router, mounted]);
 
-  // Tampilan kosong saat memproses data, tanpa loader mengganggu
   if (!mounted || authLoading || userLoading || shopLoading || !user) {
     return <div className="min-h-screen bg-[#F8FAFC]" />;
   }
 
-  // Jika data toko belum siap tapi terdeteksi punya toko, tampilkan layar kosong sebentar
   if (!shop) return <div className="min-h-screen bg-[#F8FAFC]" />;
 
   return (
     <main className="flex-1 p-3 md:p-6 lg:p-8">
       <div className="max-w-screen-xl mx-auto space-y-4">
         
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-[#212121]">Dashboard penjual</h1>
-            <p className="text-[11px] text-muted-foreground">Kelola operasional dan pantau pertumbuhan toko.</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="h-8 px-3 rounded-lg font-bold text-[10px] gap-1.5 border-border/60">
-              <ExternalLink className="w-3 h-3" /> Lihat toko
-            </Button>
-            <Button className="h-8 px-3 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-[10px] gap-1.5 shadow-sm">
-              <Plus className="w-3 h-3" /> Tambah produk
-            </Button>
-          </div>
+        {/* Quick Actions Row */}
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" className="h-8 px-3 rounded-lg font-bold text-[10px] gap-1.5 border-border/60">
+            <ExternalLink className="w-3 h-3" /> Lihat toko
+          </Button>
+          <Button className="h-8 px-3 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-[10px] gap-1.5 shadow-sm">
+            <Plus className="w-3 h-3" /> Tambah produk
+          </Button>
         </div>
 
         {/* Shop Hero Card */}
