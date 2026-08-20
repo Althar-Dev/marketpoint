@@ -123,6 +123,11 @@ export default function ShopProfilePage() {
               </CardContent>
             </Card>
           </div>
+          <div className="max-w-screen-xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-16">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="aspect-[3/4] rounded-xl" />
+            ))}
+          </div>
         </main>
         <MarketBottomNav />
       </div>
@@ -179,12 +184,12 @@ export default function ShopProfilePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
         </div>
 
-        {/* Shop Info Card - Responsive Layout */}
+        {/* Shop Info Card */}
         <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-20 relative z-20 mb-8">
           <Card className="border-border border-[1.5px] shadow-xl rounded-2xl bg-white overflow-hidden relative">
             <CardContent className="p-4 md:p-8 relative">
               
-              {/* Share Button - Top Right Corner */}
+              {/* Share Button - Absolute Top Right */}
               <div className="absolute top-4 right-4 z-30">
                 <Button 
                   variant="outline" 
@@ -196,7 +201,7 @@ export default function ShopProfilePage() {
               </div>
 
               <div className="flex flex-row items-start gap-4 md:gap-8">
-                {/* Logo with Status Indicator - Left Side */}
+                {/* Logo Section */}
                 <div className="relative shrink-0">
                   <div className="h-16 w-16 md:h-32 md:w-32 rounded-2xl md:rounded-3xl bg-white border-[1.5px] border-border shadow-md overflow-hidden relative">
                     {shop.logoUrl ? (
@@ -212,7 +217,7 @@ export default function ShopProfilePage() {
                   </div>
                 </div>
 
-                {/* Info Container - Right Side of Logo */}
+                {/* Info Container - Right of Logo */}
                 <div className="flex-1 min-w-0 pr-10 md:pr-0">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -231,12 +236,10 @@ export default function ShopProfilePage() {
                       )}
                     </div>
                     
-                    {/* Shop Slug - Below Name */}
                     <p className="text-[11px] md:text-xs font-bold text-[#00AA5B] lowercase tracking-wide">
                       @{shop.slug}
                     </p>
 
-                    {/* Stats Section - Hidden on Mobile, shown in mini format */}
                     <div className="hidden md:flex flex-wrap items-center gap-x-6 gap-y-2 text-muted-foreground mt-2">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-[#00AA5B]" />
@@ -253,7 +256,6 @@ export default function ShopProfilePage() {
                       </div>
                     </div>
 
-                    {/* Mobile Mini Stats */}
                     <div className="flex md:hidden items-center gap-3 mt-1.5 text-muted-foreground">
                        <div className="flex items-center gap-1">
                          <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
@@ -282,7 +284,7 @@ export default function ShopProfilePage() {
                 </div>
               </div>
 
-              {/* Mobile Action Buttons - Separated for better tap experience */}
+              {/* Mobile Action Buttons */}
               <div className="flex md:hidden items-center gap-2 mt-6 pt-4 border-t border-border/50">
                 <Button 
                   onClick={handleContactWhatsApp}
@@ -300,7 +302,6 @@ export default function ShopProfilePage() {
 
         {/* Shop Content Grid */}
         <div className="max-w-screen-xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8 pb-16">
-          {/* Sidebar Section */}
           <aside className="lg:col-span-3 space-y-6">
             <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
               <div className="p-5 border-b border-border bg-[#F8FAFC]">
@@ -339,14 +340,13 @@ export default function ShopProfilePage() {
             </Button>
           </aside>
 
-          {/* Main Content Area */}
           <div className="lg:col-span-9 space-y-8">
-            {/* Nav & Filter Bar */}
+            {/* Optimized Nav Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-2">
               <div className="flex gap-8">
-                <button className="text-sm font-black text-[#00AA5B] border-b-[3px] border-[#00AA5B] pb-3 transition-all">Semua produk</button>
-                <button className="text-sm font-black text-muted-foreground hover:text-foreground pb-3 transition-colors">Ulasan toko</button>
-                <button className="text-sm font-black text-muted-foreground hover:text-foreground pb-3 transition-colors">Voucher</button>
+                <button className="text-[13px] font-bold text-[#00AA5B] border-b-[3px] border-[#00AA5B] pb-3 transition-all">Semua produk</button>
+                <button className="text-[13px] font-bold text-muted-foreground hover:text-foreground pb-3 transition-colors">Ulasan toko</button>
+                <button className="text-[13px] font-bold text-muted-foreground hover:text-foreground pb-3 transition-colors">Voucher</button>
               </div>
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -357,7 +357,7 @@ export default function ShopProfilePage() {
               </div>
             </div>
 
-            {/* Product Grid - Modern Cards */}
+            {/* Product Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
               {SHOP_PRODUCTS.map((product) => (
                 <Card key={product.id} className="group border-border border-[1.5px] shadow-sm rounded-xl overflow-hidden bg-white hover:shadow-xl transition-all duration-500 cursor-pointer flex flex-col">
@@ -399,7 +399,6 @@ export default function ShopProfilePage() {
               ))}
             </div>
 
-            {/* Load More Button */}
             <div className="flex justify-center pt-8">
               <Button variant="outline" className="h-10 px-10 rounded-xl border-border font-black text-xs hover:bg-white hover:border-[#00AA5B] hover:text-[#00AA5B] transition-all">
                 Tampilkan lebih banyak
