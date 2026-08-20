@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
@@ -18,7 +19,8 @@ import {
   Image as ImageIcon,
   CheckCircle2,
   MapPin,
-  Phone
+  Phone,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,6 +32,10 @@ export default function MerchantSetupPage() {
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
 
+  // File Input Refs
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+
   // Form States
   const [shopName, setShopName] = useState("");
   const [slug, setSlug] = useState("");
@@ -40,7 +46,14 @@ export default function MerchantSetupPage() {
   const [address, setAddress] = useState("");
   const [postalCode, setPostalCode] = useState("");
   
+  // URL States (Uploaded to R2)
+  const [logoUrl, setLogoUrl] = useState<string>("");
+  const [bannerUrl, setBannerUrl] = useState<string>("");
+  
+  // Loading States
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -58,6 +71,48 @@ export default function MerchantSetupPage() {
     setSlug(generatedSlug);
   }, [shopName]);
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'banner') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === 'logo') setUploadingLogo(true);
+    else setUploadingBanner(true);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', type);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok && data.url) {
+        if (type === 'logo') setLogoUrl(data.url);
+        else setBannerUrl(data.url);
+        
+        toast({
+          title: "Berhasil",
+          description: `${type === 'logo' ? 'Logo' : 'Banner'} berhasil diunggah.`,
+        });
+      } else {
+        throw new Error(data.error || 'Upload failed');
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal Mengunggah",
+        description: "Pastikan konfigurasi R2 sudah benar.",
+      });
+    } finally {
+      if (type === 'logo') setUploadingLogo(false);
+      else setUploadingBanner(false);
+    }
+  };
+
   const handleCreateShop = async () => {
     if (!user) return;
     setIsSubmitting(true);
@@ -74,12 +129,11 @@ export default function MerchantSetupPage() {
           address,
           postalCode
         },
+        logoUrl,
+        bannerUrl,
         ownerId: user.uid,
         status: "ACTIVE",
         createdAt: serverTimestamp(),
-        // Placeholders for images
-        logoUrl: `https://picsum.photos/seed/${user.uid}-logo/200/200`,
-        bannerUrl: `https://picsum.photos/seed/${user.uid}-banner/1200/400`,
       });
 
       toast({
@@ -126,26 +180,58 @@ export default function MerchantSetupPage() {
             <Card className="border-none shadow-sm rounded-2xl overflow-hidden bg-white">
               <CardContent className="p-0">
                 <div className="relative h-32 md:h-40 bg-muted/30 group">
-                  <div className="absolute inset-0 flex items-center justify-center opacity-40">
-                    <ImageIcon className="w-8 h-8" />
-                  </div>
-                  <Button variant="secondary" size="sm" className="absolute bottom-3 right-3 rounded-full h-8 px-3 text-[10px] font-bold gap-1.5 shadow-sm">
-                    <Camera className="w-3 h-3" /> Ganti Banner
+                  {bannerUrl ? (
+                    <Image src={bannerUrl} alt="Banner" fill className="object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-40">
+                      <ImageIcon className="w-8 h-8" />
+                    </div>
+                  )}
+                  <input 
+                    type="file" 
+                    ref={bannerInputRef} 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'banner')}
+                  />
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="absolute bottom-3 right-3 rounded-full h-8 px-3 text-[10px] font-bold gap-1.5 shadow-sm"
+                    onClick={() => bannerInputRef.current?.click()}
+                    disabled={uploadingBanner}
+                  >
+                    {uploadingBanner ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
+                    {uploadingBanner ? "Mengupload..." : "Ganti Banner"}
                   </Button>
                 </div>
                 <div className="px-6 pb-6 -mt-10 relative z-10">
                   <div className="flex items-end gap-4">
                     <div className="h-20 w-20 md:h-24 md:w-24 rounded-2xl bg-white border-4 border-white shadow-md overflow-hidden relative group">
-                      <div className="absolute inset-0 bg-muted/20 flex items-center justify-center opacity-40">
-                        <ImageIcon className="w-6 h-6" />
+                      {logoUrl ? (
+                        <Image src={logoUrl} alt="Logo" fill className="object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 bg-muted/20 flex items-center justify-center opacity-40">
+                          <ImageIcon className="w-6 h-6" />
+                        </div>
+                      )}
+                      <div 
+                        className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                        onClick={() => logoInputRef.current?.click()}
+                      >
+                        {uploadingLogo ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Camera className="w-5 h-5 text-white" />}
                       </div>
-                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                        <Camera className="w-5 h-5 text-white" />
-                      </div>
+                      <input 
+                        type="file" 
+                        ref={logoInputRef} 
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, 'logo')}
+                      />
                     </div>
                     <div className="pb-1">
                        <p className="text-[11px] font-bold text-foreground uppercase tracking-wider">Logo Toko</p>
-                       <p className="text-[9px] text-muted-foreground">Minimal 200x200px (JPG/PNG)</p>
+                       <p className="text-[9px] text-muted-foreground">{uploadingLogo ? 'Sedang mengunggah...' : 'Klik gambar untuk ubah logo'}</p>
                     </div>
                   </div>
                 </div>
@@ -266,7 +352,7 @@ export default function MerchantSetupPage() {
 
                 <div className="pt-4">
                   <Button 
-                    disabled={!shopName || !slug || !whatsapp || !address || isSubmitting}
+                    disabled={!shopName || !slug || !whatsapp || !address || isSubmitting || uploadingLogo || uploadingBanner}
                     onClick={handleCreateShop}
                     className="w-full h-12 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-sm shadow-lg shadow-[#00AA5B]/10 transition-all active:scale-[0.98]"
                   >
