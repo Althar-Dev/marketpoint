@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "Wallet": {
@@ -36,6 +35,32 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["key", "label", "status"]
+    },
+    "Shop": {
+      "title": "Merchant Shop",
+      "description": "Store profile for digital solution sellers.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "bannerUrl": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "province": { "type": "string" },
+            "city": { "type": "string" },
+            "district": { "type": "string" },
+            "address": { "type": "string" },
+            "postalCode": { "type": "string" }
+          }
+        },
+        "ownerId": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "SUSPENDED"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "slug", "ownerId", "status"]
     }
   },
   "auth": {
@@ -53,6 +78,10 @@
     "/users/{userId}/apiKeys": {
       "schema": "ApiKey",
       "description": "Collection of developer API keys"
+    },
+    "/shops/{shopId}": {
+      "schema": "Shop",
+      "description": "Public shop information indexed by owner UID"
     }
   }
 }
