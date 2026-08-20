@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -25,13 +26,19 @@ export function MarketBottomNav() {
             key={item.label} 
             href={item.href}
             className={cn(
-              "flex flex-col items-center justify-center gap-1 min-w-[64px] h-full transition-all active:scale-90",
+              "flex flex-col items-center justify-center gap-1 min-w-[64px] h-full transition-all active:scale-95",
               isActive ? "text-[#00AA5B]" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <item.icon className={cn("w-5 h-5", isActive && "fill-[#00AA5B]")} />
+            <item.icon 
+              className={cn(
+                "w-5 h-5 transition-colors duration-200", 
+                isActive ? "text-[#00AA5B]" : "text-muted-foreground"
+              )} 
+              strokeWidth={isActive ? 2.5 : 2}
+            />
             <span className={cn(
-              "text-[9px] font-bold uppercase tracking-tight",
+              "text-[9px] font-bold uppercase tracking-tight transition-colors duration-200",
               isActive ? "text-[#00AA5B]" : "text-muted-foreground"
             )}>
               {item.label}
