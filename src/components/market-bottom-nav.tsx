@@ -3,18 +3,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, TicketPercent, BadgeCheck, ReceiptText, CircleUser } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
 
 export function MarketBottomNav() {
   const pathname = usePathname();
 
   const navItems = [
-    { label: "Beranda", icon: Home, href: "/" },
-    { label: "Deals", icon: TicketPercent, href: "/feed" },
-    { label: "Official", icon: BadgeCheck, href: "/mall" },
-    { label: "Transaksi", icon: ReceiptText, href: "/transactions" },
-    { label: "Akun", icon: CircleUser, href: "/profile" },
+    { label: "Beranda", icon: "ph:house", href: "/" },
+    { label: "Deals", icon: "ph:ticket", href: "/feed" },
+    { label: "Official", icon: "ph:seal-check", href: "/mall" },
+    { label: "Transaksi", icon: "ph:receipt", href: "/transactions" },
+    { label: "Akun", icon: "ph:user-circle", href: "/profile" },
   ];
 
   return (
@@ -30,12 +30,12 @@ export function MarketBottomNav() {
               isActive ? "text-[#00AA5B]" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <item.icon 
+            <Icon 
+              icon={item.icon}
               className={cn(
-                "w-5 h-5 transition-colors duration-200", 
+                "w-6 h-6 transition-colors duration-200", 
                 isActive ? "text-[#00AA5B]" : "text-muted-foreground"
               )} 
-              strokeWidth={isActive ? 2.5 : 2}
             />
             <span className={cn(
               "text-[9px] font-bold uppercase tracking-tight transition-colors duration-200",
