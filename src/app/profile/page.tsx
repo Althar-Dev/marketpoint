@@ -44,18 +44,18 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
 
+  const userRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "users", user.uid);
+  }, [db, user]);
+
   const walletRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "users", user.uid, "wallet", "info");
   }, [db, user]);
 
-  const shopRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(db, "shops", user.uid);
-  }, [db, user]);
-
+  const { data: userData, loading: userLoading } = useDoc(userRef);
   const { data: wallet, loading: walletLoading } = useDoc(walletRef);
-  const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
   useEffect(() => {
     setMounted(true);
@@ -109,7 +109,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (!mounted || authLoading || (user && (walletLoading || shopLoading))) {
+  if (!mounted || authLoading || (user && (walletLoading || userLoading))) {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
@@ -148,6 +148,9 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
+  // Cek status toko dari user document
+  const hasShop = userData?.hasShop || false;
+
   // Render Desktop View (Unified Layout)
   if (!isMobile) {
     return (
@@ -157,7 +160,7 @@ export default function ProfilePage() {
           <DesktopSettings 
             user={user} 
             wallet={wallet} 
-            shop={shop}
+            hasShop={hasShop}
             displayName={displayName}
             setDisplayName={setDisplayName}
             isEditing={isEditing}
@@ -217,8 +220,8 @@ export default function ProfilePage() {
 
         <div className="px-4 pb-3 grid grid-cols-2 gap-3 mt-4">
           <Button asChild variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
-            <Link href={shop ? "/my-shop" : "/my-shop/setup"}>
-              {shop ? "Kelola Toko" : "Buka Toko Gratis"} <ChevronRight className="w-3 h-3 opacity-40" />
+            <Link href={hasShop ? "/my-shop" : "/my-shop/setup"}>
+              {hasShop ? "Kelola Toko" : "Buka Toko Gratis"} <ChevronRight className="w-3 h-3 opacity-40" />
             </Link>
           </Button>
           <Button variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">

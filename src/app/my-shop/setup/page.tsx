@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore } from "@/firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
 import { Button } from "@/components/ui/button";
@@ -126,6 +126,9 @@ export default function MerchantSetupPage() {
     setIsSubmitting(true);
     try {
       const shopRef = doc(db, "shops", user.uid);
+      const userRef = doc(db, "users", user.uid);
+
+      // 1. Simpan Data Toko
       await setDoc(shopRef, {
         name: shopName,
         slug: slug,
@@ -144,12 +147,21 @@ export default function MerchantSetupPage() {
         createdAt: serverTimestamp(),
       });
 
+      // 2. Tandai User memiliki toko (Sangat Penting)
+      await updateDoc(userRef, {
+        hasShop: true,
+        shopSlug: slug
+      });
+
       toast({
         title: "Toko Berhasil Dibuka",
         description: "Selamat! Toko Anda kini sudah aktif di MarketPoint.",
       });
-      router.push("/profile");
+      
+      // Gunakan router.replace untuk menghindari stack history yang membingungkan
+      router.replace("/my-shop");
     } catch (error: any) {
+      console.error("Gagal Buka Toko:", error);
       toast({
         variant: "destructive",
         title: "Gagal Membuka Toko",

@@ -33,6 +33,12 @@ export default function MerchantDashboard() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
+  // Ambil data user dari Firestore untuk cek flag hasShop
+  const userRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "users", user.uid);
+  }, [db, user]);
+
   const shopRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "shops", user.uid);
@@ -43,6 +49,7 @@ export default function MerchantDashboard() {
     return doc(db, "users", user.uid, "wallet", "info");
   }, [db, user]);
 
+  const { data: userData, loading: userLoading } = useDoc(userRef);
   const { data: shop, loading: shopLoading } = useDoc(shopRef);
   const { data: wallet, loading: walletLoading } = useDoc(walletRef);
 
@@ -50,24 +57,30 @@ export default function MerchantDashboard() {
     setMounted(true);
   }, []);
 
-  // Handle Authentication Redirect
+  // 1. Handle Authentication Redirect
   useEffect(() => {
     if (mounted && !authLoading && !user) {
       router.push("/login");
     }
   }, [user, authLoading, router, mounted]);
 
-  // Handle Shop Setup Redirect - Diperketat agar tidak terjadi race condition
+  // 2. Handle Shop Setup Redirect - Menggunakan flag hasShop dari user document agar lebih instan
   useEffect(() => {
-    if (mounted && !authLoading && user && !shopLoading && shopRef) {
-      if (shop === null) {
-        console.log("Shop not found, redirecting to setup...");
+    if (mounted && !authLoading && user && !userLoading) {
+      // Jika user tidak punya flag hasShop, redirect ke setup
+      if (userData && !userData.hasShop) {
+        console.log("User has no shop flag, redirecting to setup...");
+        router.push("/my-shop/setup");
+      } 
+      // Jika data user sudah dimuat tapi null (jarang terjadi jika sudah login), tetap cek shop document
+      else if (!userData && !shopLoading && !shop) {
+        console.log("Shop document not found, redirecting to setup...");
         router.push("/my-shop/setup");
       }
     }
-  }, [shop, shopLoading, user, authLoading, router, mounted, shopRef]);
+  }, [userData, userLoading, shop, shopLoading, user, authLoading, router, mounted]);
 
-  if (!mounted || authLoading || shopLoading || !user) {
+  if (!mounted || authLoading || userLoading || shopLoading || !user) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
         <div className="p-8 space-y-4 max-w-screen-xl mx-auto w-full">

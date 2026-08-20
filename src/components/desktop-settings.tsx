@@ -34,7 +34,7 @@ import Link from "next/link";
 interface DesktopProfileSettingsProps {
   user: any;
   wallet: any;
-  shop?: any; // New prop
+  hasShop?: boolean;
   displayName: string;
   setDisplayName: (val: string) => void;
   isEditing: boolean;
@@ -47,7 +47,7 @@ interface DesktopProfileSettingsProps {
 export function DesktopSettings({
   user,
   wallet,
-  shop,
+  hasShop,
   displayName,
   setDisplayName,
   isEditing,
@@ -78,7 +78,7 @@ export function DesktopSettings({
 
             {/* Shop Section */}
             <div className="space-y-3 pt-3 border-t border-border/50">
-              <Link href={shop ? "/my-shop" : "/my-shop/setup"} className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
+              <Link href={hasShop ? "/my-shop" : "/my-shop/setup"} className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border group-hover:border-[#00AA5B]/30">
                     <Store className="w-2.5 h-2.5 text-muted-foreground group-hover:text-[#00AA5B]" />
@@ -87,9 +87,9 @@ export function DesktopSettings({
                 </div>
                 <span className={cn(
                   "text-[10px] font-bold",
-                  shop ? "text-muted-foreground" : "text-[#00AA5B]"
+                  hasShop ? "text-muted-foreground" : "text-[#00AA5B]"
                 )}>
-                  {shop ? "Kelola Toko" : "Buka Gratis"}
+                  {hasShop ? "Kelola Toko" : "Buka Gratis"}
                 </span>
               </Link>
               
