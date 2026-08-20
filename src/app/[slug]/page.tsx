@@ -212,6 +212,7 @@ export default function ShopProfilePage() {
             fill 
             className="object-cover"
             priority
+            data-ai-hint="shop banner"
           />
         ) : (
           <div className="absolute inset-0 bg-[#00AA5B]/5 flex items-center justify-center">
@@ -242,7 +243,7 @@ export default function ShopProfilePage() {
               <div className="relative shrink-0">
                 <div className="h-16 w-16 md:h-32 md:w-32 rounded-2xl md:rounded-3xl bg-white border-[1.5px] border-border shadow-md overflow-hidden relative">
                   {shop.logoUrl ? (
-                    <Image src={shop.logoUrl} alt={shop.name} fill className="object-cover" />
+                    <Image src={shop.logoUrl} alt={shop.name} fill className="object-cover" data-ai-hint="shop logo" />
                   ) : (
                     <div className="w-full h-full bg-[#00AA5B] flex items-center justify-center">
                       <span className="text-xl md:text-4xl font-bold text-white uppercase">{shop.name?.substring(0, 1)}</span>
@@ -392,116 +393,233 @@ export default function ShopProfilePage() {
               </Button>
             </div>
           </CardContent>
-        </div>
+        </Card>
+      </div>
 
-        {/* Shop Content Grid */}
-        <div className="max-w-screen-xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8 pb-16">
-          {/* Sidebar Profil Bisnis */}
-          <aside className="lg:col-span-3 space-y-6">
-            <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
-              <div className="p-5 border-b border-border bg-[#F8FAFC]">
-                <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em]">Profil bisnis</h3>
-              </div>
-              <CardContent className="p-5 space-y-5">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-muted-foreground">Kualitas produk</span>
-                    <div className="flex items-center gap-1 text-[#00AA5B] font-black text-[11px]">
-                      <Star className="w-3 h-3 fill-current" /> 4.9
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-muted-foreground">Kecepatan respon</span>
-                    <span className="text-[11px] font-black text-[#2E3137]">Sangat baik</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-muted-foreground">Produk terjual</span>
-                    <span className="text-[11px] font-black text-[#2E3137]">15.4rb+</span>
+      {/* Shop Content Grid */}
+      <div className="max-w-screen-xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8 pb-16">
+        {/* Sidebar Profil Bisnis */}
+        <aside className="lg:col-span-3 space-y-6">
+          <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
+            <div className="p-5 border-b border-border bg-[#F8FAFC]">
+              <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em]">Profil bisnis</h3>
+            </div>
+            <CardContent className="p-5 space-y-5">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-muted-foreground">Kualitas produk</span>
+                  <div className="flex items-center gap-1 text-[#00AA5B] font-black text-[11px]">
+                    <Star className="w-3 h-3 fill-current" /> 4.9
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Button variant="ghost" className="w-full h-11 rounded-2xl border border-dashed border-border text-muted-foreground font-black text-[10px] hover:bg-white hover:text-[#00AA5B] hover:border-[#00AA5B] transition-all">
-              Lihat catatan toko
-            </Button>
-          </aside>
-
-          {/* Main Content Area */}
-          <div className="lg:col-span-9 space-y-8">
-            {/* Optimized Nav Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-2">
-              <div className="flex gap-8">
-                <button 
-                  onClick={() => setActiveTab("products")}
-                  className={cn(
-                    "text-[13px] font-bold pb-3 transition-all",
-                    activeTab === "products" ? "text-[#00AA5B] border-b-[3px] border-[#00AA5B]" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  Semua produk
-                </button>
-                <button 
-                  onClick={() => setActiveTab("reviews")}
-                  className={cn(
-                    "text-[13px] font-bold pb-3 transition-all",
-                    activeTab === "reviews" ? "text-[#00AA5B] border-b-[3px] border-[#00AA5B]" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  Ulasan toko
-                </button>
-                <button 
-                  onClick={() => setActiveTab("vouchers")}
-                  className={cn(
-                    "text-[13px] font-bold pb-3 transition-all",
-                    activeTab === "vouchers" ? "text-[#00AA5B] border-b-[3px] border-[#00AA5B]" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  Voucher
-                </button>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-muted-foreground">Kecepatan respon</span>
+                  <span className="text-[11px] font-black text-[#2E3137]">Sangat baik</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-muted-foreground">Produk terjual</span>
+                  <span className="text-[11px] font-black text-[#2E3137]">15.4rb+</span>
+                </div>
               </div>
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Cari produk di toko ini..." 
-                  className="h-9 pl-10 rounded-xl bg-white border-border text-xs font-bold"
-                />
+            </CardContent>
+          </Card>
+
+          <Button variant="ghost" className="w-full h-11 rounded-2xl border border-dashed border-border text-muted-foreground font-black text-[10px] hover:bg-white hover:text-[#00AA5B] hover:border-[#00AA5B] transition-all">
+            Lihat catatan toko
+          </Button>
+        </aside>
+
+        {/* Main Content Area */}
+        <div className="lg:col-span-9 space-y-8">
+          {/* Optimized Nav Bar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-2">
+            <div className="flex gap-8">
+              <button 
+                onClick={() => setActiveTab("products")}
+                className={cn(
+                  "text-[13px] font-bold pb-3 transition-all",
+                  activeTab === "products" ? "text-[#00AA5B] border-b-[3px] border-[#00AA5B]" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Semua produk
+              </button>
+              <button 
+                onClick={() => setActiveTab("reviews")}
+                className={cn(
+                  "text-[13px] font-bold pb-3 transition-all",
+                  activeTab === "reviews" ? "text-[#00AA5B] border-b-[3px] border-[#00AA5B]" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Ulasan toko
+              </button>
+              <button 
+                onClick={() => setActiveTab("vouchers")}
+                className={cn(
+                  "text-[13px] font-bold pb-3 transition-all",
+                  activeTab === "vouchers" ? "text-[#00AA5B] border-b-[3px] border-[#00AA5B]" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Voucher
+              </button>
+            </div>
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                placeholder="Cari produk di toko ini..." 
+                className="h-9 pl-10 rounded-xl bg-white border-border text-xs font-bold"
+              />
+            </div>
+          </div>
+
+          {/* Tab Content Render */}
+          {activeTab === "products" && (
+            <div className="space-y-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                {SHOP_PRODUCTS.map((product) => (
+                  <Card key={product.id} className="group border-border border-[1.5px] shadow-sm rounded-xl overflow-hidden bg-white hover:shadow-xl transition-all duration-500 cursor-pointer flex flex-col">
+                    <div className="relative aspect-square bg-muted/20 overflow-hidden">
+                      <Image 
+                        src={product.imageUrl} 
+                        alt={product.name} 
+                        fill 
+                        className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                        data-ai-hint="product photo"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                    </div>
+                    <CardContent className="p-2.5 md:p-3 space-y-2 flex-1 flex flex-col justify-between">
+                      <div className="space-y-1">
+                        <h4 className="text-[11px] md:text-xs font-medium text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">
+                          {product.name}
+                        </h4>
+                        <div className="flex flex-col gap-0.5">
+                          <p className="text-[#000000] text-[12px] md:text-sm font-black">
+                            Rp {product.price.toLocaleString('id-ID')}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-2.5 h-2.5 text-[#FFC400] fill-[#FFC400]" />
+                          <span className="text-[10px] font-medium text-muted-foreground">
+                            {product.rating} <span className="opacity-40">|</span> {product.sold} terjual
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="flex justify-center pt-8">
+                <Button variant="outline" className="h-10 px-10 rounded-xl border-border font-black text-xs hover:bg-white hover:border-[#00AA5B] hover:text-[#00AA5B] transition-all">
+                  Tampilkan lebih banyak
+                </Button>
               </div>
             </div>
+          )}
 
-            {/* Tab Content Render */}
-            {activeTab === "products" && (
-              <div className="space-y-8">
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-                  {SHOP_PRODUCTS.map((product) => (
-                    <Card key={product.id} className="group border-border border-[1.5px] shadow-sm rounded-xl overflow-hidden bg-white hover:shadow-xl transition-all duration-500 cursor-pointer flex flex-col">
-                      <div className="relative aspect-square bg-muted/20 overflow-hidden">
-                        <Image 
-                          src={product.imageUrl} 
-                          alt={product.name} 
-                          fill 
-                          className="object-cover transition-transform duration-700 group-hover:scale-110" 
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+          {activeTab === "reviews" && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {/* Rating Summary Card */}
+              <Card className="border-border border-[1.5px] shadow-sm rounded-2xl overflow-hidden bg-white">
+                <CardContent className="p-6 md:p-8">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                    <div className="md:col-span-4 flex flex-col items-center text-center space-y-2 border-b md:border-b-0 md:border-r border-border pb-6 md:pb-0">
+                      <div className="flex items-baseline gap-1">
+                        <h2 className="text-5xl font-black font-headline">4.9</h2>
+                        <span className="text-lg font-bold text-muted-foreground">/ 5.0</span>
                       </div>
-                      <CardContent className="p-2.5 md:p-3 space-y-2 flex-1 flex flex-col justify-between">
-                        <div className="space-y-1">
-                          <h4 className="text-[11px] md:text-xs font-medium text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">
-                            {product.name}
-                          </h4>
-                          <div className="flex flex-col gap-0.5">
-                            <p className="text-[#000000] text-[12px] md:text-sm font-black">
-                              Rp {product.price.toLocaleString('id-ID')}
-                            </p>
+                      <div className="flex items-center gap-1.5">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} className="w-5 h-5 text-[#FFC400] fill-[#FFC400]" />
+                        ))}
+                      </div>
+                      <p className="text-xs font-bold text-muted-foreground mt-2">(2.5rb) Ulasan Pembeli</p>
+                    </div>
+
+                    <div className="md:col-span-8 space-y-2.5">
+                      {[5, 4, 3, 2, 1].map((star) => (
+                        <div key={star} className="flex items-center gap-4 group cursor-default">
+                          <div className="flex items-center gap-1.5 w-8 shrink-0">
+                            <Star className="w-3.5 h-3.5 text-[#FFC400] fill-[#FFC400]" />
+                            <span className="text-xs font-black">{star}</span>
                           </div>
+                          <Progress 
+                            value={star === 5 ? 92 : star === 4 ? 6 : star === 3 ? 1.5 : star === 2 ? 0.5 : 0} 
+                            className="h-2 rounded-full bg-muted" 
+                          />
+                          <span className="text-[10px] font-bold text-muted-foreground w-10 text-right opacity-60">
+                            {star === 5 ? "2.3rb" : star === 4 ? "150" : star === 3 ? "35" : star === 2 ? "12" : "3"}
+                          </span>
                         </div>
-                        
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-1">
-                            <Star className="w-2.5 h-2.5 text-[#FFC400] fill-[#FFC400]" />
-                            <span className="text-[10px] font-medium text-muted-foreground">
-                              {product.rating} <span className="opacity-40">|</span> {product.sold} terjual
-                            </span>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Individual Reviews List */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-sm font-black tracking-tight">Semua Ulasan</h3>
+                  <Select defaultValue="newest">
+                    <SelectTrigger className="w-36 h-9 rounded-xl border-border bg-white text-[11px] font-bold">
+                      <SelectValue placeholder="Urutkan" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-border">
+                      <SelectItem value="newest" className="text-[11px] font-bold">Terbaru</SelectItem>
+                      <SelectItem value="highest" className="text-[11px] font-bold">Rating Tertinggi</SelectItem>
+                      <SelectItem value="lowest" className="text-[11px] font-bold">Rating Terendah</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-4">
+                  {SHOP_REVIEWS.map((review) => (
+                    <Card key={review.id} className="border-border border-[1.5px] shadow-sm rounded-2xl overflow-hidden bg-white hover:border-[#00AA5B]/30 transition-all">
+                      <CardContent className="p-5 md:p-6 space-y-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 rounded-xl border border-border shadow-sm">
+                              <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-black">
+                                {review.userName.substring(0, 1) || "U"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="text-[12px] font-black">{review.userName}</p>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star 
+                                    key={i} 
+                                    className={cn(
+                                      "w-2.5 h-2.5",
+                                      i < review.rating ? "text-[#FFC400] fill-[#FFC400]" : "text-muted-foreground opacity-20"
+                                    )} 
+                                  />
+                                ))}
+                                <span className="text-[10px] text-muted-foreground font-medium ml-1.5">{review.date}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-[#00AA5B]">
+                            <ThumbsUp className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+
+                        <div className="space-y-3">
+                          <p className="text-[13px] text-[#2E3137] leading-relaxed font-medium">
+                            "{review.comment}"
+                          </p>
+                          
+                          <div className="p-3 rounded-xl bg-[#F8FAFC] border border-border/50 flex items-center gap-3 group cursor-pointer hover:bg-white hover:border-[#00AA5B]/20 transition-all">
+                            <div className="h-8 w-8 rounded-lg bg-white border border-border overflow-hidden shrink-0">
+                              <Image src={`https://picsum.photos/seed/${review.id}/100/100`} alt="Product" width={32} height={32} className="object-cover" />
+                            </div>
+                            <p className="text-[10px] font-bold text-muted-foreground truncate group-hover:text-primary transition-colors">
+                              {review.productName}
+                            </p>
                           </div>
                         </div>
                       </CardContent>
@@ -509,143 +627,28 @@ export default function ShopProfilePage() {
                   ))}
                 </div>
 
-                <div className="flex justify-center pt-8">
+                <div className="flex justify-center pt-6">
                   <Button variant="outline" className="h-10 px-10 rounded-xl border-border font-black text-xs hover:bg-white hover:border-[#00AA5B] hover:text-[#00AA5B] transition-all">
-                    Tampilkan lebih banyak
+                    Lihat ulasan lainnya
                   </Button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {activeTab === "reviews" && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                {/* Rating Summary Card */}
-                <Card className="border-border border-[1.5px] shadow-sm rounded-2xl overflow-hidden bg-white">
-                  <CardContent className="p-6 md:p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-                      <div className="md:col-span-4 flex flex-col items-center text-center space-y-2 border-b md:border-b-0 md:border-r border-border pb-6 md:pb-0">
-                        <div className="flex items-baseline gap-1">
-                          <h2 className="text-5xl font-black font-headline">4.9</h2>
-                          <span className="text-lg font-bold text-muted-foreground">/ 5.0</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <Star key={s} className="w-5 h-5 text-[#FFC400] fill-[#FFC400]" />
-                          ))}
-                        </div>
-                        <p className="text-xs font-bold text-muted-foreground mt-2">(2.5rb) Ulasan Pembeli</p>
-                      </div>
-
-                      <div className="md:col-span-8 space-y-2.5">
-                        {[5, 4, 3, 2, 1].map((star) => (
-                          <div key={star} className="flex items-center gap-4 group cursor-default">
-                            <div className="flex items-center gap-1.5 w-8 shrink-0">
-                              <Star className="w-3.5 h-3.5 text-[#FFC400] fill-[#FFC400]" />
-                              <span className="text-xs font-black">{star}</span>
-                            </div>
-                            <Progress 
-                              value={star === 5 ? 92 : star === 4 ? 6 : star === 3 ? 1.5 : star === 2 ? 0.5 : 0} 
-                              className="h-2 rounded-full bg-muted" 
-                            />
-                            <span className="text-[10px] font-bold text-muted-foreground w-10 text-right opacity-60">
-                              {star === 5 ? "2.3rb" : star === 4 ? "150" : star === 3 ? "35" : star === 2 ? "12" : "3"}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Individual Reviews List */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between px-1">
-                    <h3 className="text-sm font-black tracking-tight">Semua Ulasan</h3>
-                    <Select defaultValue="newest">
-                      <SelectTrigger className="w-36 h-9 rounded-xl border-border bg-white text-[11px] font-bold">
-                        <SelectValue placeholder="Urutkan" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl border-border">
-                        <SelectItem value="newest" className="text-[11px] font-bold">Terbaru</SelectItem>
-                        <SelectItem value="highest" className="text-[11px] font-bold">Rating Tertinggi</SelectItem>
-                        <SelectItem value="lowest" className="text-[11px] font-bold">Rating Terendah</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-4">
-                    {SHOP_REVIEWS.map((review) => (
-                      <Card key={review.id} className="border-border border-[1.5px] shadow-sm rounded-2xl overflow-hidden bg-white hover:border-[#00AA5B]/30 transition-all">
-                        <CardContent className="p-5 md:p-6 space-y-4">
-                          <div className="flex justify-between items-start">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10 rounded-xl border border-border shadow-sm">
-                                <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-black">
-                                  {review.userName.substring(0, 1) || "U"}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="text-[12px] font-black">{review.userName}</p>
-                                <div className="flex items-center gap-1 mt-0.5">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star 
-                                      key={i} 
-                                      className={cn(
-                                        "w-2.5 h-2.5",
-                                        i < review.rating ? "text-[#FFC400] fill-[#FFC400]" : "text-muted-foreground opacity-20"
-                                      )} 
-                                    />
-                                  ))}
-                                  <span className="text-[10px] text-muted-foreground font-medium ml-1.5">{review.date}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-[#00AA5B]">
-                              <ThumbsUp className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-
-                          <div className="space-y-3">
-                            <p className="text-[13px] text-[#2E3137] leading-relaxed font-medium">
-                              "{review.comment}"
-                            </p>
-                            
-                            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-border/50 flex items-center gap-3 group cursor-pointer hover:bg-white hover:border-[#00AA5B]/20 transition-all">
-                              <div className="h-8 w-8 rounded-lg bg-white border border-border overflow-hidden shrink-0">
-                                <Image src={`https://picsum.photos/seed/${review.id}/100/100`} alt="Product" width={32} height={32} className="object-cover" />
-                              </div>
-                              <p className="text-[10px] font-bold text-muted-foreground truncate group-hover:text-primary transition-colors">
-                                {review.productName}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-center pt-6">
-                    <Button variant="outline" className="h-10 px-10 rounded-xl border-border font-black text-xs hover:bg-white hover:border-[#00AA5B] hover:text-[#00AA5B] transition-all">
-                      Lihat ulasan lainnya
-                    </Button>
-                  </div>
-                </div>
+          {activeTab === "vouchers" && (
+            <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-500">
+              <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mb-4 border-[1.5px] border-border">
+                <Award className="w-8 h-8 text-muted-foreground opacity-30" />
               </div>
-            )}
-
-            {activeTab === "vouchers" && (
-              <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-500">
-                <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mb-4 border-[1.5px] border-border">
-                  <Award className="w-8 h-8 text-muted-foreground opacity-30" />
-                </div>
-                <h3 className="text-base font-black tracking-tight">Tidak ada voucher tersedia</h3>
-                <p className="text-xs text-muted-foreground mt-2 max-w-xs font-medium">
-                  Toko ini belum memiliki promo voucher aktif saat ini.
-                </p>
-              </div>
-            )}
-          </div>
+              <h3 className="text-base font-black tracking-tight">Tidak ada voucher tersedia</h3>
+              <p className="text-xs text-muted-foreground mt-2 max-w-xs font-medium">
+                Toko ini belum memiliki promo voucher aktif saat ini.
+              </p>
+            </div>
+          )}
         </div>
-      </main>
+      </div>
+    </main>
   );
 }
