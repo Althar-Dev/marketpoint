@@ -28,7 +28,7 @@ import {
   Info,
   ShoppingBag,
   Clock,
-  UserPlus,
+  Heart,
   Search,
   CheckCircle2,
   ShieldCheck,
@@ -383,10 +383,10 @@ export default function ShopProfilePage() {
                       onClick={handleContactWhatsApp}
                       className="h-10 px-8 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-xs gap-2 shadow-lg shadow-[#00AA5B]/10 transition-transform active:scale-95"
                     >
-                      <MessageCircle className="w-4 h-4" /> Chat penjual
+                      <MessageCircle className="w-4 h-4" /> Chat
                     </Button>
                     <Button variant="outline" className="h-10 px-8 rounded-xl border-border font-black text-xs gap-2 hover:bg-[#F8FAFC] transition-transform active:scale-95">
-                      <UserPlus className="w-4 h-4" /> Follow
+                      <Heart className="w-4 h-4" /> Follow
                     </Button>
                   </div>
                 </div>
@@ -398,10 +398,10 @@ export default function ShopProfilePage() {
                   onClick={handleContactWhatsApp}
                   className="flex-1 h-9 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-[10px] gap-2 shadow-sm"
                 >
-                  <MessageCircle className="w-3.5 h-3.5" /> Chat penjual
+                  <MessageCircle className="w-3.5 h-3.5" /> Chat
                 </Button>
                 <Button variant="outline" className="flex-1 h-9 rounded-xl border-border font-black text-[10px] gap-2">
-                  <UserPlus className="w-3.5 h-3.5" /> Follow
+                  <Heart className="w-3.5 h-3.5" /> Follow
                 </Button>
               </div>
             </CardContent>
@@ -595,7 +595,7 @@ export default function ShopProfilePage() {
                             <div className="flex items-center gap-3">
                               <Avatar className="h-10 w-10 rounded-xl border border-border shadow-sm">
                                 <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-black">
-                                  {review.userName.substring(0, 1)}
+                                  {review.userName.substring(0, 1) || "U"}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
