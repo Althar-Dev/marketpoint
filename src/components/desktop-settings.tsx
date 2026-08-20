@@ -7,15 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { 
   Shield, 
-  Smartphone, 
-  CreditCard as CardIcon, 
   Coins, 
   Inbox, 
   ShoppingBag, 
   UserCircle,
   Building2,
   Bell,
-  LogOut
+  LogOut,
+  Store,
+  ChevronRight
 } from "lucide-react";
 import {
   Tabs,
@@ -74,29 +74,21 @@ export function DesktopSettings({
               </div>
             </div>
 
-            {/* Wallet Section */}
+            {/* Shop & Wallet Section */}
             <div className="space-y-3 pt-3 border-t border-border/50">
-              <div className="flex items-center justify-between group cursor-pointer">
+              <div className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
-                  <div className="w-4.5 h-4.5 bg-[#00AA5B] rounded-full flex items-center justify-center">
-                    <Smartphone className="w-2.5 h-2.5 text-white" />
+                  <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border group-hover:border-[#00AA5B]/30">
+                    <Store className="w-2.5 h-2.5 text-muted-foreground group-hover:text-[#00AA5B]" />
                   </div>
-                  <span className="text-[11px] font-medium text-muted-foreground">MarketPay</span>
+                  <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">Toko Saya</span>
                 </div>
-                <span className="text-[10px] font-bold text-[#00AA5B]">Aktifkan</span>
+                <span className="text-[10px] font-bold text-[#00AA5B]">Buka Gratis</span>
               </div>
-              <div className="flex items-center justify-between group cursor-pointer">
+              
+              <div className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
-                  <div className="w-4.5 h-4.5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border">
-                    <CardIcon className="w-2.5 h-2.5 text-muted-foreground" />
-                  </div>
-                  <span className="text-[11px] font-medium text-muted-foreground">Market Card</span>
-                </div>
-                <span className="text-[10px] font-bold text-[#00AA5B]">Daftar</span>
-              </div>
-              <div className="flex items-center justify-between group cursor-pointer">
-                <div className="flex items-center gap-2">
-                  <div className="w-4.5 h-4.5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border">
+                  <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border">
                     <Coins className="w-2.5 h-2.5 text-muted-foreground" />
                   </div>
                   <span className="text-[11px] font-medium text-muted-foreground">Saldo</span>
