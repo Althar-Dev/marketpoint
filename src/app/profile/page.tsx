@@ -209,8 +209,10 @@ export default function ProfilePage() {
         </div>
 
         <div className="px-4 pb-3 grid grid-cols-2 gap-3 mt-4">
-          <Button variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
-            Buka Toko Gratis <ChevronRight className="w-3 h-3 opacity-40" />
+          <Button asChild variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
+            <Link href="/my-shop/setup">
+              Buka Toko Gratis <ChevronRight className="w-3 h-3 opacity-40" />
+            </Link>
           </Button>
           <Button variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
             Daftar Affiliate <ChevronRight className="w-3 h-3 opacity-40" />
@@ -243,6 +245,7 @@ export default function ProfilePage() {
 
         <div className="h-1.5 bg-muted/20 w-full" />
 
+        {/* Komplain & Bantuan */}
         <div className="py-1">
           {[
             { label: "Pesanan Dikomplain", icon: MessageSquareWarning },

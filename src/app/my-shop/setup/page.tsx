@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore, useAuth } from "@/firebase";
+import { useUser, useFirestore } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
@@ -12,13 +12,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { 
   Store, 
   ChevronRight, 
   MapPin, 
   CheckCircle2, 
   ArrowLeft,
-  LayoutGrid
+  LayoutGrid,
+  Coins
 } from "lucide-react";
 import Link from "next/link";
 
@@ -91,7 +93,7 @@ export default function MerchantSetupPage() {
 
           <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="space-y-1">
-              <h1 className="text-2xl font-bold font-headline tracking-tight">Buka Toko Gratis</h1>
+              <h1 className="text-2xl font-bold font-headline tracking-tight text-foreground">Buka Toko Gratis</h1>
               <p className="text-xs text-muted-foreground">Lengkapi data di bawah untuk mulai berjualan solusi digital Anda.</p>
             </div>
             
@@ -122,7 +124,7 @@ export default function MerchantSetupPage() {
                         placeholder="Contoh: STS Digital Solutions"
                         value={shopName}
                         onChange={(e) => setShopName(e.target.value)}
-                        className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium"
+                        className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm"
                       />
                       <p className="text-[9px] text-muted-foreground px-1">Gunakan nama yang profesional dan mudah diingat oleh pembeli.</p>
                     </div>
@@ -134,7 +136,7 @@ export default function MerchantSetupPage() {
                           placeholder="sts-digital"
                           value={shopDomain}
                           onChange={(e) => setShopDomain(e.target.value.replace(/\s+/g, '-'))}
-                          className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium pr-[120px]"
+                          className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm pr-[120px]"
                         />
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground pointer-events-none">
                           .marketpoint.id
@@ -161,7 +163,7 @@ export default function MerchantSetupPage() {
                         placeholder="Jelaskan jenis solusi digital atau API yang Anda tawarkan..."
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        className="min-h-[120px] rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium resize-none"
+                        className="min-h-[120px] rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm resize-none"
                       />
                     </div>
 
