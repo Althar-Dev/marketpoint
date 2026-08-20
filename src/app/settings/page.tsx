@@ -56,7 +56,13 @@ export default function SettingsPage() {
     return doc(db, "users", user.uid, "wallet", "info");
   }, [db, user]);
 
+  const shopRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "shops", user.uid);
+  }, [db, user]);
+
   const { data: wallet, loading: walletLoading } = useDoc(walletRef);
+  const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
   useEffect(() => {
     setMounted(true);
@@ -110,7 +116,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (!mounted || authLoading || (user && walletLoading && !wallet)) {
+  if (!mounted || authLoading || (user && (walletLoading || shopLoading))) {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
@@ -157,6 +163,7 @@ export default function SettingsPage() {
           <DesktopSettings 
             user={user}
             wallet={wallet}
+            shop={shop}
             displayName={displayName}
             setDisplayName={setDisplayName}
             isEditing={isEditing}

@@ -49,7 +49,13 @@ export default function ProfilePage() {
     return doc(db, "users", user.uid, "wallet", "info");
   }, [db, user]);
 
+  const shopRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "shops", user.uid);
+  }, [db, user]);
+
   const { data: wallet, loading: walletLoading } = useDoc(walletRef);
+  const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
   useEffect(() => {
     setMounted(true);
@@ -103,7 +109,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (!mounted || authLoading || (user && walletLoading && !wallet)) {
+  if (!mounted || authLoading || (user && (walletLoading || shopLoading))) {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
@@ -151,6 +157,7 @@ export default function ProfilePage() {
           <DesktopSettings 
             user={user} 
             wallet={wallet} 
+            shop={shop}
             displayName={displayName}
             setDisplayName={setDisplayName}
             isEditing={isEditing}
@@ -210,8 +217,8 @@ export default function ProfilePage() {
 
         <div className="px-4 pb-3 grid grid-cols-2 gap-3 mt-4">
           <Button asChild variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
-            <Link href="/my-shop/setup">
-              Buka Toko Gratis <ChevronRight className="w-3 h-3 opacity-40" />
+            <Link href={shop ? "/my-shop" : "/my-shop/setup"}>
+              {shop ? "Kelola Toko" : "Buka Toko Gratis"} <ChevronRight className="w-3 h-3 opacity-40" />
             </Link>
           </Button>
           <Button variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
