@@ -260,6 +260,7 @@ export default function ShopProfilePage() {
                        <div className="flex items-center gap-1">
                          <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
                          <span className="text-[10px] font-bold text-[#212121]">4.9</span>
+                         <span className="text-[9px] font-medium opacity-60">(2.5rb ulasan)</span>
                        </div>
                        <span className="text-muted-foreground/30">|</span>
                        <div className="flex items-center gap-1">
