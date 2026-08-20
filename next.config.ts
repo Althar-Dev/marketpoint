@@ -39,6 +39,12 @@ const nextConfig: NextConfig = {
         hostname: '*.r2.cloudflarestorage.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.marketpoint.id',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

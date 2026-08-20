@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   MapPin,
   Phone,
-  Loader2
+  Loader2,
+  Globe
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -112,7 +113,7 @@ export default function MerchantSetupPage() {
         description: error.message || "Pastikan konfigurasi R2 sudah benar.",
       });
     } finally {
-      // Reset input value so the same file can be selected again if needed
+      // Reset input value
       if (e.target) e.target.value = '';
       
       if (type === 'logo') setUploadingLogo(false);
@@ -174,7 +175,7 @@ export default function MerchantSetupPage() {
               <ArrowLeft className="w-3.5 h-3.5" /> Kembali
             </Link>
             <div className="h-3 w-px bg-border mx-1" />
-            <span className="text-[10px] font-black tracking-widest text-muted-foreground/50 uppercase">Pendaftaran Merchant</span>
+            <span className="text-[10px] font-black tracking-widest text-muted-foreground/50 uppercase">Pendaftaran Toko</span>
           </div>
 
           <div className="mb-8 space-y-1">
@@ -186,7 +187,7 @@ export default function MerchantSetupPage() {
             {/* Logo & Banner Section */}
             <Card className="border-none shadow-sm rounded-2xl overflow-hidden bg-white">
               <CardContent className="p-0">
-                <div className="relative h-32 md:h-40 bg-muted/30 group">
+                <div className="relative h-32 md:h-44 bg-muted/30 group">
                   {bannerUrl ? (
                     <Image src={bannerUrl} alt="Banner" fill className="object-cover" />
                   ) : (
@@ -204,12 +205,12 @@ export default function MerchantSetupPage() {
                   <Button 
                     variant="secondary" 
                     size="sm" 
-                    className="absolute bottom-3 right-3 rounded-full h-8 px-3 text-[10px] font-bold gap-1.5 shadow-sm"
+                    className="absolute bottom-4 right-4 rounded-full h-9 px-4 text-[11px] font-bold gap-2 shadow-lg z-20 hover:scale-105 transition-transform"
                     onClick={() => bannerInputRef.current?.click()}
                     disabled={uploadingBanner}
                   >
-                    {uploadingBanner ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
-                    {uploadingBanner ? "Mengupload..." : "Ganti Banner"}
+                    {uploadingBanner ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+                    {uploadingBanner ? "Mengunggah..." : "Ganti Banner"}
                   </Button>
                 </div>
                 <div className="px-6 pb-6 -mt-10 relative z-10">
@@ -223,10 +224,10 @@ export default function MerchantSetupPage() {
                         </div>
                       )}
                       <div 
-                        className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer z-20"
                         onClick={() => logoInputRef.current?.click()}
                       >
-                        {uploadingLogo ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Camera className="w-5 h-5 text-white" />}
+                        {uploadingLogo ? <Loader2 className="w-6 h-6 text-white animate-spin" /> : <Camera className="w-6 h-6 text-white" />}
                       </div>
                       <input 
                         type="file" 
@@ -238,7 +239,7 @@ export default function MerchantSetupPage() {
                     </div>
                     <div className="pb-1">
                        <p className="text-[11px] font-bold text-foreground uppercase tracking-wider">Logo Toko</p>
-                       <p className="text-[9px] text-muted-foreground">{uploadingLogo ? 'Sedang mengunggah...' : 'Klik gambar untuk ubah logo'}</p>
+                       <p className="text-[9px] text-muted-foreground">{uploadingLogo ? 'Sedang mengunggah...' : 'Klik untuk ubah logo'}</p>
                     </div>
                   </div>
                 </div>
@@ -257,39 +258,38 @@ export default function MerchantSetupPage() {
                   
                   <div className="grid gap-5">
                     <div className="space-y-2">
-                      <Label className="text-[11px] font-bold text-muted-foreground uppercase">Nama Toko</Label>
+                      <Label className="text-[11px] font-bold text-muted-foreground uppercase ml-1">Nama Toko</Label>
                       <Input 
                         placeholder="Contoh: Digital Solutions ID"
                         value={shopName}
                         onChange={(e) => setShopName(e.target.value)}
-                        className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm"
+                        className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm"
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Slug / Link Toko</Label>
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase ml-1">Username / Slug Toko</Label>
                         <div className="relative">
                           <Input 
                             value={slug}
                             onChange={(e) => setSlug(e.target.value)}
-                            className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm pl-4"
+                            className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm pl-10"
                           />
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-bold text-muted-foreground/50">
-                            marketpoint.com/
-                          </div>
+                          <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                         </div>
+                        <p className="text-[9px] text-muted-foreground ml-1">marketpoint.id/<span className="font-bold text-primary">{slug || 'username'}</span></p>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">WhatsApp / Telp</Label>
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase ml-1">WhatsApp / No. Telp</Label>
                         <div className="relative">
                           <Input 
                             placeholder="08xxxxxxxx"
                             value={whatsapp}
                             onChange={(e) => setWhatsapp(e.target.value)}
-                            className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm pl-9"
+                            className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm pl-10"
                           />
-                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/60" />
+                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                         </div>
                       </div>
                     </div>
@@ -300,74 +300,76 @@ export default function MerchantSetupPage() {
                 <div className="space-y-5">
                   <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                     <MapPin className="w-4 h-4 text-[#00AA5B]" />
-                    <h3 className="text-[13px] font-bold uppercase tracking-wider">Detail Alamat</h3>
+                    <h3 className="text-[13px] font-bold uppercase tracking-wider">Lokasi Toko</h3>
                   </div>
                   
                   <div className="grid gap-5">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Provinsi</Label>
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase ml-1">Provinsi</Label>
                         <Input 
                           placeholder="Jawa Barat"
                           value={province}
                           onChange={(e) => setProvince(e.target.value)}
-                          className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
+                          className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Kota / Kabupaten</Label>
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase ml-1">Kota / Kabupaten</Label>
                         <Input 
                           placeholder="Bandung"
                           value={city}
                           onChange={(e) => setCity(e.target.value)}
-                          className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
+                          className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Kecamatan</Label>
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase ml-1">Kecamatan</Label>
                         <Input 
                           placeholder="Cibiru"
                           value={district}
                           onChange={(e) => setDistrict(e.target.value)}
-                          className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
+                          className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div className="md:col-span-3 space-y-2">
-                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Alamat Lengkap</Label>
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase ml-1">Alamat Lengkap</Label>
                         <Textarea 
                           placeholder="Nama jalan, nomor rumah, blok, RT/RW..."
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
-                          className="min-h-[80px] rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs resize-none"
+                          className="min-h-[90px] rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs resize-none"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Kode Pos</Label>
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase ml-1">Kode Pos</Label>
                         <Input 
                           placeholder="40614"
                           value={postalCode}
                           onChange={(e) => setPostalCode(e.target.value)}
-                          className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
+                          className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
                         />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-6">
                   <Button 
                     disabled={!shopName || !slug || !whatsapp || !address || isSubmitting || uploadingLogo || uploadingBanner}
                     onClick={handleCreateShop}
-                    className="w-full h-12 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-sm shadow-lg shadow-[#00AA5B]/10 transition-all active:scale-[0.98]"
+                    className="w-full h-12 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-sm shadow-lg shadow-[#00AA5B]/20 transition-all active:scale-[0.98]"
                   >
                     {isSubmitting ? "Sedang Memproses..." : "Aktifkan Toko Sekarang"}
                   </Button>
-                  <p className="text-[9px] text-center text-muted-foreground mt-4 leading-relaxed">
-                    Dengan klik tombol di atas, Anda setuju dengan Syarat & Ketentuan Merchant MarketPoint.
-                  </p>
+                  <div className="mt-4 p-4 rounded-xl bg-muted/20 border border-dashed border-border">
+                    <p className="text-[9px] text-center text-muted-foreground leading-relaxed">
+                      Dengan mengaktifkan toko, Anda menyetujui <Link href="/terms" className="text-[#00AA5B] font-bold hover:underline">Syarat & Ketentuan</Link> serta <Link href="/privacy" className="text-[#00AA5B] font-bold hover:underline">Kebijakan Privasi</Link> Merchant MarketPoint.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
