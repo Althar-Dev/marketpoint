@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Camera,
@@ -158,7 +159,16 @@ export default function MerchantSetupPage() {
     }
   };
 
-  if (!mounted || authLoading || !user) return <div className="min-h-screen bg-[#F8FAFC]" />;
+  if (!mounted || authLoading || !user) {
+    return (
+      <div className="p-3 md:p-6 lg:p-8">
+        <div className="max-w-screen-md mx-auto space-y-5">
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <Skeleton className="h-[500px] w-full rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-3 md:p-6 lg:p-8">
@@ -337,7 +347,7 @@ export default function MerchantSetupPage() {
                 <Button 
                   disabled={!shopName || !slug || !whatsapp || !address || isSubmitting || uploadingLogo || uploadingBanner}
                   onClick={handleCreateShop}
-                  className="w-full h-10 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-xs shadow-sm transition-all active:scale-[0.98]"
+                  className="w-full h-10 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs shadow-sm transition-all active:scale-[0.98]"
                 >
                   {isSubmitting ? "Sedang Menyimpan..." : "Simpan Profil Toko"}
                 </Button>

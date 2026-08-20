@@ -10,6 +10,7 @@ import { MarketBottomNav } from "@/components/market-bottom-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   MapPin, 
   MessageCircle, 
@@ -81,11 +82,42 @@ export default function ShopProfilePage() {
 
   if (!mounted || loading) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-body">
         <MarketHeader />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-[#00AA5B] border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <main className="flex-1 w-full pt-16">
+          <Skeleton className="h-40 md:h-64 w-full rounded-none" />
+          <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-16 relative z-10 mb-8">
+            <Card className="border-border border-[1.5px] shadow-lg rounded-2xl bg-white overflow-hidden">
+              <CardContent className="p-4 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+                <Skeleton className="h-20 w-20 md:h-24 md:w-24 rounded-2xl shrink-0" />
+                <div className="flex-1 space-y-3">
+                  <Skeleton className="h-6 w-48" />
+                  <div className="flex gap-4">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="max-w-screen-xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12">
+            <aside className="lg:col-span-3 space-y-4">
+              <Skeleton className="h-48 w-full rounded-xl" />
+            </aside>
+            <div className="lg:col-span-9 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <Card key={i} className="border-border border-[1px] shadow-sm rounded-xl overflow-hidden bg-white">
+                  <Skeleton className="aspect-square w-full rounded-none" />
+                  <CardContent className="p-3 space-y-2">
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-4 w-24" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </main>
+        <MarketBottomNav />
       </div>
     );
   }
@@ -102,7 +134,7 @@ export default function ShopProfilePage() {
           <p className="text-muted-foreground mt-2 max-w-xs">
             Maaf, toko dengan alamat ini tidak tersedia atau telah dihapus.
           </p>
-          <Button asChild className="mt-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold rounded-xl">
+          <Button asChild className="mt-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold rounded-xl text-white">
             <Link href="/">Kembali ke Beranda</Link>
           </Button>
         </main>
@@ -183,7 +215,7 @@ export default function ShopProfilePage() {
                 <div className="flex items-center gap-2 pt-2 md:pt-0">
                   <Button 
                     onClick={handleContactWhatsApp}
-                    className="flex-1 md:flex-none h-10 px-6 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-xs gap-2 shadow-sm"
+                    className="flex-1 md:flex-none h-10 px-6 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2 shadow-sm"
                   >
                     <MessageCircle className="w-4 h-4" /> Chat
                   </Button>
