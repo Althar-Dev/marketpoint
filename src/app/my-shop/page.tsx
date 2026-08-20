@@ -90,7 +90,7 @@ export default function MerchantDashboard() {
             
             <Card className="border-border shadow-sm rounded-xl bg-white">
               <CardHeader className="p-4 pb-0 flex flex-row items-center justify-between">
-                <CardTitle className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">Statistik Hari Ini</CardTitle>
+                <CardTitle className="text-[10px] font-bold text-muted-foreground tracking-wider">Statistik Hari Ini</CardTitle>
                 <Link href="#" className="text-[10px] font-bold text-[#00AA5B] hover:underline">Detail</Link>
               </CardHeader>
               <CardContent className="p-4 pt-3">
@@ -102,7 +102,7 @@ export default function MerchantDashboard() {
                      { label: "Pelanggan Baru", value: "0", color: "text-foreground" },
                    ].map((stat, idx) => (
                      <div key={idx} className="p-3 rounded-lg bg-white border border-border hover:border-[#00AA5B] transition-all cursor-pointer shadow-sm group">
-                        <p className={cn("text-lg font-black mb-0.5 tracking-tighter", stat.color)}>{stat.value}</p>
+                        <p className={cn("text-sm font-bold mb-0.5 tracking-tight", stat.color)}>{stat.value}</p>
                         <p className="text-[10px] font-bold text-muted-foreground group-hover:text-foreground transition-colors">{stat.label}</p>
                      </div>
                    ))}
@@ -145,7 +145,7 @@ export default function MerchantDashboard() {
                      <Wallet className="w-3 h-3" />
                      <span className="text-[9px] font-bold tracking-wider">Saldo Penghasilan</span>
                   </div>
-                  <p className="text-xl font-black mb-4 tracking-tighter">
+                  <p className="text-lg font-bold mb-4 tracking-tight">
                      Rp{wallet?.balance?.toLocaleString('id-ID') || 0}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
