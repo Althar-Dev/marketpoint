@@ -74,7 +74,7 @@ export function DesktopSettings({
               </div>
             </div>
 
-            {/* Shop & Wallet Section */}
+            {/* Shop Section */}
             <div className="space-y-3 pt-3 border-t border-border/50">
               <div className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
@@ -207,9 +207,9 @@ export function DesktopSettings({
                       <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-border/60 justify-center">
                         Buat Kata Sandi
                       </Button>
-                      <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-border/60 flex items-center gap-2.5 px-4 text-left group">
+                      <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-border/60 flex items-center justify-center gap-2.5 group">
                         <Shield className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                        <span className="flex-1">PIN MarketPoint</span>
+                        <span>PIN MarketPoint</span>
                       </Button>
                     </div>
                   </div>
