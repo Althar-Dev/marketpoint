@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   onSnapshot,
   DocumentReference,
@@ -13,40 +13,39 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | null>(null);
-  const lastRefPath = useRef<string | null>(null);
+  const [loadedPath, setLoadedPath] = useState<string | null>(null);
 
   useEffect(() => {
-    const currentPath = docRef?.path || null;
-    
-    // Jika ref null, set loading false dan data null
     if (!docRef) {
       setData(null);
       setLoading(false);
-      lastRefPath.current = null;
+      setLoadedPath(null);
       return;
     }
 
-    // Jika path berbeda, berarti kita mulai memuat dokumen baru
-    if (currentPath !== lastRefPath.current) {
-      setLoading(true);
-      lastRefPath.current = currentPath;
-    }
+    setLoading(true);
 
     const unsubscribe = onSnapshot(
       docRef,
       (snapshot: DocumentSnapshot<T>) => {
-        setData(snapshot.exists() ? { ...snapshot.data()!, id: snapshot.id } : null);
+        setData(snapshot.exists() ? ({ ...snapshot.data()!, id: snapshot.id } as T) : null);
         setLoading(false);
+        setLoadedPath(docRef.path);
       },
       (err) => {
         console.error(err);
         setError(err);
         setLoading(false);
+        setLoadedPath(docRef.path);
       }
     );
 
     return () => unsubscribe();
   }, [docRef]);
 
-  return { data, loading, error };
+  const currentPath = docRef?.path || null;
+  const isActuallyLoading = docRef ? (loading || loadedPath !== currentPath) : true;
+
+  return { data, loading: isActuallyLoading, error };
 }
+

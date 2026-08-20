@@ -51,6 +51,11 @@ export default function SettingsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
 
+  const userRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "users", user.uid);
+  }, [db, user]);
+
   const walletRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "users", user.uid, "wallet", "info");
@@ -61,6 +66,7 @@ export default function SettingsPage() {
     return doc(db, "shops", user.uid);
   }, [db, user]);
 
+  const { data: userData, loading: userLoading } = useDoc(userRef);
   const { data: wallet, loading: walletLoading } = useDoc(walletRef);
   const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
@@ -116,7 +122,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (!mounted || authLoading || (user && (walletLoading || shopLoading))) {
+  if (!mounted || authLoading || (user && (userLoading || walletLoading || shopLoading))) {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
@@ -154,6 +160,8 @@ export default function SettingsPage() {
 
   if (!user) return null;
 
+  const hasShop = userData?.hasShop === true || !!shop;
+
   // Render Desktop View (Unified Layout)
   if (!isMobile) {
     return (
@@ -163,7 +171,7 @@ export default function SettingsPage() {
           <DesktopSettings 
             user={user}
             wallet={wallet}
-            shop={shop}
+            hasShop={hasShop}
             displayName={displayName}
             setDisplayName={setDisplayName}
             isEditing={isEditing}

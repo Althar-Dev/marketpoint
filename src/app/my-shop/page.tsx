@@ -61,23 +61,19 @@ export default function MerchantDashboard() {
 
   // Handle Pengalihan (Redirect)
   useEffect(() => {
-    if (!mounted || authLoading || userLoading) return;
+    if (!mounted || authLoading || userLoading || shopLoading) return;
 
     if (!user) {
       router.push("/login");
       return;
     }
 
-    // Hanya redirect jika data sudah benar-benar selesai dimuat
-    // dan dipastikan baik flag di user maupun dokumen di shops tidak ada
-    if (!userLoading && !shopLoading) {
-      const hasShopFlag = userData?.hasShop === true;
-      const hasShopDoc = !!shop;
+    const hasShopFlag = userData?.hasShop === true;
+    const hasShopDoc = !!shop;
 
-      if (!hasShopFlag && !hasShopDoc) {
-        console.log("No shop detected, redirecting to setup...");
-        router.push("/my-shop/setup");
-      }
+    if (!hasShopFlag && !hasShopDoc) {
+      console.log("No shop detected, redirecting to setup...");
+      router.push("/my-shop/setup");
     }
   }, [userData, userLoading, shop, shopLoading, user, authLoading, router, mounted]);
 
