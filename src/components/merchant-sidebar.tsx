@@ -31,7 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useDoc, useUser, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/avatar";
 
 export function MerchantSidebar() {
   const pathname = usePathname();
@@ -68,7 +68,7 @@ export function MerchantSidebar() {
           </div>
           {state !== "collapsed" && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-[10px] font-bold text-[#00AA5B] leading-none">Seller center</span>
+              <span className="text-[9px] font-bold text-[#00AA5B] leading-none">Seller center</span>
               <span className="text-sm font-bold tracking-tight truncate">MarketPoint</span>
             </div>
           )}
@@ -77,7 +77,7 @@ export function MerchantSidebar() {
 
       <SidebarContent className="gap-0">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60">Menu utama</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[9px] font-bold text-muted-foreground/60">Menu utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
@@ -101,7 +101,7 @@ export function MerchantSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60">Manajemen</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[9px] font-bold text-muted-foreground/60">Manajemen</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryItems.map((item) => {
@@ -139,14 +139,17 @@ export function MerchantSidebar() {
 
         {state !== "collapsed" && shop && (
           <div className="mt-3 p-2 rounded-lg bg-muted/30 border border-border/50 flex items-center gap-2">
-            <Avatar className="h-7 w-7 rounded-md border border-white">
-              <AvatarImage src={shop.logoUrl} />
-              <AvatarFallback className="bg-[#00AA5B] text-white text-[9px] font-bold">
-                {shop.name?.substring(0, 1) || "S"}
-              </AvatarFallback>
-            </Avatar>
+            <div className="h-7 w-7 rounded-md border border-white overflow-hidden relative shrink-0">
+               {shop.logoUrl ? (
+                 <Image src={shop.logoUrl} alt="Logo" fill className="object-cover" />
+               ) : (
+                 <div className="w-full h-full bg-[#00AA5B] flex items-center justify-center">
+                    <span className="text-[9px] font-bold text-white">{shop.name?.substring(0, 1)}</span>
+                 </div>
+               )}
+            </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold truncate leading-tight">{shop.name}</p>
+              <p className="text-[10px] font-bold truncate leading-tight">{shop.name}</p>
               <p className="text-[9px] text-muted-foreground truncate italic">@{shop.slug}</p>
             </div>
             <ChevronRight className="w-3 h-3 text-muted-foreground opacity-30" />
