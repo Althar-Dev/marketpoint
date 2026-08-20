@@ -11,21 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  Store, 
-  MapPin, 
-  CheckCircle2, 
   ArrowLeft,
-  LayoutGrid,
-  Coins,
   ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
@@ -38,7 +26,6 @@ export default function MerchantSetupPage() {
   const [mounted, setMounted] = useState(false);
 
   const [shopName, setShopName] = useState("");
-  const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -56,7 +43,6 @@ export default function MerchantSetupPage() {
       const shopRef = doc(db, "shops", user.uid);
       await setDoc(shopRef, {
         name: shopName,
-        category: category,
         description: description,
         ownerId: user.uid,
         status: "ACTIVE",
@@ -114,31 +100,14 @@ export default function MerchantSetupPage() {
                     onChange={(e) => setShopName(e.target.value)}
                     className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm"
                   />
-                  <p className="text-[9px] text-muted-foreground px-1">Gunakan nama yang profesional dan mudah diingat oleh pembeli.</p>
+                  <p className="text-[9px] text-muted-foreground px-1">Gunakan nama yang profesional dan mudah ingat oleh pembeli.</p>
                 </div>
 
-                {/* Section 2: Kategori */}
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">Kategori Solusi Digital</Label>
-                  <Select onValueChange={setCategory}>
-                    <SelectTrigger className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-sm">
-                      <SelectValue placeholder="Pilih Kategori..." />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="api" className="text-xs">API & SDK Bridge</SelectItem>
-                      <SelectItem value="source" className="text-xs">Source Code & Template</SelectItem>
-                      <SelectItem value="bot" className="text-xs">Bot & Automations</SelectItem>
-                      <SelectItem value="ai" className="text-xs">AI & GenKit Modules</SelectItem>
-                      <SelectItem value="tools" className="text-xs">Dev Tools & Plugins</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Section 3: Deskripsi */}
+                {/* Section 2: Deskripsi */}
                 <div className="space-y-2">
                   <Label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">Deskripsi Toko</Label>
                   <Textarea 
-                    placeholder="Jelaskan secara singkat jenis solusi digital atau keunggulan API yang Anda tawarkan..."
+                    placeholder="Jelaskan secara singkat jenis solusi digital atau keunggulan yang Anda tawarkan..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="min-h-[120px] rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm resize-none"
@@ -158,7 +127,7 @@ export default function MerchantSetupPage() {
               </div>
 
               <Button 
-                disabled={!shopName || !category || !description || isSubmitting}
+                disabled={!shopName || !description || isSubmitting}
                 onClick={handleCreateShop}
                 className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-sm shadow-lg shadow-[#00AA5B]/10 transition-all active:scale-[0.98]"
               >
