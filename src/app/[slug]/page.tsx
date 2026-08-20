@@ -22,7 +22,6 @@ import {
   MapPin, 
   MessageCircle, 
   Star, 
-  Share2, 
   Info,
   ShoppingBag,
   Clock,
@@ -227,17 +226,6 @@ export default function ShopProfilePage() {
         <Card className="border-border border-[1.5px] shadow-xl rounded-2xl bg-white overflow-hidden relative">
           <CardContent className="p-4 md:p-8 relative">
             
-            {/* Share Button - Absolute Top Right */}
-            <div className="absolute top-4 right-4 z-30">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-8 w-8 md:h-10 md:w-10 rounded-xl border-border bg-white shadow-sm hover:bg-muted transition-all active:scale-95"
-              >
-                <Share2 className="w-4 h-4" />
-              </Button>
-            </div>
-
             <div className="flex flex-row items-start gap-4 md:gap-8">
               {/* Logo Section - Aligned Left */}
               <div className="relative shrink-0">
@@ -256,7 +244,7 @@ export default function ShopProfilePage() {
               </div>
 
               {/* Info Container - Right of Logo */}
-              <div className="flex-1 min-w-0 pr-10 md:pr-0">
+              <div className="flex-1 min-w-0 pr-0">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h1 className="text-lg md:text-3xl font-black font-headline tracking-tight truncate max-w-[180px] md:max-w-md">

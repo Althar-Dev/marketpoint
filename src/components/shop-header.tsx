@@ -7,9 +7,7 @@ import {
   ChevronLeft, 
   Search, 
   ShoppingBag, 
-  MoreVertical,
-  Share2,
-  MessageCircle
+  Share2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,14 +48,11 @@ export function ShopHeader() {
 
         {/* Shop Specific Actions */}
         <div className="flex items-center gap-1 md:gap-3 shrink-0">
-          <Button size="icon" variant="ghost" className="rounded-xl h-9 w-9 text-muted-foreground hidden md:flex">
-            <Share2 className="w-4 h-4" />
-          </Button>
           <Button size="icon" variant="ghost" className="rounded-xl h-9 w-9 text-muted-foreground">
             <ShoppingBag className="w-4.5 h-4.5" />
           </Button>
           <Button size="icon" variant="ghost" className="rounded-xl h-9 w-9 text-muted-foreground">
-            <MoreVertical className="w-4.5 h-4.5" />
+            <Share2 className="w-4.5 h-4.5" />
           </Button>
         </div>
       </div>
