@@ -19,16 +19,19 @@ import {
   Info,
   ShoppingBag,
   CheckCircle2,
-  Clock
+  Clock,
+  Heart,
+  Search
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
 
 // Dummy products for the shop
 const SHOP_PRODUCTS = [
   {
     id: 1,
-    name: "Premium API Gateway Bridge - Enterprise",
+    name: "Premium API Gateway Bridge - Enterprise Edition",
     price: 125000,
     rating: 4.9,
     sold: "1.2rb",
@@ -36,7 +39,7 @@ const SHOP_PRODUCTS = [
   },
   {
     id: 2,
-    name: "Custom WhatsApp Bot Multi-Device",
+    name: "Custom WhatsApp Bot Multi-Device - Official License",
     price: 85000,
     rating: 4.8,
     sold: "850",
@@ -44,7 +47,7 @@ const SHOP_PRODUCTS = [
   },
   {
     id: 3,
-    name: "PPOB Realtime Engine Module",
+    name: "PPOB Realtime Engine Module - NextJS Ready",
     price: 45000,
     rating: 5.0,
     sold: "2.5rb",
@@ -52,11 +55,27 @@ const SHOP_PRODUCTS = [
   },
   {
     id: 4,
-    name: "NextJS 15 E-Commerce Template",
+    name: "NextJS 15 E-Commerce Template - Modern Stack",
     price: 150000,
     rating: 4.7,
     sold: "120",
     imageUrl: "https://picsum.photos/seed/shop4/400/400"
+  },
+  {
+    id: 5,
+    name: "GenKit AI Plugin - Gemini AI Integration",
+    price: 250000,
+    rating: 4.9,
+    sold: "45",
+    imageUrl: "https://picsum.photos/seed/shop5/400/400"
+  },
+  {
+    id: 6,
+    name: "Cloud Hosting Bridge - AWS Managed Service",
+    price: 75000,
+    rating: 4.6,
+    sold: "310",
+    imageUrl: "https://picsum.photos/seed/shop6/400/400"
   }
 ];
 
@@ -64,7 +83,6 @@ export default function ShopProfilePage() {
   const params = useParams();
   const slug = params.slug as string;
   const db = useFirestore();
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -99,22 +117,6 @@ export default function ShopProfilePage() {
               </CardContent>
             </Card>
           </div>
-          <div className="max-w-screen-xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12">
-            <aside className="lg:col-span-3 space-y-4">
-              <Skeleton className="h-48 w-full rounded-xl" />
-            </aside>
-            <div className="lg:col-span-9 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <Card key={i} className="border-border border-[1px] shadow-sm rounded-xl overflow-hidden bg-white">
-                  <Skeleton className="aspect-square w-full rounded-none" />
-                  <CardContent className="p-3 space-y-2">
-                    <Skeleton className="h-3 w-full" />
-                    <Skeleton className="h-4 w-24" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
         </main>
         <MarketBottomNav />
       </div>
@@ -130,7 +132,7 @@ export default function ShopProfilePage() {
             <Info className="w-10 h-10 text-muted-foreground" />
           </div>
           <h1 className="text-xl font-bold">Toko Tidak Ditemukan</h1>
-          <p className="text-muted-foreground mt-2 max-w-xs">
+          <p className="text-muted-foreground mt-2 max-w-xs text-sm">
             Maaf, toko dengan alamat ini tidak tersedia atau telah dihapus.
           </p>
           <Button asChild className="mt-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold rounded-xl text-white">
@@ -153,8 +155,8 @@ export default function ShopProfilePage() {
       <MarketHeader />
 
       <main className="flex-1 w-full pt-16 pb-20 lg:pb-0">
-        {/* Banner Section */}
-        <div className="relative h-40 md:h-64 w-full bg-muted overflow-hidden">
+        {/* Banner Section with Overlay */}
+        <div className="relative h-44 md:h-72 w-full bg-muted overflow-hidden">
           {shop.bannerUrl ? (
             <Image 
               src={shop.bannerUrl} 
@@ -164,138 +166,187 @@ export default function ShopProfilePage() {
               priority
             />
           ) : (
-            <div className="absolute inset-0 bg-[#00AA5B]/10 flex items-center justify-center">
-              <ShoppingBag className="w-12 h-12 text-[#00AA5B] opacity-20" />
+            <div className="absolute inset-0 bg-[#00AA5B]/5 flex items-center justify-center">
+              <ShoppingBag className="w-16 h-16 text-[#00AA5B] opacity-10" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
         </div>
 
-        {/* Shop Info Card */}
-        <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-16 relative z-10 mb-8">
-          <Card className="border-border border-[1.5px] shadow-lg rounded-2xl bg-white overflow-hidden">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center gap-4 md:gap-6">
-                <div className="h-16 w-16 md:h-24 md:w-24 rounded-2xl bg-white border-[1.5px] border-border shadow-md overflow-hidden shrink-0 relative">
-                  {shop.logoUrl ? (
-                    <Image src={shop.logoUrl} alt={shop.name} fill className="object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-[#00AA5B] flex items-center justify-center">
-                      <span className="text-xl md:text-2xl font-bold text-white">{shop.name?.substring(0, 1)}</span>
-                    </div>
-                  )}
+        {/* Shop Info Card - Floating Design */}
+        <div className="max-w-screen-xl mx-auto px-4 -mt-12 md:-mt-20 relative z-20 mb-8">
+          <Card className="border-border border-[1.5px] shadow-xl rounded-2xl bg-white overflow-hidden transition-all duration-300">
+            <CardContent className="p-4 md:p-8">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-5 md:gap-8">
+                {/* Logo with Status Indicator */}
+                <div className="relative shrink-0">
+                  <div className="h-20 w-20 md:h-32 md:w-32 rounded-3xl bg-white border-[1.5px] border-border shadow-md overflow-hidden relative">
+                    {shop.logoUrl ? (
+                      <Image src={shop.logoUrl} alt={shop.name} fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#00AA5B] flex items-center justify-center">
+                        <span className="text-2xl md:text-4xl font-bold text-white uppercase">{shop.name?.substring(0, 1)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-white flex items-center justify-center border-[1.5px] border-border shadow-sm">
+                    <div className="h-3 w-3 rounded-full bg-[#00AA5B] animate-pulse"></div>
+                  </div>
                 </div>
 
-                <div className="flex-1 min-w-0 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-lg md:text-2xl font-bold tracking-tight truncate">{shop.name}</h1>
-                    <Badge variant="secondary" className="bg-[#00AA5B]/10 text-[#00AA5B] border-none font-bold text-[9px] md:text-[10px] h-5 shrink-0 px-2">
+                {/* Shop Title & Primary Stats */}
+                <div className="flex-1 text-center md:text-left space-y-3 min-w-0">
+                  <div className="flex flex-col md:flex-row items-center gap-3">
+                    <h1 className="text-xl md:text-3xl font-black font-headline tracking-tight truncate max-w-md">
+                      {shop.name}
+                    </h1>
+                    <Badge className="bg-[#00AA5B] text-white border-none font-black text-[9px] h-5 px-2 tracking-widest">
                       OFFICIAL STORE
                     </Badge>
                   </div>
                   
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
-                      <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                      <span className="text-[10px] md:text-xs font-medium">{shop.location?.city || "Lokasi tidak diatur"}</span>
+                  <div className="flex flex-wrap justify-center md:justify-start items-center gap-x-6 gap-y-2 text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-[#00AA5B]" />
+                      <span className="text-xs font-bold text-[#2E3137]">{shop.location?.city || "Lokasi Toko"}</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-[#FFC400] fill-[#FFC400]" />
-                      <span className="text-[10px] md:text-xs font-bold text-foreground">4.9</span>
-                      <span className="text-[10px] md:text-xs">(2.5rb Penilaian)</span>
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-[#FFC400] fill-[#FFC400]" />
+                      <span className="text-xs font-bold text-[#2E3137]">4.9</span>
+                      <span className="text-[11px] font-medium opacity-60">(2.5rb Ulasan)</span>
                     </div>
-                    <div className="hidden sm:flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span className="text-xs">Online 5 menit yang lalu</span>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground/60" />
+                      <span className="text-[11px] font-medium">Aktif 5 menit lalu</span>
                     </div>
                   </div>
-                </div>
 
-                <div className="hidden md:flex items-center gap-2">
-                  <Button 
-                    onClick={handleContactWhatsApp}
-                    className="h-10 px-6 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2 shadow-sm"
-                  >
-                    <MessageCircle className="w-4 h-4" /> Chat
-                  </Button>
-                  <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-border hover:bg-muted/50">
-                    <Share2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center justify-center md:justify-start gap-2 pt-2">
+                    <Button 
+                      onClick={handleContactWhatsApp}
+                      className="h-10 px-8 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-xs gap-2 shadow-lg shadow-[#00AA5B]/10 transition-transform active:scale-95"
+                    >
+                      <MessageCircle className="w-4 h-4" /> Chat Penjual
+                    </Button>
+                    <Button variant="outline" className="h-10 px-8 rounded-xl border-border font-black text-xs gap-2 hover:bg-[#F8FAFC] transition-transform active:scale-95">
+                      <Heart className="w-4 h-4" /> Favoritkan
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-border hover:bg-[#F8FAFC]">
+                      <Share2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-
-              {/* Mobile Actions */}
-              <div className="flex md:hidden items-center gap-2 mt-4 pt-4 border-t border-border">
-                <Button 
-                  onClick={handleContactWhatsApp}
-                  className="flex-1 h-9 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2"
-                >
-                  <MessageCircle className="w-3.5 h-3.5" /> Chat
-                </Button>
-                <Button variant="outline" className="flex-1 h-9 rounded-lg border-border font-bold text-xs gap-2">
-                  <Share2 className="w-3.5 h-3.5" /> Bagikan
-                </Button>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Shop Content */}
-        <div className="max-w-screen-xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12">
-          {/* Sidebar Info (Desktop) */}
-          <aside className="lg:col-span-3 space-y-4">
-            <Card className="border-border border-[1.5px] shadow-sm rounded-xl bg-white p-4">
-              <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-4">Informasi Toko</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Status Toko</span>
-                  <div className="flex items-center gap-1 text-[#00AA5B]">
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span className="text-[11px] font-bold">Aktif</span>
+        {/* Shop Content Grid */}
+        <div className="max-w-screen-xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8 pb-16">
+          {/* Sidebar Section */}
+          <aside className="lg:col-span-3 space-y-6">
+            <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
+              <div className="p-5 border-b border-border bg-[#F8FAFC]">
+                <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em]">Profil Bisnis</h3>
+              </div>
+              <CardContent className="p-5 space-y-5">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-muted-foreground">Kualitas Produk</span>
+                    <div className="flex items-center gap-1 text-[#00AA5B] font-black text-[11px]">
+                      <Star className="w-3 h-3 fill-current" /> 4.9
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-muted-foreground">Kecepatan Respon</span>
+                    <span className="text-[11px] font-black text-[#2E3137]">Sangat Baik</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-muted-foreground">Produk Terjual</span>
+                    <span className="text-[11px] font-black text-[#2E3137]">15.4rb+</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Produk Terjual</span>
-                  <span className="text-[11px] font-bold">10rb+</span>
+                <div className="h-px bg-border w-full"></div>
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Metode Pengiriman</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className="text-[9px] font-bold py-0.5 rounded-lg border-border">Instan</Badge>
+                    <Badge variant="outline" className="text-[9px] font-bold py-0.5 rounded-lg border-border">Reguler</Badge>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Pengikut</span>
-                  <span className="text-[11px] font-bold">5.2rb</span>
-                </div>
-              </div>
-              <Button variant="outline" className="w-full mt-6 h-9 rounded-lg border-border font-bold text-[10px]">
-                Lihat Catatan Toko
-              </Button>
+              </CardContent>
             </Card>
+
+            <Button variant="ghost" className="w-full h-11 rounded-2xl border border-dashed border-border text-muted-foreground font-black text-[10px] hover:bg-white hover:text-[#00AA5B] hover:border-[#00AA5B] transition-all">
+              Lihat Catatan Toko
+            </Button>
           </aside>
 
-          {/* Product List */}
-          <div className="lg:col-span-9 space-y-6">
-            <div className="flex items-center justify-between border-b border-border pb-2">
-              <div className="flex gap-6">
-                <button className="text-sm font-bold text-[#00AA5B] border-b-2 border-[#00AA5B] pb-2">Produk</button>
-                <button className="text-sm font-bold text-muted-foreground hover:text-foreground pb-2 transition-colors">Ulasan</button>
+          {/* Main Content Area */}
+          <div className="lg:col-span-9 space-y-8">
+            {/* Nav & Filter Bar */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-2">
+              <div className="flex gap-8">
+                <button className="text-sm font-black text-[#00AA5B] border-b-[3px] border-[#00AA5B] pb-3 transition-all">Semua Produk</button>
+                <button className="text-sm font-black text-muted-foreground hover:text-foreground pb-3 transition-colors">Ulasan Toko</button>
+                <button className="text-sm font-black text-muted-foreground hover:text-foreground pb-3 transition-colors">Voucher</button>
+              </div>
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Cari produk di toko ini..." 
+                  className="h-9 pl-10 rounded-xl bg-white border-border text-xs font-bold"
+                />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            {/* Product Grid - Modern Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {SHOP_PRODUCTS.map((product) => (
-                <Card key={product.id} className="group border-border border-[1px] shadow-sm rounded-xl overflow-hidden bg-white hover:shadow-md transition-all cursor-pointer">
-                  <div className="relative aspect-square bg-muted/30 overflow-hidden">
-                    <Image src={product.imageUrl} alt={product.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                <Card key={product.id} className="group border-border border-[1.5px] shadow-sm rounded-2xl overflow-hidden bg-white hover:shadow-xl transition-all duration-500 cursor-pointer flex flex-col">
+                  <div className="relative aspect-square bg-muted/20 overflow-hidden">
+                    <Image 
+                      src={product.imageUrl} 
+                      alt={product.name} 
+                      fill 
+                      className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                   </div>
-                  <CardContent className="p-3 space-y-2">
-                    <h4 className="text-[11px] font-medium text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">{product.name}</h4>
-                    <p className="text-[13px] font-black">Rp {product.price.toLocaleString('id-ID')}</p>
-                    <div className="flex items-center gap-1.5 pt-1">
-                      <Star className="w-2.5 h-2.5 text-[#FFC400] fill-[#FFC400]" />
-                      <span className="text-[10px] font-medium text-muted-foreground">
-                        {product.rating} <span className="opacity-40">|</span> {product.sold} terjual
-                      </span>
+                  <CardContent className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="space-y-1.5">
+                      <h4 className="text-[12px] font-bold text-[#2E3137] line-clamp-2 leading-tight group-hover:text-[#00AA5B] transition-colors">
+                        {product.name}
+                      </h4>
+                      <p className="text-[15px] font-black text-[#212121]">
+                        Rp {product.price.toLocaleString('id-ID')}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-0.5">
+                          <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
+                          <span className="text-[10px] font-black text-[#2E3137]">{product.rating}</span>
+                        </div>
+                        <span className="text-[10px] font-medium text-muted-foreground opacity-50">|</span>
+                        <span className="text-[10px] font-medium text-muted-foreground">{product.sold} terjual</span>
+                      </div>
+                      
+                      <Button className="w-full h-8 rounded-lg bg-[#F8FAFC] hover:bg-[#00AA5B] text-[#2E3137] hover:text-white font-black text-[9px] border border-border group-hover:border-[#00AA5B] transition-all">
+                        Tambah ke Keranjang
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
               ))}
+            </div>
+
+            {/* Load More Button */}
+            <div className="flex justify-center pt-8">
+              <Button variant="outline" className="h-10 px-10 rounded-xl border-border font-black text-xs hover:bg-white hover:border-[#00AA5B] hover:text-[#00AA5B] transition-all">
+                Tampilkan Lebih Banyak
+              </Button>
             </div>
           </div>
         </div>
