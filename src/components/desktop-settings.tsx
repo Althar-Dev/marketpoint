@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -64,10 +65,10 @@ export function DesktopSettings({
   
   return (
     <div className="bg-[#F8FAFC] font-body text-[#212121]">
-      <div className="max-w-screen-xl mx-auto flex gap-6 p-8">
+      <div className="max-w-screen-xl mx-auto flex gap-6 p-8 items-start">
         
-        {/* Sidebar Nav - Tokopedia Style */}
-        <aside className="w-[280px] shrink-0 space-y-4">
+        {/* Sidebar Nav - Sticky to stay in view */}
+        <aside className="w-[280px] shrink-0 space-y-4 sticky top-24">
           <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden p-4">
             <div className="flex items-center gap-3 mb-6">
               <Avatar className="h-10 w-10 ring-1 ring-border">
@@ -167,16 +168,16 @@ export function DesktopSettings({
           </Card>
         </aside>
 
-        {/* Main Content Area */}
-        <main className="flex-1">
-          <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden min-h-[600px]">
+        {/* Main Content Area - height fit content */}
+        <main className="flex-1 min-w-0">
+          <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden h-fit">
             <div className="p-6 border-b border-border/50 flex items-center gap-3">
               <UserCircle className="w-5 h-5 text-muted-foreground" />
               <h1 className="text-lg font-bold tracking-tight">{displayName || "Profil"}</h1>
             </div>
 
             <Tabs defaultValue="biodata" className="w-full">
-              <div className="px-6 border-b border-border/50 bg-white sticky top-0 z-10">
+              <div className="px-6 border-b border-border/50 bg-white">
                 <TabsList className="bg-transparent h-14 p-0 w-full justify-start gap-8 rounded-none border-none">
                   {[
                     { id: "biodata", label: "Biodata Diri" },
@@ -198,7 +199,7 @@ export function DesktopSettings({
                 </TabsList>
               </div>
 
-              <TabsContent value="biodata" className="p-8 mt-0">
+              <TabsContent value="biodata" className="p-8 mt-0 h-fit">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
                   
                   {/* Left Column: Profile Pic */}
@@ -304,7 +305,7 @@ export function DesktopSettings({
               
               {/* Other tabs content (placeholders) */}
               {["alamat", "pembayaran", "rekening", "notifikasi", "tampilan", "keamanan"].map(tabId => (
-                <TabsContent key={tabId} value={tabId} className="p-8 mt-0 flex flex-col items-center justify-center min-h-[400px] text-center opacity-40">
+                <TabsContent key={tabId} value={tabId} className="p-8 mt-0 flex flex-col items-center justify-center min-h-[300px] text-center opacity-40">
                    <CardIcon className="w-12 h-12 mb-4" />
                    <h4 className="text-sm font-bold">Fitur Belum Tersedia</h4>
                    <p className="text-xs max-w-xs mt-2">Halaman {tabId} sedang dalam pengembangan teknis oleh tim MarketPoint.</p>
