@@ -166,7 +166,7 @@ export default function ShopProfilePage() {
       <MarketHeader />
 
       <main className="flex-1 w-full pt-16 pb-20 lg:pb-0">
-        {/* Banner Section with Overlay - Adjusted for 1300:500 Aspect Ratio */}
+        {/* Banner Section */}
         <div className="relative h-32 sm:h-44 md:h-72 lg:h-[350px] w-full bg-muted overflow-hidden">
           {shop.bannerUrl ? (
             <Image 
@@ -390,10 +390,6 @@ export default function ShopProfilePage() {
                           {product.rating} <span className="opacity-40">|</span> {product.sold} terjual
                         </span>
                       </div>
-                      
-                      <Button className="w-full h-8 rounded-lg bg-[#F8FAFC] hover:bg-[#00AA5B] text-[#2E3137] hover:text-white font-bold text-[9px] border border-border group-hover:border-[#00AA5B] transition-all">
-                        Tambah ke keranjang
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
