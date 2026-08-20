@@ -10,7 +10,7 @@ export function MarketBottomNav() {
 
   const navItems = [
     { label: "Beranda", icon: Home, href: "/" },
-    { label: "Feed", icon: LayoutGrid, href: "/feed" },
+    { label: "Deals", icon: LayoutGrid, href: "/feed" },
     { label: "Official", icon: ShoppingBag, href: "/mall" },
     { label: "Transaksi", icon: History, href: "/transactions" },
     { label: "Akun", icon: User, href: "/profile" },
