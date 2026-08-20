@@ -13,11 +13,9 @@ import {
   Inbox, 
   ShoppingBag, 
   UserCircle,
-  MapPinned,
   Building2,
   Bell,
-  Sun,
-  ChevronRight
+  LogOut
 } from "lucide-react";
 import {
   Tabs,
@@ -158,7 +156,7 @@ export function DesktopSettings({
               onClick={handleLogout}
               className="w-full justify-start gap-2.5 mt-6 text-destructive hover:text-destructive hover:bg-destructive/5 rounded-lg text-[11px] font-bold h-9 px-2"
             >
-              <Shield className="w-3.5 h-3.5" /> Keluar Akun
+              <LogOut className="w-3.5 h-3.5" /> Keluar Akun
             </Button>
           </Card>
         </aside>
@@ -176,8 +174,6 @@ export function DesktopSettings({
                 <TabsList className="bg-transparent h-12 p-0 w-full justify-start gap-6 rounded-none border-none">
                   {[
                     { id: "biodata", label: "Biodata Diri" },
-                    { id: "alamat", label: "Daftar Alamat" },
-                    { id: "pembayaran", label: "Pembayaran" },
                     { id: "rekening", label: "Rekening Bank" },
                     { id: "notifikasi", label: "Notifikasi" },
                     { id: "keamanan", label: "Keamanan" },
@@ -298,9 +294,9 @@ export function DesktopSettings({
               </TabsContent>
               
               {/* Simplified placeholders for other tabs */}
-              {["alamat", "pembayaran", "rekening", "notifikasi", "keamanan"].map(tabId => (
+              {["rekening", "notifikasi", "keamanan"].map(tabId => (
                 <TabsContent key={tabId} value={tabId} className="p-8 mt-0 text-center">
-                   <p className="text-[11px] text-muted-foreground">Halaman {tabId} sedang dalam pengembangan.</p>
+                   <p className="text-[11px] text-muted-foreground">Halaman {tabId.charAt(0).toUpperCase() + tabId.slice(1)} sedang dalam pengembangan.</p>
                 </TabsContent>
               ))}
             </Tabs>
