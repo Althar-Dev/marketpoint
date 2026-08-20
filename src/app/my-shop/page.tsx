@@ -33,17 +33,19 @@ export default function MerchantDashboard() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
-  // Ambil data user dari Firestore untuk cek flag hasShop
+  // Ambil data user
   const userRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "users", user.uid);
   }, [db, user]);
 
+  // Ambil data toko
   const shopRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "shops", user.uid);
   }, [db, user]);
 
+  // Ambil data wallet
   const walletRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "users", user.uid, "wallet", "info");
@@ -57,24 +59,23 @@ export default function MerchantDashboard() {
     setMounted(true);
   }, []);
 
-  // 1. Handle Authentication Redirect
+  // Handle Pengalihan (Redirect)
   useEffect(() => {
-    if (mounted && !authLoading && !user) {
-      router.push("/login");
-    }
-  }, [user, authLoading, router, mounted]);
+    if (!mounted || authLoading || userLoading) return;
 
-  // 2. Handle Shop Setup Redirect - Menggunakan flag hasShop dari user document agar lebih instan
-  useEffect(() => {
-    if (mounted && !authLoading && user && !userLoading) {
-      // Jika user tidak punya flag hasShop, redirect ke setup
-      if (userData && !userData.hasShop) {
-        console.log("User has no shop flag, redirecting to setup...");
-        router.push("/my-shop/setup");
-      } 
-      // Jika data user sudah dimuat tapi null (jarang terjadi jika sudah login), tetap cek shop document
-      else if (!userData && !shopLoading && !shop) {
-        console.log("Shop document not found, redirecting to setup...");
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    // Hanya redirect jika data sudah benar-benar selesai dimuat
+    // dan dipastikan baik flag di user maupun dokumen di shops tidak ada
+    if (!userLoading && !shopLoading) {
+      const hasShopFlag = userData?.hasShop === true;
+      const hasShopDoc = !!shop;
+
+      if (!hasShopFlag && !hasShopDoc) {
+        console.log("No shop detected, redirecting to setup...");
         router.push("/my-shop/setup");
       }
     }

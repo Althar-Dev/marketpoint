@@ -49,12 +49,18 @@ export default function ProfilePage() {
     return doc(db, "users", user.uid);
   }, [db, user]);
 
+  const shopRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "shops", user.uid);
+  }, [db, user]);
+
   const walletRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "users", user.uid, "wallet", "info");
   }, [db, user]);
 
   const { data: userData, loading: userLoading } = useDoc(userRef);
+  const { data: shop, loading: shopLoading } = useDoc(shopRef);
   const { data: wallet, loading: walletLoading } = useDoc(walletRef);
 
   useEffect(() => {
@@ -109,7 +115,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (!mounted || authLoading || (user && (walletLoading || userLoading))) {
+  if (!mounted || authLoading || (user && (walletLoading || userLoading || shopLoading))) {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
@@ -148,8 +154,8 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  // Cek status toko dari user document
-  const hasShop = userData?.hasShop || false;
+  // Cek status toko dengan logika Single Source of Truth ditambah fallback ke dokumen shops
+  const hasShop = userData?.hasShop === true || !!shop;
 
   // Render Desktop View (Unified Layout)
   if (!isMobile) {

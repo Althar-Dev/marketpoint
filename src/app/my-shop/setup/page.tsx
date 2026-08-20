@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore } from "@/firebase";
-import { doc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
 import { Button } from "@/components/ui/button";
@@ -147,19 +147,23 @@ export default function MerchantSetupPage() {
         createdAt: serverTimestamp(),
       });
 
-      // 2. Tandai User memiliki toko (Sangat Penting)
-      await updateDoc(userRef, {
+      // 2. Tandai User memiliki toko di dokumen User (PENTING untuk sinkronisasi)
+      // Gunakan setDoc dengan merge true untuk memastikan field ditambahkan jika belum ada
+      await setDoc(userRef, {
         hasShop: true,
         shopSlug: slug
-      });
+      }, { merge: true });
 
       toast({
         title: "Toko Berhasil Dibuka",
         description: "Selamat! Toko Anda kini sudah aktif di MarketPoint.",
       });
       
-      // Gunakan router.replace untuk menghindari stack history yang membingungkan
-      router.replace("/my-shop");
+      // Tunggu sebentar agar Firestore sempat sinkron sebelum navigasi
+      setTimeout(() => {
+        router.replace("/my-shop");
+      }, 500);
+      
     } catch (error: any) {
       console.error("Gagal Buka Toko:", error);
       toast({
