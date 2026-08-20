@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -45,7 +44,7 @@ export function MerchantHeader() {
   const getPageInfo = (path: string) => {
     switch (path) {
       case "/my-shop": 
-        return { title: "Dashboard penjual" };
+        return { title: "Dashboard" };
       case "/my-shop/setup": 
         return { title: "Pengaturan profil toko" };
       case "/my-shop/orders": 
