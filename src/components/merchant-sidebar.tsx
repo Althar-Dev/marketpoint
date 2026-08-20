@@ -49,35 +49,35 @@ export function MerchantSidebar() {
   const navItems = [
     { label: "Dashboard", icon: LayoutDashboard, href: "/my-shop" },
     { label: "Pesanan", icon: ShoppingBag, href: "/my-shop/orders" },
-    { label: "Produk Saya", icon: Package, href: "/my-shop/products" },
+    { label: "Produk saya", icon: Package, href: "/my-shop/products" },
     { label: "Statistik", icon: TrendingUp, href: "/my-shop/stats" },
   ];
 
   const secondaryItems = [
-    { label: "Saldo Toko", icon: Wallet, href: "/my-shop/wallet" },
-    { label: "Chat Pembeli", icon: MessageSquare, href: "/my-shop/chat" },
-    { label: "Pengaturan Toko", icon: Settings, href: "/my-shop/setup" },
+    { label: "Saldo toko", icon: Wallet, href: "/my-shop/wallet" },
+    { label: "Chat pembeli", icon: MessageSquare, href: "/my-shop/chat" },
+    { label: "Pengaturan toko", icon: Settings, href: "/my-shop/setup" },
   ];
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50 bg-white">
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#00AA5B] text-white">
-            <Store className="h-5 w-5" />
+      <SidebarHeader className="p-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#00AA5B] text-white shrink-0">
+            <Store className="h-4 w-4" />
           </div>
           {state !== "collapsed" && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-xs font-black uppercase tracking-widest text-[#00AA5B] leading-none">SELLER</span>
+              <span className="text-[10px] font-bold text-[#00AA5B] leading-none">Seller center</span>
               <span className="text-sm font-bold tracking-tight truncate">MarketPoint</span>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="gap-0">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-4 text-[10px] font-black uppercase tracking-widest opacity-50">Main Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60">Menu utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
@@ -86,11 +86,11 @@ export function MerchantSidebar() {
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
                       <Link href={item.href} className={cn(
-                        "flex items-center gap-3 px-4 py-2 transition-colors",
+                        "flex items-center gap-2.5 px-3 py-1.5 transition-colors",
                         isActive ? "text-[#00AA5B] bg-[#00AA5B]/5" : "text-muted-foreground hover:text-foreground"
                       )}>
-                        <item.icon className={cn("h-4.5 w-4.5", isActive && "text-[#00AA5B]")} />
-                        <span className="text-sm font-bold">{item.label}</span>
+                        <item.icon className={cn("h-4 w-4", isActive && "text-[#00AA5B]")} />
+                        <span className="text-xs font-semibold">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -101,7 +101,7 @@ export function MerchantSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-4 text-[10px] font-black uppercase tracking-widest opacity-50">Manajemen</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60">Manajemen</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryItems.map((item) => {
@@ -110,11 +110,11 @@ export function MerchantSidebar() {
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
                       <Link href={item.href} className={cn(
-                        "flex items-center gap-3 px-4 py-2 transition-colors",
+                        "flex items-center gap-2.5 px-3 py-1.5 transition-colors",
                         isActive ? "text-[#00AA5B] bg-[#00AA5B]/5" : "text-muted-foreground hover:text-foreground"
                       )}>
-                        <item.icon className={cn("h-4.5 w-4.5", isActive && "text-[#00AA5B]")} />
-                        <span className="text-sm font-bold">{item.label}</span>
+                        <item.icon className={cn("h-4 w-4", isActive && "text-[#00AA5B]")} />
+                        <span className="text-xs font-semibold">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -125,31 +125,31 @@ export function MerchantSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border/50">
+      <SidebarFooter className="p-3 border-t border-border/50">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Kembali ke Pasar">
-              <Link href="/" className="flex items-center gap-3 px-4 py-2 text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="h-4.5 w-4.5" />
-                <span className="text-sm font-bold">Kembali ke Pasar</span>
+            <SidebarMenuButton asChild tooltip="Kembali ke pasar">
+              <Link href="/" className="flex items-center gap-2.5 px-3 py-1.5 text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="h-4 w-4" />
+                <span className="text-xs font-semibold">Kembali ke pasar</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
 
         {state !== "collapsed" && shop && (
-          <div className="mt-4 p-3 rounded-xl bg-muted/30 border border-border/50 flex items-center gap-3">
-            <Avatar className="h-8 w-8 rounded-lg border border-white">
+          <div className="mt-3 p-2 rounded-lg bg-muted/30 border border-border/50 flex items-center gap-2">
+            <Avatar className="h-7 w-7 rounded-md border border-white">
               <AvatarImage src={shop.logoUrl} />
-              <AvatarFallback className="bg-[#00AA5B] text-white text-[10px] font-bold">
+              <AvatarFallback className="bg-[#00AA5B] text-white text-[9px] font-bold">
                 {shop.name?.substring(0, 1) || "S"}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate">{shop.name}</p>
-              <p className="text-[10px] text-muted-foreground truncate italic">@{shop.slug}</p>
+              <p className="text-[11px] font-bold truncate leading-tight">{shop.name}</p>
+              <p className="text-[9px] text-muted-foreground truncate italic">@{shop.slug}</p>
             </div>
-            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-30" />
+            <ChevronRight className="w-3 h-3 text-muted-foreground opacity-30" />
           </div>
         )}
       </SidebarFooter>
