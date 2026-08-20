@@ -60,7 +60,7 @@ export function MerchantSidebar() {
   ];
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/50 bg-white">
+    <Sidebar collapsible="icon" className="border-r border-border bg-white">
       <SidebarHeader className="p-3">
         <div className="flex items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#00AA5B] text-white shrink-0">
@@ -125,20 +125,20 @@ export function MerchantSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 border-t border-border/50">
+      <SidebarFooter className="p-3 border-t border-border">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Kembali ke Pasar">
+            <SidebarMenuButton asChild tooltip="Kembali Ke Pasar">
               <Link href="/" className="flex items-center gap-2.5 px-3 py-1.5 text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4" />
-                <span className="text-xs font-semibold">Kembali ke Pasar</span>
+                <span className="text-xs font-semibold">Kembali Ke Pasar</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
 
         {state !== "collapsed" && shop && (
-          <div className="mt-3 p-2 rounded-lg bg-muted/30 border border-border/50 flex items-center gap-2">
+          <div className="mt-3 p-2 rounded-lg bg-muted/30 border border-border flex items-center gap-2">
             <div className="h-7 w-7 rounded-md border border-white overflow-hidden relative shrink-0">
                {shop.logoUrl ? (
                  <Image src={shop.logoUrl} alt="Logo" fill className="object-cover" />

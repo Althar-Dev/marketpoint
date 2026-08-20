@@ -65,7 +65,7 @@ export function MerchantHeader() {
   const info = getPageInfo(pathname);
 
   return (
-    <header className="h-16 border-b border-border/50 bg-white sticky top-0 z-40 px-3 md:px-6 flex items-center justify-between gap-3 shrink-0">
+    <header className="h-16 border-b border-border bg-white sticky top-0 z-40 px-3 md:px-6 flex items-center justify-between gap-3 shrink-0">
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <Button 
           variant="ghost" 
@@ -94,7 +94,7 @@ export function MerchantHeader() {
       </div>
 
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
-        <div className="flex items-center gap-0.5 border-r border-border/50 pr-2 md:pr-3">
+        <div className="flex items-center gap-0.5 border-r border-border pr-2 md:pr-3">
           <Button size="icon" variant="ghost" className="rounded-lg h-8 w-8 text-muted-foreground relative">
             <MessageSquare className="w-4 h-4" />
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white"></span>

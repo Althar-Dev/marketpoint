@@ -98,7 +98,7 @@ export default function MerchantSetupPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal mengunggah",
+        title: "Gagal Mengunggah",
         description: error.message || "Gagal mengunggah gambar.",
       });
     } finally {
@@ -139,7 +139,7 @@ export default function MerchantSetupPage() {
       }, { merge: true });
 
       toast({
-        title: "Toko berhasil dibuka",
+        title: "Toko Berhasil Dibuka",
         description: "Selamat! Toko Anda kini sudah aktif.",
       });
       
@@ -150,7 +150,7 @@ export default function MerchantSetupPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal membuka toko",
+        title: "Gagal Membuka Toko",
         description: "Terjadi kesalahan sistem.",
       });
     } finally {
@@ -164,7 +164,7 @@ export default function MerchantSetupPage() {
     <div className="p-3 md:p-6 lg:p-8">
       <div className="max-w-screen-md mx-auto">
         <div className="space-y-5">
-          <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-white">
+          <Card className="border-border shadow-sm rounded-xl overflow-hidden bg-white">
             <CardContent className="p-0">
               <div className="relative h-28 md:h-36 bg-muted/30 group">
                 {bannerUrl ? (
@@ -184,17 +184,17 @@ export default function MerchantSetupPage() {
                 <Button 
                   variant="secondary" 
                   size="sm" 
-                  className="absolute bottom-3 right-3 rounded-lg h-7 px-3 text-[10px] font-bold gap-1.5 shadow-md z-20"
+                  className="absolute bottom-3 right-3 rounded-lg h-7 px-3 text-[10px] font-bold gap-1.5 shadow-md z-20 border border-border"
                   onClick={() => bannerInputRef.current?.click()}
                   disabled={uploadingBanner}
                 >
                   {uploadingBanner ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
-                  {uploadingBanner ? "Mengunggah..." : "Ganti banner"}
+                  {uploadingBanner ? "Mengunggah..." : "Ganti Banner"}
                 </Button>
               </div>
               <div className="px-4 pb-4 -mt-8 relative z-10">
                 <div className="flex items-end gap-3">
-                  <div className="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-white border-2 border-white shadow-md overflow-hidden relative group">
+                  <div className="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-white border-2 border-border shadow-md overflow-hidden relative group">
                     {logoUrl ? (
                       <Image src={logoUrl} alt="Logo" fill className="object-cover" />
                     ) : (
@@ -217,7 +217,7 @@ export default function MerchantSetupPage() {
                     />
                   </div>
                   <div className="pb-0.5">
-                     <p className="text-[10px] font-bold text-foreground tracking-wide">Logo toko</p>
+                     <p className="text-[10px] font-bold text-foreground tracking-wide">Logo Toko</p>
                      <p className="text-[8px] text-muted-foreground">{uploadingLogo ? 'Sedang mengunggah...' : 'Klik untuk ubah logo'}</p>
                   </div>
                 </div>
@@ -225,46 +225,46 @@ export default function MerchantSetupPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm rounded-xl bg-white">
+          <Card className="border-border shadow-sm rounded-xl bg-white">
             <CardContent className="p-5 md:p-6 space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center gap-2 pb-1.5 border-b border-border/50">
+                <div className="flex items-center gap-2 pb-1.5 border-b border-border">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#00AA5B]" />
-                  <h3 className="text-[11px] font-bold tracking-wider text-muted-foreground/80">Identitas toko</h3>
+                  <h3 className="text-[11px] font-bold tracking-wider text-muted-foreground/80">Identitas Toko</h3>
                 </div>
                 
                 <div className="grid gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Nama toko</Label>
+                    <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Nama Toko</Label>
                     <Input 
                       placeholder="Contoh: Digital Solutions ID"
                       value={shopName}
                       onChange={(e) => setShopName(e.target.value)}
-                      className="h-9 rounded-lg bg-muted/10 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold"
+                      className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Slug toko (url)</Label>
+                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Slug Toko (URL)</Label>
                       <div className="relative">
                         <Input 
                           value={slug}
                           onChange={(e) => setSlug(e.target.value)}
-                          className="h-9 rounded-lg bg-muted/10 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold pl-9"
+                          className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold pl-9"
                         />
                         <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
                       </div>
                       <p className="text-[8px] text-muted-foreground ml-0.5">marketpoint.id/<span className="font-bold text-primary">{slug || 'username'}</span></p>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Nomor whatsapp</Label>
+                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Nomor Whatsapp</Label>
                       <div className="relative">
                         <Input 
                           placeholder="08xxxxxxxx"
                           value={whatsapp}
                           onChange={(e) => setWhatsapp(e.target.value)}
-                          className="h-9 rounded-lg bg-muted/10 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold pl-9"
+                          className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold pl-9"
                         />
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
                       </div>
@@ -274,9 +274,9 @@ export default function MerchantSetupPage() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center gap-2 pb-1.5 border-b border-border/50">
+                <div className="flex items-center gap-2 pb-1.5 border-b border-border">
                   <MapPin className="w-3.5 h-3.5 text-[#00AA5B]" />
-                  <h3 className="text-[11px] font-bold tracking-wider text-muted-foreground/80">Lokasi pengiriman</h3>
+                  <h3 className="text-[11px] font-bold tracking-wider text-muted-foreground/80">Lokasi Pengiriman</h3>
                 </div>
                 
                 <div className="grid gap-4">
@@ -287,7 +287,7 @@ export default function MerchantSetupPage() {
                         placeholder="Jawa Barat"
                         value={province}
                         onChange={(e) => setProvince(e.target.value)}
-                        className="h-9 rounded-lg bg-muted/10 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
+                        className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -296,7 +296,7 @@ export default function MerchantSetupPage() {
                         placeholder="Bandung"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                        className="h-9 rounded-lg bg-muted/10 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
+                        className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -305,28 +305,28 @@ export default function MerchantSetupPage() {
                         placeholder="Cibiru"
                         value={district}
                         onChange={(e) => setDistrict(e.target.value)}
-                        className="h-9 rounded-lg bg-muted/10 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
+                        className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div className="md:col-span-3 space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Alamat lengkap</Label>
+                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Alamat Lengkap</Label>
                       <Textarea 
                         placeholder="Nama jalan, nomor rumah, RT/RW..."
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        className="min-h-[70px] rounded-lg bg-muted/10 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px] resize-none"
+                        className="min-h-[70px] rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px] resize-none"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Kode pos</Label>
+                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Kode Pos</Label>
                       <Input 
                         placeholder="40614"
                         value={postalCode}
                         onChange={(e) => setPostalCode(e.target.value)}
-                        className="h-9 rounded-lg bg-muted/10 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
+                        className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
                       />
                     </div>
                   </div>
@@ -339,7 +339,7 @@ export default function MerchantSetupPage() {
                   onClick={handleCreateShop}
                   className="w-full h-10 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-xs shadow-sm transition-all active:scale-[0.98]"
                 >
-                  {isSubmitting ? "Sedang menyimpan..." : "Simpan profil toko"}
+                  {isSubmitting ? "Sedang Menyimpan..." : "Simpan Profil Toko"}
                 </Button>
               </div>
             </CardContent>
