@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -75,6 +74,7 @@ export default function MerchantSetupPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Start loading
     if (type === 'logo') setUploadingLogo(true);
     else setUploadingBanner(true);
 
@@ -91,8 +91,11 @@ export default function MerchantSetupPage() {
       const data = await res.json();
       
       if (res.ok && data.url) {
-        if (type === 'logo') setLogoUrl(data.url);
-        else setBannerUrl(data.url);
+        if (type === 'logo') {
+          setLogoUrl(data.url);
+        } else {
+          setBannerUrl(data.url);
+        }
         
         toast({
           title: "Berhasil",
@@ -102,12 +105,16 @@ export default function MerchantSetupPage() {
         throw new Error(data.error || 'Upload failed');
       }
     } catch (error: any) {
+      console.error('Upload Error:', error);
       toast({
         variant: "destructive",
         title: "Gagal Mengunggah",
-        description: "Pastikan konfigurasi R2 sudah benar.",
+        description: error.message || "Pastikan konfigurasi R2 sudah benar.",
       });
     } finally {
+      // Reset input value so the same file can be selected again if needed
+      if (e.target) e.target.value = '';
+      
       if (type === 'logo') setUploadingLogo(false);
       else setUploadingBanner(false);
     }
