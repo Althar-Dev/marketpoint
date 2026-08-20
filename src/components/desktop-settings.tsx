@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -296,12 +295,10 @@ export function DesktopSettings({
                 </div>
               </TabsContent>
               
-              {/* Placeholders for other tabs - minimal height */}
+              {/* Simplified placeholders for other tabs */}
               {["alamat", "pembayaran", "rekening", "notifikasi", "keamanan"].map(tabId => (
-                <TabsContent key={tabId} value={tabId} className="p-12 mt-0 flex flex-col items-center justify-center text-center opacity-40">
-                   <CardIcon className="w-10 h-10 mb-3" />
-                   <h4 className="text-[13px] font-bold">Fitur Sedang Disiapkan</h4>
-                   <p className="text-[11px] max-w-xs mt-1">Halaman ini akan segera hadir untuk meningkatkan pengalaman bisnis Anda.</p>
+                <TabsContent key={tabId} value={tabId} className="p-8 mt-0 text-center">
+                   <p className="text-[11px] text-muted-foreground">Halaman {tabId} sedang dalam pengembangan.</p>
                 </TabsContent>
               ))}
             </Tabs>
