@@ -18,8 +18,8 @@ export function MarketBottomNav() {
     },
     { 
       label: "Deals", 
-      icon: "ph:tag", 
-      activeIcon: "ph:tag-fill", 
+      icon: "ph:ticket", 
+      activeIcon: "ph:ticket-fill", 
       href: "/feed" 
     },
     { 
@@ -30,8 +30,8 @@ export function MarketBottomNav() {
     },
     { 
       label: "Transaksi", 
-      icon: "ph:scroll", 
-      activeIcon: "ph:scroll-fill", 
+      icon: "ph:receipt", 
+      activeIcon: "ph:receipt-fill", 
       href: "/transactions" 
     },
     { 
