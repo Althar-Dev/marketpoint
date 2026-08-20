@@ -101,7 +101,7 @@ export default function ShopProfilePage() {
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-body">
         <MarketHeader />
         <main className="flex-1 w-full pt-16">
-          <Skeleton className="h-44 md:h-72 w-full rounded-none" />
+          <Skeleton className="h-32 sm:h-44 md:h-72 lg:h-[350px] w-full rounded-none" />
           <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-20 relative z-10 mb-8">
             <Card className="border-border border-[1.5px] shadow-lg rounded-2xl bg-white overflow-hidden">
               <CardContent className="p-4 md:p-8 flex flex-row items-start gap-4 md:gap-8">
@@ -166,8 +166,8 @@ export default function ShopProfilePage() {
       <MarketHeader />
 
       <main className="flex-1 w-full pt-16 pb-20 lg:pb-0">
-        {/* Banner Section with Overlay */}
-        <div className="relative h-44 md:h-72 w-full bg-muted overflow-hidden">
+        {/* Banner Section with Overlay - Adjusted for 1300:500 Aspect Ratio */}
+        <div className="relative h-32 sm:h-44 md:h-72 lg:h-[350px] w-full bg-muted overflow-hidden">
           {shop.bannerUrl ? (
             <Image 
               src={shop.bannerUrl} 
