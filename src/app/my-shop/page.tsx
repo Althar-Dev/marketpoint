@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,7 +10,6 @@ import { MarketBottomNav } from "@/components/market-bottom-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   ShoppingBag, 
   Package, 
@@ -50,22 +48,29 @@ export default function MerchantDashboard() {
 
   useEffect(() => {
     setMounted(true);
-    if (!authLoading && !user) {
+  }, []);
+
+  // Handle Authentication Redirect
+  useEffect(() => {
+    if (mounted && !authLoading && !user) {
       router.push("/login");
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, mounted]);
 
-  // Jika loading atau belum ada data toko, arahkan ke setup jika sudah selesai loading
+  // Handle Shop Setup Redirect - Diperketat agar tidak terjadi race condition
   useEffect(() => {
-    if (!shopLoading && !shop && user) {
-      router.push("/my-shop/setup");
+    if (mounted && !authLoading && user && !shopLoading && shopRef) {
+      if (shop === null) {
+        console.log("Shop not found, redirecting to setup...");
+        router.push("/my-shop/setup");
+      }
     }
-  }, [shop, shopLoading, user, router]);
+  }, [shop, shopLoading, user, authLoading, router, mounted, shopRef]);
 
-  if (!mounted || authLoading || shopLoading) {
+  if (!mounted || authLoading || shopLoading || !user) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
-        <div className="p-8 space-y-4">
+        <div className="p-8 space-y-4 max-w-screen-xl mx-auto w-full">
           <Skeleton className="h-10 w-48" />
           <Skeleton className="h-44 w-full rounded-2xl" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -79,6 +84,7 @@ export default function MerchantDashboard() {
     );
   }
 
+  // Jika data toko belum ada, jangan render dashboard dulu (biarkan useEffect handle redirect)
   if (!shop) return null;
 
   return (
@@ -117,7 +123,7 @@ export default function MerchantDashboard() {
                       <Image src={shop.logoUrl} alt="Logo" fill className="object-cover rounded-xl" />
                     ) : (
                       <div className="w-full h-full bg-[#00AA5B] flex items-center justify-center rounded-xl">
-                        <span className="text-2xl font-black">{shop.name.substring(0, 1)}</span>
+                        <span className="text-2xl font-black">{shop.name?.substring(0, 1) || "?"}</span>
                       </div>
                     )}
                   </div>

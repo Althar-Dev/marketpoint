@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   onSnapshot,
   DocumentReference,
@@ -13,15 +13,25 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | null>(null);
+  const lastRefPath = useRef<string | null>(null);
 
   useEffect(() => {
+    const currentPath = docRef?.path || null;
+    
+    // Jika ref null, set loading false dan data null
     if (!docRef) {
       setData(null);
       setLoading(false);
+      lastRefPath.current = null;
       return;
     }
 
-    setLoading(true);
+    // Jika path berbeda, berarti kita mulai memuat dokumen baru
+    if (currentPath !== lastRefPath.current) {
+      setLoading(true);
+      lastRefPath.current = currentPath;
+    }
+
     const unsubscribe = onSnapshot(
       docRef,
       (snapshot: DocumentSnapshot<T>) => {
