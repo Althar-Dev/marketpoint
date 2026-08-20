@@ -10,11 +10,36 @@ export function MarketBottomNav() {
   const pathname = usePathname();
 
   const navItems = [
-    { label: "Beranda", icon: "ph:house", href: "/" },
-    { label: "Deals", icon: "ph:ticket", href: "/feed" },
-    { label: "Official", icon: "ph:seal-check", href: "/mall" },
-    { label: "Transaksi", icon: "ph:receipt", href: "/transactions" },
-    { label: "Akun", icon: "ph:user-circle", href: "/profile" },
+    { 
+      label: "Beranda", 
+      icon: "ph:house", 
+      activeIcon: "ph:house-fill", 
+      href: "/" 
+    },
+    { 
+      label: "Deals", 
+      icon: "ph:ticket", 
+      activeIcon: "ph:ticket-fill", 
+      href: "/feed" 
+    },
+    { 
+      label: "Official", 
+      icon: "ph:seal-check", 
+      activeIcon: "ph:seal-check-fill", 
+      href: "/mall" 
+    },
+    { 
+      label: "Transaksi", 
+      icon: "ph:receipt", 
+      activeIcon: "ph:receipt-fill", 
+      href: "/transactions" 
+    },
+    { 
+      label: "Akun", 
+      icon: "ph:user-circle", 
+      activeIcon: "ph:user-circle-fill", 
+      href: "/profile" 
+    },
   ];
 
   return (
@@ -30,13 +55,15 @@ export function MarketBottomNav() {
               isActive ? "text-[#00AA5B]" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Icon 
-              icon={item.icon}
-              className={cn(
-                "w-6 h-6 transition-colors duration-200", 
-                isActive ? "text-[#00AA5B]" : "text-muted-foreground"
-              )} 
-            />
+            <div className="relative flex items-center justify-center">
+              <Icon 
+                icon={isActive ? item.activeIcon : item.icon}
+                className={cn(
+                  "w-6 h-6 transition-all duration-300 ease-out", 
+                  isActive ? "text-[#00AA5B] scale-110" : "text-muted-foreground"
+                )} 
+              />
+            </div>
             <span className={cn(
               "text-[9px] font-bold uppercase tracking-tight transition-colors duration-200",
               isActive ? "text-[#00AA5B]" : "text-muted-foreground"
