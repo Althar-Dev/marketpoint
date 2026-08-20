@@ -325,14 +325,6 @@ export default function ShopProfilePage() {
                     <span className="text-[11px] font-black text-[#2E3137]">15.4rb+</span>
                   </div>
                 </div>
-                <div className="h-px bg-border w-full"></div>
-                <div className="space-y-3">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Metode pengiriman</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline" className="text-[9px] font-bold py-0.5 rounded-lg border-border">Instan</Badge>
-                    <Badge variant="outline" className="text-[9px] font-bold py-0.5 rounded-lg border-border">Reguler</Badge>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
