@@ -14,9 +14,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft,
-  ShieldCheck
+  Camera,
+  Image as ImageIcon,
+  CheckCircle2,
+  MapPin,
+  Phone
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function MerchantSetupPage() {
   const { user, loading: authLoading } = useUser();
@@ -25,8 +30,16 @@ export default function MerchantSetupPage() {
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
 
+  // Form States
   const [shopName, setShopName] = useState("");
-  const [description, setDescription] = useState("");
+  const [slug, setSlug] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [province, setProvince] = useState("");
+  const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
+  const [address, setAddress] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -36,6 +49,15 @@ export default function MerchantSetupPage() {
     }
   }, [user, authLoading, router]);
 
+  // Handle slug auto-generation
+  useEffect(() => {
+    const generatedSlug = shopName
+      .toLowerCase()
+      .replace(/[^\w ]+/g, "")
+      .replace(/ +/g, "-");
+    setSlug(generatedSlug);
+  }, [shopName]);
+
   const handleCreateShop = async () => {
     if (!user) return;
     setIsSubmitting(true);
@@ -43,10 +65,21 @@ export default function MerchantSetupPage() {
       const shopRef = doc(db, "shops", user.uid);
       await setDoc(shopRef, {
         name: shopName,
-        description: description,
+        slug: slug,
+        whatsapp: whatsapp,
+        location: {
+          province,
+          city,
+          district,
+          address,
+          postalCode
+        },
         ownerId: user.uid,
         status: "ACTIVE",
         createdAt: serverTimestamp(),
+        // Placeholders for images
+        logoUrl: `https://picsum.photos/seed/${user.uid}-logo/200/200`,
+        bannerUrl: `https://picsum.photos/seed/${user.uid}-banner/1200/400`,
       });
 
       toast({
@@ -85,56 +118,167 @@ export default function MerchantSetupPage() {
 
           <div className="mb-8 space-y-1">
             <h1 className="text-2xl font-bold font-headline tracking-tight text-foreground">Buka Toko Gratis</h1>
-            <p className="text-xs text-muted-foreground">Isi informasi di bawah ini untuk mulai berjualan solusi digital Anda.</p>
+            <p className="text-xs text-muted-foreground">Lengkapi data toko Anda untuk mulai berjualan solusi digital.</p>
           </div>
 
-          <Card className="border border-border/50 shadow-sm rounded-2xl overflow-hidden bg-white">
-            <CardContent className="p-6 md:p-10 space-y-8">
-              <div className="grid gap-6">
-                {/* Section 1: Nama Toko */}
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">Nama Toko</Label>
-                  <Input 
-                    placeholder="Contoh: STS Digital Solutions"
-                    value={shopName}
-                    onChange={(e) => setShopName(e.target.value)}
-                    className="h-11 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm"
-                  />
-                  <p className="text-[9px] text-muted-foreground px-1">Gunakan nama yang profesional dan mudah ingat oleh pembeli.</p>
+          <div className="space-y-6">
+            {/* Logo & Banner Section */}
+            <Card className="border-none shadow-sm rounded-2xl overflow-hidden bg-white">
+              <CardContent className="p-0">
+                <div className="relative h-32 md:h-40 bg-muted/30 group">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-40">
+                    <ImageIcon className="w-8 h-8" />
+                  </div>
+                  <Button variant="secondary" size="sm" className="absolute bottom-3 right-3 rounded-full h-8 px-3 text-[10px] font-bold gap-1.5 shadow-sm">
+                    <Camera className="w-3 h-3" /> Ganti Banner
+                  </Button>
+                </div>
+                <div className="px-6 pb-6 -mt-10 relative z-10">
+                  <div className="flex items-end gap-4">
+                    <div className="h-20 w-20 md:h-24 md:w-24 rounded-2xl bg-white border-4 border-white shadow-md overflow-hidden relative group">
+                      <div className="absolute inset-0 bg-muted/20 flex items-center justify-center opacity-40">
+                        <ImageIcon className="w-6 h-6" />
+                      </div>
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                        <Camera className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                    <div className="pb-1">
+                       <p className="text-[11px] font-bold text-foreground uppercase tracking-wider">Logo Toko</p>
+                       <p className="text-[9px] text-muted-foreground">Minimal 200x200px (JPG/PNG)</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Information Form */}
+            <Card className="border-none shadow-sm rounded-2xl bg-white">
+              <CardContent className="p-6 md:p-8 space-y-8">
+                {/* Identitas Toko */}
+                <div className="space-y-5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                    <CheckCircle2 className="w-4 h-4 text-[#00AA5B]" />
+                    <h3 className="text-[13px] font-bold uppercase tracking-wider">Identitas Toko</h3>
+                  </div>
+                  
+                  <div className="grid gap-5">
+                    <div className="space-y-2">
+                      <Label className="text-[11px] font-bold text-muted-foreground uppercase">Nama Toko</Label>
+                      <Input 
+                        placeholder="Contoh: Digital Solutions ID"
+                        value={shopName}
+                        onChange={(e) => setShopName(e.target.value)}
+                        className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Slug / Link Toko</Label>
+                        <div className="relative">
+                          <Input 
+                            value={slug}
+                            onChange={(e) => setSlug(e.target.value)}
+                            className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm pl-4"
+                          />
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-bold text-muted-foreground/50">
+                            marketpoint.com/
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">WhatsApp / Telp</Label>
+                        <div className="relative">
+                          <Input 
+                            placeholder="08xxxxxxxx"
+                            value={whatsapp}
+                            onChange={(e) => setWhatsapp(e.target.value)}
+                            className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm pl-9"
+                          />
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/60" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Section 2: Deskripsi */}
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">Deskripsi Toko</Label>
-                  <Textarea 
-                    placeholder="Jelaskan secara singkat jenis solusi digital atau keunggulan yang Anda tawarkan..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="min-h-[120px] rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-medium text-sm resize-none"
-                  />
+                {/* Detail Alamat */}
+                <div className="space-y-5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                    <MapPin className="w-4 h-4 text-[#00AA5B]" />
+                    <h3 className="text-[13px] font-bold uppercase tracking-wider">Detail Alamat</h3>
+                  </div>
+                  
+                  <div className="grid gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Provinsi</Label>
+                        <Input 
+                          placeholder="Jawa Barat"
+                          value={province}
+                          onChange={(e) => setProvince(e.target.value)}
+                          className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Kota / Kabupaten</Label>
+                        <Input 
+                          placeholder="Bandung"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Kecamatan</Label>
+                        <Input 
+                          placeholder="Cibiru"
+                          value={district}
+                          onChange={(e) => setDistrict(e.target.value)}
+                          className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="md:col-span-3 space-y-2">
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Alamat Lengkap</Label>
+                        <Textarea 
+                          placeholder="Nama jalan, nomor rumah, blok, RT/RW..."
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          className="min-h-[80px] rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs resize-none"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[11px] font-bold text-muted-foreground uppercase">Kode Pos</Label>
+                        <Input 
+                          placeholder="40614"
+                          value={postalCode}
+                          onChange={(e) => setPostalCode(e.target.value)}
+                          className="h-10 rounded-xl bg-muted/20 border-transparent focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Terms Checkbox Card */}
-              <div className="p-4 rounded-xl bg-[#F0FDF4] border border-[#DCFCE7] flex items-start gap-3">
-                 <ShieldCheck className="w-5 h-5 text-[#16A34A] shrink-0 mt-0.5" />
-                 <div className="space-y-1">
-                    <p className="text-[11px] font-bold text-[#166534]">Verifikasi & Keamanan Merchant</p>
-                    <p className="text-[10px] text-[#166534]/70 leading-relaxed">
-                      Dengan membuka toko, Anda setuju untuk mematuhi kebijakan merchant MarketPoint. Pastikan semua produk digital Anda aman, legal, dan memiliki dokumentasi yang jelas.
-                    </p>
-                 </div>
-              </div>
-
-              <Button 
-                disabled={!shopName || !description || isSubmitting}
-                onClick={handleCreateShop}
-                className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-sm shadow-lg shadow-[#00AA5B]/10 transition-all active:scale-[0.98]"
-              >
-                {isSubmitting ? "Sedang Memproses..." : "Aktifkan Toko Saya Sekarang"}
-              </Button>
-            </CardContent>
-          </Card>
+                <div className="pt-4">
+                  <Button 
+                    disabled={!shopName || !slug || !whatsapp || !address || isSubmitting}
+                    onClick={handleCreateShop}
+                    className="w-full h-12 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-sm shadow-lg shadow-[#00AA5B]/10 transition-all active:scale-[0.98]"
+                  >
+                    {isSubmitting ? "Sedang Memproses..." : "Aktifkan Toko Sekarang"}
+                  </Button>
+                  <p className="text-[9px] text-center text-muted-foreground mt-4 leading-relaxed">
+                    Dengan klik tombol di atas, Anda setuju dengan Syarat & Ketentuan Merchant MarketPoint.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
 
