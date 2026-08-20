@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 // Dummy products for the shop
 const SHOP_PRODUCTS = [
@@ -88,8 +87,8 @@ export default function ShopProfilePage() {
           <Skeleton className="h-40 md:h-64 w-full rounded-none" />
           <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-16 relative z-10 mb-8">
             <Card className="border-border border-[1.5px] shadow-lg rounded-2xl bg-white overflow-hidden">
-              <CardContent className="p-4 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-                <Skeleton className="h-20 w-20 md:h-24 md:w-24 rounded-2xl shrink-0" />
+              <CardContent className="p-4 md:p-6 flex items-center gap-4 md:gap-6">
+                <Skeleton className="h-16 w-16 md:h-24 md:w-24 rounded-2xl shrink-0" />
                 <div className="flex-1 space-y-3">
                   <Skeleton className="h-6 w-48" />
                   <div className="flex gap-4">
@@ -127,7 +126,7 @@ export default function ShopProfilePage() {
       <div className="min-h-screen bg-white flex flex-col">
         <MarketHeader />
         <main className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4 border-[1.5px] border-border">
             <Info className="w-10 h-10 text-muted-foreground" />
           </div>
           <h1 className="text-xl font-bold">Toko Tidak Ditemukan</h1>
@@ -176,46 +175,46 @@ export default function ShopProfilePage() {
         <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-16 relative z-10 mb-8">
           <Card className="border-border border-[1.5px] shadow-lg rounded-2xl bg-white overflow-hidden">
             <CardContent className="p-4 md:p-6">
-              <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-                <div className="h-20 w-20 md:h-24 md:w-24 rounded-2xl bg-white border-[1.5px] border-border shadow-md overflow-hidden shrink-0 relative">
+              <div className="flex items-center gap-4 md:gap-6">
+                <div className="h-16 w-16 md:h-24 md:w-24 rounded-2xl bg-white border-[1.5px] border-border shadow-md overflow-hidden shrink-0 relative">
                   {shop.logoUrl ? (
                     <Image src={shop.logoUrl} alt={shop.name} fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full bg-[#00AA5B] flex items-center justify-center">
-                      <span className="text-2xl font-bold text-white">{shop.name?.substring(0, 1)}</span>
+                      <span className="text-xl md:text-2xl font-bold text-white">{shop.name?.substring(0, 1)}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-xl md:text-2xl font-bold tracking-tight">{shop.name}</h1>
-                    <Badge variant="secondary" className="bg-[#00AA5B]/10 text-[#00AA5B] border-none font-bold text-[10px] h-5">
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-lg md:text-2xl font-bold tracking-tight truncate">{shop.name}</h1>
+                    <Badge variant="secondary" className="bg-[#00AA5B]/10 text-[#00AA5B] border-none font-bold text-[9px] md:text-[10px] h-5 shrink-0 px-2">
                       OFFICIAL STORE
                     </Badge>
                   </div>
                   
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span className="text-xs font-medium">{shop.location?.city || "Lokasi tidak diatur"}</span>
+                      <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                      <span className="text-[10px] md:text-xs font-medium">{shop.location?.city || "Lokasi tidak diatur"}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Star className="w-3.5 h-3.5 text-[#FFC400] fill-[#FFC400]" />
-                      <span className="text-xs font-bold text-foreground">4.9</span>
-                      <span className="text-xs">(2.5rb Penilaian)</span>
+                      <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-[#FFC400] fill-[#FFC400]" />
+                      <span className="text-[10px] md:text-xs font-bold text-foreground">4.9</span>
+                      <span className="text-[10px] md:text-xs">(2.5rb Penilaian)</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="hidden sm:flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
                       <span className="text-xs">Online 5 menit yang lalu</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 md:pt-0">
+                <div className="hidden md:flex items-center gap-2">
                   <Button 
                     onClick={handleContactWhatsApp}
-                    className="flex-1 md:flex-none h-10 px-6 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2 shadow-sm"
+                    className="h-10 px-6 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2 shadow-sm"
                   >
                     <MessageCircle className="w-4 h-4" /> Chat
                   </Button>
@@ -223,6 +222,19 @@ export default function ShopProfilePage() {
                     <Share2 className="w-4 h-4" />
                   </Button>
                 </div>
+              </div>
+
+              {/* Mobile Actions */}
+              <div className="flex md:hidden items-center gap-2 mt-4 pt-4 border-t border-border">
+                <Button 
+                  onClick={handleContactWhatsApp}
+                  className="flex-1 h-9 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" /> Chat
+                </Button>
+                <Button variant="outline" className="flex-1 h-9 rounded-lg border-border font-bold text-xs gap-2">
+                  <Share2 className="w-3.5 h-3.5" /> Bagikan
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -233,25 +245,25 @@ export default function ShopProfilePage() {
           {/* Sidebar Info (Desktop) */}
           <aside className="lg:col-span-3 space-y-4">
             <Card className="border-border border-[1.5px] shadow-sm rounded-xl bg-white p-4">
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Informasi Toko</h3>
+              <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-4">Informasi Toko</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Status Toko</span>
+                  <span className="text-[11px] text-muted-foreground">Status Toko</span>
                   <div className="flex items-center gap-1 text-[#00AA5B]">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span className="text-xs font-bold">Aktif</span>
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span className="text-[11px] font-bold">Aktif</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Produk Terjual</span>
-                  <span className="text-xs font-bold">10rb+</span>
+                  <span className="text-[11px] text-muted-foreground">Produk Terjual</span>
+                  <span className="text-[11px] font-bold">10rb+</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Pengikut</span>
-                  <span className="text-xs font-bold">5.2rb</span>
+                  <span className="text-[11px] text-muted-foreground">Pengikut</span>
+                  <span className="text-[11px] font-bold">5.2rb</span>
                 </div>
               </div>
-              <Button variant="outline" className="w-full mt-6 h-9 rounded-lg border-border font-bold text-xs">
+              <Button variant="outline" className="w-full mt-6 h-9 rounded-lg border-border font-bold text-[10px]">
                 Lihat Catatan Toko
               </Button>
             </Card>
