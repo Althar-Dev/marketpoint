@@ -294,7 +294,7 @@ export default function ShopProfilePage() {
                                 </div>
                               </div>
                             </div>
-                            <Button className="w-full mt-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black rounded-xl text-white py-6 h-auto" onClick={() => (document.querySelector('[data-state="open"]') as any)?.click()}>
+                            <Button className="w-full mt-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black rounded-xl text-white py-3 h-auto" onClick={() => (document.querySelector('[data-state="open"]') as any)?.click()}>
                               Mengerti
                             </Button>
                           </DialogContent>
