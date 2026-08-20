@@ -9,8 +9,15 @@ import { MarketFooter } from "@/components/market-footer";
 import { MarketBottomNav } from "@/components/market-bottom-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { 
   MapPin, 
   MessageCircle, 
@@ -20,7 +27,11 @@ import {
   ShoppingBag,
   Clock,
   Heart,
-  Search
+  Search,
+  CheckCircle2,
+  ShieldCheck,
+  Zap,
+  Award
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -224,15 +235,70 @@ export default function ShopProfilePage() {
                       <h1 className="text-lg md:text-3xl font-black font-headline tracking-tight truncate max-w-[180px] md:max-w-md">
                         {shop.name}
                       </h1>
+                      
                       {shop.official === true && (
-                        <div className="relative h-5 w-20 md:h-6 md:w-24 shrink-0">
-                          <Image 
-                            src="/assets/badge/official.png" 
-                            alt="Official Store" 
-                            fill 
-                            className="object-contain object-left"
-                          />
-                        </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <button className="relative h-5 w-20 md:h-6 md:w-24 shrink-0 transition-transform active:scale-95">
+                              <Image 
+                                src="/assets/badge/official.png" 
+                                alt="Official Store" 
+                                fill 
+                                className="object-contain object-left"
+                              />
+                            </button>
+                          </DialogTrigger>
+                          <DialogContent className="rounded-2xl max-w-sm md:max-w-md border-border p-6">
+                            <DialogHeader>
+                              <div className="flex justify-center mb-4">
+                                <div className="relative h-12 w-48">
+                                  <Image 
+                                    src="/assets/badge/official.png" 
+                                    alt="Official Store" 
+                                    fill 
+                                    className="object-contain"
+                                  />
+                                </div>
+                              </div>
+                              <DialogTitle className="text-center text-xl font-black font-headline">Toko Resmi MarketPoint</DialogTitle>
+                              <DialogDescription className="text-center pt-2 font-medium">
+                                Toko ini telah diverifikasi oleh MarketPoint sebagai mitra resmi dengan standar pelayanan terbaik.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 mt-6">
+                              <div className="flex items-start gap-4 p-3 rounded-xl bg-[#00AA5B]/5 border border-[#00AA5B]/10">
+                                <div className="h-8 w-8 rounded-full bg-[#00AA5B] flex items-center justify-center shrink-0">
+                                  <ShieldCheck className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-black">Produk 100% Original</p>
+                                  <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Jaminan keaslian lisensi dan infrastruktur langsung dari pengembang.</p>
+                                </div>
+                              </div>
+                              <div className="flex items-start gap-4 p-3 rounded-xl bg-[#8B5CF6]/5 border border-[#8B5CF6]/10">
+                                <div className="h-8 w-8 rounded-full bg-[#8B5CF6] flex items-center justify-center shrink-0">
+                                  <Zap className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-black">Layanan Instan</p>
+                                  <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Pemrosesan pesanan otomatis dan dukungan teknis prioritas 24/7.</p>
+                                </div>
+                              </div>
+                              <div className="flex items-start gap-4 p-3 rounded-xl bg-[#FFC400]/5 border border-[#FFC400]/10">
+                                <div className="h-8 w-8 rounded-full bg-[#FFC400] flex items-center justify-center shrink-0">
+                                  <Award className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-black">Terpercaya & Handal</p>
+                                  <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Toko dengan rekam jejak penjualan sukses dan ulasan bintang 5.</p>
+                                </div>
+                              </div>
+                            </div>
+                            <Button className="w-full mt-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black rounded-xl text-white py-6 h-auto" onClick={() => (document.querySelector('[data-state="open"]') as any)?.click()}>
+                              Mengerti
+                            </Button>
+                          </DialogContent>
+                        </Dialog>
                       )}
                     </div>
                     
