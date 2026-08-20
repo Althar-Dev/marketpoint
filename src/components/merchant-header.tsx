@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -44,21 +45,21 @@ export function MerchantHeader() {
   const getPageInfo = (path: string) => {
     switch (path) {
       case "/my-shop": 
-        return { title: "Dashboard penjual", sub: "Kelola operasional dan pantau pertumbuhan toko." };
+        return { title: "Dashboard penjual" };
       case "/my-shop/setup": 
-        return { title: "Pengaturan profil toko", sub: "Lengkapi identitas dan lokasi toko." };
+        return { title: "Pengaturan profil toko" };
       case "/my-shop/orders": 
-        return { title: "Pesanan toko", sub: "Kelola pesanan masuk dan pengiriman." };
+        return { title: "Pesanan toko" };
       case "/my-shop/products": 
-        return { title: "Daftar produk", sub: "Atur katalog produk digital Anda." };
+        return { title: "Daftar produk" };
       case "/my-shop/stats": 
-        return { title: "Statistik toko", sub: "Pantau performa penjualan Anda." };
+        return { title: "Statistik toko" };
       case "/my-shop/wallet": 
-        return { title: "Saldo toko", sub: "Manajemen keuangan dan penarikan saldo." };
+        return { title: "Saldo toko" };
       case "/my-shop/chat": 
-        return { title: "Chat pembeli", sub: "Balas pesan dari calon pembeli." };
+        return { title: "Chat pembeli" };
       default: 
-        return { title: "Seller center", sub: "MarketPoint merchant dashboard." };
+        return { title: "Seller center" };
     }
   };
 
@@ -80,9 +81,6 @@ export function MerchantHeader() {
           <h1 className="text-sm md:text-base font-bold tracking-tight text-[#212121] truncate leading-tight">
             {info.title}
           </h1>
-          <p className="text-[10px] text-muted-foreground truncate hidden md:block">
-            {info.sub}
-          </p>
         </div>
 
         <div className="hidden xl:flex items-center flex-1 max-w-xs relative group ml-4">
