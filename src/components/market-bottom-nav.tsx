@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutGrid, ShoppingBag, History, User } from "lucide-react";
+import { Home, TicketPercent, BadgeCheck, ReceiptText, CircleUser } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MarketBottomNav() {
@@ -10,10 +10,10 @@ export function MarketBottomNav() {
 
   const navItems = [
     { label: "Beranda", icon: Home, href: "/" },
-    { label: "Deals", icon: LayoutGrid, href: "/feed" },
-    { label: "Official", icon: ShoppingBag, href: "/mall" },
-    { label: "Transaksi", icon: History, href: "/transactions" },
-    { label: "Akun", icon: User, href: "/profile" },
+    { label: "Deals", icon: TicketPercent, href: "/feed" },
+    { label: "Official", icon: BadgeCheck, href: "/mall" },
+    { label: "Transaksi", icon: ReceiptText, href: "/transactions" },
+    { label: "Akun", icon: CircleUser, href: "/profile" },
   ];
 
   return (
