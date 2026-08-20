@@ -166,23 +166,6 @@ export default function MerchantSetupPage() {
               </Button>
             </CardContent>
           </Card>
-
-          {/* Benefits Section */}
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-             {[
-               { title: "Komisi Rendah", desc: "Nikmati potongan admin terkecil di industri.", icon: Coins },
-               { title: "Dashboard Intuitif", desc: "Kelola lisensi dan API dengan sangat mudah.", icon: LayoutGrid },
-               { title: "Pembayaran Instan", desc: "Saldo langsung masuk ke MarketPay Anda.", icon: ShieldCheck },
-             ].map((item, i) => (
-               <div key={i} className="flex flex-col items-center text-center space-y-2 p-2">
-                  <div className="w-10 h-10 rounded-full bg-white border border-border shadow-sm flex items-center justify-center">
-                    <item.icon className="w-5 h-5 text-[#00AA5B]" />
-                  </div>
-                  <h3 className="text-[12px] font-bold">{item.title}</h3>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">{item.desc}</p>
-               </div>
-             ))}
-          </div>
         </div>
       </main>
 
