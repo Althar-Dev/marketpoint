@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -118,7 +119,8 @@ export function DesktopSettings({
                   </AccordionTrigger>
                   <AccordionContent className="pb-1 pl-6 space-y-0.5">
                     <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Chat</p>
-                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Diskusi Produk</p>
+                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Ulasan</p>
+                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Update</p>
                   </AccordionContent>
                 </AccordionItem>
 
