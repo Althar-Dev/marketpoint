@@ -14,7 +14,10 @@ import {
   ArrowLeft,
   ChevronRight,
   TrendingUp,
-  MessageSquare
+  MessageSquare,
+  Star,
+  AlertTriangle,
+  Users
 } from "lucide-react";
 import { 
   Sidebar, 
@@ -46,17 +49,37 @@ export function MerchantSidebar() {
 
   const { data: shop } = useDoc(shopRef);
 
-  const navItems = [
-    { label: "Dashboard", icon: LayoutDashboard, href: "/my-shop" },
-    { label: "Pesanan", icon: ShoppingBag, href: "/my-shop/orders" },
-    { label: "Produk Saya", icon: Package, href: "/my-shop/products" },
-    { label: "Statistik", icon: TrendingUp, href: "/my-shop/stats" },
-  ];
-
-  const secondaryItems = [
-    { label: "Saldo Toko", icon: Wallet, href: "/my-shop/wallet" },
-    { label: "Chat Pembeli", icon: MessageSquare, href: "/my-shop/chat" },
-    { label: "Pengaturan Toko", icon: Settings, href: "/my-shop/setup" },
+  const groups = [
+    {
+      label: "General",
+      items: [
+        { label: "Dashboard", icon: LayoutDashboard, href: "/my-shop" },
+        { label: "Saldo", icon: Wallet, href: "/my-shop/wallet" },
+        { label: "Statistik", icon: TrendingUp, href: "/my-shop/stats" },
+      ]
+    },
+    {
+      label: "Inbox",
+      items: [
+        { label: "Chat", icon: MessageSquare, href: "/my-shop/chat" },
+        { label: "Ulasan", icon: Star, href: "/my-shop/reviews" },
+        { label: "Dispute", icon: AlertTriangle, href: "/my-shop/disputes" },
+      ]
+    },
+    {
+      label: "Management",
+      items: [
+        { label: "Pelanggan", icon: Users, href: "/my-shop/customers" },
+        { label: "Produk Saya", icon: Package, href: "/my-shop/products" },
+        { label: "Pesanan", icon: ShoppingBag, href: "/my-shop/orders" },
+      ]
+    },
+    {
+      label: "Lainnya",
+      items: [
+        { label: "Pengaturan", icon: Settings, href: "/my-shop/setup" },
+      ]
+    }
   ];
 
   return (
@@ -76,62 +99,42 @@ export function MerchantSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="gap-0">
-        <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60">Menu Utama</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <SidebarMenuItem key={item.label}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                      <Link href={item.href} className={cn(
-                        "flex items-center gap-2.5 px-3 py-1.5 transition-colors",
-                        isActive ? "text-[#00AA5B] bg-[#00AA5B]/5" : "text-muted-foreground hover:text-foreground"
-                      )}>
-                        <item.icon className={cn("h-4 w-4", isActive && "text-[#00AA5B]")} />
-                        <span className="text-[11px] font-semibold">{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60">Manajemen</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {secondaryItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <SidebarMenuItem key={item.label}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                      <Link href={item.href} className={cn(
-                        "flex items-center gap-2.5 px-3 py-1.5 transition-colors",
-                        isActive ? "text-[#00AA5B] bg-[#00AA5B]/5" : "text-muted-foreground hover:text-foreground"
-                      )}>
-                        <item.icon className={cn("h-4 w-4", isActive && "text-[#00AA5B]")} />
-                        <span className="text-[11px] font-semibold">{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {groups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <SidebarMenuItem key={item.label}>
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
+                        <Link href={item.href} className={cn(
+                          "flex items-center gap-2.5 px-3 py-1.5 transition-colors",
+                          isActive ? "text-[#00AA5B] bg-[#00AA5B]/5" : "text-muted-foreground hover:text-foreground"
+                        )}>
+                          <item.icon className={cn("h-4 w-4", isActive && "text-[#00AA5B]")} />
+                          <span className="text-[11px] font-semibold">{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="p-3 border-t border-border">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Kembali Ke Pasar">
+            <SidebarMenuButton asChild tooltip="Kembali ke Pasar">
               <Link href="/" className="flex items-center gap-2.5 px-3 py-1.5 text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4" />
-                <span className="text-[11px] font-semibold">Kembali Ke Pasar</span>
+                <span className="text-[11px] font-semibold">Kembali ke Pasar</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
