@@ -14,9 +14,11 @@ import {
   TrendingUp,
   MessageSquare,
   AlertCircle,
-  Wallet
+  Wallet,
+  Users
 } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function MerchantDashboard() {
   const { user, loading: authLoading } = useUser();
@@ -74,7 +76,7 @@ export default function MerchantDashboard() {
       <div className="max-w-screen-xl mx-auto space-y-4">
         
         <div className="flex justify-end gap-2">
-          <Button variant="outline" className="h-8 px-3 rounded-lg font-bold text-[10px] gap-1.5 border-border">
+          <Button variant="outline" className="h-8 px-3 rounded-lg font-bold text-[10px] gap-1.5 border-border hover:bg-white">
             <ExternalLink className="w-3 h-3" /> Lihat Toko
           </Button>
           <Button className="h-8 px-3 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-[10px] gap-1.5 shadow-sm">
@@ -88,20 +90,20 @@ export default function MerchantDashboard() {
             
             <Card className="border-border shadow-sm rounded-xl bg-white">
               <CardHeader className="p-4 pb-0 flex flex-row items-center justify-between">
-                <CardTitle className="text-[10px] font-bold text-muted-foreground/60 tracking-wider">Statistik Hari Ini</CardTitle>
+                <CardTitle className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">Statistik Hari Ini</CardTitle>
                 <Link href="#" className="text-[10px] font-bold text-[#00AA5B] hover:underline">Detail</Link>
               </CardHeader>
               <CardContent className="p-4 pt-3">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                    {[
-                     { label: "Pesanan Baru", value: "0", color: "text-foreground" },
-                     { label: "Siap Dikirim", value: "0", color: "text-foreground" },
-                     { label: "Komplain", value: "0", color: "text-destructive" },
-                     { label: "Chat Baru", value: "0", color: "text-[#00AA5B]" },
+                     { label: "Pesanan", value: "0", color: "text-foreground" },
+                     { label: "Saldo Tertahan", value: "Rp0", color: "text-orange-600" },
+                     { label: "Saldo Masuk", value: "Rp0", color: "text-[#00AA5B]" },
+                     { label: "Pelanggan Baru", value: "0", color: "text-foreground" },
                    ].map((stat, idx) => (
-                     <div key={idx} className="p-3 rounded-lg bg-muted/20 border border-border/50 hover:border-[#00AA5B]/20 transition-all cursor-pointer">
-                        <p className="text-lg font-black mb-0.5 text-[#212121]">{stat.value}</p>
-                        <p className={`text-[9px] font-bold ${stat.color} opacity-60`}>{stat.label}</p>
+                     <div key={idx} className="p-3 rounded-lg bg-white border border-border hover:border-[#00AA5B] transition-all cursor-pointer shadow-sm group">
+                        <p className={cn("text-lg font-black mb-0.5 tracking-tighter", stat.color)}>{stat.value}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground group-hover:text-foreground transition-colors">{stat.label}</p>
                      </div>
                    ))}
                 </div>
@@ -113,7 +115,7 @@ export default function MerchantDashboard() {
                  <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-2">
                       <Package className="w-3.5 h-3.5 text-[#00AA5B]" />
-                      <CardTitle className="text-[10px] font-bold tracking-wider text-muted-foreground/80">Produk Terlaris</CardTitle>
+                      <CardTitle className="text-[10px] font-bold tracking-wider text-muted-foreground">Produk Terlaris</CardTitle>
                     </div>
                     <Button variant="ghost" size="sm" className="h-7 text-[9px] font-bold text-[#00AA5B] hover:bg-[#00AA5B]/5">
                       Kelola Produk
@@ -121,7 +123,7 @@ export default function MerchantDashboard() {
                  </div>
               </CardHeader>
               <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-                 <div className="w-10 h-10 bg-muted/30 rounded-full flex items-center justify-center mb-3">
+                 <div className="w-10 h-10 bg-muted/30 rounded-full flex items-center justify-center mb-3 border border-border">
                     <ShoppingBag className="w-5 h-5 text-muted-foreground opacity-20" />
                  </div>
                  <h3 className="text-[11px] font-bold text-[#212121]">Belum Ada Data Penjualan</h3>
@@ -134,7 +136,7 @@ export default function MerchantDashboard() {
 
           <div className="lg:col-span-4 space-y-4">
              
-             <Card className="border-none shadow-md rounded-xl bg-[#00AA5B] text-white overflow-hidden relative">
+             <Card className="border border-border shadow-md rounded-xl bg-[#00AA5B] text-white overflow-hidden relative">
                <div className="absolute top-0 right-0 p-3 opacity-10">
                   <Wallet className="w-12 h-12" />
                </div>
@@ -157,14 +159,14 @@ export default function MerchantDashboard() {
                </CardContent>
              </Card>
 
-             <Card className="border-border shadow-sm rounded-xl bg-white overflow-hidden">
-               <div className="p-1 bg-[#8B5CF6]/5 border-b border-border flex items-center justify-center gap-2 text-[8px] font-bold text-[#8B5CF6] tracking-widest">
+             <Card className="border border-border shadow-sm rounded-xl bg-white overflow-hidden">
+               <div className="p-1 bg-[#8B5CF6]/5 border-b border-border flex items-center justify-center gap-2 text-[8px] font-bold text-[#8B5CF6] tracking-widest uppercase">
                   <AlertCircle className="w-3 h-3" /> Info Seller
                </div>
                <CardContent className="p-4">
                   <div className="space-y-3">
                      <div className="flex gap-2.5 items-start group cursor-pointer">
-                        <div className="w-7 h-7 rounded-lg bg-orange-50 border border-orange-100 flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-lg bg-orange-50 border border-orange-200 flex items-center justify-center shrink-0">
                            <MessageSquare className="w-3.5 h-3.5 text-orange-600" />
                         </div>
                         <div>
@@ -173,7 +175,7 @@ export default function MerchantDashboard() {
                         </div>
                      </div>
                      <div className="flex gap-2.5 items-start group cursor-pointer pt-3 border-t border-border">
-                        <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0">
                            <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
                         </div>
                         <div>

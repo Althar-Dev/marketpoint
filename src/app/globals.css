@@ -20,8 +20,8 @@
     --accent-foreground: 0 0% 13%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 86%;
-    --input: 0 0% 89.8%;
+    --border: 0 0% 80%;
+    --input: 0 0% 85%;
     --ring: 0 0% 13%;
     --radius: 0.75rem;
 
@@ -31,7 +31,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 0 0% 88%;
+    --sidebar-border: 0 0% 80%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -52,8 +52,8 @@
     --accent-foreground: 0 0% 13%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 86%;
-    --input: 0 0% 89.8%;
+    --border: 0 0% 80%;
+    --input: 0 0% 85%;
     --ring: 0 0% 13%;
   }
 
@@ -72,8 +72,8 @@
     --muted-foreground: 0 0% 63.9%;
     --accent: 0 0% 13.3%;
     --accent-foreground: 0 0% 98%;
-    --border: 0 0% 26.7%;
-    --input: 0 0% 26.7%;
+    --border: 0 0% 30%;
+    --input: 0 0% 30%;
     --ring: 0 0% 83.1%;
 
     --sidebar-background: 0 0% 4%;
@@ -82,7 +82,7 @@
     --sidebar-primary-foreground: 0 0% 9%;
     --sidebar-accent: 0 0% 13.3%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 0 0% 26.7%;
+    --sidebar-border: 0 0% 30%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -104,7 +104,6 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Custom Scrollbar Styles */
   ::-webkit-scrollbar {
     width: 5px;
     height: 5px;
@@ -180,7 +179,6 @@
   animation: marquee-reverse 40s linear infinite;
 }
 
-/* Minimal Top Loading Bar Animation */
 @keyframes loading-progress {
   0% { left: -35%; right: 100%; }
   60% { left: 100%; right: -90%; }
