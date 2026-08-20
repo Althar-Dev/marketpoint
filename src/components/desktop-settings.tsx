@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,6 +29,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface DesktopProfileSettingsProps {
   user: any;
@@ -76,7 +76,7 @@ export function DesktopSettings({
 
             {/* Shop Section */}
             <div className="space-y-3 pt-3 border-t border-border/50">
-              <div className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
+              <Link href="/merchant/setup" className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border group-hover:border-[#00AA5B]/30">
                     <Store className="w-2.5 h-2.5 text-muted-foreground group-hover:text-[#00AA5B]" />
@@ -84,7 +84,7 @@ export function DesktopSettings({
                   <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">Toko Saya</span>
                 </div>
                 <span className="text-[10px] font-bold text-[#00AA5B]">Buka Gratis</span>
-              </div>
+              </Link>
               
               <div className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
@@ -285,7 +285,6 @@ export function DesktopSettings({
                 </div>
               </TabsContent>
               
-              {/* Simplified placeholders for other tabs */}
               {["rekening", "notifikasi", "keamanan"].map(tabId => (
                 <TabsContent key={tabId} value={tabId} className="p-8 mt-0 text-center">
                    <p className="text-[11px] text-muted-foreground">Halaman {tabId.charAt(0).toUpperCase() + tabId.slice(1)} sedang dalam pengembangan.</p>
