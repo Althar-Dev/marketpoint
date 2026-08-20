@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -8,6 +7,12 @@ import { cn } from "@/lib/utils";
 
 export function MarketBottomNav() {
   const pathname = usePathname();
+
+  // Logika untuk menyembunyikan bottom nav di rute tertentu
+  const hideOnPaths = ['/login', '/register', '/my-shop'];
+  const shouldHide = hideOnPaths.some(path => pathname?.startsWith(path));
+
+  if (shouldHide) return null;
 
   const navItems = [
     { 

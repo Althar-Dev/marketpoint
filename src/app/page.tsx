@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   Carousel,
@@ -40,12 +39,10 @@ import {
   Monitor,
   MoreVertical,
   MapPin,
-  Activity,
-  Cpu
+  TrendingUp
 } from "lucide-react";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
-import { MarketBottomNav } from "@/components/market-bottom-nav";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -251,7 +248,7 @@ export default function MarketPage() {
            <Card className="border-border shadow-sm rounded-2xl p-4 md:p-6 bg-white overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-6">
                  
-                 {/* Banner Kategori Populer - HIDDEN ON MOBILE */}
+                 {/* Banner Kategori Populer */}
                  <div className="flex lg:col-span-6 flex-col space-y-4">
                     <h2 className="text-xl font-bold tracking-tight">Kategori Populer</h2>
                     <div className="relative h-[160px] md:h-[180px] rounded-2xl overflow-hidden bg-[#00AA5B] group cursor-pointer border border-border shadow-inner">
@@ -460,7 +457,6 @@ export default function MarketPage() {
       </main>
 
       <MarketFooter />
-      <MarketBottomNav />
     </div>
   );
 }

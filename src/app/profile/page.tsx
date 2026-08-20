@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc, useAuth, useMemoFirebase } from "@/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
-import { MarketBottomNav } from "@/components/market-bottom-nav";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
 import { Button } from "@/components/ui/button";
@@ -147,17 +146,14 @@ export default function ProfilePage() {
             ))}
           </div>
         </main>
-        <MarketBottomNav />
       </div>
     );
   }
 
   if (!user) return null;
 
-  // Cek status toko dengan logika Single Source of Truth ditambah fallback ke dokumen shops
   const hasShop = userData?.hasShop === true || !!shop;
 
-  // Render Desktop View (Unified Layout)
   if (!isMobile) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -181,11 +177,9 @@ export default function ProfilePage() {
     );
   }
 
-  // Render Mobile View
   return (
     <div className="min-h-screen bg-white flex flex-col font-body text-[#212121]">
       <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
-        {/* Profile Header */}
         <div className="px-4 py-1.5 flex items-center justify-between bg-white sticky top-0 z-30 border-b border-border/50">
           <h1 className="text-base font-bold">Akun</h1>
           <Link href="/settings" className="p-1.5 hover:bg-muted rounded-full transition-colors text-foreground">
@@ -193,7 +187,6 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        {/* User Info Section */}
         <div className="px-4 py-3 flex items-center gap-3">
           <Avatar className="h-14 w-14 border-none shadow-sm ring-2 ring-muted/20">
             <AvatarImage src={user.photoURL || undefined} />
@@ -237,7 +230,6 @@ export default function ProfilePage() {
 
         <div className="h-1.5 bg-muted/20 w-full" />
 
-        {/* Menu Groups */}
         <div className="py-1">
           {[
             { label: "Daftar Transaksi", icon: ReceiptText },
@@ -261,7 +253,6 @@ export default function ProfilePage() {
 
         <div className="h-1.5 bg-muted/20 w-full" />
 
-        {/* Komplain & Bantuan */}
         <div className="py-1">
           {[
             { label: "Pesanan Dikomplain", icon: MessageSquareWarning },
@@ -283,8 +274,6 @@ export default function ProfilePage() {
           ))}
         </div>
       </main>
-
-      <MarketBottomNav />
     </div>
   );
 }

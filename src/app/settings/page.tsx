@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from "@/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
-import { MarketBottomNav } from "@/components/market-bottom-nav";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
 import { Button } from "@/components/ui/button";
@@ -153,7 +152,6 @@ export default function SettingsPage() {
             </div>
           </div>
         </main>
-        <MarketBottomNav />
       </div>
     );
   }
@@ -162,7 +160,6 @@ export default function SettingsPage() {
 
   const hasShop = userData?.hasShop === true || !!shop;
 
-  // Render Desktop View (Unified Layout)
   if (!isMobile) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -186,11 +183,9 @@ export default function SettingsPage() {
     );
   }
 
-  // Render Mobile View
   return (
     <div className="min-h-screen bg-white flex flex-col font-body text-[#212121]">
       <main className="flex-1 w-full pb-24 max-w-2xl mx-auto bg-white min-h-screen">
-        {/* Header */}
         <div className="px-4 py-1.5 flex items-center justify-between bg-white sticky top-0 z-30 border-b border-border/50">
           <div className="flex items-center gap-3">
             <Link href="/profile" className="p-1 hover:bg-muted rounded-full transition-colors text-foreground">
@@ -203,7 +198,6 @@ export default function SettingsPage() {
           </Button>
         </div>
 
-        {/* User Identity Section */}
         <section className="px-4 py-3 relative">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
@@ -245,7 +239,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Account Settings List */}
         <section className="pb-1">
           <h3 className="px-4 text-[11px] font-bold text-[#2E3137] mb-2">Pengaturan Akun</h3>
           <div className="divide-y divide-border/50">
@@ -273,7 +266,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Seputar MarketPoint Dropdown */}
         <section className="border-t border-border mt-1 px-4">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="seputar" className="border-none">
@@ -302,7 +294,6 @@ export default function SettingsPage() {
           </Accordion>
         </section>
 
-        {/* Logout Section */}
         <section className="border-t border-border mt-0.5">
           <button 
             onClick={handleLogout}
@@ -318,8 +309,6 @@ export default function SettingsPage() {
           </button>
         </section>
       </main>
-
-      <MarketBottomNav />
     </div>
   );
 }

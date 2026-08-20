@@ -1,11 +1,9 @@
-
 "use client";
 
 import React from "react";
 import { ShopHeader } from "@/components/shop-header";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
-import { MarketBottomNav } from "@/components/market-bottom-nav";
 
 export default function ShopLayout({
   children,
@@ -24,7 +22,6 @@ export default function ShopLayout({
         {children}
       </div>
       <MarketFooter />
-      <MarketBottomNav />
     </div>
   );
 }

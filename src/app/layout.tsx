@@ -4,6 +4,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import Script from 'next/script';
 import { Toaster } from "@/components/ui/toaster";
+import { MarketBottomNav } from "@/components/market-bottom-nav";
 
 export const metadata: Metadata = {
   title: {
@@ -36,6 +37,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           {children}
           <Toaster />
+          <MarketBottomNav />
         </FirebaseClientProvider>
         <Script 
           src="https://accounts.google.com/gsi/client" 
