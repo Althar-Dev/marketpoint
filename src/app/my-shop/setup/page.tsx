@@ -78,9 +78,11 @@ export default function MerchantSetupPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-body flex flex-col text-[#212121]">
-      <MarketHeader />
+      <div className="hidden lg:block">
+        <MarketHeader />
+      </div>
 
-      <main className="flex-1 pt-24 pb-20">
+      <main className="flex-1 pt-6 lg:pt-24 pb-20">
         <div className="max-w-screen-md mx-auto px-4">
           {/* Top Breadcrumb & Nav */}
           <div className="flex items-center gap-2 mb-6">
