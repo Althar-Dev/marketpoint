@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -149,7 +148,7 @@ export default function SettingsPage() {
 
   if (!user) return null;
 
-  // Render Desktop View
+  // Render Desktop View (Unified Layout)
   if (!isMobile) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -157,6 +156,7 @@ export default function SettingsPage() {
         <main className="flex-1 pt-16 bg-[#F8FAFC]">
           <DesktopSettings 
             user={user}
+            wallet={wallet}
             displayName={displayName}
             setDisplayName={setDisplayName}
             isEditing={isEditing}
@@ -176,7 +176,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-white flex flex-col font-body text-[#212121]">
       <main className="flex-1 w-full pb-24 max-w-2xl mx-auto bg-white min-h-screen">
         {/* Header */}
-        <div className="px-4 py-1.5 flex items-center justify-between bg-white sticky top-0 z-30">
+        <div className="px-4 py-1.5 flex items-center justify-between bg-white sticky top-0 z-30 border-b border-border/50">
           <div className="flex items-center gap-3">
             <Link href="/profile" className="p-1 hover:bg-muted rounded-full transition-colors text-foreground">
               <ChevronLeft className="w-5 h-5" />

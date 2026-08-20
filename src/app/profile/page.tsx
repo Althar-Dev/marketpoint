@@ -1,10 +1,10 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc, useAuth, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
+import { updateProfile } from "firebase/auth";
 import { MarketBottomNav } from "@/components/market-bottom-nav";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { DesktopProfile } from "@/components/desktop-profile";
+import { DesktopSettings } from "@/components/desktop-settings";
 import Link from "next/link";
 import { 
   Settings, 
@@ -40,6 +40,10 @@ export default function ProfilePage() {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
   
+  const [displayName, setDisplayName] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [updating, setUpdating] = useState(false);
+
   const walletRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "users", user.uid, "wallet", "info");
@@ -51,8 +55,36 @@ export default function ProfilePage() {
     setMounted(true);
     if (!authLoading && !user) {
       router.push("/login");
+    } else if (user) {
+      setDisplayName(user.displayName || "");
     }
   }, [user, authLoading, router]);
+
+  const handleUpdateProfile = async () => {
+    if (!user) return;
+    setUpdating(true);
+    try {
+      await updateProfile(user, { displayName });
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        displayName,
+        updatedAt: new Date().toISOString(),
+      });
+      toast({
+        title: "Profil Diperbarui",
+        description: "Nama profil Anda berhasil disimpan.",
+      });
+      setIsEditing(false);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal Memperbarui",
+        description: "Terjadi kesalahan saat menyimpan perubahan.",
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -74,10 +106,11 @@ export default function ProfilePage() {
   if (!mounted || authLoading || (user && walletLoading && !wallet)) {
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
-        <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
+        <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
           <div className="px-4 py-1.5 flex items-center justify-between">
-            <Skeleton className="h-4 w-12" />
-            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-4 w-4 rounded-full" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-4 rounded-full" />
           </div>
           <div className="px-4 py-2 flex items-center gap-3">
             <Skeleton className="h-12 w-12 rounded-full" />
@@ -88,13 +121,6 @@ export default function ProfilePage() {
                 <Skeleton className="h-2.5 w-16" />
               </div>
             </div>
-          </div>
-          <div className="px-4 py-2">
-            <Skeleton className="h-10 w-full rounded-xl" />
-          </div>
-          <div className="px-4 pb-3 grid grid-cols-2 gap-3">
-            <Skeleton className="h-8 w-full rounded-xl" />
-            <Skeleton className="h-8 w-full rounded-xl" />
           </div>
           <div className="h-1.5 bg-muted/20 w-full" />
           <div className="py-1 space-y-0.5">
@@ -116,13 +142,23 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  // Render Desktop View
+  // Render Desktop View (Unified Layout)
   if (!isMobile) {
     return (
       <div className="flex flex-col min-h-screen">
         <MarketHeader />
         <main className="flex-1 pt-16 bg-[#F8FAFC]">
-          <DesktopProfile user={user} wallet={wallet} handleLogout={handleLogout} />
+          <DesktopSettings 
+            user={user} 
+            wallet={wallet} 
+            displayName={displayName}
+            setDisplayName={setDisplayName}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            handleUpdateProfile={handleUpdateProfile}
+            handleLogout={handleLogout}
+            updating={updating}
+          />
         </main>
         <MarketFooter />
       </div>
@@ -131,10 +167,10 @@ export default function ProfilePage() {
 
   // Render Mobile View
   return (
-    <div className="min-h-screen bg-white flex flex-col font-body">
+    <div className="min-h-screen bg-white flex flex-col font-body text-[#212121]">
       <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
         {/* Profile Header */}
-        <div className="px-4 py-1.5 flex items-center justify-between bg-white sticky top-0 z-30">
+        <div className="px-4 py-1.5 flex items-center justify-between bg-white sticky top-0 z-30 border-b border-border/50">
           <h1 className="text-base font-bold">Akun</h1>
           <Link href="/settings" className="p-1.5 hover:bg-muted rounded-full transition-colors text-foreground">
             <Settings className="w-4.5 h-4.5" />
@@ -142,16 +178,16 @@ export default function ProfilePage() {
         </div>
 
         {/* User Info Section */}
-        <div className="px-4 py-2 flex items-center gap-3">
-          <Avatar className="h-14 w-14 border border-border shadow-sm">
+        <div className="px-4 py-3 flex items-center gap-3">
+          <Avatar className="h-14 w-14 border-none shadow-sm ring-2 ring-muted/20">
             <AvatarImage src={user.photoURL || undefined} />
             <AvatarFallback className="bg-[#00AA5B] text-white text-lg font-bold uppercase">
-              {user.displayName?.substring(0, 1) || user.email?.substring(0, 1)}
+              {displayName.substring(0, 1) || "U"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <div className="flex items-center gap-1">
-              <span className="font-bold text-[15px]">{user.displayName || "Pengguna Baru"}</span>
+              <span className="font-bold text-[15px]">{displayName || "Pengguna Baru"}</span>
             </div>
             <div className="mt-0.5 space-y-0.5">
               <div className="flex items-center gap-2">
