@@ -46,19 +46,19 @@ export function MerchantHeader() {
       case "/my-shop": 
         return { title: "Dashboard" };
       case "/my-shop/setup": 
-        return { title: "Pengaturan profil toko" };
+        return { title: "Pengaturan Profil Toko" };
       case "/my-shop/orders": 
-        return { title: "Pesanan toko" };
+        return { title: "Pesanan Toko" };
       case "/my-shop/products": 
-        return { title: "Daftar produk" };
+        return { title: "Daftar Produk" };
       case "/my-shop/stats": 
-        return { title: "Statistik toko" };
+        return { title: "Statistik Toko" };
       case "/my-shop/wallet": 
-        return { title: "Saldo toko" };
+        return { title: "Saldo Toko" };
       case "/my-shop/chat": 
-        return { title: "Chat pembeli" };
+        return { title: "Chat Pembeli" };
       default: 
-        return { title: "Seller center" };
+        return { title: "Seller Center" };
     }
   };
 
@@ -115,7 +115,7 @@ export function MerchantHeader() {
               </Avatar>
               <div className="hidden lg:flex flex-col items-start leading-none pr-1">
                 <span className="text-[11px] font-bold truncate max-w-[90px]">{user?.displayName || "Seller"}</span>
-                <span className="text-[9px] text-muted-foreground font-medium mt-0.5">Pemilik toko</span>
+                <span className="text-[9px] text-muted-foreground font-medium mt-0.5">Pemilik Toko</span>
               </div>
               <ChevronDown className="w-3 h-3 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity" />
             </button>
@@ -131,13 +131,13 @@ export function MerchantHeader() {
             <DropdownMenuItem asChild className="rounded-md py-1.5 cursor-pointer focus:bg-muted">
               <Link href="/profile" className="flex items-center gap-2 text-[11px] font-semibold">
                 <UserIcon className="w-3.5 h-3.5 opacity-50" />
-                Profil pasar
+                Profil Pasar
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="rounded-md py-1.5 cursor-pointer focus:bg-muted">
               <Link href="/my-shop/setup" className="flex items-center gap-2 text-[11px] font-semibold">
                 <Settings className="w-3.5 h-3.5 opacity-50" />
-                Pengaturan toko
+                Pengaturan Toko
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

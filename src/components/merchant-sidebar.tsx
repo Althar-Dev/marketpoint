@@ -32,7 +32,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useDoc, useUser, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function MerchantSidebar() {
   const pathname = usePathname();
@@ -50,14 +49,14 @@ export function MerchantSidebar() {
   const navItems = [
     { label: "Dashboard", icon: LayoutDashboard, href: "/my-shop" },
     { label: "Pesanan", icon: ShoppingBag, href: "/my-shop/orders" },
-    { label: "Produk saya", icon: Package, href: "/my-shop/products" },
+    { label: "Produk Saya", icon: Package, href: "/my-shop/products" },
     { label: "Statistik", icon: TrendingUp, href: "/my-shop/stats" },
   ];
 
   const secondaryItems = [
-    { label: "Saldo toko", icon: Wallet, href: "/my-shop/wallet" },
-    { label: "Chat pembeli", icon: MessageSquare, href: "/my-shop/chat" },
-    { label: "Pengaturan toko", icon: Settings, href: "/my-shop/setup" },
+    { label: "Saldo Toko", icon: Wallet, href: "/my-shop/wallet" },
+    { label: "Chat Pembeli", icon: MessageSquare, href: "/my-shop/chat" },
+    { label: "Pengaturan Toko", icon: Settings, href: "/my-shop/setup" },
   ];
 
   return (
@@ -69,7 +68,7 @@ export function MerchantSidebar() {
           </div>
           {state !== "collapsed" && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-[9px] font-bold text-[#00AA5B] leading-none">Seller center</span>
+              <span className="text-[9px] font-bold text-[#00AA5B] leading-none">Seller Center</span>
               <span className="text-sm font-bold tracking-tight truncate">MarketPoint</span>
             </div>
           )}
@@ -78,7 +77,7 @@ export function MerchantSidebar() {
 
       <SidebarContent className="gap-0">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-[9px] font-bold text-muted-foreground/60">Menu utama</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[9px] font-bold text-muted-foreground/60">Menu Utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
@@ -129,10 +128,10 @@ export function MerchantSidebar() {
       <SidebarFooter className="p-3 border-t border-border/50">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Kembali ke pasar">
+            <SidebarMenuButton asChild tooltip="Kembali ke Pasar">
               <Link href="/" className="flex items-center gap-2.5 px-3 py-1.5 text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4" />
-                <span className="text-xs font-semibold">Kembali ke pasar</span>
+                <span className="text-xs font-semibold">Kembali ke Pasar</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
