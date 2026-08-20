@@ -202,7 +202,7 @@ export default function ShopProfilePage() {
   };
 
   return (
-    <main className="flex-1 w-full pt-16 pb-20 lg:pb-0">
+    <main className="flex-1 w-full pt-14 md:pt-16 pb-20 lg:pb-0">
       {/* Banner Section - Optimized for 1300:500 */}
       <div className="relative h-32 sm:h-44 md:h-72 lg:h-[350px] w-full bg-muted overflow-hidden">
         {shop.bannerUrl ? (
