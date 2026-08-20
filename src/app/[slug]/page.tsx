@@ -28,7 +28,7 @@ import {
   Info,
   ShoppingBag,
   Clock,
-  Heart,
+  UserPlus,
   Search,
   CheckCircle2,
   ShieldCheck,
@@ -40,6 +40,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Dummy products for the shop
 const SHOP_PRODUCTS = [
@@ -209,7 +216,7 @@ export default function ShopProfilePage() {
       <MarketHeader />
 
       <main className="flex-1 w-full pt-16 pb-20 lg:pb-0">
-        {/* Banner Section */}
+        {/* Banner Section - Optimized for 1300:500 */}
         <div className="relative h-32 sm:h-44 md:h-72 lg:h-[350px] w-full bg-muted overflow-hidden">
           {shop.bannerUrl ? (
             <Image 
@@ -244,7 +251,7 @@ export default function ShopProfilePage() {
               </div>
 
               <div className="flex flex-row items-start gap-4 md:gap-8">
-                {/* Logo Section */}
+                {/* Logo Section - Aligned Left */}
                 <div className="relative shrink-0">
                   <div className="h-16 w-16 md:h-32 md:w-32 rounded-2xl md:rounded-3xl bg-white border-[1.5px] border-border shadow-md overflow-hidden relative">
                     {shop.logoUrl ? (
@@ -338,6 +345,7 @@ export default function ShopProfilePage() {
                       @{shop.slug}
                     </p>
 
+                    {/* Desktop Stats */}
                     <div className="hidden md:flex flex-wrap items-center gap-x-6 gap-y-2 text-muted-foreground mt-2">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-[#00AA5B]" />
@@ -354,6 +362,7 @@ export default function ShopProfilePage() {
                       </div>
                     </div>
 
+                    {/* Mobile Stats */}
                     <div className="flex md:hidden items-center gap-3 mt-1.5 text-muted-foreground">
                        <div className="flex items-center gap-1">
                          <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
@@ -377,7 +386,7 @@ export default function ShopProfilePage() {
                       <MessageCircle className="w-4 h-4" /> Chat penjual
                     </Button>
                     <Button variant="outline" className="h-10 px-8 rounded-xl border-border font-black text-xs gap-2 hover:bg-[#F8FAFC] transition-transform active:scale-95">
-                      <Heart className="w-4 h-4" /> Favoritkan
+                      <UserPlus className="w-4 h-4" /> Follow
                     </Button>
                   </div>
                 </div>
@@ -392,7 +401,7 @@ export default function ShopProfilePage() {
                   <MessageCircle className="w-3.5 h-3.5" /> Chat penjual
                 </Button>
                 <Button variant="outline" className="flex-1 h-9 rounded-xl border-border font-black text-[10px] gap-2">
-                  <Heart className="w-3.5 h-3.5" /> Favoritkan
+                  <UserPlus className="w-3.5 h-3.5" /> Follow
                 </Button>
               </div>
             </CardContent>
@@ -401,6 +410,7 @@ export default function ShopProfilePage() {
 
         {/* Shop Content Grid */}
         <div className="max-w-screen-xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8 pb-16">
+          {/* Sidebar Profil Bisnis */}
           <aside className="lg:col-span-3 space-y-6">
             <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
               <div className="p-5 border-b border-border bg-[#F8FAFC]">
@@ -431,6 +441,7 @@ export default function ShopProfilePage() {
             </Button>
           </aside>
 
+          {/* Main Content Area */}
           <div className="lg:col-span-9 space-y-8">
             {/* Optimized Nav Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-2">
@@ -656,10 +667,3 @@ export default function ShopProfilePage() {
     </div>
   );
 }
-
-// Dummy components to prevent build errors since I can't import everything at once in a single code block perfectly without knowing full existence of sub-components, but for MarketPoint they exist.
-function Select({ children, defaultValue }: any) { return <div className="relative">{children}</div>; }
-function SelectTrigger({ children, className }: any) { return <button className={className}>{children}</button>; }
-function SelectValue({ placeholder }: any) { return <span>{placeholder}</span>; }
-function SelectContent({ children, className }: any) { return null; }
-function SelectItem({ children, value, className }: any) { return null; }
