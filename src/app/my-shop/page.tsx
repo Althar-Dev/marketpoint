@@ -73,7 +73,6 @@ export default function MerchantDashboard() {
     <main className="flex-1 p-3 md:p-6 lg:p-8">
       <div className="max-w-screen-xl mx-auto space-y-4">
         
-        {/* Baris Aksi Teratas */}
         <div className="flex justify-end gap-2">
           <Button variant="outline" className="h-8 px-3 rounded-lg font-bold text-[10px] gap-1.5 border-border hover:bg-white transition-colors">
             <ExternalLink className="w-3 h-3" /> Lihat toko
@@ -83,10 +82,8 @@ export default function MerchantDashboard() {
           </Button>
         </div>
 
-        {/* Tata Letak Grid Utama */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           
-          {/* 1. Saldo Penghasilan - Posisi 1 di Mobile, Kanan Atas di Desktop */}
           <div className="order-1 lg:col-span-4 lg:col-start-9 lg:row-start-1">
              <Card className="border-border border-2 shadow-sm rounded-xl bg-[#00AA5B] text-white overflow-hidden relative">
                <div className="absolute top-0 right-0 p-3 opacity-10">
@@ -112,9 +109,7 @@ export default function MerchantDashboard() {
              </Card>
           </div>
 
-          {/* 2. Statistik & Produk Terlaris - Posisi 2 di Mobile, Kolom Kiri di Desktop */}
           <div className="order-2 lg:col-span-8 lg:col-start-1 lg:row-start-1 lg:row-span-3 space-y-5">
-            {/* Statistik Hari Ini */}
             <Card className="border-border border-2 shadow-sm rounded-xl bg-white">
               <CardHeader className="p-4 pb-0 flex flex-row items-center justify-between">
                 <CardTitle className="text-[11px] font-bold text-muted-foreground tracking-wide">Statistik hari ini</CardTitle>
@@ -137,7 +132,6 @@ export default function MerchantDashboard() {
               </CardContent>
             </Card>
 
-            {/* Produk Terlaris */}
             <Card className="border-border border-2 shadow-sm rounded-xl bg-white">
               <CardHeader className="p-4 border-b-2 border-border">
                  <div className="flex items-center justify-between w-full">
@@ -162,25 +156,28 @@ export default function MerchantDashboard() {
             </Card>
           </div>
 
-          {/* 3. Transaksi Hari Ini - Posisi 3 di Mobile, Kanan Bawah di Desktop */}
           <div className="order-3 lg:col-span-4 lg:col-start-9 lg:row-start-2">
             <Card className="border-border border-2 shadow-sm rounded-xl bg-white overflow-hidden">
-               <CardHeader className="p-4 border-b-2 border-border flex flex-row items-center justify-between space-y-0">
-                  <div className="flex items-center gap-2">
-                    <History className="w-3.5 h-3.5 text-[#00AA5B]" />
-                    <CardTitle className="text-[11px] font-bold tracking-wide text-muted-foreground">Transaksi hari ini</CardTitle>
-                  </div>
-                  <Link href="/my-shop/wallet" className="text-[9px] font-bold text-[#00AA5B] hover:underline flex items-center gap-0.5">
-                    Semua <ArrowRight className="w-2.5 h-2.5" />
-                  </Link>
-               </CardHeader>
-               <CardContent className="p-0">
-                  <div className="divide-y-2 divide-border">
-                    <div className="p-4 text-center">
-                       <p className="text-[10px] text-muted-foreground py-4">Belum ada transaksi hari ini.</p>
+               <CardHeader className="p-4 border-b-2 border-border">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2">
+                      <History className="w-3.5 h-3.5 text-[#00AA5B]" />
+                      <CardTitle className="text-[11px] font-bold tracking-wide text-muted-foreground">Transaksi hari ini</CardTitle>
                     </div>
+                    <Link href="/my-shop/wallet" className="text-[9px] font-bold text-[#00AA5B] hover:underline flex items-center gap-0.5">
+                      Semua <ArrowRight className="w-2.5 h-2.5" />
+                    </Link>
                   </div>
-               </CardContent>
+               </CardHeader>
+               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                 <div className="w-10 h-10 bg-muted/20 rounded-full flex items-center justify-center mb-3 border-2 border-border">
+                    <History className="w-5 h-5 text-muted-foreground opacity-30" />
+                 </div>
+                 <h3 className="text-[11px] font-bold text-[#212121]">Belum ada transaksi</h3>
+                 <p className="text-[10px] text-muted-foreground max-w-[200px] mt-0.5 leading-relaxed">
+                   Semua riwayat transaksi penjualan hari ini akan muncul di sini.
+                 </p>
+              </CardContent>
              </Card>
           </div>
 
