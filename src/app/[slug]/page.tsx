@@ -370,27 +370,27 @@ export default function ShopProfilePage() {
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                   </div>
-                  <CardContent className="p-3 md:p-4 flex-1 flex flex-col justify-between space-y-3">
-                    <div className="space-y-1.5">
-                      <h4 className="text-[11px] md:text-[12px] font-bold text-[#2E3137] line-clamp-2 leading-tight group-hover:text-[#00AA5B] transition-colors">
+                  <CardContent className="p-2.5 md:p-3 space-y-2 flex-1 flex flex-col justify-between">
+                    <div className="space-y-1">
+                      <h4 className="text-[11px] md:text-xs font-medium text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">
                         {product.name}
                       </h4>
-                      <p className="text-[14px] md:text-[15px] font-black text-[#212121]">
-                        Rp {product.price.toLocaleString('id-ID')}
-                      </p>
+                      <div className="flex flex-col gap-0.5">
+                        <p className="text-[#000000] text-[12px] md:text-sm font-black">
+                          Rp {product.price.toLocaleString('id-ID')}
+                        </p>
+                      </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-1.5">
-                        <div className="flex items-center gap-0.5">
-                          <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
-                          <span className="text-[10px] font-black text-[#2E3137]">{product.rating}</span>
-                        </div>
-                        <span className="text-[10px] font-medium text-muted-foreground opacity-50">|</span>
-                        <span className="text-[10px] font-medium text-muted-foreground">{product.sold} terjual</span>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-2.5 h-2.5 text-[#FFC400] fill-[#FFC400]" />
+                        <span className="text-[10px] font-medium text-muted-foreground">
+                          {product.rating} <span className="opacity-40">|</span> {product.sold} terjual
+                        </span>
                       </div>
                       
-                      <Button className="w-full h-8 rounded-lg bg-[#F8FAFC] hover:bg-[#00AA5B] text-[#2E3137] hover:text-white font-black text-[9px] border border-border group-hover:border-[#00AA5B] transition-all">
+                      <Button className="w-full h-8 rounded-lg bg-[#F8FAFC] hover:bg-[#00AA5B] text-[#2E3137] hover:text-white font-bold text-[9px] border border-border group-hover:border-[#00AA5B] transition-all">
                         Tambah ke keranjang
                       </Button>
                     </div>
