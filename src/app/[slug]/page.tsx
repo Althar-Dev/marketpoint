@@ -31,7 +31,8 @@ import {
   ShieldCheck,
   Zap,
   Award,
-  ThumbsUp
+  ThumbsUp,
+  Share2
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -200,6 +201,15 @@ export default function ShopProfilePage() {
     }
   };
 
+  const handleShare = () => {
+    if (typeof window !== 'undefined' && navigator.share) {
+      navigator.share({
+        title: shop.name,
+        url: window.location.href,
+      }).catch(console.error);
+    }
+  };
+
   return (
     <main className="flex-1 w-full pt-14 md:pt-16 pb-20 lg:pb-0">
       {/* Banner Section - Optimized for 1300:500 */}
@@ -363,6 +373,14 @@ export default function ShopProfilePage() {
                   </Button>
                   <Button variant="outline" className="h-10 px-8 rounded-xl border-border font-black text-xs gap-2 hover:bg-[#F8FAFC] transition-transform active:scale-95">
                     <Heart className="w-4 h-4" /> Follow
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={handleShare}
+                    className="h-10 w-10 rounded-xl border-border transition-transform active:scale-95"
+                  >
+                    <Share2 className="w-4 h-4 text-muted-foreground" />
                   </Button>
                 </div>
               </div>
