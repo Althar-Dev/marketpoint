@@ -102,16 +102,24 @@ export default function ShopProfilePage() {
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-body">
         <MarketHeader />
         <main className="flex-1 w-full pt-16">
-          <Skeleton className="h-40 md:h-64 w-full rounded-none" />
-          <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-16 relative z-10 mb-8">
+          <Skeleton className="h-44 md:h-72 w-full rounded-none" />
+          <div className="max-w-screen-xl mx-auto px-4 -mt-12 md:-mt-20 relative z-10 mb-8">
             <Card className="border-border border-[1.5px] shadow-lg rounded-2xl bg-white overflow-hidden">
-              <CardContent className="p-4 md:p-6 flex items-center gap-4 md:gap-6">
-                <Skeleton className="h-16 w-16 md:h-24 md:w-24 rounded-2xl shrink-0" />
-                <div className="flex-1 space-y-3">
-                  <Skeleton className="h-6 w-48" />
-                  <div className="flex gap-4">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-32" />
+              <CardContent className="p-4 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-5 md:gap-8">
+                <Skeleton className="h-20 w-20 md:h-32 md:w-32 rounded-3xl shrink-0" />
+                <div className="flex-1 space-y-4 w-full">
+                  <div className="flex flex-col md:flex-row items-center gap-3">
+                    <Skeleton className="h-8 w-48" />
+                    <Skeleton className="h-5 w-24" />
+                  </div>
+                  <div className="flex gap-4 justify-center md:justify-start">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <div className="flex gap-2 justify-center md:justify-start pt-2">
+                    <Skeleton className="h-10 w-32 rounded-xl" />
+                    <Skeleton className="h-10 w-32 rounded-xl" />
                   </div>
                 </div>
               </CardContent>
@@ -131,12 +139,12 @@ export default function ShopProfilePage() {
           <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4 border-[1.5px] border-border">
             <Info className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h1 className="text-xl font-bold">Toko Tidak Ditemukan</h1>
+          <h1 className="text-xl font-bold">Toko tidak ditemukan</h1>
           <p className="text-muted-foreground mt-2 max-w-xs text-sm">
             Maaf, toko dengan alamat ini tidak tersedia atau telah dihapus.
           </p>
           <Button asChild className="mt-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold rounded-xl text-white">
-            <Link href="/">Kembali ke Beranda</Link>
+            <Link href="/">Kembali ke beranda</Link>
           </Button>
         </main>
         <MarketFooter />
@@ -196,24 +204,31 @@ export default function ShopProfilePage() {
 
                 {/* Shop Title & Primary Stats */}
                 <div className="flex-1 text-center md:text-left space-y-3 min-w-0">
-                  <div className="flex flex-col md:flex-row items-center gap-3">
+                  <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3">
                     <h1 className="text-xl md:text-3xl font-black font-headline tracking-tight truncate max-w-md">
                       {shop.name}
                     </h1>
-                    <Badge className="bg-[#00AA5B] text-white border-none font-black text-[9px] h-5 px-2 tracking-widest">
-                      OFFICIAL STORE
-                    </Badge>
+                    {shop.official === true && (
+                      <div className="relative h-5 w-20 md:h-6 md:w-24 shrink-0">
+                        <Image 
+                          src="/assets/badge/official.png" 
+                          alt="Official Store" 
+                          fill 
+                          className="object-contain object-center md:object-left"
+                        />
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex flex-wrap justify-center md:justify-start items-center gap-x-6 gap-y-2 text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-[#00AA5B]" />
-                      <span className="text-xs font-bold text-[#2E3137]">{shop.location?.city || "Lokasi Toko"}</span>
+                      <span className="text-xs font-bold text-[#2E3137]">{shop.location?.city || "Lokasi toko"}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Star className="w-4 h-4 text-[#FFC400] fill-[#FFC400]" />
                       <span className="text-xs font-bold text-[#2E3137]">4.9</span>
-                      <span className="text-[11px] font-medium opacity-60">(2.5rb Ulasan)</span>
+                      <span className="text-[11px] font-medium opacity-60">(2.5rb ulasan)</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-muted-foreground/60" />
@@ -226,7 +241,7 @@ export default function ShopProfilePage() {
                       onClick={handleContactWhatsApp}
                       className="h-10 px-8 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-xs gap-2 shadow-lg shadow-[#00AA5B]/10 transition-transform active:scale-95"
                     >
-                      <MessageCircle className="w-4 h-4" /> Chat Penjual
+                      <MessageCircle className="w-4 h-4" /> Chat penjual
                     </Button>
                     <Button variant="outline" className="h-10 px-8 rounded-xl border-border font-black text-xs gap-2 hover:bg-[#F8FAFC] transition-transform active:scale-95">
                       <Heart className="w-4 h-4" /> Favoritkan
@@ -247,28 +262,28 @@ export default function ShopProfilePage() {
           <aside className="lg:col-span-3 space-y-6">
             <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
               <div className="p-5 border-b border-border bg-[#F8FAFC]">
-                <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em]">Profil Bisnis</h3>
+                <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em]">Profil bisnis</h3>
               </div>
               <CardContent className="p-5 space-y-5">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-muted-foreground">Kualitas Produk</span>
+                    <span className="text-[11px] font-bold text-muted-foreground">Kualitas produk</span>
                     <div className="flex items-center gap-1 text-[#00AA5B] font-black text-[11px]">
                       <Star className="w-3 h-3 fill-current" /> 4.9
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-muted-foreground">Kecepatan Respon</span>
-                    <span className="text-[11px] font-black text-[#2E3137]">Sangat Baik</span>
+                    <span className="text-[11px] font-bold text-muted-foreground">Kecepatan respon</span>
+                    <span className="text-[11px] font-black text-[#2E3137]">Sangat baik</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-muted-foreground">Produk Terjual</span>
+                    <span className="text-[11px] font-bold text-muted-foreground">Produk terjual</span>
                     <span className="text-[11px] font-black text-[#2E3137]">15.4rb+</span>
                   </div>
                 </div>
                 <div className="h-px bg-border w-full"></div>
                 <div className="space-y-3">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Metode Pengiriman</p>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Metode pengiriman</p>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline" className="text-[9px] font-bold py-0.5 rounded-lg border-border">Instan</Badge>
                     <Badge variant="outline" className="text-[9px] font-bold py-0.5 rounded-lg border-border">Reguler</Badge>
@@ -278,7 +293,7 @@ export default function ShopProfilePage() {
             </Card>
 
             <Button variant="ghost" className="w-full h-11 rounded-2xl border border-dashed border-border text-muted-foreground font-black text-[10px] hover:bg-white hover:text-[#00AA5B] hover:border-[#00AA5B] transition-all">
-              Lihat Catatan Toko
+              Lihat catatan toko
             </Button>
           </aside>
 
@@ -287,8 +302,8 @@ export default function ShopProfilePage() {
             {/* Nav & Filter Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-2">
               <div className="flex gap-8">
-                <button className="text-sm font-black text-[#00AA5B] border-b-[3px] border-[#00AA5B] pb-3 transition-all">Semua Produk</button>
-                <button className="text-sm font-black text-muted-foreground hover:text-foreground pb-3 transition-colors">Ulasan Toko</button>
+                <button className="text-sm font-black text-[#00AA5B] border-b-[3px] border-[#00AA5B] pb-3 transition-all">Semua produk</button>
+                <button className="text-sm font-black text-muted-foreground hover:text-foreground pb-3 transition-colors">Ulasan toko</button>
                 <button className="text-sm font-black text-muted-foreground hover:text-foreground pb-3 transition-colors">Voucher</button>
               </div>
               <div className="relative w-full md:w-64">
@@ -334,7 +349,7 @@ export default function ShopProfilePage() {
                       </div>
                       
                       <Button className="w-full h-8 rounded-lg bg-[#F8FAFC] hover:bg-[#00AA5B] text-[#2E3137] hover:text-white font-black text-[9px] border border-border group-hover:border-[#00AA5B] transition-all">
-                        Tambah ke Keranjang
+                        Tambah ke keranjang
                       </Button>
                     </div>
                   </CardContent>
@@ -345,7 +360,7 @@ export default function ShopProfilePage() {
             {/* Load More Button */}
             <div className="flex justify-center pt-8">
               <Button variant="outline" className="h-10 px-10 rounded-xl border-border font-black text-xs hover:bg-white hover:border-[#00AA5B] hover:text-[#00AA5B] transition-all">
-                Tampilkan Lebih Banyak
+                Tampilkan lebih banyak
               </Button>
             </div>
           </div>
