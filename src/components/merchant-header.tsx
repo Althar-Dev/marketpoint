@@ -88,7 +88,7 @@ export function MerchantHeader() {
           </div>
           <Input 
             placeholder="Cari pesanan atau produk..." 
-            className="h-9 pl-9 pr-4 rounded-lg bg-muted/40 border-transparent focus:bg-white focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
+            className="h-9 pl-9 pr-4 rounded-lg bg-muted/40 border-border focus:bg-white focus:border-[#00AA5B] transition-all text-[11px]"
           />
         </div>
       </div>
@@ -115,7 +115,7 @@ export function MerchantHeader() {
               </Avatar>
               <div className="hidden lg:flex flex-col items-start leading-none pr-1">
                 <span className="text-[11px] font-bold truncate max-w-[90px]">{user?.displayName || "Seller"}</span>
-                <span className="text-[9px] text-muted-foreground font-medium mt-0.5">Pemilik Toko</span>
+                <span className="text-[10px] text-muted-foreground font-medium mt-0.5">Pemilik Toko</span>
               </div>
               <ChevronDown className="w-3 h-3 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity" />
             </button>
@@ -124,7 +124,7 @@ export function MerchantHeader() {
             <DropdownMenuLabel className="px-2 py-1">
               <div className="flex flex-col space-y-0.5">
                 <p className="text-[11px] font-bold text-foreground truncate">{user?.displayName}</p>
-                <p className="text-[9px] font-medium text-muted-foreground truncate">{user?.email}</p>
+                <p className="text-[10px] font-medium text-muted-foreground truncate">{user?.email}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

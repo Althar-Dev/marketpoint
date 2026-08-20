@@ -68,7 +68,7 @@ export function MerchantSidebar() {
           </div>
           {state !== "collapsed" && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-[9px] font-bold text-[#00AA5B] leading-none">Seller Center</span>
+              <span className="text-[10px] font-bold text-[#00AA5B] leading-none">Seller Center</span>
               <span className="text-sm font-bold tracking-tight truncate">MarketPoint</span>
             </div>
           )}
@@ -77,7 +77,7 @@ export function MerchantSidebar() {
 
       <SidebarContent className="gap-0">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-[9px] font-bold text-muted-foreground/60">Menu Utama</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60">Menu Utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
@@ -90,7 +90,7 @@ export function MerchantSidebar() {
                         isActive ? "text-[#00AA5B] bg-[#00AA5B]/5" : "text-muted-foreground hover:text-foreground"
                       )}>
                         <item.icon className={cn("h-4 w-4", isActive && "text-[#00AA5B]")} />
-                        <span className="text-xs font-semibold">{item.label}</span>
+                        <span className="text-[11px] font-semibold">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -101,7 +101,7 @@ export function MerchantSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-[9px] font-bold text-muted-foreground/60">Manajemen</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60">Manajemen</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryItems.map((item) => {
@@ -114,7 +114,7 @@ export function MerchantSidebar() {
                         isActive ? "text-[#00AA5B] bg-[#00AA5B]/5" : "text-muted-foreground hover:text-foreground"
                       )}>
                         <item.icon className={cn("h-4 w-4", isActive && "text-[#00AA5B]")} />
-                        <span className="text-xs font-semibold">{item.label}</span>
+                        <span className="text-[11px] font-semibold">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -131,7 +131,7 @@ export function MerchantSidebar() {
             <SidebarMenuButton asChild tooltip="Kembali Ke Pasar">
               <Link href="/" className="flex items-center gap-2.5 px-3 py-1.5 text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4" />
-                <span className="text-xs font-semibold">Kembali Ke Pasar</span>
+                <span className="text-[11px] font-semibold">Kembali Ke Pasar</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -144,13 +144,13 @@ export function MerchantSidebar() {
                  <Image src={shop.logoUrl} alt="Logo" fill className="object-cover" />
                ) : (
                  <div className="w-full h-full bg-[#00AA5B] flex items-center justify-center">
-                    <span className="text-[9px] font-bold text-white">{shop.name?.substring(0, 1)}</span>
+                    <span className="text-[10px] font-bold text-white">{shop.name?.substring(0, 1)}</span>
                  </div>
                )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold truncate leading-tight">{shop.name}</p>
-              <p className="text-[9px] text-muted-foreground truncate italic">@{shop.slug}</p>
+              <p className="text-[11px] font-bold truncate leading-tight">{shop.name}</p>
+              <p className="text-[10px] text-muted-foreground truncate italic">@{shop.slug}</p>
             </div>
             <ChevronRight className="w-3 h-3 text-muted-foreground opacity-30" />
           </div>
