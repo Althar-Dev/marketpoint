@@ -77,7 +77,7 @@ export function MerchantSidebar() {
     {
       label: "Lainnya",
       items: [
-        { label: "Pengaturan", icon: Settings, href: "/my-shop/setup" },
+        { label: "Pengaturan Toko", icon: Settings, href: "/my-shop/settings" },
       ]
     }
   ];

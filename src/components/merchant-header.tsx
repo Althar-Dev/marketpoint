@@ -45,6 +45,8 @@ export function MerchantHeader() {
     switch (path) {
       case "/my-shop": 
         return { title: "Dashboard" };
+      case "/my-shop/settings": 
+        return { title: "Pengaturan Toko" };
       case "/my-shop/setup": 
         return { title: "Pengaturan Profil Toko" };
       case "/my-shop/orders": 
@@ -57,6 +59,12 @@ export function MerchantHeader() {
         return { title: "Saldo Toko" };
       case "/my-shop/chat": 
         return { title: "Chat Pembeli" };
+      case "/my-shop/reviews": 
+        return { title: "Ulasan Pembeli" };
+      case "/my-shop/disputes": 
+        return { title: "Komplain & Dispute" };
+      case "/my-shop/customers": 
+        return { title: "Data Pelanggan" };
       default: 
         return { title: "Seller Center" };
     }
@@ -135,7 +143,7 @@ export function MerchantHeader() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="rounded-md py-1.5 cursor-pointer focus:bg-muted">
-              <Link href="/my-shop/setup" className="flex items-center gap-2 text-[11px] font-semibold">
+              <Link href="/my-shop/settings" className="flex items-center gap-2 text-[11px] font-semibold">
                 <Settings className="w-3.5 h-3.5 opacity-50" />
                 Pengaturan Toko
               </Link>
