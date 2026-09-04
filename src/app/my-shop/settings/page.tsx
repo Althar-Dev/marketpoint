@@ -27,13 +27,6 @@ import {
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 export default function MerchantSettingsPage() {
@@ -60,7 +53,6 @@ export default function MerchantSettingsPage() {
     slug: "",
     whatsapp: "",
     description: "",
-    category: "digital-service",
     location: {
       province: "",
       city: "",
@@ -96,7 +88,6 @@ export default function MerchantSettingsPage() {
         slug: shop.slug || "",
         whatsapp: shop.whatsapp || "",
         description: shop.description || "",
-        category: shop.category || "digital-service",
         location: {
           province: shop.location?.province || "",
           city: shop.location?.city || "",
@@ -165,6 +156,11 @@ export default function MerchantSettingsPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    setShopData({ ...shopData, slug: val });
   };
 
   if (!mounted || authLoading || shopLoading) {
@@ -295,27 +291,17 @@ export default function MerchantSettingsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Kategori Utama</Label>
-                      <Select value={shopData.category} onValueChange={(val) => setShopData({...shopData, category: val})}>
-                        <SelectTrigger className="h-10 rounded-xl text-[12px] font-bold">
-                          <SelectValue placeholder="Pilih Kategori" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                          <SelectItem value="digital-service" className="text-xs">Layanan Digital & API</SelectItem>
-                          <SelectItem value="software" className="text-xs">Software & Script</SelectItem>
-                          <SelectItem value="creative" className="text-xs">Desain Kreatif</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Slug Toko (URL)</Label>
+                    <div className="relative">
+                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                      <Input 
+                        value={shopData.slug} 
+                        onChange={handleSlugChange}
+                        className="h-10 pl-9 rounded-xl text-[12px] font-bold" 
+                      />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">URL Toko</Label>
-                      <div className="relative">
-                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                        <Input value={`marketpoint.id/${shopData.slug}`} disabled className="h-10 pl-9 rounded-xl bg-muted/30 text-[11px] font-medium italic" />
-                      </div>
-                    </div>
+                    <p className="text-[9px] text-muted-foreground ml-1">Pratinjau URL: marketpoint.id/{shopData.slug}</p>
                   </div>
 
                   <div className="space-y-2">
