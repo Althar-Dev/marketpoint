@@ -211,7 +211,7 @@ export default function MerchantWalletPage() {
               </CardTitle>
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                   <Input placeholder="Cari transaksi..." className="h-8 pl-9 rounded-lg border-border text-[10px] w-[180px] bg-white" />
                 </div>
                 <Select defaultValue="all">
@@ -228,107 +228,105 @@ export default function MerchantWalletPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader className="bg-[#F8FAFC]">
-                <TableRow className="border-b border-border hover:bg-transparent">
-                  <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Waktu & ID</TableHead>
-                  <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Tipe & Deskripsi</TableHead>
-                  <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Status</TableHead>
-                  <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 text-right">Nominal</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transLoading ? (
-                  [1, 2, 3].map((i) => (
-                    <TableRow key={i} className="border-b border-border/50">
-                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                    </TableRow>
-                  ))
-                ) : transactions && transactions.length > 0 ? (
-                  transactions.map((t: any) => (
-                    <TableRow key={t.id} className="border-b border-border/50 hover:bg-[#F8FAFC]/50 transition-colors">
-                      <TableCell className="py-4">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[11px] font-bold text-[#2E3137]">
-                            {new Date(t.timestamp?.seconds * 1000).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground font-medium uppercase">{t.id.substring(0, 8)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className={cn(
-                            "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
-                            t.type === 'SALES' ? "bg-[#00AA5B]/10 text-[#00AA5B]" : "bg-orange-500/10 text-orange-600"
-                          )}>
-                            {t.type === 'SALES' ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
-                          </div>
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[11px] font-bold">{t.type === 'SALES' ? 'Hasil Penjualan' : 'Penarikan Dana'}</span>
-                            <span className="text-[10px] text-muted-foreground line-clamp-1">{t.description}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5">
-                          {t.status === 'SUCCESS' ? (
-                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#00AA5B]/10 text-[#00AA5B]">
-                              <CheckCircle2 className="w-2.5 h-2.5" />
-                              <span className="text-[9px] font-black uppercase">Berhasil</span>
-                            </div>
-                          ) : t.status === 'PENDING' ? (
-                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600">
-                              <Clock className="w-2.5 h-2.5" />
-                              <span className="text-[9px] font-black uppercase">Proses</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/10 text-red-600">
-                              <AlertCircle className="w-2.5 h-2.5" />
-                              <span className="text-[9px] font-black uppercase">Gagal</span>
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span className={cn(
-                          "text-[12px] font-black",
-                          t.type === 'SALES' ? "text-[#00AA5B]" : "text-[#2E3137]"
-                        )}>
-                          {t.type === 'SALES' ? '+' : '-'} Rp {t.amount?.toLocaleString('id-ID')}
+          <Table>
+            <TableHeader className="bg-[#F8FAFC]">
+              <TableRow className="border-b border-border hover:bg-transparent">
+                <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Waktu & ID</TableHead>
+                <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Tipe & Deskripsi</TableHead>
+                <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Status</TableHead>
+                <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 text-right">Nominal</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {transLoading ? (
+                [1, 2, 3].map((i) => (
+                  <TableRow key={i} className="border-b border-border/50">
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : transactions && transactions.length > 0 ? (
+                transactions.map((t: any) => (
+                  <TableRow key={t.id} className="border-b border-border/50 hover:bg-[#F8FAFC]/50 transition-colors">
+                    <TableCell className="py-4">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] font-bold text-[#2E3137]">
+                          {new Date(t.timestamp?.seconds * 1000).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </span>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-64 text-center">
-                      <div className="flex flex-col items-center justify-center py-12">
-                        <div className="w-16 h-16 bg-muted/20 rounded-2xl flex items-center justify-center mb-4 border border-border/50">
-                          <Wallet className="w-8 h-8 text-muted-foreground opacity-20" />
-                        </div>
-                        <h3 className="text-xs font-bold text-[#212121]">Belum ada transaksi</h3>
-                        <p className="text-[10px] text-muted-foreground max-w-[200px] mt-1.5 font-medium">
-                          Riwayat pendapatan dan pengeluaran toko Anda akan muncul di sini.
-                        </p>
+                        <span className="text-[9px] text-muted-foreground font-medium uppercase">{t.id.substring(0, 8)}</span>
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
+                          t.type === 'SALES' ? "bg-[#00AA5B]/10 text-[#00AA5B]" : "bg-orange-500/10 text-orange-600"
+                        )}>
+                          {t.type === 'SALES' ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[11px] font-bold">{t.type === 'SALES' ? 'Hasil Penjualan' : 'Penarikan Dana'}</span>
+                          <span className="text-[10px] text-muted-foreground line-clamp-1">{t.description}</span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        {t.status === 'SUCCESS' ? (
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#00AA5B]/10 text-[#00AA5B]">
+                            <CheckCircle2 className="w-2.5 h-2.5" />
+                            <span className="text-[9px] font-black uppercase">Berhasil</span>
+                          </div>
+                        ) : t.status === 'PENDING' ? (
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600">
+                            <Clock className="w-2.5 h-2.5" />
+                            <span className="text-[9px] font-black uppercase">Proses</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/10 text-red-600">
+                            <AlertCircle className="w-2.5 h-2.5" />
+                            <span className="text-[9px] font-black uppercase">Gagal</span>
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className={cn(
+                        "text-[12px] font-black",
+                        t.type === 'SALES' ? "text-[#00AA5B]" : "text-[#2E3137]"
+                      )}>
+                        {t.type === 'SALES' ? '+' : '-'} Rp {t.amount?.toLocaleString('id-ID')}
+                      </span>
+                    </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-            
-            {(transactions?.length || 0) > 0 && (
-              <div className="p-4 border-t border-border/50 flex justify-center bg-[#F8FAFC]/30">
-                <Button variant="ghost" className="text-[10px] font-bold text-[#00AA5B] hover:bg-white hover:text-[#00AA5B]">
-                  Lihat Semua Riwayat
-                </Button>
-              </div>
-            )}
-          </CardContent>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-64 text-center">
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="w-16 h-16 bg-muted/20 rounded-2xl flex items-center justify-center mb-4 border border-border/50">
+                        <Wallet className="w-8 h-8 text-muted-foreground opacity-20" />
+                      </div>
+                      <h3 className="text-xs font-bold text-[#212121]">Belum ada transaksi</h3>
+                      <p className="text-[10px] text-muted-foreground max-w-[200px] mt-1.5 font-medium">
+                        Riwayat pendapatan dan pengeluaran toko Anda akan muncul di sini.
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          
+          {(transactions?.length || 0) > 0 && (
+            <div className="p-4 border-t border-border/50 flex justify-center bg-[#F8FAFC]/30">
+              <Button variant="ghost" className="text-[10px] font-bold text-[#00AA5B] hover:bg-white hover:text-[#00AA5B]">
+                Lihat Semua Riwayat
+              </Button>
+            </div>
+          )}
         </Card>
 
       </div>
