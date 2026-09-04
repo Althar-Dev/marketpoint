@@ -2,9 +2,6 @@
 
 import * as React from "react";
 import { 
-  Search, 
-  Bell, 
-  MessageSquare, 
   ChevronDown,
   PanelLeft,
   User as UserIcon,
@@ -12,7 +9,6 @@ import {
   Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -89,29 +85,9 @@ export function MerchantHeader() {
             {info.title}
           </h1>
         </div>
-
-        <div className="hidden xl:flex items-center flex-1 max-w-xs relative group ml-4">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-[#00AA5B] transition-colors">
-            <Search className="w-3.5 h-3.5" />
-          </div>
-          <Input 
-            placeholder="Cari pesanan atau produk..." 
-            className="h-9 pl-9 pr-4 rounded-lg bg-muted/40 border-border focus:bg-white focus:border-[#00AA5B] transition-all text-[11px]"
-          />
-        </div>
       </div>
 
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
-        <div className="flex items-center gap-0.5 border-r border-border pr-2 md:pr-3">
-          <Button size="icon" variant="ghost" className="rounded-lg h-8 w-8 text-muted-foreground relative">
-            <MessageSquare className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white"></span>
-          </Button>
-          <Button size="icon" variant="ghost" className="rounded-lg h-8 w-8 text-muted-foreground">
-            <Bell className="w-4 h-4" />
-          </Button>
-        </div>
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 outline-none group hover:bg-muted/30 p-1 rounded-lg transition-all">
