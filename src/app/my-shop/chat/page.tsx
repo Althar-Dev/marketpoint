@@ -69,7 +69,7 @@ export default function MerchantChatPage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const [mounted, setMounted] = useState(false);
-  const [selectedChat, setSelectedChat] = useState<any>(MOCK_CHATS[0]);
+  const [selectedChat, setSelectedChat] = useState<any>(null);
   const [newMessage, setNewMessage] = useState("");
   const [showDetailOnMobile, setShowDetailOpenMobile] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -147,7 +147,7 @@ export default function MerchantChatPage() {
       )}>
         <div className="p-4 border-b border-border bg-[#F8FAFC]/50">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[13px] font-black text-[#212121] tracking-tight">Pesan Masuk</h2>
+            <h2 className="text-[13px] font-semibold text-[#212121]">Pesan Masuk</h2>
             <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-white border border-transparent hover:border-border">
               <Plus className="w-3.5 h-3.5 text-muted-foreground" />
             </Button>
@@ -156,7 +156,7 @@ export default function MerchantChatPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
             <Input 
               placeholder="Cari pembeli..." 
-              className="h-9 pl-9 rounded-xl bg-white border-border text-[11px] font-bold focus:ring-4 focus:ring-[#00AA5B]/5" 
+              className="h-9 pl-9 rounded-xl bg-white border-border text-[11px] focus:ring-4 focus:ring-[#00AA5B]/5" 
             />
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function MerchantChatPage() {
               key={chat.id}
               onClick={() => handleSelectChat(chat)}
               className={cn(
-                "w-full p-4 flex items-start gap-3 transition-all border-b border-border/40 relative",
+                "w-full p-4 flex items-start gap-3 transition-all border-b border-border/40 relative text-left",
                 selectedChat?.id === chat.id 
                   ? "bg-[#00AA5B]/5 after:absolute after:left-0 after:top-0 after:bottom-0 after:w-1 after:bg-[#00AA5B]" 
                   : "hover:bg-muted/30"
@@ -176,7 +176,7 @@ export default function MerchantChatPage() {
               <div className="relative shrink-0">
                 <Avatar className="h-11 w-11 rounded-2xl border border-border/60 shadow-sm">
                   <AvatarImage src={chat.userAvatar} className="object-cover" />
-                  <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-black">
+                  <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-semibold">
                     {chat.userName.substring(0, 1)}
                   </AvatarFallback>
                 </Avatar>
@@ -184,21 +184,21 @@ export default function MerchantChatPage() {
                   <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-[#00AA5B] border-2 border-white shadow-sm" />
                 )}
               </div>
-              <div className="flex-1 min-w-0 text-left">
+              <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[12px] font-black text-[#2E3137] truncate">{chat.userName}</span>
-                  <span className="text-[9px] text-muted-foreground font-bold opacity-60 uppercase">{chat.time}</span>
+                  <span className="text-[12px] font-semibold text-[#2E3137] truncate">{chat.userName}</span>
+                  <span className="text-[9px] text-muted-foreground">{chat.time}</span>
                 </div>
                 <p className={cn(
                   "text-[10px] truncate leading-relaxed",
-                  chat.unread > 0 ? "text-foreground font-black" : "text-muted-foreground font-medium"
+                  chat.unread > 0 ? "text-foreground font-semibold" : "text-muted-foreground"
                 )}>
                   {chat.lastMessage}
                 </p>
               </div>
               {chat.unread > 0 && (
                 <div className="h-4 min-w-4 px-1 rounded-full bg-[#00AA5B] flex items-center justify-center shrink-0 shadow-lg shadow-[#00AA5B]/20 ml-1">
-                  <span className="text-[8px] font-black text-white">{chat.unread}</span>
+                  <span className="text-[8px] font-semibold text-white">{chat.unread}</span>
                 </div>
               )}
             </button>
@@ -227,7 +227,7 @@ export default function MerchantChatPage() {
                 <div className="relative">
                   <Avatar className="h-10 w-10 rounded-2xl border border-border shadow-sm">
                     <AvatarImage src={selectedChat.userAvatar} />
-                    <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-black uppercase">
+                    <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-semibold">
                       {selectedChat.userName.substring(0, 1)}
                     </AvatarFallback>
                   </Avatar>
@@ -237,8 +237,8 @@ export default function MerchantChatPage() {
                   )} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[13px] font-black text-[#2E3137] leading-none">{selectedChat.userName}</span>
-                  <span className="text-[9px] text-muted-foreground font-bold tracking-wider mt-1.5 uppercase">
+                  <span className="text-[13px] font-semibold text-[#2E3137] leading-none">{selectedChat.userName}</span>
+                  <span className="text-[9px] text-muted-foreground mt-1.5">
                     {selectedChat.online ? "Aktif Sekarang" : "Offline"}
                   </span>
                 </div>
@@ -259,8 +259,8 @@ export default function MerchantChatPage() {
               className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 no-scrollbar"
             >
               <div className="flex justify-center mb-4">
-                 <span className="px-3 py-1 rounded-full bg-muted/40 text-[9px] font-black text-muted-foreground uppercase tracking-widest border border-border/40">
-                   Awal Percakapan
+                 <span className="px-3 py-1 rounded-full bg-muted/40 text-[9px] text-muted-foreground border border-border/40">
+                   Awal percakapan
                  </span>
               </div>
 
@@ -279,7 +279,7 @@ export default function MerchantChatPage() {
                       isMerchant ? "items-end" : "items-start"
                     )}>
                       <div className={cn(
-                        "px-4 py-3 rounded-2xl shadow-sm border text-[12px] font-medium leading-relaxed",
+                        "px-4 py-3 rounded-2xl shadow-sm border text-[12px] leading-relaxed",
                         isMerchant 
                           ? "bg-[#00AA5B] text-white rounded-tr-none border-[#00AA5B]/10 shadow-[#00AA5B]/10" 
                           : "bg-white text-[#2E3137] rounded-tl-none border-border/50"
@@ -287,7 +287,7 @@ export default function MerchantChatPage() {
                         <p>{msg.text}</p>
                       </div>
                       <div className="flex items-center gap-1.5 mt-1.5 px-1">
-                        <span className="text-[8px] text-muted-foreground font-black opacity-50 uppercase tracking-tighter">{msg.time}</span>
+                        <span className="text-[8px] text-muted-foreground opacity-60">{msg.time}</span>
                         {isMerchant && <CheckCheck className="w-3.5 h-3.5 text-[#00AA5B]" />}
                       </div>
                     </div>
@@ -309,7 +309,7 @@ export default function MerchantChatPage() {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Tulis balasan..." 
-                    className="flex-1 h-10 bg-transparent border-none shadow-none focus-visible:ring-0 text-[12px] font-bold text-[#2E3137] placeholder:text-muted-foreground/60"
+                    className="flex-1 h-10 bg-transparent border-none shadow-none focus-visible:ring-0 text-[12px] text-[#2E3137] placeholder:text-muted-foreground/60"
                  />
                  <div className="flex items-center gap-1 pr-1">
                     <Button type="button" variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-muted-foreground hover:text-[#FFC400] shrink-0 hidden sm:flex">
@@ -321,8 +321,8 @@ export default function MerchantChatPage() {
                       className="h-10 px-4 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white shadow-lg shadow-[#00AA5B]/20 shrink-0 transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale"
                     >
                       <Send className="w-4 h-4 mr-2 hidden sm:inline" />
-                      <span className="text-[10px] font-black sm:hidden">Kirim</span>
-                      <span className="text-[10px] font-black hidden sm:inline">Balas</span>
+                      <span className="text-[10px] sm:hidden">Kirim</span>
+                      <span className="text-[10px] hidden sm:inline">Balas</span>
                     </Button>
                  </div>
               </form>
@@ -333,8 +333,8 @@ export default function MerchantChatPage() {
             <div className="w-20 h-20 bg-white rounded-[2.5rem] flex items-center justify-center mb-6 shadow-xl border border-border/40">
               <MessageCircle className="w-10 h-10 text-[#00AA5B] opacity-40" />
             </div>
-            <h3 className="text-sm font-black text-[#2E3137]">Pilih Percakapan</h3>
-            <p className="text-[11px] text-muted-foreground mt-2 max-w-xs leading-relaxed font-medium">
+            <h3 className="text-sm text-[#2E3137]">Pilih percakapan</h3>
+            <p className="text-[11px] text-muted-foreground mt-2 max-w-xs leading-relaxed">
               Pilih salah satu pesan di samping untuk mulai berinteraksi dengan pembeli Anda.
             </p>
           </div>
@@ -344,7 +344,6 @@ export default function MerchantChatPage() {
   );
 }
 
-// Re-using local icon to avoid lucide missing issues
 function MessageCircle({ className, ...props }: any) {
   return (
     <svg 
