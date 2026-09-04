@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,9 @@ import {
   Instagram,
   Facebook,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  XCircle,
+  RefreshCw
 } from "lucide-react";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -36,6 +38,10 @@ export default function MerchantSettingsPage() {
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploading, setUploading] = useState<{ type: 'logo' | 'banner' | null }>({ type: null });
+
+  // Slug checking states
+  const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
+  const [isCheckingSlug, setIsCheckingSlug] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -106,6 +112,36 @@ export default function MerchantSettingsPage() {
     }
   }, [shop]);
 
+  // Debounced Slug Check
+  useEffect(() => {
+    if (!mounted || !shopData.slug) {
+      setIsSlugAvailable(null);
+      return;
+    }
+
+    // Don't check if it's the current slug
+    if (shopData.slug === shop?.slug) {
+      setIsSlugAvailable(true);
+      return;
+    }
+
+    const checkSlug = async () => {
+      setIsCheckingSlug(true);
+      try {
+        const q = query(collection(db, "shops"), where("slug", "==", shopData.slug));
+        const querySnapshot = await getDocs(q);
+        setIsSlugAvailable(querySnapshot.empty);
+      } catch (error) {
+        console.error("Error checking slug:", error);
+      } finally {
+        setIsCheckingSlug(false);
+      }
+    };
+
+    const timeoutId = setTimeout(checkSlug, 600);
+    return () => clearTimeout(timeoutId);
+  }, [shopData.slug, shop?.slug, db, mounted]);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'banner') => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -136,7 +172,7 @@ export default function MerchantSettingsPage() {
   };
 
   const handleUpdateShop = async () => {
-    if (!user || !shopRef) return;
+    if (!user || !shopRef || isSlugAvailable === false) return;
     setIsSubmitting(true);
     try {
       await updateDoc(shopRef, {
@@ -186,8 +222,8 @@ export default function MerchantSettingsPage() {
           </div>
           <Button 
             onClick={handleUpdateShop} 
-            disabled={isSubmitting}
-            className="h-9 px-6 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-[11px] gap-2 shadow-md shadow-[#00AA5B]/10"
+            disabled={isSubmitting || isCheckingSlug || isSlugAvailable === false}
+            className="h-9 px-6 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-[11px] gap-2 shadow-md shadow-[#00AA5B]/10 disabled:opacity-50"
           >
             {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
             Simpan Perubahan
@@ -298,10 +334,27 @@ export default function MerchantSettingsPage() {
                       <Input 
                         value={shopData.slug} 
                         onChange={handleSlugChange}
-                        className="h-10 pl-9 rounded-xl text-[12px] font-bold" 
+                        className={cn(
+                          "h-10 pl-9 rounded-xl text-[12px] font-bold transition-all",
+                          isSlugAvailable === true && shopData.slug !== shop?.slug && "border-green-500 focus:ring-green-500/20",
+                          isSlugAvailable === false && "border-red-500 focus:ring-red-500/20"
+                        )} 
                       />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        {isCheckingSlug && <RefreshCw className="w-3 h-3 text-muted-foreground animate-spin" />}
+                        {isSlugAvailable === true && shopData.slug !== shop?.slug && !isCheckingSlug && <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />}
+                        {isSlugAvailable === false && !isCheckingSlug && <XCircle className="w-3.5 h-3.5 text-red-500" />}
+                      </div>
                     </div>
-                    <p className="text-[9px] text-muted-foreground ml-1">Pratinjau URL: marketpoint.id/{shopData.slug}</p>
+                    <div className="flex items-center justify-between min-h-[14px]">
+                      <p className="text-[9px] text-muted-foreground ml-1">Pratinjau URL: marketpoint.id/{shopData.slug || '...'}</p>
+                      {isSlugAvailable === false && !isCheckingSlug && (
+                        <p className="text-[9px] font-bold text-red-500">Slug ini sudah digunakan oleh toko lain.</p>
+                      )}
+                      {isSlugAvailable === true && shopData.slug !== shop?.slug && !isCheckingSlug && (
+                        <p className="text-[9px] font-bold text-green-500">Slug tersedia!</p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
