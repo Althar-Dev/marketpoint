@@ -26,8 +26,6 @@ import {
   Star
 } from "lucide-react";
 import { 
-  Bar, 
-  BarChart, 
   ResponsiveContainer, 
   XAxis, 
   YAxis, 
@@ -35,7 +33,8 @@ import {
   CartesianGrid,
   Line,
   LineChart,
-  Cell
+  Area,
+  AreaChart
 } from "recharts";
 import { 
   ChartContainer, 
@@ -157,12 +156,22 @@ export default function MerchantStatsPage() {
           <Card className="lg:col-span-2 border-border border-[1.5px] shadow-sm rounded-2xl bg-white">
             <CardHeader className="p-5 pb-0">
               <CardTitle className="text-sm font-bold">Tren Performa Mingguan</CardTitle>
-              <CardDescription className="text-[10px] font-medium">Perbandingan jumlah kunjungan dan pesanan yang berhasil.</CardDescription>
+              <CardDescription className="text-[10px] font-medium">Visualisasi gelombang kunjungan dan pesanan yang berhasil.</CardDescription>
             </CardHeader>
             <CardContent className="p-5 pt-6">
               <ChartContainer config={chartConfig} className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={PERFORMANCE_DATA} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <AreaChart data={PERFORMANCE_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorVisits" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00AA5B" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="#00AA5B" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis 
                       dataKey="day" 
@@ -177,18 +186,32 @@ export default function MerchantStatsPage() {
                       tick={{ fontSize: 10, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }}
                     />
                     <Tooltip content={<ChartTooltipContent hideLabel />} />
-                    <Bar dataKey="visits" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={20} />
-                    <Bar dataKey="orders" fill="#00AA5B" radius={[4, 4, 0, 0]} barSize={20} />
-                  </BarChart>
+                    <Area 
+                      type="monotone" 
+                      dataKey="visits" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={3}
+                      fillOpacity={1} 
+                      fill="url(#colorVisits)" 
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="orders" 
+                      stroke="#00AA5B" 
+                      strokeWidth={3}
+                      fillOpacity={1} 
+                      fill="url(#colorOrders)" 
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
               </ChartContainer>
               <div className="flex justify-center gap-6 mt-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
+                  <div className="w-2.5 h-0.5 rounded-full bg-primary border-t-2 border-primary"></div>
                   <span className="text-[10px] font-bold text-muted-foreground">Kunjungan</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#00AA5B]"></div>
+                  <div className="w-2.5 h-0.5 rounded-full bg-[#00AA5B] border-t-2 border-[#00AA5B]"></div>
                   <span className="text-[10px] font-bold text-muted-foreground">Pesanan</span>
                 </div>
               </div>
@@ -234,7 +257,7 @@ export default function MerchantStatsPage() {
                   <div>
                     <p className="text-[11px] font-bold text-[#2E3137]">Insight Performa</p>
                     <p className="text-[10px] text-muted-foreground leading-relaxed mt-1 font-medium">
-                      Pesanan Anda meningkat <span className="text-[#00AA5B] font-bold">8%</span> dibandingkan minggu lalu. Sabtu adalah hari tersibuk Anda.
+                      Pesanan Anda meningkat <span className="text-[#00AA5B] font-bold">8%</span> berdasarkan tren gelombang terbaru.
                     </p>
                   </div>
                 </div>
