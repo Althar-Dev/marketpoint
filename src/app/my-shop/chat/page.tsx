@@ -8,7 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Icon } from "@iconify/react";
+import { 
+  Search, 
+  Plus, 
+  Smile, 
+  Send, 
+  Phone, 
+  MoreVertical, 
+  CheckCheck,
+  Circle,
+  ChevronLeft
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MOCK_CHATS = [
@@ -71,7 +81,7 @@ export default function MerchantChatPage() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [selectedChat]);
+  }, [selectedChat, selectedChat.messages]);
 
   const shopRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -82,9 +92,23 @@ export default function MerchantChatPage() {
 
   if (!mounted || authLoading || shopLoading) {
     return (
-      <div className="p-4 md:p-6 h-[calc(100vh-64px)] flex gap-4">
-        <Skeleton className="w-80 h-full rounded-2xl" />
-        <Skeleton className="flex-1 h-full rounded-2xl" />
+      <div className="flex h-[calc(100vh-64px)] bg-[#F8FAFC]">
+        <div className="w-80 border-r border-border bg-white flex flex-col">
+          <div className="p-4 space-y-4">
+             <Skeleton className="h-6 w-32" />
+             <Skeleton className="h-9 w-full rounded-xl" />
+          </div>
+          <div className="flex-1 p-2 space-y-2">
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col">
+          <Skeleton className="h-16 w-full rounded-none" />
+          <div className="flex-1 p-6 flex flex-col justify-end space-y-4">
+             <Skeleton className="h-12 w-1/2 rounded-2xl" />
+             <Skeleton className="h-12 w-1/3 rounded-2xl self-end" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -93,7 +117,6 @@ export default function MerchantChatPage() {
     e.preventDefault();
     if (!newMessage.trim()) return;
     
-    // Logic dummy untuk menambah pesan
     const newMsg = {
       id: Date.now(),
       text: newMessage,
@@ -101,6 +124,8 @@ export default function MerchantChatPage() {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     
+    // In real app, this would be a Firestore update
+    // For MVP, we update local state
     setSelectedChat(prev => ({
       ...prev,
       messages: [...prev.messages, newMsg as any]
@@ -109,15 +134,23 @@ export default function MerchantChatPage() {
   };
 
   return (
-    <main className="h-[calc(100vh-64px)] overflow-hidden flex flex-col md:flex-row bg-[#F8FAFC]">
+    <main className="h-[calc(100vh-64px)] flex overflow-hidden bg-white">
       
-      {/* Left Sidebar: Chat List */}
+      {/* Sidebar: Chat List */}
       <aside className="w-full md:w-80 border-r border-border bg-white flex flex-col shrink-0">
-        <div className="p-4 border-b border-border">
-          <h2 className="text-sm font-black text-[#212121] tracking-tight mb-3">Chat Pembeli</h2>
+        <div className="p-4 border-b border-border bg-[#F8FAFC]/50">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-black text-[#212121] tracking-tight">Pesan Masuk</h2>
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+              <Plus className="w-4 h-4 text-muted-foreground" />
+            </Button>
+          </div>
           <div className="relative">
-            <Icon icon="ph:magnifying-glass" className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input placeholder="Cari percakapan..." className="h-9 pl-9 rounded-xl bg-muted/30 border-transparent focus:bg-white text-[11px] font-bold" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input 
+              placeholder="Cari pembeli..." 
+              className="h-9 pl-9 rounded-xl bg-white border-border text-[11px] font-bold focus:ring-4 focus:ring-[#00AA5B]/5" 
+            />
           </div>
         </div>
         
@@ -127,35 +160,37 @@ export default function MerchantChatPage() {
               key={chat.id}
               onClick={() => setSelectedChat(chat)}
               className={cn(
-                "w-full p-4 flex items-start gap-3 transition-colors border-b border-border/50",
-                selectedChat.id === chat.id ? "bg-[#00AA5B]/5 border-l-4 border-l-[#00AA5B]" : "hover:bg-muted/30"
+                "w-full p-4 flex items-start gap-3 transition-all border-b border-border/50 relative",
+                selectedChat.id === chat.id 
+                  ? "bg-[#00AA5B]/5 after:absolute after:left-0 after:top-0 after:bottom-0 after:w-1 after:bg-[#00AA5B]" 
+                  : "hover:bg-muted/30"
               )}
             >
               <div className="relative shrink-0">
-                <Avatar className="h-10 w-10 rounded-xl border border-border shadow-sm">
-                  <AvatarImage src={chat.userAvatar} />
+                <Avatar className="h-11 w-11 rounded-2xl border border-border shadow-sm">
+                  <AvatarImage src={chat.userAvatar} className="object-cover" />
                   <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-black">
                     {chat.userName.substring(0, 1)}
                   </AvatarFallback>
                 </Avatar>
                 {chat.online && (
-                  <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-[#00AA5B] border-2 border-white shadow-sm"></div>
+                  <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-[#00AA5B] border-2 border-white shadow-sm" />
                 )}
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <div className="flex justify-between items-center mb-0.5">
                   <span className="text-[12px] font-black text-[#2E3137] truncate">{chat.userName}</span>
-                  <span className="text-[9px] text-muted-foreground font-medium">{chat.time}</span>
+                  <span className="text-[9px] text-muted-foreground font-bold opacity-60 uppercase">{chat.time}</span>
                 </div>
                 <p className={cn(
-                  "text-[10px] truncate leading-tight",
-                  chat.unread > 0 ? "text-foreground font-bold" : "text-muted-foreground font-medium"
+                  "text-[10px] truncate leading-relaxed",
+                  chat.unread > 0 ? "text-foreground font-black" : "text-muted-foreground font-medium"
                 )}>
                   {chat.lastMessage}
                 </p>
               </div>
               {chat.unread > 0 && (
-                <div className="h-4 min-w-4 px-1 rounded-full bg-[#00AA5B] flex items-center justify-center shrink-0 shadow-sm shadow-[#00AA5B]/20">
+                <div className="h-4 min-w-4 px-1 rounded-full bg-[#00AA5B] flex items-center justify-center shrink-0 shadow-lg shadow-[#00AA5B]/20">
                   <span className="text-[8px] font-black text-white">{chat.unread}</span>
                 </div>
               )}
@@ -165,32 +200,38 @@ export default function MerchantChatPage() {
       </aside>
 
       {/* Main Content: Chat View */}
-      <section className="flex-1 flex flex-col bg-white overflow-hidden">
+      <section className="flex-1 flex flex-col bg-[#F8FAFC] relative">
         {/* Chat Header */}
-        <div className="h-16 px-4 border-b border-border flex items-center justify-between bg-white shrink-0">
+        <div className="h-16 px-4 md:px-6 border-b border-border flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10 shrink-0">
           <div className="flex items-center gap-3">
-            <Avatar className="h-9 w-9 rounded-xl border border-border shadow-sm">
-              <AvatarImage src={selectedChat.userAvatar} />
-              <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-[10px] font-black uppercase">
-                {selectedChat.userName.substring(0, 1)}
-              </AvatarFallback>
-            </Avatar>
+            <Button variant="ghost" size="icon" className="md:hidden h-8 w-8 rounded-full">
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <div className="relative">
+              <Avatar className="h-10 w-10 rounded-2xl border border-border shadow-sm">
+                <AvatarImage src={selectedChat.userAvatar} />
+                <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-black uppercase">
+                  {selectedChat.userName.substring(0, 1)}
+                </AvatarFallback>
+              </Avatar>
+              <div className={cn(
+                "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white",
+                selectedChat.online ? "bg-[#00AA5B]" : "bg-muted-foreground/30"
+              )} />
+            </div>
             <div className="flex flex-col">
-              <span className="text-[12px] font-black text-[#2E3137] leading-none">{selectedChat.userName}</span>
-              <div className="flex items-center gap-1.5 mt-1">
-                <div className={cn("h-1.5 w-1.5 rounded-full", selectedChat.online ? "bg-[#00AA5B]" : "bg-muted-foreground/30")}></div>
-                <span className="text-[9px] text-muted-foreground font-bold tracking-wide">
-                  {selectedChat.online ? "ONLINE" : "OFFLINE"}
-                </span>
-              </div>
+              <span className="text-[13px] font-black text-[#2E3137] leading-none">{selectedChat.userName}</span>
+              <span className="text-[9px] text-muted-foreground font-bold tracking-wider mt-1 uppercase">
+                {selectedChat.online ? "Aktif Sekarang" : "Offline"}
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-1">
-             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-[#00AA5B] hover:bg-[#00AA5B]/5">
-               <Icon icon="ph:phone-bold" className="w-4 h-4" />
+             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-[#00AA5B] hover:bg-[#00AA5B]/5 transition-all">
+               <Phone className="w-4 h-4" />
              </Button>
-             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-[#00AA5B] hover:bg-[#00AA5B]/5">
-               <Icon icon="ph:dots-three-outline-vertical-fill" className="w-4 h-4" />
+             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-[#00AA5B] hover:bg-[#00AA5B]/5 transition-all">
+               <MoreVertical className="w-4 h-4" />
              </Button>
           </div>
         </div>
@@ -198,33 +239,39 @@ export default function MerchantChatPage() {
         {/* Message Area */}
         <div 
           ref={scrollRef}
-          className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-[#F8FAFC]/50 no-scrollbar"
+          className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 no-scrollbar"
         >
+          <div className="flex justify-center my-4">
+             <span className="px-3 py-1 rounded-full bg-muted/40 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+               Percakapan Dimulai
+             </span>
+          </div>
+
           {selectedChat.messages.map((msg: any) => {
             const isMerchant = msg.sender === 'merchant';
             return (
               <div 
                 key={msg.id} 
                 className={cn(
-                  "flex w-full animate-in fade-in slide-in-from-bottom-1 duration-300",
+                  "flex w-full animate-in fade-in slide-in-from-bottom-2 duration-500",
                   isMerchant ? "justify-end" : "justify-start"
                 )}
               >
                 <div className={cn(
-                  "max-w-[80%] md:max-w-[65%] space-y-1",
+                  "max-w-[85%] md:max-w-[60%] flex flex-col",
                   isMerchant ? "items-end" : "items-start"
                 )}>
                   <div className={cn(
-                    "px-4 py-2.5 rounded-2xl shadow-sm border border-border/50",
+                    "px-4 py-3 rounded-2xl shadow-sm border text-[12px] font-medium leading-relaxed",
                     isMerchant 
-                      ? "bg-[#00AA5B] text-white rounded-tr-none border-[#00AA5B]/10" 
-                      : "bg-white text-[#2E3137] rounded-tl-none"
+                      ? "bg-[#00AA5B] text-white rounded-tr-none border-[#00AA5B]/10 shadow-[#00AA5B]/10" 
+                      : "bg-white text-[#2E3137] rounded-tl-none border-border/50"
                   )}>
-                    <p className="text-[12px] font-medium leading-relaxed">{msg.text}</p>
+                    <p>{msg.text}</p>
                   </div>
-                  <div className="flex items-center gap-1 px-1">
-                    <span className="text-[8px] text-muted-foreground font-bold opacity-60 uppercase">{msg.time}</span>
-                    {isMerchant && <Icon icon="ph:checks-bold" className="w-3 h-3 text-[#00AA5B]" />}
+                  <div className="flex items-center gap-1.5 mt-1.5 px-1">
+                    <span className="text-[8px] text-muted-foreground font-black opacity-50 uppercase tracking-tighter">{msg.time}</span>
+                    {isMerchant && <CheckCheck className="w-3 h-3 text-[#00AA5B]" />}
                   </div>
                 </div>
               </div>
@@ -233,30 +280,38 @@ export default function MerchantChatPage() {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 border-t border-border bg-white shrink-0">
-          <form onSubmit={handleSendMessage} className="flex items-center gap-3 bg-muted/20 p-1.5 rounded-2xl border border-border/50">
-             <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-primary shrink-0">
-               <Icon icon="ph:plus-bold" className="w-4 h-4" />
+        <div className="p-4 md:p-6 border-t border-border bg-white sticky bottom-0 z-10 shrink-0">
+          <form 
+            onSubmit={handleSendMessage} 
+            className="flex items-center gap-3 bg-[#F8FAFC] p-2 rounded-2xl border border-border/60 focus-within:border-[#00AA5B]/30 focus-within:ring-4 focus-within:ring-[#00AA5B]/5 transition-all shadow-inner"
+          >
+             <Button type="button" variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-muted-foreground hover:text-[#00AA5B] shrink-0">
+               <Plus className="w-5 h-5" />
              </Button>
              <Input 
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Tulis pesan untuk pembeli..." 
-                className="flex-1 h-9 bg-transparent border-none shadow-none focus-visible:ring-0 text-[12px] font-bold"
+                placeholder="Tulis balasan pesan untuk pembeli..." 
+                className="flex-1 h-10 bg-transparent border-none shadow-none focus-visible:ring-0 text-[12px] font-bold text-[#2E3137] placeholder:text-muted-foreground/60"
              />
-             <div className="flex items-center gap-1">
-                <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-[#FFC400] shrink-0">
-                  <Icon icon="ph:smiley-bold" className="w-4 h-4" />
+             <div className="flex items-center gap-1 pr-1">
+                <Button type="button" variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-muted-foreground hover:text-[#FFC400] shrink-0">
+                  <Smile className="w-5 h-5" />
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={!newMessage.trim()}
-                  className="h-9 w-9 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white shadow-lg shadow-[#00AA5B]/20 shrink-0"
+                  className="h-10 w-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white shadow-lg shadow-[#00AA5B]/20 shrink-0 transition-transform active:scale-95 disabled:opacity-50 disabled:grayscale"
                 >
-                  <Icon icon="ph:paper-plane-right-fill" className="w-4 h-4" />
+                  <Send className="w-4 h-4" />
                 </Button>
              </div>
           </form>
+          <div className="flex justify-center mt-3">
+             <p className="text-[8px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+               Tekan Enter untuk Mengirim
+             </p>
+          </div>
         </div>
       </section>
     </main>
