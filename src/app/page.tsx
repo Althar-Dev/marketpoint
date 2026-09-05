@@ -212,7 +212,7 @@ export default function MarketPage() {
               {BANNERS.map((banner, index) => (
                 <CarouselItem key={banner.id} className="pl-2 md:pl-4 basis-[90%] sm:basis-[70%] md:basis-[70%] lg:basis-[65%]">
                   <div className={cn(
-                    "relative aspect-[4.2/1] w-full rounded-2xl md:rounded-[2rem] overflow-hidden bg-muted shadow-md border border-border group transition-all duration-500",
+                    "relative aspect-[3/1] w-full rounded-2xl md:rounded-[2rem] overflow-hidden bg-muted shadow-md border border-border group transition-all duration-500",
                     current === index ? "opacity-100 scale-100" : "opacity-40 scale-[0.96]"
                   )}>
                     <Image 

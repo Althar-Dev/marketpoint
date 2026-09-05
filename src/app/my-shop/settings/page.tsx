@@ -10,13 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Camera, 
-  MapPin, 
-  Phone, 
-  Globe, 
-  ShieldCheck, 
-  Clock, 
+import {
+  Camera,
+  MapPin,
+  Phone,
+  Globe,
+  ShieldCheck,
+  Clock,
   Loader2,
   Image as ImageIcon,
   Instagram,
@@ -154,11 +154,11 @@ export default function MerchantSettingsPage() {
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
-      
+
       if (res.ok && data.url) {
         if (type === 'logo') setShopData(prev => ({ ...prev, logoUrl: data.url }));
         else setShopData(prev => ({ ...prev, bannerUrl: data.url }));
-        
+
         toast({ title: "Berhasil", description: "Gambar berhasil diperbarui." });
       } else {
         throw new Error(data.error || 'Upload failed');
@@ -214,14 +214,14 @@ export default function MerchantSettingsPage() {
   return (
     <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F8FAFC]">
       <div className="max-w-screen-xl mx-auto space-y-6">
-        
+
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-[#212121]">Pengaturan Toko</h2>
             <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">Kelola identitas, alamat, dan operasional bisnis Anda.</p>
           </div>
-          <Button 
-            onClick={handleUpdateShop} 
+          <Button
+            onClick={handleUpdateShop}
             disabled={isSubmitting || isCheckingSlug || isSlugAvailable === false}
             className="h-9 px-6 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-[11px] gap-2 shadow-md shadow-[#00AA5B]/10 disabled:opacity-50"
           >
@@ -231,7 +231,7 @@ export default function MerchantSettingsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Visual Identity Section */}
           <div className="lg:col-span-4 space-y-6 sticky top-24">
             <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
@@ -243,7 +243,7 @@ export default function MerchantSettingsPage() {
                     <ImageIcon className="w-8 h-8" />
                   </div>
                 )}
-                <div 
+                <div
                   className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                   onClick={() => bannerInputRef.current?.click()}
                 >
@@ -261,7 +261,7 @@ export default function MerchantSettingsPage() {
                         <span className="text-2xl font-bold text-white uppercase">{shopData.name.substring(0, 1)}</span>
                       </div>
                     )}
-                    <div 
+                    <div
                       className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                       onClick={() => logoInputRef.current?.click()}
                     >
@@ -292,13 +292,13 @@ export default function MerchantSettingsPage() {
             </Card>
 
             <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-[#00AA5B]/5 p-4">
-               <div className="flex items-start gap-3">
-                 <AlertCircle className="w-4 h-4 text-[#00AA5B] shrink-0 mt-0.5" />
-                 <div className="space-y-1">
-                   <p className="text-[10px] font-black text-[#00AA5B] uppercase tracking-wider">Tips Branding</p>
-                   <p className="text-[9px] text-muted-foreground leading-relaxed font-medium">Gunakan logo dengan latar belakang transparan dan banner berukuran 1300x500px untuk hasil terbaik.</p>
-                 </div>
-               </div>
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-4 h-4 text-[#00AA5B] shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-[#00AA5B] uppercase tracking-wider">Tips Branding</p>
+                  <p className="text-[9px] text-muted-foreground leading-relaxed font-medium">Gunakan logo dengan latar belakang transparan dan banner berukuran 1300x500px untuk hasil terbaik.</p>
+                </div>
+              </div>
             </Card>
           </div>
 
@@ -316,13 +316,13 @@ export default function MerchantSettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Nama Toko</Label>
-                      <Input value={shopData.name} onChange={(e) => setShopData({...shopData, name: e.target.value})} className="h-10 rounded-xl text-[12px] font-bold" />
+                      <Input value={shopData.name} onChange={(e) => setShopData({ ...shopData, name: e.target.value })} className="h-10 rounded-xl text-[12px] font-bold" />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">WhatsApp Toko</Label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                        <Input value={shopData.whatsapp} onChange={(e) => setShopData({...shopData, whatsapp: e.target.value})} className="h-10 pl-9 rounded-xl text-[12px] font-bold" />
+                        <Input value={shopData.whatsapp} onChange={(e) => setShopData({ ...shopData, whatsapp: e.target.value })} className="h-10 pl-9 rounded-xl text-[12px] font-bold" />
                       </div>
                     </div>
                   </div>
@@ -331,14 +331,14 @@ export default function MerchantSettingsPage() {
                     <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Slug Toko (URL)</Label>
                     <div className="relative">
                       <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                      <Input 
-                        value={shopData.slug} 
+                      <Input
+                        value={shopData.slug}
                         onChange={handleSlugChange}
                         className={cn(
                           "h-10 pl-9 rounded-xl text-[12px] font-bold transition-all",
                           isSlugAvailable === true && shopData.slug !== shop?.slug && "border-green-500 focus:ring-green-500/20",
                           isSlugAvailable === false && "border-red-500 focus:ring-red-500/20"
-                        )} 
+                        )}
                       />
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         {isCheckingSlug && <RefreshCw className="w-3 h-3 text-muted-foreground animate-spin" />}
@@ -359,20 +359,20 @@ export default function MerchantSettingsPage() {
 
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Deskripsi Toko</Label>
-                    <Textarea value={shopData.description} onChange={(e) => setShopData({...shopData, description: e.target.value})} placeholder="Ceritakan keunggulan toko Anda..." className="min-h-[100px] rounded-xl text-[11px] resize-none" />
+                    <Textarea value={shopData.description} onChange={(e) => setShopData({ ...shopData, description: e.target.value })} placeholder="Ceritakan keunggulan toko Anda..." className="min-h-[100px] rounded-xl text-[11px] resize-none" />
                   </div>
 
                   <div className="space-y-4 pt-4 border-t border-border/50">
                     <h4 className="text-[10px] font-black text-[#2E3137] uppercase tracking-widest">Media Sosial</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <div className="relative">
-                         <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                         <Input placeholder="Username Instagram" value={shopData.socials.instagram} onChange={(e) => setShopData({...shopData, socials: {...shopData.socials, instagram: e.target.value}})} className="h-9 pl-9 rounded-xl text-[11px]" />
-                       </div>
-                       <div className="relative">
-                         <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                         <Input placeholder="Username Facebook" value={shopData.socials.facebook} onChange={(e) => setShopData({...shopData, socials: {...shopData.socials, facebook: e.target.value}})} className="h-9 pl-9 rounded-xl text-[11px]" />
-                       </div>
+                      <div className="relative">
+                        <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                        <Input placeholder="Username Instagram" value={shopData.socials.instagram} onChange={(e) => setShopData({ ...shopData, socials: { ...shopData.socials, instagram: e.target.value } })} className="h-9 pl-9 rounded-xl text-[11px]" />
+                      </div>
+                      <div className="relative">
+                        <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                        <Input placeholder="Username Facebook" value={shopData.socials.facebook} onChange={(e) => setShopData({ ...shopData, socials: { ...shopData.socials, facebook: e.target.value } })} className="h-9 pl-9 rounded-xl text-[11px]" />
+                      </div>
                     </div>
                   </div>
                 </TabsContent>
@@ -381,91 +381,91 @@ export default function MerchantSettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Provinsi</Label>
-                      <Input value={shopData.location.province} onChange={(e) => setShopData({...shopData, location: {...shopData.location, province: e.target.value}})} className="h-10 rounded-xl text-[11px]" />
+                      <Input value={shopData.location.province} onChange={(e) => setShopData({ ...shopData, location: { ...shopData.location, province: e.target.value } })} className="h-10 rounded-xl text-[11px]" />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Kota / Kabupaten</Label>
-                      <Input value={shopData.location.city} onChange={(e) => setShopData({...shopData, location: {...shopData.location, city: e.target.value}})} className="h-10 rounded-xl text-[11px]" />
+                      <Input value={shopData.location.city} onChange={(e) => setShopData({ ...shopData, location: { ...shopData.location, city: e.target.value } })} className="h-10 rounded-xl text-[11px]" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Kecamatan</Label>
-                      <Input value={shopData.location.district} onChange={(e) => setShopData({...shopData, location: {...shopData.location, district: e.target.value}})} className="h-10 rounded-xl text-[11px]" />
+                      <Input value={shopData.location.district} onChange={(e) => setShopData({ ...shopData, location: { ...shopData.location, district: e.target.value } })} className="h-10 rounded-xl text-[11px]" />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Kode Pos</Label>
-                      <Input value={shopData.location.postalCode} onChange={(e) => setShopData({...shopData, location: {...shopData.location, postalCode: e.target.value}})} className="h-10 rounded-xl text-[11px]" />
+                      <Input value={shopData.location.postalCode} onChange={(e) => setShopData({ ...shopData, location: { ...shopData.location, postalCode: e.target.value } })} className="h-10 rounded-xl text-[11px]" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Alamat Lengkap (Patokan)</Label>
-                    <Textarea value={shopData.location.address} onChange={(e) => setShopData({...shopData, location: {...shopData.location, address: e.target.value}})} className="min-h-[80px] rounded-xl text-[11px] resize-none" />
+                    <Textarea value={shopData.location.address} onChange={(e) => setShopData({ ...shopData, location: { ...shopData.location, address: e.target.value } })} className="min-h-[80px] rounded-xl text-[11px] resize-none" />
                   </div>
                 </TabsContent>
 
                 <TabsContent value="operasional" className="p-6 mt-0 space-y-6">
-                   <div className="flex items-center justify-between p-4 rounded-2xl bg-[#FFC400]/5 border border-[#FFC400]/20">
-                      <div className="flex items-center gap-3">
-                         <div className="h-9 w-9 rounded-xl bg-white border border-[#FFC400]/20 flex items-center justify-center">
-                            <Clock className="w-4.5 h-4.5 text-[#FFC400]" />
-                         </div>
-                         <div className="space-y-0.5">
-                            <p className="text-[11px] font-black text-[#2E3137]">Tutup Toko Otomatis</p>
-                            <p className="text-[9px] text-muted-foreground font-medium">Nonaktifkan pesanan otomatis di luar jam operasional.</p>
-                         </div>
+                  <div className="flex items-center justify-between p-4 rounded-2xl bg-[#FFC400]/5 border border-[#FFC400]/20">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-xl bg-white border border-[#FFC400]/20 flex items-center justify-center">
+                        <Clock className="w-4.5 h-4.5 text-[#FFC400]" />
                       </div>
-                      <Switch 
-                        checked={shopData.operational.isAutoClose} 
-                        onCheckedChange={(val) => setShopData({...shopData, operational: {...shopData.operational, isAutoClose: val}})}
-                      />
-                   </div>
+                      <div className="space-y-0.5">
+                        <p className="text-[11px] font-black text-[#2E3137]">Tutup Toko Otomatis</p>
+                        <p className="text-[9px] text-muted-foreground font-medium">Nonaktifkan pesanan otomatis di luar jam operasional.</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={shopData.operational.isAutoClose}
+                      onCheckedChange={(val) => setShopData({ ...shopData, operational: { ...shopData.operational, isAutoClose: val } })}
+                    />
+                  </div>
 
-                   <div className="space-y-3">
-                      <h4 className="text-[10px] font-black text-[#2E3137] uppercase tracking-widest ml-1">Jadwal Mingguan</h4>
-                      <div className="space-y-1">
-                         {shopData.operational.schedule.map((item, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-muted/10 transition-colors">
-                               <div className="flex items-center gap-4 w-24">
-                                  <Switch 
-                                    checked={item.active} 
-                                    onCheckedChange={(val) => {
-                                      const newSched = [...shopData.operational.schedule];
-                                      newSched[idx].active = val;
-                                      setShopData({...shopData, operational: {...shopData.operational, schedule: newSched}});
-                                    }}
-                                  />
-                                  <span className={cn("text-[11px] font-bold", item.active ? "text-[#2E3137]" : "text-muted-foreground opacity-50")}>{item.day}</span>
-                               </div>
-                               <div className="flex items-center gap-2">
-                                  <Input 
-                                    type="time" 
-                                    value={item.open} 
-                                    disabled={!item.active}
-                                    onChange={(e) => {
-                                      const newSched = [...shopData.operational.schedule];
-                                      newSched[idx].open = e.target.value;
-                                      setShopData({...shopData, operational: {...shopData.operational, schedule: newSched}});
-                                    }}
-                                    className="h-8 w-24 rounded-lg text-[10px] font-black" 
-                                  />
-                                  <span className="text-[10px] text-muted-foreground font-bold">-</span>
-                                  <Input 
-                                    type="time" 
-                                    value={item.close} 
-                                    disabled={!item.active}
-                                    onChange={(e) => {
-                                      const newSched = [...shopData.operational.schedule];
-                                      newSched[idx].close = e.target.value;
-                                      setShopData({...shopData, operational: {...shopData.operational, schedule: newSched}});
-                                    }}
-                                    className="h-8 w-24 rounded-lg text-[10px] font-black" 
-                                  />
-                               </div>
-                            </div>
-                         ))}
-                      </div>
-                   </div>
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] font-black text-[#2E3137] uppercase tracking-widest ml-1">Jadwal Mingguan</h4>
+                    <div className="space-y-1">
+                      {shopData.operational.schedule.map((item, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-border/50 hover:bg-muted/10 transition-colors">
+                          <div className="flex items-center gap-4 w-24">
+                            <Switch
+                              checked={item.active}
+                              onCheckedChange={(val) => {
+                                const newSched = [...shopData.operational.schedule];
+                                newSched[idx].active = val;
+                                setShopData({ ...shopData, operational: { ...shopData.operational, schedule: newSched } });
+                              }}
+                            />
+                            <span className={cn("text-[11px] font-bold", item.active ? "text-[#2E3137]" : "text-muted-foreground opacity-50")}>{item.day}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="time"
+                              value={item.open}
+                              disabled={!item.active}
+                              onChange={(e) => {
+                                const newSched = [...shopData.operational.schedule];
+                                newSched[idx].open = e.target.value;
+                                setShopData({ ...shopData, operational: { ...shopData.operational, schedule: newSched } });
+                              }}
+                              className="h-8 w-24 rounded-lg text-[10px] font-black"
+                            />
+                            <span className="text-[10px] text-muted-foreground font-bold">-</span>
+                            <Input
+                              type="time"
+                              value={item.close}
+                              disabled={!item.active}
+                              onChange={(e) => {
+                                const newSched = [...shopData.operational.schedule];
+                                newSched[idx].close = e.target.value;
+                                setShopData({ ...shopData, operational: { ...shopData.operational, schedule: newSched } });
+                              }}
+                              className="h-8 w-24 rounded-lg text-[10px] font-black"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </TabsContent>
               </Card>
             </Tabs>

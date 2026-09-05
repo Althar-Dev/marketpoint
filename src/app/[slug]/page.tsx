@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -18,10 +18,10 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { 
-  MapPin, 
-  MessageCircle, 
-  Star, 
+import {
+  MapPin,
+  MessageCircle,
+  Star,
   Info,
   ShoppingBag,
   Clock,
@@ -215,10 +215,10 @@ export default function ShopProfilePage() {
       {/* Banner Section - Optimized for 1300:500 */}
       <div className="relative h-32 sm:h-44 md:h-72 lg:h-[350px] w-full bg-muted overflow-hidden">
         {shop.bannerUrl ? (
-          <Image 
-            src={shop.bannerUrl} 
-            alt={shop.name} 
-            fill 
+          <Image
+            src={shop.bannerUrl}
+            alt={shop.name}
+            fill
             className="object-cover"
             priority
             data-ai-hint="shop banner"
@@ -235,7 +235,7 @@ export default function ShopProfilePage() {
       <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-20 relative z-20 mb-8">
         <Card className="border-border border-[1.5px] shadow-xl rounded-2xl bg-white overflow-hidden relative">
           <CardContent className="p-4 md:p-8 relative">
-            
+
             <div className="flex flex-row items-start gap-4 md:gap-8">
               {/* Logo Section - Aligned Left */}
               <div className="relative shrink-0">
@@ -260,15 +260,15 @@ export default function ShopProfilePage() {
                     <h1 className="text-lg md:text-3xl font-black font-headline tracking-tight truncate max-w-[180px] md:max-w-md">
                       {shop.name}
                     </h1>
-                    
+
                     {shop.official === true && (
                       <Dialog>
                         <DialogTrigger asChild>
                           <button className="relative h-5 w-20 md:h-6 md:w-24 shrink-0 transition-transform active:scale-95">
-                            <Image 
-                              src="/assets/badge/official.png" 
-                              alt="Official Store" 
-                              fill 
+                            <Image
+                              src="/assets/badge/official.png"
+                              alt="Official Store"
+                              fill
                               className="object-contain object-left"
                             />
                           </button>
@@ -277,10 +277,10 @@ export default function ShopProfilePage() {
                           <DialogHeader>
                             <div className="flex justify-center mb-4">
                               <div className="relative h-12 w-48">
-                                <Image 
-                                  src="/assets/badge/official.png" 
-                                  alt="Official Store" 
-                                  fill 
+                                <Image
+                                  src="/assets/badge/official.png"
+                                  alt="Official Store"
+                                  fill
                                   className="object-contain"
                                 />
                               </div>
@@ -326,7 +326,7 @@ export default function ShopProfilePage() {
                       </Dialog>
                     )}
                   </div>
-                  
+
                   <p className="text-[11px] md:text-xs font-bold text-[#00AA5B] lowercase tracking-wide">
                     @{shop.slug}
                   </p>
@@ -350,22 +350,22 @@ export default function ShopProfilePage() {
 
                   {/* Mobile Stats */}
                   <div className="flex md:hidden items-center gap-3 mt-1.5 text-muted-foreground">
-                     <div className="flex items-center gap-1">
-                       <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
-                       <span className="text-[10px] font-bold text-[#212121]">4.9</span>
-                       <span className="text-[9px] font-medium opacity-60">(2.5rb ulasan)</span>
-                     </div>
-                     <span className="text-muted-foreground/30">|</span>
-                     <div className="flex items-center gap-1">
-                       <MapPin className="w-3 h-3" />
-                       <span className="text-[10px] font-bold text-[#212121]">{shop.location?.city || "Lokasi"}</span>
-                     </div>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
+                      <span className="text-[10px] font-bold text-[#212121]">4.9</span>
+                      <span className="text-[9px] font-medium opacity-60">(2.5rb ulasan)</span>
+                    </div>
+                    <span className="text-muted-foreground/30">|</span>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      <span className="text-[10px] font-bold text-[#212121]">{shop.location?.city || "Lokasi"}</span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Desktop Action Buttons */}
                 <div className="hidden md:flex items-center gap-3 pt-6">
-                  <Button 
+                  <Button
                     onClick={handleContactWhatsApp}
                     className="h-10 px-8 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-xs gap-2 shadow-lg shadow-[#00AA5B]/10 transition-transform active:scale-95"
                   >
@@ -374,8 +374,8 @@ export default function ShopProfilePage() {
                   <Button variant="outline" className="h-10 px-8 rounded-xl border-border font-black text-xs gap-2 hover:bg-[#F8FAFC] transition-transform active:scale-95">
                     <Heart className="w-4 h-4" /> Follow
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     onClick={handleShare}
                     className="h-10 w-10 rounded-xl border-border transition-transform active:scale-95"
@@ -388,7 +388,7 @@ export default function ShopProfilePage() {
 
             {/* Mobile Action Buttons */}
             <div className="flex md:hidden items-center gap-2 mt-6 pt-4 border-t border-border/50">
-              <Button 
+              <Button
                 onClick={handleContactWhatsApp}
                 className="flex-1 h-9 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-[10px] gap-2 shadow-sm"
               >
@@ -440,7 +440,7 @@ export default function ShopProfilePage() {
           {/* Optimized Nav Bar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-2">
             <div className="flex gap-8">
-              <button 
+              <button
                 onClick={() => setActiveTab("products")}
                 className={cn(
                   "text-[13px] font-bold pb-3 transition-all",
@@ -449,7 +449,7 @@ export default function ShopProfilePage() {
               >
                 Semua produk
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab("reviews")}
                 className={cn(
                   "text-[13px] font-bold pb-3 transition-all",
@@ -458,7 +458,7 @@ export default function ShopProfilePage() {
               >
                 Ulasan toko
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab("vouchers")}
                 className={cn(
                   "text-[13px] font-bold pb-3 transition-all",
@@ -470,8 +470,8 @@ export default function ShopProfilePage() {
             </div>
             <div className="relative w-full md:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="Cari produk di toko ini..." 
+              <Input
+                placeholder="Cari produk di toko ini..."
                 className="h-9 pl-10 rounded-xl bg-white border-border text-xs font-bold"
               />
             </div>
@@ -484,11 +484,11 @@ export default function ShopProfilePage() {
                 {SHOP_PRODUCTS.map((product) => (
                   <Card key={product.id} className="group border-border border-[1.5px] shadow-sm rounded-xl overflow-hidden bg-white hover:shadow-xl transition-all duration-500 cursor-pointer flex flex-col">
                     <div className="relative aspect-square bg-muted/20 overflow-hidden">
-                      <Image 
-                        src={product.imageUrl} 
-                        alt={product.name} 
-                        fill 
-                        className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                      <Image
+                        src={product.imageUrl}
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
                         data-ai-hint="product photo"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
@@ -504,7 +504,7 @@ export default function ShopProfilePage() {
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-1">
                           <Star className="w-2.5 h-2.5 text-[#FFC400] fill-[#FFC400]" />
@@ -552,9 +552,9 @@ export default function ShopProfilePage() {
                             <Star className="w-3.5 h-3.5 text-[#FFC400] fill-[#FFC400]" />
                             <span className="text-xs font-black">{star}</span>
                           </div>
-                          <Progress 
-                            value={star === 5 ? 92 : star === 4 ? 6 : star === 3 ? 1.5 : star === 2 ? 0.5 : 0} 
-                            className="h-2 rounded-full bg-muted" 
+                          <Progress
+                            value={star === 5 ? 92 : star === 4 ? 6 : star === 3 ? 1.5 : star === 2 ? 0.5 : 0}
+                            className="h-2 rounded-full bg-muted"
                           />
                           <span className="text-[10px] font-bold text-muted-foreground w-10 text-right opacity-60">
                             {star === 5 ? "2.3rb" : star === 4 ? "150" : star === 3 ? "35" : star === 2 ? "12" : "3"}
@@ -597,12 +597,12 @@ export default function ShopProfilePage() {
                               <p className="text-[12px] font-black">{review.userName}</p>
                               <div className="flex items-center gap-1 mt-0.5">
                                 {[...Array(5)].map((_, i) => (
-                                  <Star 
-                                    key={i} 
+                                  <Star
+                                    key={i}
                                     className={cn(
                                       "w-2.5 h-2.5",
                                       i < review.rating ? "text-[#FFC400] fill-[#FFC400]" : "text-muted-foreground opacity-20"
-                                    )} 
+                                    )}
                                   />
                                 ))}
                                 <span className="text-[10px] text-muted-foreground font-medium ml-1.5">{review.date}</span>
@@ -618,7 +618,7 @@ export default function ShopProfilePage() {
                           <p className="text-[13px] text-[#2E3137] leading-relaxed font-medium">
                             "{review.comment}"
                           </p>
-                          
+
                           <div className="p-3 rounded-xl bg-[#F8FAFC] border border-border/50 flex items-center gap-3 group cursor-pointer hover:bg-white hover:border-[#00AA5B]/20 transition-all">
                             <div className="h-8 w-8 rounded-lg bg-white border border-border overflow-hidden shrink-0">
                               <Image src={`https://picsum.photos/seed/${review.id}/100/100`} alt="Product" width={32} height={32} className="object-cover" />
