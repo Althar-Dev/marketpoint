@@ -263,15 +263,15 @@ export default function ProfilePage() {
             </div>
             <Link href="/wallet" className="mt-0.5 block space-y-0.5 hover:opacity-80 transition-opacity">
               <div className="flex items-center gap-2">
-                <div className="w-3.5 h-3.5 bg-[#00AA5B] rounded-full flex items-center justify-center overflow-hidden">
-                  <img src="/assets/icon/wallet.png" className="w-2 h-2 brightness-0 invert" alt="Wallet" />
+                <div className="w-3.5 h-3.5 bg-[#00AA5B] rounded-full flex items-center justify-center overflow-hidden p-0.5">
+                  <img src="/assets/icon/wallet.png" className="w-full h-full object-contain" alt="Wallet" />
                 </div>
                 <span className="text-[11px] font-bold text-foreground">Rp{wallet?.balance?.toLocaleString('id-ID') || 0}</span>
                 <ChevronRight className="w-2.5 h-2.5 text-muted-foreground" />
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3.5 h-3.5 bg-[#FFC400] rounded-full flex items-center justify-center overflow-hidden">
-                  <img src="/assets/icon/mcoins.png" className="w-2 h-2" alt="MCoins" />
+                <div className="w-3.5 h-3.5 bg-[#FFC400] rounded-full flex items-center justify-center overflow-hidden p-0.5">
+                  <img src="/assets/icon/mcoins.png" className="w-full h-full object-contain" alt="MCoins" />
                 </div>
                 <span className="text-[11px] font-medium text-muted-foreground">0 MCoins</span>
                 <ChevronRight className="w-2.5 h-2.5 text-muted-foreground opacity-40" />

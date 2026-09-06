@@ -87,21 +87,21 @@ export default function UserWalletPage() {
            </Button>
         </div>
 
-        {/* Balance Cards Section - Optimized UI */}
+        {/* Balance Cards Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
            
            {/* Kartu Saldo Belanja (Green) */}
            <Card className="border-none shadow-xl bg-[#00AA5B] text-white overflow-hidden relative group rounded-[2rem]">
               {/* Subtle background icon */}
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                 <img src="/assets/icon/wallet.png" className="w-36 h-36 brightness-0 invert" alt="" />
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                 <img src="/assets/icon/wallet.png" className="w-36 h-36" alt="" />
               </div>
               
-              <CardContent className="p-8 md:p-10 relative z-10 flex flex-col justify-between h-full min-h-[200px]">
+              <CardContent className="p-8 md:p-10 relative z-10 flex flex-col justify-between h-full min-h-[220px]">
                  <div className="space-y-4">
                     <div className="flex items-center gap-2.5">
-                       <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center p-1">
-                          <img src="/assets/icon/wallet.png" className="w-full h-full brightness-0 invert" alt="" />
+                       <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center p-1.5">
+                          <img src="/assets/icon/wallet.png" className="w-full h-full" alt="" />
                        </div>
                        <span className="text-[11px] font-black uppercase tracking-[0.15em] opacity-90">Saldo Belanja</span>
                     </div>
@@ -114,7 +114,7 @@ export default function UserWalletPage() {
                  </div>
 
                  <div className="flex items-center gap-6 mt-8">
-                    <Button className="h-10 px-7 rounded-full bg-white text-[#00AA5B] hover:bg-white/95 font-black text-[12px] gap-2 shadow-lg shadow-black/5 transition-transform active:scale-95">
+                    <Button className="h-11 px-8 rounded-full bg-white text-[#00AA5B] hover:bg-white/95 font-black text-[12px] gap-2 shadow-lg shadow-black/5 transition-transform active:scale-95">
                        <Plus className="w-4 h-4 stroke-[3px]" /> Top Up Saldo
                     </Button>
                     <button className="text-[11px] font-black tracking-wide opacity-90 hover:opacity-100 flex items-center gap-1.5 transition-all group/link">
@@ -127,21 +127,21 @@ export default function UserWalletPage() {
            {/* Kartu MCoins Rewards (Dark) */}
            <Card className="border-none shadow-xl bg-gradient-to-br from-[#2E3137] to-[#1A1C1F] text-white overflow-hidden relative group rounded-[2rem]">
               {/* Subtle background icon */}
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none group-hover:scale-110 transition-transform duration-700">
                  <img src="/assets/icon/mcoins.png" className="w-36 h-36" alt="" />
               </div>
 
-              <CardContent className="p-8 md:p-10 relative z-10 flex flex-col justify-between h-full min-h-[200px]">
+              <CardContent className="p-8 md:p-10 relative z-10 flex flex-col justify-between h-full min-h-[220px]">
                  <div className="space-y-4">
                     <div className="flex items-center gap-2.5">
-                       <div className="h-6 w-6 rounded-full bg-[#FFC400] flex items-center justify-center p-1 shadow-inner">
+                       <div className="h-7 w-7 rounded-full bg-[#FFC400]/20 flex items-center justify-center p-1.5">
                           <img src="/assets/icon/mcoins.png" className="w-full h-full" alt="" />
                        </div>
                        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-[#FFC400]">Mcoin Rewards</span>
                     </div>
                     <div className="flex items-baseline gap-2">
                        <p className="text-5xl font-black tracking-tighter text-[#FFC400]">0</p>
-                       <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">MCoins</span>
+                       <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">MCoins</span>
                     </div>
                  </div>
 
@@ -149,7 +149,7 @@ export default function UserWalletPage() {
                     <div className="flex items-start gap-2.5 max-w-[280px]">
                        <Info className="w-3.5 h-3.5 text-[#FFC400] shrink-0 mt-0.5" />
                        <p className="text-[10px] font-medium text-muted-foreground leading-relaxed">
-                          Kumpulkan MCoins dari setiap pembelian produk berlabel cashback.
+                          Kumpulkan MCoins dari setiap pembelian produk berlabel cashback untuk digunakan belanja kembali.
                        </p>
                     </div>
                     <button className="text-[11px] font-black text-[#FFC400] hover:text-[#FFD54F] flex items-center gap-1.5 transition-all group/link">
@@ -160,7 +160,7 @@ export default function UserWalletPage() {
            </Card>
         </div>
 
-        {/* Transaction History Section - Refined Table */}
+        {/* Transaction History Section */}
         <div className="space-y-5">
            <div className="flex items-center justify-between px-1">
               <h2 className="text-[12px] font-black uppercase tracking-[0.15em] text-[#2E3137]">Aktivitas Terakhir</h2>
@@ -230,7 +230,7 @@ export default function UserWalletPage() {
            </Card>
         </div>
 
-        {/* Security & Shield Section */}
+        {/* Security Info */}
         <div className="mt-16 p-8 rounded-[2.5rem] bg-white border border-border border-dashed flex flex-col md:flex-row items-center gap-8 text-center md:text-left transition-all hover:border-[#00AA5B]/40">
            <div className="h-14 w-14 rounded-2xl bg-[#00AA5B]/10 flex items-center justify-center shrink-0">
               <ShieldCheck className="w-7 h-7 text-[#00AA5B]" />

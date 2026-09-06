@@ -137,7 +137,7 @@ export function DesktopSettings({
     <div className="bg-[#F8FAFC] font-body text-[#212121] min-h-[calc(100vh-64px)]">
       <div className="max-w-screen-xl mx-auto flex gap-6 p-6 items-start">
         
-        {/* Sidebar Nav - Sticky to stay in view */}
+        {/* Sidebar Nav */}
         <aside className="w-[260px] shrink-0 space-y-4 sticky top-20">
           <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden p-4 h-auto">
             <div className="flex items-center gap-3 mb-5">
@@ -171,8 +171,8 @@ export function DesktopSettings({
               
               <Link href="/wallet" className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border overflow-hidden">
-                    <img src="/assets/icon/wallet.png" className="w-2.5 h-2.5" alt="Wallet" />
+                  <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border overflow-hidden p-1">
+                    <img src="/assets/icon/wallet.png" className="w-full h-full object-contain" alt="Wallet" />
                   </div>
                   <span className="text-[11px] font-medium text-muted-foreground">Saldo & MCoins</span>
                 </div>
