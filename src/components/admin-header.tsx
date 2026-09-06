@@ -45,7 +45,8 @@ export function AdminHeader() {
       case "/admin/shops": return "Manajemen Toko";
       case "/admin/analytics": return "Analitik Platform";
       case "/admin/transactions": return "Riwayat Transaksi Global";
-      case "/admin/disputes": return "Pusat Resolusi";
+      case "/admin/products": return "Katalog Produk Global";
+      case "/admin/disputes": return "Pusat Resolusi Dispute";
       case "/admin/settings": return "Pengaturan Sistem";
       default: return "Admin Panel";
     }
