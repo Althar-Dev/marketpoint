@@ -253,7 +253,7 @@ export default function MarketPage() {
         </section>
 
         {/* Mobile Menu Grid (Hidden on Desktop) */}
-        <section className="lg:hidden px-4 py-6 w-full max-w-screen-xl mx-auto overflow-x-auto no-scrollbar">
+        <section className="lg:hidden px-4 py-6 w-full max-w-full overflow-x-auto no-scrollbar">
           <div className="flex items-start justify-between min-w-max gap-6 px-1">
             {MOBILE_MENU_ITEMS.map((item, idx) => (
               <button 
