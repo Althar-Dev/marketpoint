@@ -42,7 +42,8 @@ export function AdminHeader() {
     switch (path) {
       case "/admin": return "Dashboard";
       case "/admin/users": return "Manajemen Pengguna";
-      case "/admin/shops": return "Manajemen Merchant";
+      case "/admin/shops": return "Manajemen Toko";
+      case "/admin/analytics": return "Analitik Platform";
       case "/admin/transactions": return "Riwayat Transaksi Global";
       case "/admin/disputes": return "Pusat Resolusi";
       case "/admin/settings": return "Pengaturan Sistem";

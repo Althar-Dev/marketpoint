@@ -51,7 +51,7 @@ export function AdminSidebar() {
       label: "Management",
       items: [
         { label: "Manajemen User", icon: Users, href: "/admin/users" },
-        { label: "Daftar Merchant", icon: Store, href: "/admin/shops" },
+        { label: "Daftar Toko", icon: Store, href: "/admin/shops" },
         { label: "Katalog Produk", icon: Database, href: "/admin/products" },
       ]
     },
