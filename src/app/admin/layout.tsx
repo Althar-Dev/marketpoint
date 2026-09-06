@@ -39,44 +39,41 @@ export default function AdminLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center relative overflow-hidden font-body">
-        {/* Abstract Background Elements */}
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden font-body">
+        {/* Subtil Background Grid */}
         <div className="absolute inset-0 z-0 opacity-[0.03]" 
-             style={{ backgroundImage: `radial-gradient(#4f46e5 0.5px, transparent 0.5px)`, backgroundSize: '24px 24px' }}>
-        </div>
-        
-        {/* Top Progress Bar - Very Slim */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-white z-50 overflow-hidden">
-           <div className="h-full bg-indigo-600 w-full animate-loading-slide origin-left"></div>
+             style={{ backgroundImage: `radial-gradient(#4f46e5 0.5px, transparent 0.5px)`, backgroundSize: '32px 32px' }}>
         </div>
         
         {/* Central Content */}
         <div className="relative z-10 flex flex-col items-center">
-          {/* Minimalist Visual Indicator */}
-          <div className="relative w-16 h-16 mb-8 flex items-center justify-center">
-             <div className="absolute inset-0 border-[1.5px] border-indigo-600/10 rounded-full"></div>
-             <div className="absolute inset-0 border-t-[1.5px] border-indigo-600 rounded-full animate-spin"></div>
-             <div className="w-2 h-2 bg-indigo-600 rounded-full animate-pulse"></div>
+          {/* Logo Section */}
+          <div className="mb-5 animate-in fade-in zoom-in-95 duration-700">
+             <img 
+               src="/assets/img/logo.png" 
+               alt="MarketPoint" 
+               className="h-11 w-auto object-contain"
+             />
           </div>
           
-          <div className="flex flex-col items-center gap-1">
-             <span className="text-[11px] tracking-[0.2em] text-[#2E3137] font-medium opacity-60 uppercase">autentikasi sistem</span>
-             <div className="flex gap-1">
-                <div className="w-1 h-1 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-1 h-1 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-1 h-1 bg-indigo-600 rounded-full animate-bounce"></div>
-             </div>
+          {/* Custom Sliding Underline */}
+          <div className="w-16 h-[2px] bg-indigo-600/10 rounded-full overflow-hidden relative">
+             <div className="absolute top-0 h-full bg-indigo-600 w-8 rounded-full animate-loading-slide"></div>
+          </div>
+          
+          {/* Micro Typography */}
+          <div className="mt-6 flex flex-col items-center gap-1.5 opacity-40">
+             <span className="text-[9px] tracking-[0.25em] text-[#2E3137] font-bold uppercase">Autentikasi</span>
           </div>
         </div>
 
         <style jsx global>{`
           @keyframes loading-slide {
-            0% { transform: scaleX(0); }
-            50% { transform: scaleX(0.7); }
-            100% { transform: scaleX(1); opacity: 0; }
+            0% { transform: translateX(-150%); }
+            100% { transform: translateX(250%); }
           }
           .animate-loading-slide {
-            animation: loading-slide 2.5s infinite cubic-bezier(0.65, 0, 0.35, 1);
+            animation: loading-slide 1.8s infinite cubic-bezier(0.65, 0, 0.35, 1);
           }
         `}</style>
       </div>
