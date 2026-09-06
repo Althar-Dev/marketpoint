@@ -468,13 +468,6 @@ export default function ShopProfilePage() {
                 Voucher
               </button>
             </div>
-            <div className="relative w-full md:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Cari produk di toko ini..."
-                className="h-9 pl-10 rounded-xl bg-white border-border text-xs font-bold"
-              />
-            </div>
           </div>
 
           {/* Tab Content Render */}

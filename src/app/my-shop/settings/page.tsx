@@ -216,7 +216,7 @@ export default function MerchantSettingsPage() {
       <div className="max-w-screen-xl mx-auto space-y-6">
 
         <div className="flex items-center justify-between">
-          <div>
+          <div className="hidden sm:flex flex-col">
             <h2 className="text-xl font-bold tracking-tight text-[#212121]">Pengaturan Toko</h2>
             <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">Kelola identitas, alamat, dan operasional bisnis Anda.</p>
           </div>

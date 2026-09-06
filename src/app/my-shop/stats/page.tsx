@@ -102,7 +102,7 @@ export default function MerchantStatsPage() {
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
+          <div className="hidden sm:flex flex-col">
             <h2 className="text-xl font-bold tracking-tight text-[#212121]">Statistik Bisnis</h2>
             <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">Analisis mendalam performa toko dan perilaku pelanggan.</p>
           </div>

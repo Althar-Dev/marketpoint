@@ -96,7 +96,7 @@ export default function MerchantWalletPage() {
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
+          <div className="hidden sm:flex flex-col">
             <h2 className="text-xl font-bold tracking-tight text-[#212121]">Saldo & Keuangan</h2>
             <p className="text-[11px] text-muted-foreground mt-0.5">Kelola pendapatan dan riwayat penarikan dana toko Anda.</p>
           </div>

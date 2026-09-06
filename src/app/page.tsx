@@ -66,7 +66,7 @@ const QUICK_CHIPS = [
 
 const MARKET_TABS = [
   { id: "foryou", label: "For You" },
-  { id: "weekend", label: "Instan Weekend" },
+  { id: "weekend", label: "" },
   { id: "mall", label: "Mall" },
   { id: "elektronik", label: "Elektronik" },
   { id: "gadget", label: "Handphone & Gadget" },
@@ -373,8 +373,14 @@ export default function MarketPage() {
                          </div>
                        )}
                        {tab.id === 'weekend' && (
-                          <div className="flex items-center gap-1 shrink-0 bg-muted/40 px-1 rounded">
-                             <span className="text-[6px] italic font-black uppercase text-foreground/40 text-left leading-[0.7]">
+                          <div className={cn(
+                            "flex items-center gap-1 shrink-0 px-1 rounded transition-colors",
+                            isActive ? "bg-[#00AA5B]/10" : "bg-muted/40"
+                          )}>
+                             <span className={cn(
+                               "text-[10px] italic font-black uppercase text-left leading-[1] transition-colors",
+                               isActive ? "text-[#00AA5B]" : "text-foreground/40"
+                             )}>
                                 INSTAN<br />WEEKEND
                              </span>
                           </div>
