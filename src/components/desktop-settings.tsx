@@ -18,7 +18,8 @@ import {
   Store,
   ChevronRight,
   Loader2,
-  Camera
+  Camera,
+  Lock
 } from "lucide-react";
 import {
   Tabs,
@@ -32,8 +33,19 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { updatePassword } from "firebase/auth";
+import { useToast } from "@/hooks/use-toast";
 
 interface DesktopProfileSettingsProps {
   user: any;
@@ -65,11 +77,64 @@ export function DesktopSettings({
   uploadingAvatar
 }: DesktopProfileSettingsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+
+  // Check if user is a Google user without a password
+  const providers = user?.providerData?.map((p: any) => p.providerId) || [];
+  const isGoogleUser = providers.includes('google.com');
+  const hasPassword = providers.includes('password');
+  const canCreatePassword = isGoogleUser && !hasPassword;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && onAvatarUpload) {
       await onAvatarUpload(file);
+    }
+  };
+
+  const handleCreatePassword = async () => {
+    if (!newPassword || newPassword !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: "Kata sandi tidak cocok atau kosong.",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: "Kata sandi minimal 6 karakter.",
+      });
+      return;
+    }
+
+    setIsPasswordLoading(true);
+    try {
+      await updatePassword(user, newPassword);
+      toast({
+        title: "Berhasil",
+        description: "Kata sandi telah dibuat. Anda sekarang bisa masuk menggunakan email & sandi.",
+      });
+      setIsPasswordDialogOpen(false);
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: error.message || "Gagal membuat kata sandi. Silakan coba masuk ulang.",
+      });
+    } finally {
+      setIsPasswordLoading(false);
     }
   };
   
@@ -244,9 +309,56 @@ export function DesktopSettings({
                     </Card>
 
                     <div className="space-y-2">
-                      <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-border/60 justify-center">
-                        Buat Kata Sandi
-                      </Button>
+                      {canCreatePassword && (
+                        <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-[#00AA5B] text-[#00AA5B] hover:bg-[#00AA5B]/5 justify-center gap-2">
+                              <Lock className="w-3.5 h-3.5" /> Buat Kata Sandi
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="rounded-2xl max-w-sm border-border">
+                            <DialogHeader>
+                              <DialogTitle className="font-bold text-lg">Buat Kata Sandi</DialogTitle>
+                              <DialogDescription className="text-xs">
+                                Masukkan kata sandi baru untuk akun Anda agar bisa masuk via email.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="py-4 space-y-4">
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-muted-foreground ml-1 uppercase">KATA SANDI BARU</label>
+                                <Input 
+                                  type="password"
+                                  value={newPassword}
+                                  onChange={(e) => setNewPassword(e.target.value)}
+                                  placeholder="Minimal 6 karakter" 
+                                  className="h-10 rounded-xl border-border text-sm font-medium" 
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-muted-foreground ml-1 uppercase">KONFIRMASI SANDI</label>
+                                <Input 
+                                  type="password"
+                                  value={confirmPassword}
+                                  onChange={(e) => setConfirmPassword(e.target.value)}
+                                  placeholder="Ulangi kata sandi" 
+                                  className="h-10 rounded-xl border-border text-sm font-medium" 
+                                />
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <Button 
+                                onClick={handleCreatePassword}
+                                disabled={isPasswordLoading || !newPassword}
+                                className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs"
+                              >
+                                {isPasswordLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+                                Simpan Kata Sandi
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                      
                       <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-border/60 flex items-center justify-center gap-2.5 group">
                         <Shield className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                         <span>PIN MarketPoint</span>

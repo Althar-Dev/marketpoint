@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from "@/firebase";
 import { doc, updateDoc } from "firebase/firestore";
-import { updateProfile } from "firebase/auth";
+import { updateProfile, updatePassword } from "firebase/auth";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,8 @@ import {
   LogOut,
   Info,
   FileText,
-  Lock
+  Lock,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -36,6 +38,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function SettingsPage() {
   const { user, loading: authLoading } = useUser();
@@ -49,6 +60,12 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
+  
+  // Password creation state for mobile
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
   const userRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -101,6 +118,45 @@ export default function SettingsPage() {
       });
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleCreatePassword = async () => {
+    if (!newPassword || newPassword !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: "Kata sandi tidak cocok atau kosong.",
+      });
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: "Kata sandi minimal 6 karakter.",
+      });
+      return;
+    }
+
+    setIsPasswordLoading(true);
+    try {
+      await updatePassword(user!, newPassword);
+      toast({
+        title: "Berhasil",
+        description: "Kata sandi telah dibuat.",
+      });
+      setIsPasswordDialogOpen(false);
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: error.message || "Gagal membuat sandi.",
+      });
+    } finally {
+      setIsPasswordLoading(false);
     }
   };
 
@@ -159,6 +215,10 @@ export default function SettingsPage() {
   if (!user) return null;
 
   const hasShop = userData?.hasShop === true || !!shop;
+  const providers = user?.providerData?.map((p: any) => p.providerId) || [];
+  const isGoogleUser = providers.includes('google.com');
+  const hasPassword = providers.includes('password');
+  const canCreatePassword = isGoogleUser && !hasPassword;
 
   if (!isMobile) {
     return (
@@ -242,6 +302,61 @@ export default function SettingsPage() {
         <section className="pb-1">
           <h3 className="px-4 text-[11px] font-bold text-[#2E3137] mb-2">Pengaturan Akun</h3>
           <div className="divide-y divide-border/50">
+            {canCreatePassword && (
+              <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+                <DialogTrigger asChild>
+                  <button className="w-full px-5 py-3 flex items-center gap-4 hover:bg-[#00AA5B]/5 transition-all text-left group">
+                    <div className="flex-shrink-0">
+                      <Lock className="w-4.5 h-4.5 text-[#00AA5B]" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[12px] font-bold text-[#00AA5B] leading-tight">Buat Kata Sandi Akun</p>
+                      <p className="text-[9px] text-muted-foreground mt-0.5">Tambahkan sandi untuk masuk via email</p>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 text-[#00AA5B] opacity-50" />
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="rounded-2xl max-w-[90vw] mx-auto border-border">
+                  <DialogHeader>
+                    <DialogTitle className="font-bold text-lg">Buat Sandi</DialogTitle>
+                    <DialogDescription className="text-xs">
+                      Buat kata sandi baru untuk akun Google Anda.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4 space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-muted-foreground ml-1 uppercase">SANDI BARU</label>
+                      <Input 
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="h-10 rounded-xl text-sm" 
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-muted-foreground ml-1 uppercase">ULANGI SANDI</label>
+                      <Input 
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="h-10 rounded-xl text-sm" 
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button 
+                      onClick={handleCreatePassword}
+                      disabled={isPasswordLoading || !newPassword}
+                      className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs"
+                    >
+                      {isPasswordLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+                      Simpan
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
+
             {[
               { title: "Daftar Alamat", desc: "Atur alamat pengiriman belanjaan", icon: MapPinned },
               { title: "Rekening Bank", desc: "Tarik Saldo MarketPoint ke rekening tujuan", icon: Building2 },
