@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,15 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Wallet, 
-  Coins, 
   ArrowUpRight, 
   ArrowDownLeft, 
   Plus, 
   History, 
   ChevronRight,
   ShieldCheck,
-  CreditCard,
   Clock,
   CheckCircle2,
   AlertCircle,
@@ -86,7 +82,7 @@ export default function UserWalletPage() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
            <div className="space-y-1">
-              <h1 className="text-xl md:text-2xl font-black font-headline tracking-tight">Saldo & MCoin</h1>
+              <h1 className="text-xl md:text-2xl font-black font-headline tracking-tight">Saldo & MCoins</h1>
               <p className="text-[11px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider">Pusat Keuangan MarketPoint Anda</p>
            </div>
            <div className="flex items-center gap-2">
@@ -101,13 +97,13 @@ export default function UserWalletPage() {
            {/* Saldo Rupiah */}
            <Card className="border-none shadow-xl bg-gradient-to-br from-[#00AA5B] to-[#008F4C] text-white overflow-hidden relative group">
               <div className="absolute right-0 top-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                 <Wallet className="w-32 h-32" />
+                 <img src="/assets/icon/wallet.png" className="w-32 h-32 brightness-0 invert" alt="Wallet" />
               </div>
               <CardContent className="p-6 md:p-8 relative z-10 flex flex-col justify-between h-full min-h-[180px]">
                  <div className="space-y-1.5">
                     <div className="flex items-center gap-2 mb-2">
-                       <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center">
-                          <Wallet className="w-3 h-3 text-white fill-white" />
+                       <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+                          <img src="/assets/icon/wallet.png" className="w-3.5 h-3.5 brightness-0 invert" alt="Wallet" />
                        </div>
                        <span className="text-[11px] font-black uppercase tracking-[0.15em] opacity-90">Saldo Belanja</span>
                     </div>
@@ -132,25 +128,25 @@ export default function UserWalletPage() {
            {/* MCoin Card */}
            <Card className="border-none shadow-xl bg-gradient-to-br from-[#2E3137] to-[#1A1C1F] text-white overflow-hidden relative group">
               <div className="absolute right-0 top-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                 <Coins className="w-32 h-32" />
+                 <img src="/assets/icon/mcoins.png" className="w-32 h-32" alt="MCoins" />
               </div>
               <CardContent className="p-6 md:p-8 relative z-10 flex flex-col justify-between h-full min-h-[180px]">
                  <div className="space-y-1.5">
                     <div className="flex items-center gap-2 mb-2">
-                       <div className="h-6 w-6 rounded-full bg-[#FFC400] flex items-center justify-center">
-                          <Coins className="w-3 h-3 text-white fill-white" />
+                       <div className="h-6 w-6 rounded-full bg-[#FFC400] flex items-center justify-center overflow-hidden">
+                          <img src="/assets/icon/mcoins.png" className="w-3.5 h-3.5" alt="MCoins" />
                        </div>
                        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-[#FFC400]">MCoin Rewards</span>
                     </div>
                     <div className="flex items-baseline gap-2">
                        <p className="text-4xl font-black tracking-tighter text-[#FFC400]">0</p>
-                       <span className="text-xs font-bold text-muted-foreground uppercase">MarketPoint Coins</span>
+                       <span className="text-xs font-bold text-muted-foreground uppercase">MCoins</span>
                     </div>
                  </div>
                  <div className="flex flex-col gap-2 mt-6">
                     <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
                        <Info className="w-3 h-3 text-[#FFC400]" />
-                       <span>Kumpulkan MCoin dari setiap pembelian produk berlabel cashback.</span>
+                       <span>Kumpulkan MCoins dari setiap pembelian produk berlabel cashback.</span>
                     </div>
                     <button className="text-[11px] font-bold text-[#FFC400] hover:underline flex items-center gap-1 w-fit mt-1">
                        Tukar Poin <ChevronRight className="w-3 h-3" />

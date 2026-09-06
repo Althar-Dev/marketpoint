@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRef, useState } from "react";
@@ -8,19 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { 
   Shield, 
-  Coins, 
   Inbox, 
   ShoppingBag, 
   UserCircle,
-  Building2,
-  Bell,
   LogOut,
   Store,
-  ChevronRight,
   Loader2,
   Camera,
-  Lock,
-  Wallet
+  Lock
 } from "lucide-react";
 import {
   Tabs,
@@ -177,10 +171,10 @@ export function DesktopSettings({
               
               <Link href="/wallet" className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border">
-                    <Wallet className="w-2.5 h-2.5 text-muted-foreground" />
+                  <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border overflow-hidden">
+                    <img src="/assets/icon/wallet.png" className="w-2.5 h-2.5" alt="Wallet" />
                   </div>
-                  <span className="text-[11px] font-medium text-muted-foreground">Saldo & MCoin</span>
+                  <span className="text-[11px] font-medium text-muted-foreground">Saldo & MCoins</span>
                 </div>
                 <span className="text-[11px] font-bold">Rp{wallet?.balance?.toLocaleString('id-ID') || 0}</span>
               </Link>
