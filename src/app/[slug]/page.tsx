@@ -266,7 +266,7 @@ export default function ShopProfilePage() {
                         <DialogTrigger asChild>
                           <button className="relative h-5 w-20 md:h-6 md:w-24 shrink-0 transition-transform active:scale-95">
                             <Image
-                              src="/assets/badge/official.png"
+                              src="/assets/badge/officials.png"
                               alt="Official Store"
                               fill
                               className="object-contain object-left"
@@ -278,7 +278,7 @@ export default function ShopProfilePage() {
                             <div className="flex justify-center mb-4">
                               <div className="relative h-12 w-48">
                                 <Image
-                                  src="/assets/badge/official.png"
+                                  src="/assets/badge/officials.png"
                                   alt="Official Store"
                                   fill
                                   className="object-contain"

@@ -61,6 +61,10 @@ export function MerchantHeader() {
         return { title: "Komplain & Dispute" };
       case "/my-shop/customers": 
         return { title: "Data Pelanggan" };
+      case "/my-shop/vouchers": 
+        return { title: "Manajemen Voucher" };
+      case "/my-shop/flash-sale": 
+        return { title: "Manajemen Flash Sale" };
       default: 
         return { title: "Seller Center" };
     }

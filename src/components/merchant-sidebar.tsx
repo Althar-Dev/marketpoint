@@ -17,7 +17,9 @@ import {
   MessageSquare,
   Star,
   AlertTriangle,
-  Users
+  Users,
+  Ticket,
+  Zap
 } from "lucide-react";
 import { 
   Sidebar, 
@@ -56,6 +58,13 @@ export function MerchantSidebar() {
         { label: "Dashboard", icon: LayoutDashboard, href: "/my-shop" },
         { label: "Saldo", icon: Wallet, href: "/my-shop/wallet" },
         { label: "Statistik", icon: TrendingUp, href: "/my-shop/stats" },
+      ]
+    },
+    {
+      label: "Promosi",
+      items: [
+        { label: "Voucher Toko", icon: Ticket, href: "/my-shop/vouchers" },
+        { label: "Flash Sale", icon: Zap, href: "/my-shop/flash-sale" },
       ]
     },
     {
