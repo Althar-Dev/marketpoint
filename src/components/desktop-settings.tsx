@@ -169,7 +169,8 @@ export function DesktopSettings({
               <Link href="/wallet" className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                    <img src="/assets/icon/wallets.png" className="w-full h-full object-contain" alt="Wallet" />
+                    {/* gausah di ubah lagi gambarnya biarkan w&c.png*/}
+                    <img src="/assets/icon/w&c.png" className="w-full h-full object-contain" alt="Wallet" />
                   </div>
                   <span className="text-[11px] font-medium text-muted-foreground">Saldo & MCoins</span>
                 </div>
@@ -405,7 +406,6 @@ export function DesktopSettings({
                               <span className="text-[12px] font-bold">{user.email}</span>
                               <div className="bg-[#D1FAE5] text-[#059669] text-[9px] font-bold px-1.5 py-0.5 rounded">Terverifikasi</div>
                             </div>
-                            <button className="text-[11px] font-bold text-[#00AA5B] hover:underline transition-all">Ubah</button>
                           </div>
                         </div>
                         <div className="grid grid-cols-12 items-center gap-3">

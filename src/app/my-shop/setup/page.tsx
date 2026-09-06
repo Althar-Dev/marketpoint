@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,14 +48,41 @@ export default function MerchantSetupPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    if (!authLoading && !user) {
-      router.push("/login");
-    }
-  }, [user, authLoading, router]);
+  // References to check existing shop
+  const userRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "users", user.uid);
+  }, [db, user]);
+
+  const shopRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "shops", user.uid);
+  }, [db, user]);
+
+  const { data: userData, loading: userLoading } = useDoc(userRef);
+  const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Redirect logic
+  useEffect(() => {
+    if (!mounted || authLoading || userLoading || shopLoading) return;
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    // If user already has a shop, redirect to my-shop dashboard
+    if (userData?.hasShop === true || !!shop) {
+      router.replace("/my-shop");
+    }
+  }, [user, authLoading, userData, userLoading, shop, shopLoading, router, mounted]);
+
+  useEffect(() => {
+    if (!shopName) return;
     const generatedSlug = shopName
       .toLowerCase()
       .replace(/[^\w ]+/g, "")
@@ -159,7 +186,7 @@ export default function MerchantSetupPage() {
     }
   };
 
-  if (!mounted || authLoading || !user) {
+  if (!mounted || authLoading || userLoading || shopLoading || !user || (userData?.hasShop || !!shop)) {
     return (
       <div className="p-3 md:p-6 lg:p-8">
         <div className="max-w-screen-md mx-auto space-y-5">
@@ -171,9 +198,14 @@ export default function MerchantSetupPage() {
   }
 
   return (
-    <div className="p-3 md:p-6 lg:p-8">
+    <div className="p-3 md:p-6 lg:p-8 bg-[#F8FAFC] min-h-screen">
       <div className="max-w-screen-md mx-auto">
         <div className="space-y-5">
+          <div className="space-y-1 text-center md:text-left mb-6">
+            <h1 className="text-xl font-bold tracking-tight">Buka Toko Gratis</h1>
+            <p className="text-xs text-muted-foreground">Lengkapi informasi berikut untuk mulai berjualan solusi digital.</p>
+          </div>
+
           <Card className="border-border shadow-sm rounded-xl overflow-hidden bg-white">
             <CardContent className="p-0">
               <div className="relative h-28 md:h-36 bg-muted/30 group">
@@ -194,7 +226,7 @@ export default function MerchantSetupPage() {
                 <Button 
                   variant="secondary" 
                   size="sm" 
-                  className="absolute bottom-3 right-3 rounded-lg h-7 px-3 text-[10px] font-bold gap-1.5 shadow-md z-20 border border-border"
+                  className="absolute bottom-3 right-3 rounded-lg h-7 px-3 text-[10px] font-bold gap-1.5 shadow-md z-20 border border-border bg-white hover:bg-muted"
                   onClick={() => bannerInputRef.current?.click()}
                   disabled={uploadingBanner}
                 >
@@ -227,8 +259,8 @@ export default function MerchantSetupPage() {
                     />
                   </div>
                   <div className="pb-0.5">
-                     <p className="text-[10px] font-bold text-foreground tracking-wide">Logo Toko</p>
-                     <p className="text-[8px] text-muted-foreground">{uploadingLogo ? 'Sedang mengunggah...' : 'Klik untuk ubah logo'}</p>
+                     <p className="text-[11px] font-bold text-foreground">Logo Toko</p>
+                     <p className="text-[9px] text-muted-foreground">{uploadingLogo ? 'Sedang mengunggah...' : 'Format .jpg atau .png'}</p>
                   </div>
                 </div>
               </div>
@@ -236,121 +268,127 @@ export default function MerchantSetupPage() {
           </Card>
 
           <Card className="border-border shadow-sm rounded-xl bg-white">
-            <CardContent className="p-5 md:p-6 space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 pb-1.5 border-b border-border">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00AA5B]" />
-                  <h3 className="text-[11px] font-bold tracking-wider text-muted-foreground/80">Identitas Toko</h3>
+            <CardContent className="p-5 md:p-8 space-y-8">
+              <div className="space-y-5">
+                <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                  <h3 className="text-[12px] font-bold tracking-tight text-[#2E3137]">Identitas Bisnis</h3>
                 </div>
                 
-                <div className="grid gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Nama Toko</Label>
+                <div className="grid gap-5">
+                  <div className="space-y-2">
+                    <Label className="text-[11px] font-bold text-muted-foreground ml-0.5">Nama Toko</Label>
                     <Input 
                       placeholder="Contoh: Digital Solutions ID"
                       value={shopName}
                       onChange={(e) => setShopName(e.target.value)}
-                      className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold"
+                      className="h-10 rounded-xl bg-muted/20 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold"
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Slug Toko (URL)</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label className="text-[11px] font-bold text-muted-foreground ml-0.5">Slug Toko (URL)</Label>
                       <div className="relative">
                         <Input 
                           value={slug}
-                          onChange={(e) => setSlug(e.target.value)}
-                          className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold pl-9"
+                          onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                          className="h-10 rounded-xl bg-muted/20 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold pl-10"
                         />
-                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
+                        <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
                       </div>
-                      <p className="text-[8px] text-muted-foreground ml-0.5">marketpoint.id/<span className="font-bold text-primary">{slug || 'username'}</span></p>
+                      <p className="text-[9px] text-muted-foreground ml-0.5">marketpoint.id/<span className="font-bold text-[#00AA5B]">{slug || 'username'}</span></p>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Nomor Whatsapp</Label>
+                    <div className="space-y-2">
+                      <Label className="text-[11px] font-bold text-muted-foreground ml-0.5">Nomor WhatsApp</Label>
                       <div className="relative">
                         <Input 
                           placeholder="08xxxxxxxx"
                           value={whatsapp}
-                          onChange={(e) => setWhatsapp(e.target.value)}
-                          className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold pl-9"
+                          onChange={(e) => setWhatsapp(e.target.value.replace(/[^0-9]/g, ''))}
+                          className="h-10 rounded-xl bg-muted/20 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-xs font-bold pl-10"
                         />
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
+                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 pb-1.5 border-b border-border">
-                  <MapPin className="w-3.5 h-3.5 text-[#00AA5B]" />
-                  <h3 className="text-[11px] font-bold tracking-wider text-muted-foreground/80">Lokasi Pengiriman</h3>
+              <div className="space-y-5">
+                <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                  <h3 className="text-[12px] font-bold tracking-tight text-[#2E3137]">Lokasi Pengiriman</h3>
                 </div>
                 
-                <div className="grid gap-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Provinsi</Label>
+                <div className="grid gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-[11px] font-bold text-muted-foreground ml-0.5">Provinsi</Label>
                       <Input 
                         placeholder="Jawa Barat"
                         value={province}
                         onChange={(e) => setProvince(e.target.value)}
-                        className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
+                        className="h-10 rounded-xl bg-muted/20 border-border text-[11px] font-medium"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Kota</Label>
+                    <div className="space-y-2">
+                      <Label className="text-[11px] font-bold text-muted-foreground ml-0.5">Kota</Label>
                       <Input 
                         placeholder="Bandung"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                        className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
+                        className="h-10 rounded-xl bg-muted/20 border-border text-[11px] font-medium"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Kecamatan</Label>
+                    <div className="space-y-2">
+                      <Label className="text-[11px] font-bold text-muted-foreground ml-0.5">Kecamatan</Label>
                       <Input 
                         placeholder="Cibiru"
                         value={district}
                         onChange={(e) => setDistrict(e.target.value)}
-                        className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
+                        className="h-10 rounded-xl bg-muted/20 border-border text-[11px] font-medium"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    <div className="md:col-span-3 space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Alamat Lengkap</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="md:col-span-3 space-y-2">
+                      <Label className="text-[11px] font-bold text-muted-foreground ml-0.5">Alamat Lengkap</Label>
                       <Textarea 
                         placeholder="Nama jalan, nomor rumah, RT/RW..."
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        className="min-h-[70px] rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px] resize-none"
+                        className="min-h-[80px] rounded-xl bg-muted/20 border-border text-[11px] font-medium resize-none p-3"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-muted-foreground ml-0.5">Kode Pos</Label>
+                    <div className="space-y-2">
+                      <Label className="text-[11px] font-bold text-muted-foreground ml-0.5">Kode Pos</Label>
                       <Input 
                         placeholder="40614"
                         value={postalCode}
-                        onChange={(e) => setPostalCode(e.target.value)}
-                        className="h-9 rounded-lg bg-muted/10 border-border focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all text-[11px]"
+                        onChange={(e) => setPostalCode(e.target.value.replace(/[^0-9]/g, ''))}
+                        className="h-10 rounded-xl bg-muted/20 border-border text-[11px] font-medium"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-4">
                 <Button 
                   disabled={!shopName || !slug || !whatsapp || !address || isSubmitting || uploadingLogo || uploadingBanner}
                   onClick={handleCreateShop}
-                  className="w-full h-10 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs shadow-sm transition-all active:scale-[0.98]"
+                  className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs shadow-lg shadow-[#00AA5B]/10 transition-all active:scale-[0.98]"
                 >
-                  {isSubmitting ? "Sedang Menyimpan..." : "Simpan Profil Toko"}
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Sedang memproses...</span>
+                    </div>
+                  ) : "Daftar Toko Sekarang"}
                 </Button>
+                <p className="text-[9px] text-center text-muted-foreground mt-4 leading-relaxed px-4">
+                  Dengan mengklik daftar, Anda menyetujui <span className="text-[#00AA5B] font-bold cursor-pointer">Syarat & Ketentuan</span> yang berlaku bagi mitra seller MarketPoint.
+                </p>
               </div>
             </CardContent>
           </Card>
