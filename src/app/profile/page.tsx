@@ -92,10 +92,8 @@ export default function ProfilePage() {
 
       const avatarUrl = data.url;
 
-      // Update Firebase Auth Profile
       await updateProfile(user, { photoURL: avatarUrl });
       
-      // Update Firestore User Document
       if (userRef) {
         await updateDoc(userRef, {
           photoURL: avatarUrl,
@@ -104,14 +102,14 @@ export default function ProfilePage() {
       }
 
       toast({
-        title: "Avatar Diperbarui",
+        title: "Avatar diperbarui",
         description: "Foto profil Anda berhasil diunggah.",
       });
     } catch (error: any) {
       console.error("Upload avatar error:", error);
       toast({
         variant: "destructive",
-        title: "Gagal Mengunggah",
+        title: "Gagal mengunggah",
         description: error.message || "Terjadi kesalahan saat mengunggah foto.",
       });
     } finally {
@@ -131,14 +129,14 @@ export default function ProfilePage() {
         });
       }
       toast({
-        title: "Profil Diperbarui",
+        title: "Profil diperbarui",
         description: "Nama profil Anda berhasil disimpan.",
       });
       setIsEditing(false);
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal Memperbarui",
+        title: "Gagal memperbarui",
         description: "Terjadi kesalahan saat menyimpan perubahan.",
       });
     } finally {
@@ -150,14 +148,14 @@ export default function ProfilePage() {
     try {
       await auth.signOut();
       toast({
-        title: "Berhasil Keluar",
+        title: "Berhasil keluar",
         description: "Sampai jumpa kembali di MarketPoint!",
       });
       router.push("/login");
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Gagal Keluar",
+        title: "Gagal keluar",
         description: "Terjadi gangguan pada sistem.",
       });
     }
@@ -242,7 +240,7 @@ export default function ProfilePage() {
           <div className="relative cursor-pointer" onClick={() => mobileFileInputRef.current?.click()}>
             <Avatar className="h-14 w-14 border-none shadow-sm ring-2 ring-muted/20 relative">
               <AvatarImage src={user.photoURL || undefined} />
-              <AvatarFallback className="bg-[#00AA5B] text-white text-lg font-bold uppercase">
+              <AvatarFallback className="bg-[#00AA5B] text-white text-lg font-bold">
                 {displayName?.substring(0, 1) || "U"}
               </AvatarFallback>
             </Avatar>
@@ -257,20 +255,20 @@ export default function ProfilePage() {
               onChange={(e) => e.target.files?.[0] && handleAvatarUpload(e.target.files[0])}
             />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1">
-              <span className="font-bold text-[15px]">{displayName || "Pengguna Baru"}</span>
+              <span className="font-bold text-[15px] truncate">{displayName || "Pengguna Baru"}</span>
             </div>
-            <Link href="/wallet" className="mt-0.5 block space-y-0.5 hover:opacity-80 transition-opacity">
+            <Link href="/wallet" className="mt-1 block space-y-0.5 hover:opacity-80 transition-opacity">
               <div className="flex items-center gap-2">
-                <div className="w-3.5 h-3.5 flex items-center justify-center overflow-hidden">
+                <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
                   <img src="/assets/icon/wallets.png" className="w-full h-full object-contain" alt="Wallet" />
                 </div>
-                <span className="text-[11px] font-bold text-foreground">Rp{wallet?.balance?.toLocaleString('id-ID') || 0}</span>
+                <span className="text-[11px] font-bold text-[#212121]">Rp {wallet?.balance?.toLocaleString('id-ID') || 0}</span>
                 <ChevronRight className="w-2.5 h-2.5 text-muted-foreground" />
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3.5 h-3.5 flex items-center justify-center overflow-hidden">
+                <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
                   <img src="/assets/icon/mcoins.png" className="w-full h-full object-contain" alt="MCoins" />
                 </div>
                 <span className="text-[11px] font-medium text-muted-foreground">0 MCoins</span>
@@ -280,14 +278,16 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="px-4 pb-3 grid grid-cols-2 gap-3 mt-4">
+        <div className="px-4 pb-3 grid grid-cols-2 gap-3 mt-2">
           <Button asChild variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
-            <Link href={hasShop ? "/my-shop" : "/my-shop/setup"}>
-              {hasShop ? "Kelola Toko" : "Buka Toko Gratis"} <ChevronRight className="w-3 h-3 opacity-40" />
+            <Link href={hasShop ? "/my-shop" : "/my-shop/setup"} className="flex items-center justify-between w-full">
+              <span>{hasShop ? "Kelola Toko" : "Buka Toko Gratis"}</span>
+              <ChevronRight className="w-3 h-3 opacity-40" />
             </Link>
           </Button>
           <Button variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
-            Daftar Affiliate <ChevronRight className="w-3 h-3 opacity-40" />
+            <span>Daftar Affiliate</span>
+            <ChevronRight className="w-3 h-3 opacity-40" />
           </Button>
         </div>
 
@@ -306,7 +306,7 @@ export default function ProfilePage() {
               className="w-full px-5 h-11 flex items-center justify-between hover:bg-muted/30 transition-all active:bg-muted/50"
             >
               <div className="flex items-center gap-3">
-                <item.icon className="w-4 h-4 text-foreground opacity-70" />
+                <item.icon className="w-4 h-4 text-foreground opacity-60" />
                 <span className="text-sm font-medium">{item.label}</span>
               </div>
               <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-30" />
@@ -329,7 +329,7 @@ export default function ProfilePage() {
               className="w-full px-5 h-11 flex items-center justify-between hover:bg-muted/30 transition-all active:bg-muted/50"
             >
               <div className="flex items-center gap-3">
-                <item.icon className={`w-4 h-4 ${item.color || 'text-foreground'} opacity-70`} />
+                <item.icon className={`w-4 h-4 ${item.color || 'text-foreground'} opacity-60`} />
                 <span className={`text-sm font-medium ${item.color || 'text-foreground'}`}>{item.label}</span>
               </div>
               {!item.onClick && <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-30" />}

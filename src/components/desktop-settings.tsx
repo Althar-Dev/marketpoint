@@ -79,7 +79,6 @@ export function DesktopSettings({
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
-  // Check if user is a Google user without a password
   const providers = user?.providerData?.map((p: any) => p.providerId) || [];
   const isGoogleUser = providers.includes('google.com');
   const hasPassword = providers.includes('password');
@@ -137,7 +136,6 @@ export function DesktopSettings({
     <div className="bg-[#F8FAFC] font-body text-[#212121] min-h-[calc(100vh-64px)]">
       <div className="max-w-screen-xl mx-auto flex gap-6 p-6 items-start">
         
-        {/* Sidebar Nav */}
         <aside className="w-[260px] shrink-0 space-y-4 sticky top-20">
           <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden p-4 h-auto">
             <div className="flex items-center gap-3 mb-5">
@@ -152,7 +150,6 @@ export function DesktopSettings({
               </div>
             </div>
 
-            {/* Shop Section */}
             <div className="space-y-3 pt-3 border-t border-border/50">
               <Link href={hasShop ? "/my-shop" : "/my-shop/setup"} className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
@@ -165,22 +162,21 @@ export function DesktopSettings({
                   "text-[10px] font-bold",
                   hasShop ? "text-muted-foreground" : "text-[#00AA5B]"
                 )}>
-                  {hasShop ? "Kelola Toko" : "Buka Gratis"}
+                  {hasShop ? "Kelola" : "Buka Gratis"}
                 </span>
               </Link>
               
               <Link href="/wallet" className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 flex items-center justify-center overflow-hidden">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
                     <img src="/assets/icon/wallets.png" className="w-full h-full object-contain" alt="Wallet" />
                   </div>
                   <span className="text-[11px] font-medium text-muted-foreground">Saldo & MCoins</span>
                 </div>
-                <span className="text-[11px] font-bold">Rp{wallet?.balance?.toLocaleString('id-ID') || 0}</span>
+                <span className="text-[11px] font-bold">Rp {wallet?.balance?.toLocaleString('id-ID') || 0}</span>
               </Link>
             </div>
 
-            {/* Navigation Menus */}
             <div className="mt-6 pt-3 border-t border-border/50">
               <Accordion type="single" collapsible defaultValue="profil" className="w-full">
                 <AccordionItem value="inbox" className="border-none">
@@ -229,14 +225,13 @@ export function DesktopSettings({
             <Button 
               variant="ghost" 
               onClick={handleLogout}
-              className="w-full justify-start gap-2.5 mt-6 text-destructive hover:text-destructive hover:bg-destructive/5 rounded-lg text-[11px] font-bold h-9 px-2"
+              className="w-full justify-start gap-2.5 mt-6 text-destructive hover:text-destructive hover:bg-destructive/5 rounded-lg text-[11px] font-bold h-9 px-2 transition-colors"
             >
               <LogOut className="w-3.5 h-3.5" /> Keluar Akun
             </Button>
           </Card>
         </aside>
 
-        {/* Main Content Area */}
         <main className="flex-1 min-w-0">
           <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden h-auto">
             <div className="p-5 border-b border-border/50 flex items-center gap-2.5">
@@ -266,14 +261,12 @@ export function DesktopSettings({
 
               <TabsContent value="biodata" className="p-6 mt-0">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-                  
-                  {/* Left Column: Profile Pic */}
                   <div className="md:col-span-4 space-y-4">
                     <Card className="p-5 border border-border/50 shadow-none bg-white rounded-xl flex flex-col items-center gap-4">
                       <div className="relative">
                         <Avatar className="h-40 w-40 ring-2 ring-[#F8FAFC] rounded-xl overflow-hidden shadow-sm">
                           <AvatarImage src={user.photoURL || undefined} className="object-cover" />
-                          <AvatarFallback className="bg-[#00AA5B] text-white text-4xl font-bold uppercase rounded-none">
+                          <AvatarFallback className="bg-[#00AA5B] text-white text-4xl font-bold rounded-none">
                             {displayName?.substring(0, 1) || "U"}
                           </AvatarFallback>
                         </Avatar>
@@ -292,7 +285,7 @@ export function DesktopSettings({
                       />
                       <Button 
                         variant="outline" 
-                        className="w-full h-9 font-bold text-[12px] rounded-lg border-border/60 hover:bg-muted/50"
+                        className="w-full h-9 font-bold text-[12px] rounded-lg border-border/60 hover:bg-muted/50 transition-colors"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadingAvatar}
                       >
@@ -307,20 +300,20 @@ export function DesktopSettings({
                       {canCreatePassword && (
                         <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
                           <DialogTrigger asChild>
-                            <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-[#00AA5B] text-[#00AA5B] hover:bg-[#00AA5B]/5 justify-center gap-2">
-                              <Lock className="w-3.5 h-3.5" /> Buat Kata Sandi
+                            <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-[#00AA5B] text-[#00AA5B] hover:bg-[#00AA5B]/5 justify-center gap-2 transition-all">
+                              <Lock className="w-3.5 h-3.5" /> Buat kata sandi
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="rounded-2xl max-w-sm border-border">
                             <DialogHeader>
-                              <DialogTitle className="font-bold text-lg">Buat Kata Sandi</DialogTitle>
+                              <DialogTitle className="font-bold text-lg">Buat kata sandi</DialogTitle>
                               <DialogDescription className="text-xs">
                                 Masukkan kata sandi baru untuk akun Anda agar bisa masuk via email.
                               </DialogDescription>
                             </DialogHeader>
                             <div className="py-4 space-y-4">
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-muted-foreground ml-1 uppercase">KATA SANDI BARU</label>
+                                <label className="text-[10px] font-bold text-muted-foreground ml-1">Kata sandi baru</label>
                                 <Input 
                                   type="password"
                                   value={newPassword}
@@ -330,7 +323,7 @@ export function DesktopSettings({
                                 />
                               </div>
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-muted-foreground ml-1 uppercase">KONFIRMASI SANDI</label>
+                                <label className="text-[10px] font-bold text-muted-foreground ml-1">Konfirmasi sandi</label>
                                 <Input 
                                   type="password"
                                   value={confirmPassword}
@@ -344,27 +337,26 @@ export function DesktopSettings({
                               <Button 
                                 onClick={handleCreatePassword}
                                 disabled={isPasswordLoading || !newPassword}
-                                className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs"
+                                className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs transition-all"
                               >
                                 {isPasswordLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
-                                Simpan Kata Sandi
+                                Simpan kata sandi
                               </Button>
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
                       )}
                       
-                      <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-border/60 flex items-center justify-center gap-2.5 group">
+                      <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-border/60 flex items-center justify-center gap-2.5 group transition-all">
                         <Shield className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                         <span>PIN MarketPoint</span>
                       </Button>
                     </div>
                   </div>
 
-                  {/* Right Column: Information Forms */}
                   <div className="md:col-span-8 space-y-8">
                     <div className="space-y-5">
-                      <h3 className="text-[13px] font-bold text-[#2E3137]">Ubah Biodata Diri</h3>
+                      <h3 className="text-[13px] font-bold text-[#2E3137]">Ubah biodata diri</h3>
                       <div className="space-y-4">
                         <div className="grid grid-cols-12 items-center gap-3">
                           <div className="col-span-3 text-[12px] text-muted-foreground">Nama</div>
@@ -377,43 +369,43 @@ export function DesktopSettings({
                                   className="h-8 text-[12px] font-medium border-[#00AA5B] ring-1 ring-[#00AA5B]/10 max-w-[200px]"
                                   autoFocus
                                 />
-                                <Button onClick={handleUpdateProfile} disabled={updating} size="sm" className="h-8 bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-[10px] font-bold px-3">Simpan</Button>
+                                <Button onClick={handleUpdateProfile} disabled={updating} size="sm" className="h-8 bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-[10px] font-bold px-3 transition-all">Simpan</Button>
                                 <Button onClick={() => setIsEditing(false)} variant="ghost" size="sm" className="h-8 text-[10px] font-bold px-3">Batal</Button>
                               </div>
                             ) : (
                               <>
                                 <span className="text-[12px] font-bold">{displayName || "Belum diatur"}</span>
-                                <button onClick={() => setIsEditing(true)} className="text-[11px] font-bold text-[#00AA5B] hover:underline">Ubah</button>
+                                <button onClick={() => setIsEditing(true)} className="text-[11px] font-bold text-[#00AA5B] hover:underline transition-all">Ubah</button>
                               </>
                             )}
                           </div>
                         </div>
                         <div className="grid grid-cols-12 items-center gap-3">
-                          <div className="col-span-3 text-[12px] text-muted-foreground">Tanggal Lahir</div>
+                          <div className="col-span-3 text-[12px] text-muted-foreground">Tanggal lahir</div>
                           <div className="col-span-9">
-                            <button className="text-[11px] font-bold text-[#00AA5B] hover:underline">Tambah Tanggal Lahir</button>
+                            <button className="text-[11px] font-bold text-[#00AA5B] hover:underline transition-all">Tambah tanggal lahir</button>
                           </div>
                         </div>
                         <div className="grid grid-cols-12 items-center gap-3">
-                          <div className="col-span-3 text-[12px] text-muted-foreground">Jenis Kelamin</div>
+                          <div className="col-span-3 text-[12px] text-muted-foreground">Jenis kelamin</div>
                           <div className="col-span-9">
-                            <button className="text-[11px] font-bold text-[#00AA5B] hover:underline">Tambah Jenis Kelamin</button>
+                            <button className="text-[11px] font-bold text-[#00AA5B] hover:underline transition-all">Tambah jenis kelamin</button>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-5 pt-5 border-t border-border/50">
-                      <h3 className="text-[13px] font-bold text-[#2E3137]">Ubah Kontak</h3>
+                      <h3 className="text-[13px] font-bold text-[#2E3137]">Ubah kontak</h3>
                       <div className="space-y-4">
                         <div className="grid grid-cols-12 items-center gap-3">
                           <div className="col-span-3 text-[12px] text-muted-foreground">Email</div>
                           <div className="col-span-9 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="text-[12px] font-bold">{user.email}</span>
-                              <div className="bg-[#D1FAE5] text-[#059669] text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">Terverifikasi</div>
+                              <div className="bg-[#D1FAE5] text-[#059669] text-[9px] font-bold px-1.5 py-0.5 rounded">Terverifikasi</div>
                             </div>
-                            <button className="text-[11px] font-bold text-[#00AA5B] hover:underline">Ubah</button>
+                            <button className="text-[11px] font-bold text-[#00AA5B] hover:underline transition-all">Ubah</button>
                           </div>
                         </div>
                         <div className="grid grid-cols-12 items-center gap-3">
@@ -421,9 +413,9 @@ export function DesktopSettings({
                           <div className="col-span-9 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="text-[12px] font-bold">6288976577650</span>
-                              <div className="bg-[#D1FAE5] text-[#059669] text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">Terverifikasi</div>
+                              <div className="bg-[#D1FAE5] text-[#059669] text-[9px] font-bold px-1.5 py-0.5 rounded">Terverifikasi</div>
                             </div>
-                            <button className="text-[11px] font-bold text-[#00AA5B] hover:underline">Ubah</button>
+                            <button className="text-[11px] font-bold text-[#00AA5B] hover:underline transition-all">Ubah</button>
                           </div>
                         </div>
                       </div>
