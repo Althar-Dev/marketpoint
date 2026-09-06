@@ -253,23 +253,23 @@ export default function MarketPage() {
         </section>
 
         {/* Mobile Menu Grid (Hidden on Desktop) */}
-        <section className="lg:hidden px-4 py-6 w-full max-w-full overflow-x-auto no-scrollbar">
-          <div className="flex items-start justify-between min-w-max gap-6 px-1">
+        <section className="lg:hidden px-4 py-6 w-full">
+          <div className="grid grid-cols-5 gap-2">
             {MOBILE_MENU_ITEMS.map((item, idx) => (
               <button 
                 key={idx}
                 className="flex flex-col items-center gap-2 group transition-transform active:scale-95"
               >
-                <div className="w-14 h-14 relative flex items-center justify-center">
+                <div className="w-12 h-12 relative flex items-center justify-center">
                   <Image 
                     src={item.icon} 
                     alt={item.label} 
-                    width={48} 
-                    height={48} 
+                    width={42} 
+                    height={42} 
                     className="object-contain"
                   />
                 </div>
-                <span className="text-[10px] font-bold text-[#2E3137] whitespace-nowrap text-center">
+                <span className="text-[9px] font-bold text-[#2E3137] text-center leading-tight">
                   {item.label}
                 </span>
               </button>
