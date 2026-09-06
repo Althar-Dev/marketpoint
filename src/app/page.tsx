@@ -64,10 +64,19 @@ const QUICK_CHIPS = [
   { label: "Komputer & Laptop", icon: Monitor },
 ];
 
+const MOBILE_MENU_ITEMS = [
+  { label: "Pulsa & Data", icon: "/assets/icons/pulsadata.png" },
+  { label: "Game", icon: "/assets/icons/game.png" },
+  { label: "E-Wallet", icon: "/assets/icons/ewallet.png" },
+  { label: "Listrik", icon: "/assets/icons/listrik.png" },
+  { label: "Air PDAM", icon: "/assets/icons/pdam.png" },
+];
+
 const MARKET_TABS = [
   { id: "foryou", label: "For You" },
   { id: "weekend", label: "" },
   { id: "mall", label: "Mall" },
+  { id: "digital", label: "Digital" },
   { id: "elektronik", label: "Elektronik" },
   { id: "gadget", label: "Handphone & Gadget" },
   { id: "fashion", label: "Fashion" },
@@ -239,6 +248,31 @@ export default function MarketPage() {
                   current === i ? "w-6 bg-[#00AA5B]" : "w-1.5 bg-muted-foreground/20 hover:bg-muted-foreground/40"
                 )}
               />
+            ))}
+          </div>
+        </section>
+
+        {/* Mobile Menu Grid (Hidden on Desktop) */}
+        <section className="lg:hidden px-4 py-6 w-full max-w-screen-xl mx-auto overflow-x-auto no-scrollbar">
+          <div className="flex items-start justify-between min-w-max gap-6 px-1">
+            {MOBILE_MENU_ITEMS.map((item, idx) => (
+              <button 
+                key={idx}
+                className="flex flex-col items-center gap-2 group transition-transform active:scale-95"
+              >
+                <div className="w-14 h-14 relative flex items-center justify-center">
+                  <Image 
+                    src={item.icon} 
+                    alt={item.label} 
+                    width={48} 
+                    height={48} 
+                    className="object-contain"
+                  />
+                </div>
+                <span className="text-[10px] font-bold text-[#2E3137] whitespace-nowrap text-center">
+                  {item.label}
+                </span>
+              </button>
             ))}
           </div>
         </section>
