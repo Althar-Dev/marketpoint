@@ -154,12 +154,12 @@ export default function MerchantDashboard() {
           <div className="lg:col-span-4 space-y-6">
             <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-[#00AA5B] text-white overflow-hidden relative">
                <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:scale-105 transition-transform duration-500">
-                  <img src="/assets/icon/wallet.png" className="w-16 h-16" alt="Wallet" />
+                  <img src="/assets/icon/wallets.png" className="w-16 h-16" alt="Wallet" />
                </div>
                <CardContent className="p-6 relative z-10 flex flex-col gap-6">
                   <div>
                     <div className="flex items-center gap-2 opacity-90 mb-1.5">
-                       <img src="/assets/icon/wallet.png" className="w-4 h-4" alt="Wallet" />
+                       <img src="/assets/icon/wallets.png" className="w-4 h-4" alt="Wallet" />
                        <span className="text-[11px] font-bold tracking-wider">SALDO PENGHASILAN</span>
                     </div>
                     <div className="flex items-baseline gap-1">
