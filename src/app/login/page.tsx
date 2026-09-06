@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,19 +41,28 @@ export default function SignInPage() {
       const result = await signInWithCredential(auth, credential);
       const user = result.user;
 
-      await setDoc(doc(db, "users", user.uid), {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      // Logika Avatar Acak jika belum ada
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
+      const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+
+      await setDoc(userDocRef, {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
-        photoURL: user.photoURL,
+        photoURL: user.photoURL || randomAvatar,
         lastLogin: serverTimestamp(),
       }, { merge: true });
 
-      await setDoc(doc(db, "users", user.uid, "wallet", "info"), {
-        balance: 0,
-        currency: "IDR",
-        userId: user.uid,
-      }, { merge: true });
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, "users", user.uid, "wallet", "info"), {
+          balance: 0,
+          currency: "IDR",
+          userId: user.uid,
+        }, { merge: true });
+      }
 
       toast({
         title: "Berhasil Masuk",

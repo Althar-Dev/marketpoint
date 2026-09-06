@@ -42,11 +42,15 @@ export default function SignUpPage() {
       const result = await signInWithCredential(auth, credential);
       const user = result.user;
 
+      // Logika Avatar Acak untuk pendaftaran Google pertama kali
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
+      const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
-        photoURL: user.photoURL,
+        photoURL: user.photoURL || randomAvatar,
         createdAt: serverTimestamp(),
       }, { merge: true });
 
@@ -105,14 +109,22 @@ export default function SignUpPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      // Logika Avatar Acak untuk pendaftaran Email
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
+      const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: name });
+      await updateProfile(userCredential.user, { 
+        displayName: name,
+        photoURL: randomAvatar 
+      });
       const user = userCredential.user;
 
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName: name,
+        photoURL: randomAvatar,
         createdAt: serverTimestamp(),
       }, { merge: true });
 
