@@ -15,14 +15,17 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
-    const type = formData.get('type') as string; // 'logo' or 'banner'
+    const type = formData.get('type') as string; // 'logo', 'banner', or 'avatar'
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
     // Determine target folder based on type
-    const folder = type === 'banner' ? 'banner' : 'logo';
+    let folder = 'logo';
+    if (type === 'banner') folder = 'banner';
+    if (type === 'avatar') folder = 'avatar';
+    
     const extension = file.name.split('.').pop();
     const uniqueId = crypto.randomUUID();
     const filename = `${folder}/${uniqueId}.${extension}`;

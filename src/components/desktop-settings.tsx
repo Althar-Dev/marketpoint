@@ -1,5 +1,7 @@
+
 "use client";
 
+import { useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +16,9 @@ import {
   Bell,
   LogOut,
   Store,
-  ChevronRight
+  ChevronRight,
+  Loader2,
+  Camera
 } from "lucide-react";
 import {
   Tabs,
@@ -42,6 +46,8 @@ interface DesktopProfileSettingsProps {
   handleUpdateProfile: () => void;
   handleLogout: () => void;
   updating: boolean;
+  onAvatarUpload?: (file: File) => Promise<void>;
+  uploadingAvatar?: boolean;
 }
 
 export function DesktopSettings({
@@ -54,8 +60,18 @@ export function DesktopSettings({
   setIsEditing,
   handleUpdateProfile,
   handleLogout,
-  updating
+  updating,
+  onAvatarUpload,
+  uploadingAvatar
 }: DesktopProfileSettingsProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onAvatarUpload) {
+      await onAvatarUpload(file);
+    }
+  };
   
   return (
     <div className="bg-[#F8FAFC] font-body text-[#212121] min-h-[calc(100vh-64px)]">
@@ -68,7 +84,7 @@ export function DesktopSettings({
               <Avatar className="h-9 w-9 ring-1 ring-border">
                 <AvatarImage src={user.photoURL || undefined} />
                 <AvatarFallback className="bg-[#00AA5B] text-white font-bold text-[12px]">
-                  {displayName.substring(0, 1) || "U"}
+                  {displayName?.substring(0, 1) || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
@@ -198,12 +214,29 @@ export function DesktopSettings({
                         <Avatar className="h-40 w-40 ring-2 ring-[#F8FAFC] rounded-xl overflow-hidden shadow-sm">
                           <AvatarImage src={user.photoURL || undefined} className="object-cover" />
                           <AvatarFallback className="bg-[#00AA5B] text-white text-4xl font-bold uppercase rounded-none">
-                            {displayName.substring(0, 1) || "U"}
+                            {displayName?.substring(0, 1) || "U"}
                           </AvatarFallback>
                         </Avatar>
+                        {uploadingAvatar && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl z-10">
+                            <Loader2 className="w-8 h-8 text-white animate-spin" />
+                          </div>
+                        )}
                       </div>
-                      <Button variant="outline" className="w-full h-9 font-bold text-[12px] rounded-lg border-border/60 hover:bg-muted/50">
-                        Pilih Foto
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        className="hidden" 
+                        accept="image/*" 
+                        onChange={handleFileChange}
+                      />
+                      <Button 
+                        variant="outline" 
+                        className="w-full h-9 font-bold text-[12px] rounded-lg border-border/60 hover:bg-muted/50"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingAvatar}
+                      >
+                        {uploadingAvatar ? "Mengunggah..." : "Pilih Foto"}
                       </Button>
                       <p className="text-[10px] text-muted-foreground leading-relaxed text-center px-1">
                         Besar file: maksimum 10MB. Ekstensi: .JPG .JPEG .PNG

@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc, useAuth, useMemoFirebase } from "@/firebase";
 import { doc, updateDoc } from "firebase/firestore";
@@ -27,7 +28,9 @@ import {
   MessageSquareWarning,
   HelpCircle,
   ScanLine,
-  LogOut
+  LogOut,
+  Camera,
+  Loader2
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -38,10 +41,12 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
+  const mobileFileInputRef = useRef<HTMLInputElement>(null);
   
   const [displayName, setDisplayName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const userRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -71,16 +76,63 @@ export default function ProfilePage() {
     }
   }, [user, authLoading, router]);
 
+  const handleAvatarUpload = async (file: File) => {
+    if (!user) return;
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'avatar');
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+      const avatarUrl = data.url;
+
+      // Update Firebase Auth Profile
+      await updateProfile(user, { photoURL: avatarUrl });
+      
+      // Update Firestore User Document
+      if (userRef) {
+        await updateDoc(userRef, {
+          photoURL: avatarUrl,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
+      toast({
+        title: "Avatar Diperbarui",
+        description: "Foto profil Anda berhasil diunggah.",
+      });
+    } catch (error: any) {
+      console.error("Upload avatar error:", error);
+      toast({
+        variant: "destructive",
+        title: "Gagal Mengunggah",
+        description: error.message || "Terjadi kesalahan saat mengunggah foto.",
+      });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const handleUpdateProfile = async () => {
     if (!user) return;
     setUpdating(true);
     try {
       await updateProfile(user, { displayName });
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
-        displayName,
-        updatedAt: new Date().toISOString(),
-      });
+      if (userRef) {
+        await updateDoc(userRef, {
+          displayName,
+          updatedAt: new Date().toISOString(),
+        });
+      }
       toast({
         title: "Profil Diperbarui",
         description: "Nama profil Anda berhasil disimpan.",
@@ -170,6 +222,8 @@ export default function ProfilePage() {
             handleUpdateProfile={handleUpdateProfile}
             handleLogout={handleLogout}
             updating={updating}
+            onAvatarUpload={handleAvatarUpload}
+            uploadingAvatar={uploadingAvatar}
           />
         </main>
         <MarketFooter />
@@ -188,12 +242,24 @@ export default function ProfilePage() {
         </div>
 
         <div className="px-4 py-3 flex items-center gap-3">
-          <Avatar className="h-14 w-14 border-none shadow-sm ring-2 ring-muted/20">
-            <AvatarImage src={user.photoURL || undefined} />
-            <AvatarFallback className="bg-[#00AA5B] text-white text-lg font-bold uppercase">
-              {displayName.substring(0, 1) || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative cursor-pointer" onClick={() => mobileFileInputRef.current?.click()}>
+            <Avatar className="h-14 w-14 border-none shadow-sm ring-2 ring-muted/20 relative">
+              <AvatarImage src={user.photoURL || undefined} />
+              <AvatarFallback className="bg-[#00AA5B] text-white text-lg font-bold uppercase">
+                {displayName?.substring(0, 1) || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-1 shadow-md border border-border">
+              {uploadingAvatar ? <Loader2 className="w-3 h-3 text-[#00AA5B] animate-spin" /> : <Camera className="w-3 h-3 text-[#00AA5B]" />}
+            </div>
+            <input 
+              type="file" 
+              ref={mobileFileInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={(e) => e.target.files?.[0] && handleAvatarUpload(e.target.files[0])}
+            />
+          </div>
           <div className="flex-1">
             <div className="flex items-center gap-1">
               <span className="font-bold text-[15px]">{displayName || "Pengguna Baru"}</span>
