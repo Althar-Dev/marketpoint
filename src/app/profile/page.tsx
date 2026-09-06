@@ -264,7 +264,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-1">
               <span className="font-bold text-[15px]">{displayName || "Pengguna Baru"}</span>
             </div>
-            <div className="mt-0.5 space-y-0.5">
+            <Link href="/wallet" className="mt-0.5 block space-y-0.5 hover:opacity-80 transition-opacity">
               <div className="flex items-center gap-2">
                 <div className="w-3.5 h-3.5 bg-[#00AA5B] rounded-full flex items-center justify-center">
                   <Wallet className="w-2 h-2 text-white fill-white" />
@@ -279,7 +279,7 @@ export default function ProfilePage() {
                 <span className="text-[11px] font-medium text-muted-foreground">0 MarketPoint Coins</span>
                 <ChevronRight className="w-2.5 h-2.5 text-muted-foreground opacity-40" />
               </div>
-            </div>
+            </Link>
           </div>
         </div>
 

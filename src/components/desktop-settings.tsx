@@ -19,7 +19,8 @@ import {
   ChevronRight,
   Loader2,
   Camera,
-  Lock
+  Lock,
+  Wallet
 } from "lucide-react";
 import {
   Tabs,
@@ -174,15 +175,15 @@ export function DesktopSettings({
                 </span>
               </Link>
               
-              <div className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
+              <Link href="/wallet" className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border">
-                    <Coins className="w-2.5 h-2.5 text-muted-foreground" />
+                    <Wallet className="w-2.5 h-2.5 text-muted-foreground" />
                   </div>
-                  <span className="text-[11px] font-medium text-muted-foreground">Saldo</span>
+                  <span className="text-[11px] font-medium text-muted-foreground">Saldo & MCoin</span>
                 </div>
                 <span className="text-[11px] font-bold">Rp{wallet?.balance?.toLocaleString('id-ID') || 0}</span>
-              </div>
+              </Link>
             </div>
 
             {/* Navigation Menus */}
