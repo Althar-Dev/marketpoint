@@ -70,9 +70,9 @@ export function AdminHeader() {
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
-           <ShieldCheck className="w-3 h-3 text-emerald-600" />
-           <span className="text-[10px] font-medium text-emerald-600">Sistem Aktif</span>
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 border border-red-100">
+           <ShieldCheck className="w-3 h-3 text-red-600" />
+           <span className="text-[10px] font-medium text-red-600">Sistem Aktif</span>
         </div>
 
         <DropdownMenu>
@@ -80,7 +80,7 @@ export function AdminHeader() {
             <button className="flex items-center gap-2 outline-none group hover:bg-muted/30 p-1 rounded-lg transition-all">
               <Avatar className="h-8 w-8 rounded-md border border-border shadow-sm">
                 <AvatarImage src={user?.photoURL || undefined} />
-                <AvatarFallback className="bg-emerald-600 text-white text-[10px] font-bold">
+                <AvatarFallback className="bg-red-600 text-white text-[10px] font-bold">
                   {user?.displayName?.substring(0, 2).toUpperCase() || "AD"}
                 </AvatarFallback>
               </Avatar>

@@ -32,8 +32,8 @@ export default function AdminDashboard() {
       change: "+12.5%", 
       trend: "up", 
       icon: Users, 
-      color: "text-emerald-600", 
-      bg: "bg-emerald-50" 
+      color: "text-red-600", 
+      bg: "bg-red-50" 
     },
     { 
       label: "Merchant Aktif", 
@@ -41,8 +41,8 @@ export default function AdminDashboard() {
       change: "+4.2%", 
       trend: "up", 
       icon: Store, 
-      color: "text-emerald-600", 
-      bg: "bg-emerald-50" 
+      color: "text-red-600", 
+      bg: "bg-red-50" 
     },
     { 
       label: "Volume Transaksi", 
@@ -50,8 +50,8 @@ export default function AdminDashboard() {
       change: "-2.1%", 
       trend: "down", 
       icon: ShoppingBag, 
-      color: "text-green-600", 
-      bg: "bg-green-50" 
+      color: "text-rose-600", 
+      bg: "bg-rose-50" 
     },
     { 
       label: "Dispute Aktif", 
@@ -108,16 +108,16 @@ export default function AdminDashboard() {
              <Card className="h-full border-border shadow-sm rounded-2xl bg-white">
                 <CardHeader className="p-5 border-b border-border/50">
                    <CardTitle className="text-xs font-medium flex items-center gap-2">
-                      <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                      <Activity className="w-3.5 h-3.5 text-red-600" />
                       Status Infrastruktur
                    </CardTitle>
                 </CardHeader>
                 <CardContent className="p-5 space-y-5">
                    {[
-                     { name: "API Gateway Cluster", status: "Operational", uptime: "99.99%", color: "bg-emerald-500" },
-                     { name: "Payment Processor", status: "Operational", uptime: "100%", color: "bg-emerald-500" },
-                     { name: "Merchant DB", status: "Optimal", uptime: "99.95%", color: "bg-emerald-500" },
-                     { name: "File Storage (R2)", status: "Optimal", uptime: "100%", color: "bg-emerald-500" },
+                     { name: "API Gateway Cluster", status: "Operational", uptime: "99.99%", color: "bg-red-500" },
+                     { name: "Payment Processor", status: "Operational", uptime: "100%", color: "bg-red-500" },
+                     { name: "Merchant DB", status: "Optimal", uptime: "99.95%", color: "bg-red-500" },
+                     { name: "File Storage (R2)", status: "Optimal", uptime: "100%", color: "bg-red-500" },
                    ].map((sys, i) => (
                      <div key={i} className="flex items-center justify-between group">
                         <div className="space-y-0.5">
@@ -139,10 +139,10 @@ export default function AdminDashboard() {
              <Card className="h-full border-border shadow-sm rounded-2xl bg-white">
                 <CardHeader className="p-5 border-b border-border/50 flex flex-row items-center justify-between">
                    <CardTitle className="text-xs font-medium flex items-center gap-2">
-                      <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                      <Globe className="w-3.5 h-3.5 text-red-600" />
                       Pendaftaran Merchant Terbaru
                    </CardTitle>
-                   <button className="text-[10px] font-medium text-emerald-600 hover:underline">Lihat Semua</button>
+                   <button className="text-[10px] font-medium text-red-600 hover:underline">Lihat Semua</button>
                 </CardHeader>
                 <CardContent className="p-0">
                    <div className="divide-y divide-border/50">
@@ -154,8 +154,8 @@ export default function AdminDashboard() {
                       ].map((shop, i) => (
                         <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/10 transition-colors">
                            <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-                                 <Store className="w-4 h-4 text-emerald-600" />
+                              <div className="h-8 w-8 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center">
+                                 <Store className="w-4 h-4 text-red-600" />
                               </div>
                               <div>
                                  <p className="text-[11px] font-medium text-[#2E3137]">{shop.name}</p>
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
                               <span className="text-[9px] text-muted-foreground">{shop.date}</span>
                               <div className={cn(
                                 "px-2 py-0.5 rounded text-[8px] font-medium",
-                                shop.status === 'ACTIVE' ? "bg-emerald-50 text-emerald-700" : "bg-orange-50 text-orange-700"
+                                shop.status === 'ACTIVE' ? "bg-red-50 text-red-700" : "bg-orange-50 text-orange-700"
                               )}>
                                  {shop.status === 'ACTIVE' ? 'AKTIF' : 'PENDING'}
                               </div>
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
               <p className="text-[10px] text-muted-foreground max-w-xs leading-relaxed">
                  Pantau semua aset digital yang diunggah oleh merchant untuk memastikan kepatuhan terhadap kebijakan platform.
               </p>
-              <button className="text-[10px] font-medium text-emerald-600 px-4 py-1.5 rounded-lg border border-emerald-200 bg-white hover:bg-emerald-50 transition-all">
+              <button className="text-[10px] font-medium text-red-600 px-4 py-1.5 rounded-lg border border-red-200 bg-white hover:bg-red-50 transition-all">
                  Review Produk Baru
               </button>
            </Card>
@@ -202,7 +202,7 @@ export default function AdminDashboard() {
               <p className="text-[10px] text-muted-foreground max-w-xs leading-relaxed">
                  Terdapat <span className="text-orange-600 font-bold">14 kasus</span> yang membutuhkan intervensi admin untuk mempercepat proses pencairan dana.
               </p>
-              <button className="text-[10px] font-medium text-emerald-600 px-4 py-1.5 rounded-lg border border-emerald-200 bg-white hover:bg-emerald-50 transition-all">
+              <button className="text-[10px] font-medium text-red-600 px-4 py-1.5 rounded-lg border border-red-200 bg-white hover:bg-red-50 transition-all">
                  Buka Pusat Resolusi
               </button>
            </Card>
