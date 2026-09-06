@@ -52,16 +52,16 @@ const REVENUE_DATA = [
 ];
 
 const CATEGORY_DATA = [
-  { name: "API Bridge", value: 45, color: "#ef4444" },
-  { name: "Source Code", value: 30, color: "#f87171" },
-  { name: "Bot WhatsApp", value: 15, color: "#fca5a5" },
-  { name: "Lainnya", value: 10, color: "#fee2e2" },
+  { name: "API Bridge", value: 45, color: "#00AA5B" },
+  { name: "Source Code", value: 30, color: "#34D399" },
+  { name: "Bot WhatsApp", value: 15, color: "#6EE7B7" },
+  { name: "Lainnya", value: 10, color: "#D1FAE5" },
 ];
 
 const chartConfig = {
   revenue: {
     label: "Volume GMV",
-    color: "#ef4444",
+    color: "#00AA5B",
   }
 } satisfies ChartConfig;
 
@@ -111,8 +111,8 @@ export default function AdminAnalytics() {
           <Card key={idx} className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
             <CardContent className="p-3.5 md:p-5 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between mb-3">
-                <div className="p-1.5 rounded-lg bg-red-50">
-                  <stat.icon className="w-3.5 h-3.5 text-red-600 opacity-80" />
+                <div className="p-1.5 rounded-lg bg-green-50">
+                  <stat.icon className="w-3.5 h-3.5 text-[#00AA5B] opacity-80" />
                 </div>
                 <div className={cn(
                   "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] md:text-[9px] font-medium",
@@ -137,7 +137,7 @@ export default function AdminAnalytics() {
         <Card className="lg:col-span-2 border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
           <CardHeader className="p-4 md:p-6 pb-0">
             <CardTitle className="text-[11px] md:text-[12px] font-medium flex items-center gap-2">
-              <TrendingUp className="w-3.5 h-3.5 text-red-600" />
+              <TrendingUp className="w-3.5 h-3.5 text-[#00AA5B]" />
               Tren Pertumbuhan Platform (GMV)
             </CardTitle>
             <CardDescription className="text-[9px] md:text-[10px] mt-1 font-medium opacity-60">Visualisasi volume transaksi bulanan.</CardDescription>
@@ -148,8 +148,8 @@ export default function AdminAnalytics() {
                 <AreaChart data={REVENUE_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.08}/>
-                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#00AA5B" stopOpacity={0.08}/>
+                      <stop offset="95%" stopColor="#00AA5B" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
@@ -169,7 +169,7 @@ export default function AdminAnalytics() {
                   <Area 
                     type="monotone" 
                     dataKey="revenue" 
-                    stroke="#ef4444" 
+                    stroke="#00AA5B" 
                     strokeWidth={2}
                     fillOpacity={1} 
                     fill="url(#colorRev)" 
@@ -179,7 +179,7 @@ export default function AdminAnalytics() {
             </ChartContainer>
             <div className="flex justify-center gap-5 mt-4">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-0.5 rounded-full bg-red-600"></div>
+                <div className="w-2 h-0.5 rounded-full bg-[#00AA5B]"></div>
                 <span className="text-[9px] font-medium text-muted-foreground">Volume Transaksi</span>
               </div>
               <div className="flex items-center gap-2">
@@ -194,7 +194,7 @@ export default function AdminAnalytics() {
         <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden flex flex-col">
           <CardHeader className="p-4 md:p-6">
             <CardTitle className="text-[11px] md:text-[12px] font-medium flex items-center gap-2">
-              <PieChart className="w-3.5 h-3.5 text-red-600" />
+              <PieChart className="w-3.5 h-3.5 text-[#00AA5B]" />
               Kontribusi Kategori
             </CardTitle>
             <CardDescription className="text-[9px] md:text-[10px] mt-1 font-medium opacity-60">Distribusi volume berdasarkan kategori produk.</CardDescription>
@@ -205,7 +205,7 @@ export default function AdminAnalytics() {
                 <div key={i} className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-medium text-[#4B5563]">{cat.name}</span>
-                    <span className="text-[9px] font-medium text-red-600 opacity-80">{cat.value}%</span>
+                    <span className="text-[9px] font-medium text-[#00AA5B] opacity-80">{cat.value}%</span>
                   </div>
                   <div className="h-1 w-full bg-slate-50 rounded-full overflow-hidden">
                     <div 
@@ -217,13 +217,13 @@ export default function AdminAnalytics() {
               ))}
             </div>
 
-            <div className="mt-8 p-3 rounded-xl bg-red-50/40 border border-red-100/30">
+            <div className="mt-8 p-3 rounded-xl bg-green-50/40 border border-green-100/30">
                <div className="flex items-start gap-3">
-                  <Globe className="w-3.5 h-3.5 text-red-600 opacity-60 mt-0.5" />
+                  <Globe className="w-3.5 h-3.5 text-[#00AA5B] opacity-60 mt-0.5" />
                   <div>
                     <p className="text-[9px] font-medium text-[#2E3137]">Wawasan Sektoral</p>
                     <p className="text-[8px] text-muted-foreground mt-0.5 leading-relaxed font-medium">
-                      Kategori <span className="text-red-600">API Bridge</span> tumbuh 12% secara konsisten dalam kurun waktu 3 bulan terakhir.
+                      Kategori <span className="text-[#00AA5B]">API Bridge</span> tumbuh 12% secara konsisten dalam kurun waktu 3 bulan terakhir.
                     </p>
                   </div>
                </div>
@@ -234,32 +234,32 @@ export default function AdminAnalytics() {
 
       {/* Bottom Insights Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-         <Card className="border-border/50 border-dashed bg-white rounded-xl md:rounded-2xl p-4 flex items-center justify-between group hover:border-red-200 transition-colors">
+         <Card className="border-border/50 border-dashed bg-white rounded-xl md:rounded-2xl p-4 flex items-center justify-between group hover:border-green-200 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50">
-                 <Activity className="w-3.5 h-3.5 text-red-600 opacity-70" />
+              <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50">
+                 <Activity className="w-3.5 h-3.5 text-[#00AA5B] opacity-70" />
               </div>
               <div>
                  <h3 className="text-[11px] font-medium text-[#2E3137]">Laporan Audit Infrastruktur</h3>
                  <p className="text-[9px] text-muted-foreground mt-0.5 font-medium">Parameter sistem dalam kondisi optimal.</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[9px] font-medium text-red-600 hover:bg-red-50">
+            <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[9px] font-medium text-[#00AA5B] hover:bg-green-50">
                Log Detail
             </Button>
          </Card>
 
-         <Card className="border-border/50 border-dashed bg-white rounded-xl md:rounded-2xl p-4 flex items-center justify-between group hover:border-red-200 transition-colors">
+         <Card className="border-border/50 border-dashed bg-white rounded-xl md:rounded-2xl p-4 flex items-center justify-between group hover:border-green-200 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50">
-                 <Users className="w-3.5 h-3.5 text-red-600 opacity-70" />
+              <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50">
+                 <Users className="w-3.5 h-3.5 text-[#00AA5B] opacity-70" />
               </div>
               <div>
                  <h3 className="text-[11px] font-medium text-[#2E3137]">Analisa Cohort Merchant</h3>
                  <p className="text-[9px] text-muted-foreground mt-0.5 font-medium">Tinjauan retensi merchant aktif platform.</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[9px] font-medium text-red-600 hover:bg-red-50">
+            <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[9px] font-medium text-[#00AA5B] hover:bg-green-50">
                Buka Analisa
             </Button>
          </Card>

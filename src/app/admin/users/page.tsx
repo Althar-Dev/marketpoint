@@ -62,7 +62,7 @@ export default function AdminUsersPage() {
           <h2 className="text-base md:text-lg font-medium tracking-tight text-[#212121]">Manajemen Pengguna</h2>
           <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Pantau dan kelola hak akses seluruh basis pengguna platform.</p>
         </div>
-        <Button className="h-8 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[10px] font-medium gap-2 shadow-sm shadow-red-100">
+        <Button className="h-8 px-4 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white text-[10px] font-medium gap-2 shadow-sm shadow-green-100">
           <UserPlus className="w-3.5 h-3.5" /> Tambah User
         </Button>
       </div>
@@ -70,10 +70,10 @@ export default function AdminUsersPage() {
       {/* Stats Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[
-          { label: "Total Pengguna", value: users?.length || "0", icon: UsersIcon, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Admin Aktif", value: users?.filter((u: any) => u.admin).length || "0", icon: ShieldCheck, bg: "bg-red-50", color: "text-red-600" },
-          { label: "User Terverifikasi", value: "84%", icon: UserCheck, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Registrasi Baru", value: "+12", icon: UserPlus, bg: "bg-red-50", color: "text-red-600" },
+          { label: "Total Pengguna", value: users?.length || "0", icon: UsersIcon, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Admin Aktif", value: users?.filter((u: any) => u.admin).length || "0", icon: ShieldCheck, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "User Terverifikasi", value: "84%", icon: UserCheck, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Registrasi Baru", value: "+12", icon: UserPlus, bg: "bg-green-50", color: "text-[#00AA5B]" },
         ].map((stat, idx) => (
           <Card key={idx} className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
             <CardContent className="p-3.5 md:p-5 flex flex-col justify-between h-full">
@@ -99,7 +99,7 @@ export default function AdminUsersPage() {
             placeholder="Cari nama atau email..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-red-500/10" 
+            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10" 
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
@@ -154,7 +154,7 @@ export default function AdminUsersPage() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8 rounded-lg border border-border/40 shadow-sm shrink-0">
                           <AvatarImage src={u.photoURL} />
-                          <AvatarFallback className="bg-red-50 text-red-600 text-[9px] font-medium uppercase">
+                          <AvatarFallback className="bg-green-50 text-[#00AA5B] text-[9px] font-medium uppercase">
                             {u.displayName?.substring(0, 1) || "U"}
                           </AvatarFallback>
                         </Avatar>
@@ -167,7 +167,7 @@ export default function AdminUsersPage() {
                     <TableCell>
                       <Badge variant="outline" className={cn(
                         "text-[8px] font-medium px-2 py-0 rounded-md border-none",
-                        u.admin ? "bg-red-50 text-red-600" : "bg-slate-100 text-slate-600"
+                        u.admin ? "bg-green-50 text-[#00AA5B]" : "bg-slate-100 text-slate-600"
                       )}>
                         {u.admin ? 'ADMIN' : 'USER'}
                       </Badge>
@@ -185,10 +185,10 @@ export default function AdminUsersPage() {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50">
+                         <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
                             <Mail className="w-3.5 h-3.5" />
                          </Button>
-                         <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50">
+                         <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
                             <ChevronRight className="w-3.5 h-3.5" />
                          </Button>
                       </div>
@@ -218,8 +218,8 @@ export default function AdminUsersPage() {
       {/* Bottom Security Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
-          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50 shrink-0">
-            <ShieldCheck className="w-4 h-4 text-red-600 opacity-70" />
+          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">
+            <ShieldCheck className="w-4 h-4 text-[#00AA5B] opacity-70" />
           </div>
           <div>
             <h3 className="text-[11px] font-medium text-[#2E3137]">Kebijakan Keamanan</h3>
@@ -229,13 +229,13 @@ export default function AdminUsersPage() {
           </div>
         </Card>
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
-          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50 shrink-0">
-            <Mail className="w-4 h-4 text-red-600 opacity-70" />
+          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">
+            <Mail className="w-4 h-4 text-[#00AA5B] opacity-70" />
           </div>
           <div>
             <h3 className="text-[11px] font-medium text-[#2E3137]">Verifikasi Email</h3>
             <p className="text-[9px] text-muted-foreground mt-0.5 leading-relaxed font-medium">
-              Sebanyak <span className="text-red-600">84%</span> pengguna telah memverifikasi alamat email mereka. Kirim pengingat verifikasi secara massal?
+              Sebanyak <span className="text-[#00AA5B]">84%</span> pengguna telah memverifikasi alamat email mereka. Kirim pengingat verifikasi secara massal?
             </p>
           </div>
         </Card>

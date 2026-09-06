@@ -112,10 +112,10 @@ export default function AdminProductsPage() {
       {/* Stats Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[
-          { label: "Total Produk", value: "1,248", icon: Database, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Aktif", value: "1,120", icon: Zap, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Stok Habis", value: "84", icon: AlertTriangle, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Tinjauan Keamanan", value: "12", icon: ShieldAlert, bg: "bg-red-50", color: "text-red-600" },
+          { label: "Total Produk", value: "1,248", icon: Database, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Aktif", value: "1,120", icon: Zap, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Stok Habis", value: "84", icon: AlertTriangle, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Tinjauan Keamanan", value: "12", icon: ShieldAlert, bg: "bg-green-50", color: "text-[#00AA5B]" },
         ].map((stat, idx) => (
           <Card key={idx} className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
             <CardContent className="p-3.5 md:p-5 flex flex-col justify-between h-full">
@@ -141,7 +141,7 @@ export default function AdminProductsPage() {
             placeholder="Cari nama produk atau SKU..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-red-500/10" 
+            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10" 
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
@@ -188,7 +188,7 @@ export default function AdminProductsPage() {
                       <div className="flex flex-col min-w-0">
                         <span className="text-[11px] font-medium text-[#2E3137] truncate max-w-[220px]">{p.name}</span>
                         <div className="flex items-center gap-1.5">
-                           <span className="text-[9px] text-red-600 font-medium">{p.shop}</span>
+                           <span className="text-[9px] text-[#00AA5B] font-medium">{p.shop}</span>
                            <span className="text-[8px] text-muted-foreground/30">|</span>
                            <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-tighter">{p.category}</span>
                         </div>
@@ -215,10 +215,10 @@ export default function AdminProductsPage() {
                   </TableCell>
                   <TableCell className="text-right px-6">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50">
+                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
                           <Eye className="w-3.5 h-3.5" />
                        </Button>
-                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50">
+                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
                           <ChevronRight className="w-3.5 h-3.5" />
                        </Button>
                     </div>
@@ -247,8 +247,8 @@ export default function AdminProductsPage() {
       {/* Compliance Box */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
-          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50 shrink-0">
-            <ShieldAlert className="w-4 h-4 text-red-600 opacity-70" />
+          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">
+            <ShieldAlert className="w-4 h-4 text-[#00AA5B] opacity-70" />
           </div>
           <div>
             <h3 className="text-[11px] font-medium text-[#2E3137]">Moderasi Keamanan</h3>
@@ -258,8 +258,8 @@ export default function AdminProductsPage() {
           </div>
         </Card>
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
-          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50 shrink-0">
-            <Zap className="w-4 h-4 text-red-600 opacity-70" />
+          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">
+            <Zap className="w-4 h-4 text-[#00AA5B] opacity-70" />
           </div>
           <div>
             <h3 className="text-[11px] font-medium text-[#2E3137]">Optimasi Katalog</h3>

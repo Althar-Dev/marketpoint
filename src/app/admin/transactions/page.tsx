@@ -109,10 +109,10 @@ export default function AdminTransactionsPage() {
       {/* Stats Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[
-          { label: "Volume GMV", value: "Rp14.2M", icon: DollarSign, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Trx Sukses", value: "8,420", icon: CheckCircle2, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Trx Proses", value: "142", icon: Clock, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Gagal/Sengketa", value: "24", icon: AlertCircle, bg: "bg-red-50", color: "text-red-600" },
+          { label: "Volume GMV", value: "Rp14.2M", icon: DollarSign, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Trx Sukses", value: "8,420", icon: CheckCircle2, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Trx Proses", value: "142", icon: Clock, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Gagal/Sengketa", value: "24", icon: AlertCircle, bg: "bg-green-50", color: "text-[#00AA5B]" },
         ].map((stat, idx) => (
           <Card key={idx} className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
             <CardContent className="p-3.5 md:p-5 flex flex-col justify-between h-full">
@@ -138,7 +138,7 @@ export default function AdminTransactionsPage() {
             placeholder="Cari ID transaksi atau nama..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-red-500/10" 
+            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10" 
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
@@ -189,7 +189,7 @@ export default function AdminTransactionsPage() {
                     <div className="flex flex-col min-w-[140px]">
                       <span className="text-[10px] font-medium text-[#2E3137]">{t.user}</span>
                       <div className="flex items-center gap-1">
-                         <span className="text-[8px] text-red-600 font-medium">ke {t.shop}</span>
+                         <span className="text-[8px] text-[#00AA5B] font-medium">ke {t.shop}</span>
                          <span className="text-[8px] text-muted-foreground/30">•</span>
                          <span className="text-[8px] text-muted-foreground font-medium uppercase tracking-tighter">{t.type}</span>
                       </div>
@@ -212,7 +212,7 @@ export default function AdminTransactionsPage() {
                   </TableCell>
                   <TableCell className="text-right px-6">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50">
+                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
                           <ChevronRight className="w-3.5 h-3.5" />
                        </Button>
                     </div>
@@ -241,8 +241,8 @@ export default function AdminTransactionsPage() {
       {/* Insights Box */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
-          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50 shrink-0">
-            <Activity className="w-4 h-4 text-red-600 opacity-70" />
+          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">
+            <Activity className="w-4 h-4 text-[#00AA5B] opacity-70" />
           </div>
           <div>
             <h3 className="text-[11px] font-medium text-[#2E3137]">Analisa Gateway</h3>
@@ -252,8 +252,8 @@ export default function AdminTransactionsPage() {
           </div>
         </Card>
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
-          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50 shrink-0">
-            <AlertCircle className="w-4 h-4 text-red-600 opacity-70" />
+          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">
+            <AlertCircle className="w-4 h-4 text-[#00AA5B] opacity-70" />
           </div>
           <div>
             <h3 className="text-[11px] font-medium text-[#2E3137]">Peringatan Sistem</h3>

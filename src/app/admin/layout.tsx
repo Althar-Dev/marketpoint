@@ -40,9 +40,9 @@ export default function AdminLayout({
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden font-body">
-        {/* Subtil Background Grid - Red theme */}
+        {/* Subtil Background Grid - Green theme */}
         <div className="absolute inset-0 z-0 opacity-[0.02]" 
-             style={{ backgroundImage: `radial-gradient(#ef4444 0.5px, transparent 0.5px)`, backgroundSize: '24px 24px' }}>
+             style={{ backgroundImage: `radial-gradient(#00AA5B 0.5px, transparent 0.5px)`, backgroundSize: '24px 24px' }}>
         </div>
         
         {/* Central Content */}
@@ -56,9 +56,9 @@ export default function AdminLayout({
              />
           </div>
           
-          {/* Custom Bouncing Underline - Red theme */}
-          <div className="w-12 md:w-16 h-[1.5px] bg-red-600/10 rounded-full overflow-hidden relative">
-             <div className="absolute top-0 h-full bg-red-600 w-5 rounded-full animate-loading-bounce"></div>
+          {/* Custom Bouncing Underline - Green theme */}
+          <div className="w-12 md:w-16 h-[1.5px] bg-[#00AA5B]/10 rounded-full overflow-hidden relative">
+             <div className="absolute top-0 h-full bg-[#00AA5B] w-5 rounded-full animate-loading-bounce"></div>
           </div>
           
           {/* Micro Typography */}

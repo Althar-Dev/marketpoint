@@ -108,10 +108,10 @@ export default function AdminDisputesPage() {
       {/* Stats Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[
-          { label: "Total Kasus", value: "24", icon: ShieldAlert, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Perlu Tindakan", value: "14", icon: AlertTriangle, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Prioritas Tinggi", value: "6", icon: Clock, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Berhasil Damai", value: "158", icon: CheckCircle2, bg: "bg-red-50", color: "text-red-600" },
+          { label: "Total Kasus", value: "24", icon: ShieldAlert, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Perlu Tindakan", value: "14", icon: AlertTriangle, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Prioritas Tinggi", value: "6", icon: Clock, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Berhasil Damai", value: "158", icon: CheckCircle2, bg: "bg-green-50", color: "text-[#00AA5B]" },
         ].map((stat, idx) => (
           <Card key={idx} className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
             <CardContent className="p-3.5 md:p-5 flex flex-col justify-between h-full">
@@ -137,7 +137,7 @@ export default function AdminDisputesPage() {
             placeholder="Cari ID Dispute atau Order..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-red-500/10" 
+            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10" 
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
@@ -182,7 +182,7 @@ export default function AdminDisputesPage() {
                     <div className="flex flex-col">
                       <span className="text-[10px] font-medium text-[#2E3137]">{d.date}</span>
                       <span className="text-[8px] text-muted-foreground font-mono uppercase">{d.id}</span>
-                      <span className="text-[8px] text-red-600 font-bold mt-0.5">{d.orderId}</span>
+                      <span className="text-[8px] text-[#00AA5B] font-bold mt-0.5">{d.orderId}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -190,7 +190,7 @@ export default function AdminDisputesPage() {
                       <Badge variant="outline" className={cn(
                         "text-[8px] font-medium px-2 py-0 rounded-md border-none w-fit",
                         d.status === 'RESOLVED' ? "bg-green-50 text-green-700" : 
-                        d.status === 'PENDING_ADMIN' ? "bg-red-50 text-red-700" : "bg-orange-50 text-orange-700"
+                        d.status === 'PENDING_ADMIN' ? "bg-orange-50 text-orange-700" : "bg-blue-50 text-blue-700"
                       )}>
                         {d.status.replace('_', ' ')}
                       </Badge>
@@ -210,7 +210,7 @@ export default function AdminDisputesPage() {
                         <span className="text-[10px] font-medium text-[#2E3137]">{d.user}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Store className="w-2.5 h-2.5 text-red-600 opacity-60" />
+                        <Store className="w-2.5 h-2.5 text-[#00AA5B] opacity-60" />
                         <span className="text-[9px] font-medium text-muted-foreground">ke {d.shop}</span>
                       </div>
                     </div>
@@ -220,10 +220,10 @@ export default function AdminDisputesPage() {
                   </TableCell>
                   <TableCell className="text-right px-6">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50">
+                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
                           <MessageSquare className="w-3.5 h-3.5" />
                        </Button>
-                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50">
+                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
                           <ChevronRight className="w-3.5 h-3.5" />
                        </Button>
                     </div>
@@ -252,8 +252,8 @@ export default function AdminDisputesPage() {
       {/* Action Box */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
-          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50 shrink-0">
-            <ShieldAlert className="w-4 h-4 text-red-600 opacity-70" />
+          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">
+            <ShieldAlert className="w-4 h-4 text-[#00AA5B] opacity-70" />
           </div>
           <div>
             <h3 className="text-[11px] font-medium text-[#2E3137]">Intervensi Otomatis</h3>
@@ -263,8 +263,8 @@ export default function AdminDisputesPage() {
           </div>
         </Card>
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
-          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50 shrink-0">
-            <CheckCircle2 className="w-4 h-4 text-red-600 opacity-70" />
+          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">
+            <CheckCircle2 className="w-4 h-4 text-[#00AA5B] opacity-70" />
           </div>
           <div>
             <h3 className="text-[11px] font-medium text-[#2E3137]">Pusat Bantuan Admin</h3>

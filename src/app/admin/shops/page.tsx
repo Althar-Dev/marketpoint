@@ -74,10 +74,10 @@ export default function AdminShopsPage() {
       {/* Stats Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[
-          { label: "Total Toko", value: shops?.length || "0", icon: Store, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Toko Aktif", value: shops?.filter((s: any) => s.status === 'ACTIVE').length || "0", icon: Zap, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Pendaftaran Baru", value: "+2", icon: Plus, bg: "bg-red-50", color: "text-red-600" },
-          { label: "Official Verified", value: "12", icon: ShieldCheck, bg: "bg-red-50", color: "text-red-600" },
+          { label: "Total Toko", value: shops?.length || "0", icon: Store, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Toko Aktif", value: shops?.filter((s: any) => s.status === 'ACTIVE').length || "0", icon: Zap, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Pendaftaran Baru", value: "+2", icon: Plus, bg: "bg-green-50", color: "text-[#00AA5B]" },
+          { label: "Official Verified", value: "12", icon: ShieldCheck, bg: "bg-green-50", color: "text-[#00AA5B]" },
         ].map((stat, idx) => (
           <Card key={idx} className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
             <CardContent className="p-3.5 md:p-5 flex flex-col justify-between h-full">
@@ -103,7 +103,7 @@ export default function AdminShopsPage() {
             placeholder="Cari nama toko atau slug..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-red-500/10" 
+            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10" 
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
@@ -157,7 +157,7 @@ export default function AdminShopsPage() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8 rounded-lg border border-border/40 shadow-sm shrink-0">
                           <AvatarImage src={s.logoUrl} />
-                          <AvatarFallback className="bg-red-50 text-red-600 text-[9px] font-medium uppercase">
+                          <AvatarFallback className="bg-green-50 text-[#00AA5B] text-[9px] font-medium uppercase">
                             {s.name?.substring(0, 1) || "T"}
                           </AvatarFallback>
                         </Avatar>
@@ -187,12 +187,12 @@ export default function AdminShopsPage() {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <Button asChild variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50">
+                         <Button asChild variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
                             <Link href={`/${s.slug}`} target="_blank">
                               <ExternalLink className="w-3.5 h-3.5" />
                             </Link>
                          </Button>
-                         <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50">
+                         <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
                             <ChevronRight className="w-3.5 h-3.5" />
                          </Button>
                       </div>
@@ -222,8 +222,8 @@ export default function AdminShopsPage() {
       {/* Bottom Insights */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
-          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50 shrink-0">
-            <ShieldCheck className="w-4 h-4 text-red-600 opacity-70" />
+          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">
+            <ShieldCheck className="w-4 h-4 text-[#00AA5B] opacity-70" />
           </div>
           <div>
             <h3 className="text-[11px] font-medium text-[#2E3137]">Verifikasi Toko Resmi</h3>
@@ -233,13 +233,13 @@ export default function AdminShopsPage() {
           </div>
         </Card>
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
-          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center border border-red-100/50 shrink-0">
-            <Zap className="w-4 h-4 text-red-600 opacity-70" />
+          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">
+            <Zap className="w-4 h-4 text-[#00AA5B] opacity-70" />
           </div>
           <div>
             <h3 className="text-[11px] font-medium text-[#2E3137]">Analisa Pertumbuhan</h3>
             <p className="text-[9px] text-muted-foreground mt-0.5 leading-relaxed font-medium">
-              Rata-rata pembuatan toko baru meningkat <span className="text-red-600">12%</span> di bulan ini dibandingkan bulan lalu.
+              Rata-rata pembuatan toko baru meningkat <span className="text-[#00AA5B]">12%</span> di bulan ini dibandingkan bulan lalu.
             </p>
           </div>
         </Card>
