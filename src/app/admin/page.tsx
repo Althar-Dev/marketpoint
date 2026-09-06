@@ -6,7 +6,6 @@ import {
   Users, 
   Store, 
   ShoppingBag, 
-  TrendingUp, 
   ArrowUpRight, 
   ArrowDownRight,
   ShieldAlert,
@@ -65,35 +64,35 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <main className="p-4 md:p-6 lg:p-8">
-      <div className="max-w-screen-xl mx-auto space-y-8">
+    <main className="p-3 md:p-6 lg:p-8">
+      <div className="max-w-screen-xl mx-auto space-y-5 md:space-y-8">
         
         {/* Welcome Section */}
-        <div className="flex flex-col gap-1">
-           <h2 className="text-xl font-medium tracking-tight text-[#212121]">Dashboard Platform</h2>
-           <p className="text-[11px] text-muted-foreground">Ringkasan performa dan kesehatan ekosistem MarketPoint hari ini.</p>
+        <div className="flex flex-col gap-0.5">
+           <h2 className="text-lg md:text-xl font-medium tracking-tight text-[#212121]">Dashboard Platform</h2>
+           <p className="text-[10px] md:text-[11px] text-muted-foreground">Ringkasan performa dan kesehatan ekosistem MarketPoint hari ini.</p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
            {stats.map((stat, idx) => (
-             <Card key={idx} className="border-border shadow-sm rounded-2xl bg-white overflow-hidden group">
-               <CardContent className="p-5 flex flex-col justify-between h-full">
-                 <div className="flex items-center justify-between mb-4">
-                   <div className={cn("p-2 rounded-xl", stat.bg)}>
-                     <stat.icon className={cn("w-4 h-4", stat.color)} />
+             <Card key={idx} className="border-border shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden group">
+               <CardContent className="p-3.5 md:p-5 flex flex-col justify-between h-full">
+                 <div className="flex items-center justify-between mb-3 md:mb-4">
+                   <div className={cn("p-1.5 md:p-2 rounded-lg md:rounded-xl", stat.bg)}>
+                     <stat.icon className={cn("w-3.5 h-3.5 md:w-4 md:h-4", stat.color)} />
                    </div>
                    <div className={cn(
-                     "flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-medium",
+                     "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] md:text-[9px] font-medium",
                      stat.trend === 'up' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                    )}>
-                     {stat.trend === 'up' ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />}
+                     {stat.trend === 'up' ? <ArrowUpRight className="w-2 h-2 md:w-2.5 md:h-2.5" /> : <ArrowDownRight className="w-2 h-2 md:w-2.5 md:h-2.5" />}
                      {stat.change}
                    </div>
                  </div>
                  <div>
-                   <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">{stat.label}</p>
-                   <p className="text-2xl font-bold text-[#212121] tracking-tighter mt-1">{stat.value}</p>
+                   <p className="text-[8px] md:text-[10px] font-medium text-muted-foreground uppercase tracking-widest">{stat.label}</p>
+                   <p className="text-lg md:text-2xl font-bold text-[#212121] tracking-tighter mt-0.5">{stat.value}</p>
                  </div>
                </CardContent>
              </Card>
@@ -101,18 +100,18 @@ export default function AdminDashboard() {
         </div>
 
         {/* Middle Section: System Status & Recent Activities */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
           
           {/* System Health (Left) */}
           <div className="lg:col-span-4">
-             <Card className="h-full border-border shadow-sm rounded-2xl bg-white">
-                <CardHeader className="p-5 border-b border-border/50">
-                   <CardTitle className="text-xs font-medium flex items-center gap-2">
+             <Card className="h-full border-border shadow-sm rounded-xl md:rounded-2xl bg-white">
+                <CardHeader className="p-4 md:p-5 border-b border-border/50">
+                   <CardTitle className="text-[11px] md:text-xs font-medium flex items-center gap-2">
                       <Activity className="w-3.5 h-3.5 text-red-600" />
                       Status Infrastruktur
                    </CardTitle>
                 </CardHeader>
-                <CardContent className="p-5 space-y-5">
+                <CardContent className="p-4 md:p-5 space-y-4 md:space-y-5">
                    {[
                      { name: "API Gateway Cluster", status: "Operational", uptime: "99.99%", color: "bg-red-500" },
                      { name: "Payment Processor", status: "Operational", uptime: "100%", color: "bg-red-500" },
@@ -121,12 +120,12 @@ export default function AdminDashboard() {
                    ].map((sys, i) => (
                      <div key={i} className="flex items-center justify-between group">
                         <div className="space-y-0.5">
-                           <p className="text-[11px] font-medium text-[#2E3137]">{sys.name}</p>
-                           <p className="text-[9px] text-muted-foreground">Uptime: {sys.uptime}</p>
+                           <p className="text-[10px] md:text-[11px] font-medium text-[#2E3137]">{sys.name}</p>
+                           <p className="text-[8px] md:text-[9px] text-muted-foreground">Uptime: {sys.uptime}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                           <span className="text-[9px] font-medium text-muted-foreground">{sys.status}</span>
-                           <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", sys.color)}></div>
+                        <div className="flex items-center gap-1.5 md:gap-2">
+                           <span className="text-[8px] md:text-[9px] font-medium text-muted-foreground">{sys.status}</span>
+                           <div className={cn("h-1 w-1 md:h-1.5 md:w-1.5 rounded-full animate-pulse", sys.color)}></div>
                         </div>
                      </div>
                    ))}
@@ -136,13 +135,13 @@ export default function AdminDashboard() {
 
           {/* Quick Actions & Recent Users (Right) */}
           <div className="lg:col-span-8">
-             <Card className="h-full border-border shadow-sm rounded-2xl bg-white">
-                <CardHeader className="p-5 border-b border-border/50 flex flex-row items-center justify-between">
-                   <CardTitle className="text-xs font-medium flex items-center gap-2">
+             <Card className="h-full border-border shadow-sm rounded-xl md:rounded-2xl bg-white">
+                <CardHeader className="p-4 md:p-5 border-b border-border/50 flex flex-row items-center justify-between">
+                   <CardTitle className="text-[11px] md:text-xs font-medium flex items-center gap-2">
                       <Globe className="w-3.5 h-3.5 text-red-600" />
                       Pendaftaran Merchant Terbaru
                    </CardTitle>
-                   <button className="text-[10px] font-medium text-red-600 hover:underline">Lihat Semua</button>
+                   <button className="text-[9px] md:text-[10px] font-medium text-red-600 hover:underline">Lihat Semua</button>
                 </CardHeader>
                 <CardContent className="p-0">
                    <div className="divide-y divide-border/50">
@@ -152,20 +151,20 @@ export default function AdminDashboard() {
                         { name: "Cyber Node ID", slug: "cybernode", date: "3 jam lalu", status: "ACTIVE" },
                         { name: "STS Labs Global", slug: "stslabs", date: "Kemarin", status: "ACTIVE" },
                       ].map((shop, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/10 transition-colors">
-                           <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center">
-                                 <Store className="w-4 h-4 text-red-600" />
+                        <div key={i} className="flex items-center justify-between p-3.5 md:p-4 hover:bg-muted/10 transition-colors">
+                           <div className="flex items-center gap-2.5 md:gap-3">
+                              <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center">
+                                 <Store className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-600" />
                               </div>
-                              <div>
-                                 <p className="text-[11px] font-medium text-[#2E3137]">{shop.name}</p>
-                                 <p className="text-[9px] text-muted-foreground">@{shop.slug}</p>
+                              <div className="min-w-0">
+                                 <p className="text-[10px] md:text-[11px] font-medium text-[#2E3137] truncate">{shop.name}</p>
+                                 <p className="text-[8px] md:text-[9px] text-muted-foreground truncate">@{shop.slug}</p>
                               </div>
                            </div>
-                           <div className="flex items-center gap-4">
-                              <span className="text-[9px] text-muted-foreground">{shop.date}</span>
+                           <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                              <span className="text-[8px] md:text-[9px] text-muted-foreground whitespace-nowrap">{shop.date}</span>
                               <div className={cn(
-                                "px-2 py-0.5 rounded text-[8px] font-medium",
+                                "px-1.5 py-0.5 rounded text-[7px] md:text-[8px] font-medium",
                                 shop.status === 'ACTIVE' ? "bg-red-50 text-red-700" : "bg-orange-50 text-orange-700"
                               )}>
                                  {shop.status === 'ACTIVE' ? 'AKTIF' : 'PENDING'}
@@ -180,29 +179,29 @@ export default function AdminDashboard() {
         </div>
 
         {/* Global Catalog Insights */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-           <Card className="border-border border-dashed bg-muted/20 rounded-2xl p-6 flex flex-col items-center text-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-border">
-                 <Database className="w-5 h-5 text-muted-foreground" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+           <Card className="border-border border-dashed bg-muted/10 rounded-xl md:rounded-2xl p-5 md:p-6 flex flex-col items-center text-center gap-2.5 md:gap-3">
+              <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-border">
+                 <Database className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
               </div>
-              <h3 className="text-[12px] font-medium">Monitoring Katalog Global</h3>
-              <p className="text-[10px] text-muted-foreground max-w-xs leading-relaxed">
+              <h3 className="text-[11px] md:text-[12px] font-medium">Monitoring Katalog Global</h3>
+              <p className="text-[9px] md:text-[10px] text-muted-foreground max-w-xs leading-relaxed">
                  Pantau semua aset digital yang diunggah oleh merchant untuk memastikan kepatuhan terhadap kebijakan platform.
               </p>
-              <button className="text-[10px] font-medium text-red-600 px-4 py-1.5 rounded-lg border border-red-200 bg-white hover:bg-red-50 transition-all">
+              <button className="text-[9px] md:text-[10px] font-medium text-red-600 px-3.5 py-1.5 rounded-lg border border-red-200 bg-white hover:bg-red-50 transition-all">
                  Review Produk Baru
               </button>
            </Card>
 
-           <Card className="border-border border-dashed bg-muted/20 rounded-2xl p-6 flex flex-col items-center text-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-border">
-                 <ShieldAlert className="w-5 h-5 text-muted-foreground" />
+           <Card className="border-border border-dashed bg-muted/10 rounded-xl md:rounded-2xl p-5 md:p-6 flex flex-col items-center text-center gap-2.5 md:gap-3">
+              <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-border">
+                 <ShieldAlert className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
               </div>
-              <h3 className="text-[12px] font-medium">Resolusi Sengketa</h3>
-              <p className="text-[10px] text-muted-foreground max-w-xs leading-relaxed">
+              <h3 className="text-[11px] md:text-[12px] font-medium">Resolusi Sengketa</h3>
+              <p className="text-[9px] md:text-[10px] text-muted-foreground max-w-xs leading-relaxed">
                  Terdapat <span className="text-orange-600 font-bold">14 kasus</span> yang membutuhkan intervensi admin untuk mempercepat proses pencairan dana.
               </p>
-              <button className="text-[10px] font-medium text-red-600 px-4 py-1.5 rounded-lg border border-red-200 bg-white hover:bg-red-50 transition-all">
+              <button className="text-[9px] md:text-[10px] font-medium text-red-600 px-3.5 py-1.5 rounded-lg border border-red-200 bg-white hover:bg-red-50 transition-all">
                  Buka Pusat Resolusi
               </button>
            </Card>

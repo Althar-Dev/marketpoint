@@ -41,36 +41,36 @@ export default function AdminLayout({
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden font-body">
         {/* Subtil Background Grid - Red theme */}
-        <div className="absolute inset-0 z-0 opacity-[0.03]" 
-             style={{ backgroundImage: `radial-gradient(#ef4444 0.5px, transparent 0.5px)`, backgroundSize: '32px 32px' }}>
+        <div className="absolute inset-0 z-0 opacity-[0.02]" 
+             style={{ backgroundImage: `radial-gradient(#ef4444 0.5px, transparent 0.5px)`, backgroundSize: '24px 24px' }}>
         </div>
         
         {/* Central Content */}
         <div className="relative z-10 flex flex-col items-center">
           {/* Logo Section */}
-          <div className="mb-5 animate-in fade-in zoom-in-95 duration-700">
+          <div className="mb-4 animate-in fade-in zoom-in-95 duration-700">
              <img 
                src="/assets/img/logo.png" 
                alt="MarketPoint" 
-               className="h-11 w-auto object-contain"
+               className="h-9 md:h-11 w-auto object-contain"
              />
           </div>
           
           {/* Custom Bouncing Underline - Red theme */}
-          <div className="w-16 h-[2px] bg-red-600/10 rounded-full overflow-hidden relative">
-             <div className="absolute top-0 h-full bg-red-600 w-6 rounded-full animate-loading-bounce"></div>
+          <div className="w-12 md:w-16 h-[1.5px] bg-red-600/10 rounded-full overflow-hidden relative">
+             <div className="absolute top-0 h-full bg-red-600 w-5 rounded-full animate-loading-bounce"></div>
           </div>
           
           {/* Micro Typography */}
-          <div className="mt-6 flex flex-col items-center gap-1.5 opacity-40">
-             <span className="text-[9px] tracking-[0.25em] text-[#2E3137] font-medium uppercase">Verifikasi Admin</span>
+          <div className="mt-5 flex flex-col items-center gap-1 opacity-30">
+             <span className="text-[8px] md:text-[9px] tracking-[0.2em] text-[#2E3137] font-medium uppercase">Verifikasi Admin</span>
           </div>
         </div>
 
         <style jsx global>{`
           @keyframes loading-bounce {
             0% { transform: translateX(0%); }
-            100% { transform: translateX(166%); }
+            100% { transform: translateX(140%); }
           }
           .animate-loading-bounce {
             animation: loading-bounce 0.6s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
