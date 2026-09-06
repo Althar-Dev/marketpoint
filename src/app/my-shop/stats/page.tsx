@@ -42,6 +42,7 @@ import {
   ChartTooltipContent,
   type ChartConfig 
 } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 
 const PERFORMANCE_DATA = [
   { day: "Sen", visits: 120, orders: 12 },
@@ -294,8 +295,4 @@ export default function MerchantStatsPage() {
       </div>
     </main>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ');
 }
