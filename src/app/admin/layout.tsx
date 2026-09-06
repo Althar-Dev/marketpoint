@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -7,6 +8,7 @@ import { AdminHeader } from "@/components/admin-header";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { doc } from "firebase/firestore";
+import { cn } from "@/lib/utils";
 
 export default function AdminLayout({
   children,
@@ -42,11 +44,25 @@ export default function AdminLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-           <div className="h-8 w-8 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin"></div>
-           <span className="text-[10px] font-medium text-muted-foreground tracking-widest uppercase">Memverifikasi Hak Akses</span>
+      <div className="min-h-screen bg-white flex flex-col relative overflow-hidden">
+        {/* Sleek Top Progress Bar */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-indigo-50">
+           <div className="h-full bg-indigo-600 w-1/3 animate-[loading-progress_1.5s_infinite_ease-in-out]"></div>
         </div>
+        
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-1.5 opacity-40 animate-pulse">
+             <span className="text-[11px] font-medium text-[#2E3137]">memverifikasi akses</span>
+          </div>
+        </div>
+
+        <style jsx global>{`
+          @keyframes loading-progress {
+            0% { transform: translateX(-100%); width: 30%; }
+            50% { transform: translateX(100%); width: 60%; }
+            100% { transform: translateX(400%); width: 30%; }
+          }
+        `}</style>
       </div>
     );
   }
