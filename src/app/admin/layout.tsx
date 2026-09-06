@@ -73,7 +73,7 @@ export default function AdminLayout({
             100% { transform: translateX(166%); }
           }
           .animate-loading-bounce {
-            animation: loading-bounce 0.8s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
+            animation: loading-bounce 0.6s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
           }
         `}</style>
       </div>
