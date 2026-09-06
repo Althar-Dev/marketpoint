@@ -47,7 +47,7 @@ export function AdminHeader() {
       case "/admin/transactions": return "Riwayat Transaksi Global";
       case "/admin/products": return "Katalog Produk Global";
       case "/admin/disputes": return "Pusat Resolusi Dispute";
-      case "/admin/settings": return "Pengaturan Sistem";
+      case "/admin/settings": return "Pengaturan";
       default: return "Admin Panel";
     }
   };
@@ -110,7 +110,7 @@ export function AdminHeader() {
             <DropdownMenuItem asChild className="rounded-lg py-2 cursor-pointer focus:bg-muted">
               <Link href="/admin/settings" className="flex items-center gap-2 text-[11px] font-medium">
                 <Settings className="w-3.5 h-3.5 opacity-50" />
-                Konfigurasi
+                Pengaturan
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

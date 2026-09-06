@@ -65,7 +65,7 @@ export function AdminSidebar() {
     {
       label: "System",
       items: [
-        { label: "Pengaturan Global", icon: Settings, href: "/admin/settings" },
+        { label: "Pengaturan", icon: Settings, href: "/admin/settings" },
       ]
     }
   ];
