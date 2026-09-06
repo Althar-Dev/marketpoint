@@ -18,8 +18,11 @@ import {
   Save,
   AlertTriangle,
   RefreshCw,
-  Server
+  Server,
+  ShieldCheck,
+  Zap
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function AdminSettingsPage() {
   const [mounted, setMounted] = useState(false);
@@ -34,12 +37,12 @@ export default function AdminSettingsPage() {
     <main className="p-3 md:p-6 lg:p-8 space-y-5 md:space-y-6 bg-[#F9FAFB] min-h-screen">
       {/* Header Section */}
       <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-base md:text-lg font-medium tracking-tight text-[#212121]">Pengaturan</h2>
-          <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Konfigurasi parameter platform dan kebijakan keamanan global.</p>
+        <div className="space-y-0.5">
+          <h2 className="text-base md:text-lg font-medium tracking-tight text-[#212121]">Pengaturan Platform</h2>
+          <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Konfigurasi parameter operasional dan kebijakan keamanan.</p>
         </div>
-        <Button className="h-8 px-4 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white text-[10px] font-medium gap-2 shadow-sm shadow-green-100">
-           <Save className="w-3 h-3" /> Simpan
+        <Button className="h-8 px-4 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white text-[10px] font-bold gap-2 shadow-sm transition-transform active:scale-95">
+           <Save className="w-3.5 h-3.5" /> Simpan
         </Button>
       </div>
 
@@ -53,15 +56,15 @@ export default function AdminSettingsPage() {
            </TabsList>
 
            {/* Tab: Umum */}
-           <TabsContent value="umum" className="space-y-4 outline-none animate-in fade-in duration-300">
+           <TabsContent value="umum" className="space-y-4 outline-none animate-in fade-in slide-in-from-bottom-1 duration-300">
               <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
-                 <CardHeader className="p-4 md:p-6 border-b border-border/30">
+                 <CardHeader className="p-4 md:p-5 border-b border-border/30 bg-slate-50/30">
                     <CardTitle className="text-[11px] md:text-[12px] font-medium flex items-center gap-2">
                        <Globe className="w-3.5 h-3.5 text-[#00AA5B] opacity-70" />
-                       Identitas Platform
+                       Identitas & Branding
                     </CardTitle>
                  </CardHeader>
-                 <CardContent className="p-4 md:p-6 space-y-5">
+                 <CardContent className="p-4 md:p-5 space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                        <div className="space-y-1.5">
                           <Label className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest ml-0.5">Nama Platform</Label>
@@ -80,19 +83,19 @@ export default function AdminSettingsPage() {
               </Card>
 
               <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
-                 <CardContent className="p-4 md:p-6 space-y-5">
-                    <div className="flex items-center justify-between">
+                 <CardContent className="p-4 md:p-5 space-y-5">
+                    <div className="flex items-center justify-between group">
                        <div className="space-y-0.5">
                           <p className="text-[11px] font-medium text-[#2E3137]">Mode Pemeliharaan</p>
-                          <p className="text-[9px] text-muted-foreground">Tampilkan halaman maintenance untuk seluruh pengguna.</p>
+                          <p className="text-[9px] text-muted-foreground font-medium">Tampilkan halaman maintenance untuk seluruh pengguna umum.</p>
                        </div>
                        <Switch />
                     </div>
                     <div className="h-px bg-border/30 w-full" />
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between group">
                        <div className="space-y-0.5">
                           <p className="text-[11px] font-medium text-[#2E3137]">Registrasi Pengguna Baru</p>
-                          <p className="text-[9px] text-muted-foreground">Izinkan pengunjung baru untuk membuat akun.</p>
+                          <p className="text-[9px] text-muted-foreground font-medium">Izinkan pengunjung baru untuk membuat akun di platform.</p>
                        </div>
                        <Switch defaultChecked />
                     </div>
@@ -101,19 +104,19 @@ export default function AdminSettingsPage() {
            </TabsContent>
 
            {/* Tab: Keamanan */}
-           <TabsContent value="keamanan" className="space-y-4 outline-none animate-in fade-in duration-300">
+           <TabsContent value="keamanan" className="space-y-4 outline-none animate-in fade-in slide-in-from-bottom-1 duration-300">
               <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
-                 <CardHeader className="p-4 md:p-6 border-b border-border/30">
+                 <CardHeader className="p-4 md:p-5 border-b border-border/30 bg-slate-50/30">
                     <CardTitle className="text-[11px] md:text-[12px] font-medium flex items-center gap-2">
                        <Lock className="w-3.5 h-3.5 text-[#00AA5B] opacity-70" />
-                       Otentikasi & Akses
+                       Otentikasi & Keamanan Akses
                     </CardTitle>
                  </CardHeader>
-                 <CardContent className="p-4 md:p-6 space-y-6">
+                 <CardContent className="p-4 md:p-5 space-y-6">
                     <div className="flex items-center justify-between">
                        <div className="space-y-0.5">
                           <p className="text-[11px] font-medium text-[#2E3137]">Wajib Verifikasi Email</p>
-                          <p className="text-[9px] text-muted-foreground">Pengguna harus verifikasi email sebelum bisa belanja.</p>
+                          <p className="text-[9px] text-muted-foreground font-medium">Pengguna harus memverifikasi email sebelum melakukan transaksi.</p>
                        </div>
                        <Switch defaultChecked />
                     </div>
@@ -121,12 +124,12 @@ export default function AdminSettingsPage() {
                     <div className="flex items-center justify-between">
                        <div className="space-y-0.5">
                           <p className="text-[11px] font-medium text-[#2E3137]">Two-Factor Authentication (2FA)</p>
-                          <p className="text-[9px] text-muted-foreground">Aktifkan perlindungan ekstra untuk akun administrator.</p>
+                          <p className="text-[9px] text-muted-foreground font-medium">Aktifkan lapisan keamanan tambahan untuk seluruh akun administrator.</p>
                        </div>
                        <Switch defaultChecked />
                     </div>
                     <div className="pt-2">
-                       <Button variant="outline" className="h-8 rounded-lg border-red-100 text-red-600 text-[10px] font-medium hover:bg-red-50 hover:text-red-700 transition-colors">
+                       <Button variant="outline" className="h-8 px-4 rounded-lg border-red-100 text-red-600 text-[10px] font-bold hover:bg-red-50 hover:text-red-700 transition-colors">
                           Reset Seluruh Sesi Login
                        </Button>
                     </div>
@@ -135,81 +138,87 @@ export default function AdminSettingsPage() {
            </TabsContent>
 
            {/* Tab: Notifikasi */}
-           <TabsContent value="notifikasi" className="space-y-4 outline-none animate-in fade-in duration-300">
+           <TabsContent value="notifikasi" className="space-y-4 outline-none animate-in fade-in slide-in-from-bottom-1 duration-300">
               <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
-                 <CardHeader className="p-4 md:p-6 border-b border-border/30">
+                 <CardHeader className="p-4 md:p-5 border-b border-border/30 bg-slate-50/30">
                     <CardTitle className="text-[11px] md:text-[12px] font-medium flex items-center gap-2">
                        <Bell className="w-3.5 h-3.5 text-[#00AA5B] opacity-70" />
-                       Saluran Pengiriman Global
+                       Saluran Pengiriman Pesan
                     </CardTitle>
                  </CardHeader>
-                 <CardContent className="p-4 md:p-6 space-y-5">
-                    <div className="flex items-center justify-between p-3 rounded-xl border border-border/40 hover:bg-slate-50 transition-colors">
+                 <CardContent className="p-4 md:p-5 space-y-4">
+                    <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/40 hover:bg-slate-50 transition-colors group">
                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50">
                              <Mail className="w-4 h-4 text-[#00AA5B] opacity-60" />
                           </div>
                           <div>
-                             <p className="text-[11px] font-medium text-[#2E3137]">Email Service (SendGrid)</p>
-                             <p className="text-[9px] text-muted-foreground">Status: <span className="text-[#00AA5B] font-bold">Terhubung</span></p>
+                             <p className="text-[11px] font-medium text-[#2E3137]">Layanan Email (SendGrid)</p>
+                             <div className="flex items-center gap-1.5 mt-0.5">
+                                <div className="h-1 w-1 rounded-full bg-[#00AA5B]"></div>
+                                <p className="text-[9px] text-muted-foreground font-medium">Status: <span className="text-[#00AA5B] font-bold">Terhubung</span></p>
+                             </div>
                           </div>
                        </div>
-                       <Button variant="ghost" className="h-7 px-3 text-[9px] font-medium text-[#00AA5B] hover:bg-green-50">Konfigurasi</Button>
+                       <Button variant="ghost" className="h-7 px-3 text-[10px] font-bold text-[#00AA5B] hover:bg-green-50">Konfigurasi</Button>
                     </div>
-                    <div className="flex items-center justify-between p-3 rounded-xl border border-border/40 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/40 hover:bg-slate-50 transition-colors group">
                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                          <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center border border-border/50">
                              <Smartphone className="w-4 h-4 text-slate-400" />
                           </div>
                           <div>
                              <p className="text-[11px] font-medium text-[#2E3137]">WhatsApp Gateway (Official)</p>
-                             <p className="text-[9px] text-muted-foreground">Status: <span className="text-red-500 font-bold">Terputus</span></p>
+                             <div className="flex items-center gap-1.5 mt-0.5">
+                                <div className="h-1 w-1 rounded-full bg-slate-300"></div>
+                                <p className="text-[9px] text-muted-foreground font-medium">Status: <span className="text-slate-500 font-bold">Terputus</span></p>
+                             </div>
                           </div>
                        </div>
-                       <Button variant="ghost" className="h-7 px-3 text-[9px] font-medium text-[#00AA5B] hover:bg-green-50">Hubungkan</Button>
+                       <Button variant="ghost" className="h-7 px-3 text-[10px] font-bold text-[#00AA5B] hover:bg-green-50">Hubungkan</Button>
                     </div>
                  </CardContent>
               </Card>
            </TabsContent>
 
            {/* Tab: Sistem */}
-           <TabsContent value="sistem" className="space-y-4 outline-none animate-in fade-in duration-300">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           <TabsContent value="sistem" className="space-y-4 outline-none animate-in fade-in slide-in-from-bottom-1 duration-300">
+              <div className="grid grid-cols-2 gap-4">
                  <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
                     <CardContent className="p-4 md:p-6 space-y-4 text-center">
                        <div className="h-10 w-10 bg-green-50 rounded-full flex items-center justify-center mx-auto border border-green-100/50">
-                          <RefreshCw className="w-5 h-5 text-[#00AA5B] opacity-60" />
+                          <RefreshCw className="w-4.5 h-4.5 text-[#00AA5B] opacity-60" />
                        </div>
                        <div className="space-y-1">
                           <p className="text-[11px] font-medium text-[#2E3137]">Cache Sistem</p>
-                          <p className="text-[9px] text-muted-foreground max-w-[200px] mx-auto leading-relaxed font-medium">Bersihkan seluruh data sementara untuk pembaruan instan.</p>
+                          <p className="text-[9px] text-muted-foreground max-w-[160px] mx-auto leading-relaxed font-medium">Bersihkan data sementara untuk penyegaran platform.</p>
                        </div>
-                       <Button variant="outline" className="w-full h-8 rounded-lg border-border/50 text-[10px] font-medium hover:bg-slate-50">Hapus Cache</Button>
+                       <Button variant="outline" className="w-full h-8 rounded-lg border-border/50 text-[10px] font-bold hover:bg-slate-50 transition-all">Eksekusi</Button>
                     </CardContent>
                  </Card>
 
                  <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl bg-white overflow-hidden">
                     <CardContent className="p-4 md:p-6 space-y-4 text-center">
                        <div className="h-10 w-10 bg-green-50 rounded-full flex items-center justify-center mx-auto border border-green-100/50">
-                          <Database className="w-5 h-5 text-[#00AA5B] opacity-60" />
+                          <Database className="w-4.5 h-4.5 text-[#00AA5B] opacity-60" />
                        </div>
                        <div className="space-y-1">
                           <p className="text-[11px] font-medium text-[#2E3137]">Database Backup</p>
-                          <p className="text-[9px] text-muted-foreground max-w-[200px] mx-auto leading-relaxed font-medium">Jadwalkan atau eksekusi backup manual keamanan data.</p>
+                          <p className="text-[9px] text-muted-foreground max-w-[160px] mx-auto leading-relaxed font-medium">Amankan seluruh data transaksi secara manual hari ini.</p>
                        </div>
-                       <Button variant="outline" className="w-full h-8 rounded-lg border-border/50 text-[10px] font-medium hover:bg-slate-50">Backup Sekarang</Button>
+                       <Button variant="outline" className="w-full h-8 rounded-lg border-border/50 text-[10px] font-bold hover:bg-slate-50 transition-all">Backup</Button>
                     </CardContent>
                  </Card>
               </div>
 
-              <Card className="border-border/40 border-dashed bg-slate-50/40 rounded-xl md:rounded-2xl p-5 flex items-start gap-4">
+              <Card className="border-border/40 border-dashed bg-orange-50/10 rounded-xl md:rounded-2xl p-5 flex items-start gap-4">
                  <div className="h-9 w-9 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-100/50 shrink-0">
-                    <AlertTriangle className="w-4 h-4 text-orange-600 opacity-70" />
+                    <AlertTriangle className="w-4.5 h-4.5 text-orange-600 opacity-70" />
                  </div>
-                 <div>
-                    <h3 className="text-[11px] font-medium text-[#2E3137]">Tinjauan Infrastruktur</h3>
-                    <p className="text-[9px] text-muted-foreground mt-0.5 leading-relaxed font-medium">
-                       Pengaturan pada bagian ini sangat krusial. Perubahan yang tidak tepat dapat menyebabkan <b>instabilitas platform</b> secara global. Disarankan untuk berkonsultasi dengan tim DevOps sebelum melakukan perubahan besar.
+                 <div className="space-y-1">
+                    <h3 className="text-[11px] font-bold text-[#2E3137]">Peringatan Infrastruktur</h3>
+                    <p className="text-[9px] text-muted-foreground leading-relaxed font-medium">
+                       Pengaturan di tab ini berdampak langsung pada stabilitas server. Perubahan yang salah dapat mengakibatkan layanan terhenti secara global. Pastikan untuk selalu melakukan verifikasi ganda.
                     </p>
                  </div>
               </Card>
