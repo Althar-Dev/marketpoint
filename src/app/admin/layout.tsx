@@ -56,9 +56,9 @@ export default function AdminLayout({
              />
           </div>
           
-          {/* Custom Sliding Underline */}
+          {/* Custom Bouncing Underline */}
           <div className="w-16 h-[2px] bg-indigo-600/10 rounded-full overflow-hidden relative">
-             <div className="absolute top-0 h-full bg-indigo-600 w-8 rounded-full animate-loading-slide"></div>
+             <div className="absolute top-0 h-full bg-indigo-600 w-6 rounded-full animate-loading-bounce"></div>
           </div>
           
           {/* Micro Typography */}
@@ -68,12 +68,12 @@ export default function AdminLayout({
         </div>
 
         <style jsx global>{`
-          @keyframes loading-slide {
-            0% { transform: translateX(-150%); }
-            100% { transform: translateX(250%); }
+          @keyframes loading-bounce {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(166%); }
           }
-          .animate-loading-slide {
-            animation: loading-slide 1.8s infinite cubic-bezier(0.65, 0, 0.35, 1);
+          .animate-loading-bounce {
+            animation: loading-bounce 0.8s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
           }
         `}</style>
       </div>
