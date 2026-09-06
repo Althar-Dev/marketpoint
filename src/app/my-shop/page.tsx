@@ -99,11 +99,11 @@ export default function MerchantDashboard() {
       <div className="max-w-screen-xl mx-auto space-y-6">
         
         <div className="flex items-center justify-between gap-4">
-          <div>
+          <div className="hidden md:block">
             <h2 className="text-xl font-bold tracking-tight text-[#212121]">Ringkasan Toko</h2>
             <p className="text-xs text-muted-foreground mt-0.5">Pantau performa dan kelola operasional toko Anda.</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 ml-auto">
             <Button asChild variant="outline" className="h-9 px-4 rounded-xl font-bold text-[11px] gap-2 border-border hover:bg-white transition-all">
               <Link href={`/${shop.slug}`} target="_blank">
                 <ExternalLink className="w-3.5 h-3.5" /> Lihat Toko
@@ -121,7 +121,7 @@ export default function MerchantDashboard() {
             <Card className="h-full border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
               <CardHeader className="p-5 pb-0 flex flex-row items-center justify-between border-none">
                 <div className="space-y-0.5">
-                  <CardTitle className="text-[13px] font-bold text-[#2E3137]">Statistik hari ini</CardTitle>
+                  <CardTitle className="text-[13px] font-bold text-[#2E3137]">Statistik Hari Ini</CardTitle>
                   <p className="text-[10px] text-muted-foreground font-medium">Update real-time performa toko.</p>
                 </div>
                 <Link href="/my-shop/stats" className="text-[10px] font-bold text-[#00AA5B] hover:underline flex items-center gap-1">
@@ -131,8 +131,8 @@ export default function MerchantDashboard() {
               <CardContent className="p-5 pt-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                    {[
-                     { label: "Pesanan baru", value: "0", color: "text-foreground", sub: "Menunggu diproses" },
-                     { label: "Saldo tertahan", value: "Rp 0", color: "text-orange-600", sub: "Proses verifikasi" },
+                     { label: "Pesanan Baru", value: "0", color: "text-foreground", sub: "Menunggu diproses" },
+                     { label: "Saldo Tertahan", value: "Rp 0", color: "text-orange-600", sub: "Proses verifikasi" },
                      { label: "Pendapatan", value: "Rp 0", color: "text-[#00AA5B]", sub: "Hari ini" },
                      { label: "Pengunjung", value: "0", color: "text-foreground", sub: "Trafik toko" },
                    ].map((stat, idx) => (
@@ -156,7 +156,7 @@ export default function MerchantDashboard() {
                   <div>
                     <div className="flex items-center gap-2 opacity-90 mb-1.5">
                        <img src="/assets/icon/wallets.png" className="w-4 h-4" alt="Wallet" />
-                       <span className="text-[11px] font-bold tracking-wider">Saldo penghasilan</span>
+                       <span className="text-[11px] font-bold tracking-wider">Saldo Penghasilan</span>
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-sm font-medium">Rp</span>
@@ -182,7 +182,7 @@ export default function MerchantDashboard() {
                     <ShieldCheck className="w-5 h-5 text-[#8B5CF6]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-[#2E3137]">Status toko</p>
+                    <p className="text-[11px] font-bold text-[#2E3137]">Status Toko</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                        <div className="h-1.5 w-1.5 rounded-full bg-[#00AA5B] animate-pulse"></div>
                        <span className="text-[10px] text-muted-foreground font-bold">Aktif & Terverifikasi</span>
@@ -203,7 +203,7 @@ export default function MerchantDashboard() {
                       <TrendingUp className="w-4 h-4 text-[#FFC400]" />
                     </div>
                     <div>
-                      <CardTitle className="text-[12px] font-bold text-[#2E3137]">Produk terlaris</CardTitle>
+                      <CardTitle className="text-[12px] font-bold text-[#2E3137]">Produk Terlaris</CardTitle>
                       <p className="text-[9px] text-muted-foreground font-medium">Top 5 produk performa terbaik.</p>
                     </div>
                   </div>
@@ -216,12 +216,12 @@ export default function MerchantDashboard() {
               <div className="w-14 h-14 bg-muted/20 rounded-2xl flex items-center justify-center mb-4 border-[1.5px] border-border">
                   <ShoppingBag className="w-6 h-6 text-muted-foreground opacity-30" />
               </div>
-              <h3 className="text-[12px] font-bold text-[#212121]">Belum ada data produk</h3>
+              <h3 className="text-[12px] font-bold text-[#212121]">Belum Ada Data Produk</h3>
               <p className="text-[10px] text-muted-foreground max-w-[240px] mt-1.5 leading-relaxed font-medium">
                 Data penjualan produk Anda akan muncul di sini setelah pesanan berhasil diselesaikan.
               </p>
               <Button asChild variant="outline" className="mt-6 h-8 px-5 rounded-lg text-[10px] font-bold border-border transition-all">
-                <Link href="/my-shop/products">Tambah produk pertama</Link>
+                <Link href="/my-shop/products">Tambah Produk Pertama</Link>
               </Button>
             </CardContent>
           </Card>
@@ -234,12 +234,12 @@ export default function MerchantDashboard() {
                       <History className="w-4 h-4 text-[#00AA5B]" />
                     </div>
                     <div>
-                      <CardTitle className="text-[12px] font-bold text-[#2E3137]">Aktivitas transaksi</CardTitle>
+                      <CardTitle className="text-[12px] font-bold text-[#2E3137]">Aktivitas Transaksi</CardTitle>
                       <p className="text-[9px] text-muted-foreground font-medium">Riwayat pembayaran masuk & keluar.</p>
                     </div>
                   </div>
                   <Link href="/my-shop/wallet" className="text-[10px] font-bold text-[#00AA5B] hover:underline flex items-center gap-0.5">
-                    Lihat semua <ArrowUpRight className="w-3 h-3" />
+                    Lihat Semua <ArrowUpRight className="w-3 h-3" />
                   </Link>
               </div>
             </CardHeader>
@@ -247,7 +247,7 @@ export default function MerchantDashboard() {
               <div className="w-14 h-14 bg-muted/20 rounded-2xl flex items-center justify-center mb-4 border-[1.5px] border-border">
                   <Zap className="w-6 h-6 text-muted-foreground opacity-30" />
               </div>
-              <h3 className="text-[12px] font-bold text-[#212121]">Belum ada transaksi</h3>
+              <h3 className="text-[12px] font-bold text-[#212121]">Belum Ada Transaksi</h3>
               <p className="text-[10px] text-muted-foreground max-w-[240px] mt-1.5 leading-relaxed font-medium">
                 Semua catatan arus kas toko Anda akan tercatat secara otomatis di sini.
               </p>
