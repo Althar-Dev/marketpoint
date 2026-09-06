@@ -1,17 +1,31 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Fungsi pembantu untuk memeriksa apakah pengguna adalah admin
+    // Memeriksa field 'admin' di dokumen pengguna dalam koleksi 'users'
+    function isAdmin() {
+      return request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
+    }
+
+    // Dokumen Pengguna dan sub-koleksinya (Wallet, Transactions, API Keys)
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Izinkan baca/tulis jika pengguna adalah pemiliknya ATAU seorang admin
+      allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
       
       match /{allPaths=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
       }
     }
 
+    // Toko Merchant
     match /shops/{shopId} {
+      // Toko dapat dibaca secara publik oleh siapa saja
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == shopId;
+      
+      // Hanya pemilik toko (UID cocok dengan shopId) atau admin yang dapat mengubah data toko
+      allow write: if (request.auth != null && request.auth.uid == shopId) || isAdmin();
     }
   }
 }
