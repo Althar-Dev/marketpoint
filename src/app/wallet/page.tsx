@@ -100,8 +100,8 @@ export default function UserWalletPage() {
               <CardContent className="p-8 md:p-10 relative z-10 flex flex-col justify-between h-full min-h-[220px]">
                  <div className="space-y-4">
                     <div className="flex items-center gap-2.5">
-                       <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center p-1.5">
-                          <img src="/assets/icon/wallet.png" className="w-full h-full" alt="" />
+                       <div className="h-7 w-7 flex items-center justify-center">
+                          <img src="/assets/icon/wallet.png" className="w-full h-full object-contain" alt="" />
                        </div>
                        <span className="text-[11px] font-black uppercase tracking-[0.15em] opacity-90">Saldo Belanja</span>
                     </div>
@@ -134,8 +134,8 @@ export default function UserWalletPage() {
               <CardContent className="p-8 md:p-10 relative z-10 flex flex-col justify-between h-full min-h-[220px]">
                  <div className="space-y-4">
                     <div className="flex items-center gap-2.5">
-                       <div className="h-7 w-7 rounded-full bg-[#FFC400]/20 flex items-center justify-center p-1.5">
-                          <img src="/assets/icon/mcoins.png" className="w-full h-full" alt="" />
+                       <div className="h-7 w-7 flex items-center justify-center">
+                          <img src="/assets/icon/mcoins.png" className="w-full h-full object-contain" alt="" />
                        </div>
                        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-[#FFC400]">Mcoin Rewards</span>
                     </div>

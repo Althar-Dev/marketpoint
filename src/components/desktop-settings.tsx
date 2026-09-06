@@ -171,7 +171,7 @@ export function DesktopSettings({
               
               <Link href="/wallet" className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border overflow-hidden p-1">
+                  <div className="w-5 h-5 flex items-center justify-center overflow-hidden">
                     <img src="/assets/icon/wallet.png" className="w-full h-full object-contain" alt="Wallet" />
                   </div>
                   <span className="text-[11px] font-medium text-muted-foreground">Saldo & MCoins</span>
