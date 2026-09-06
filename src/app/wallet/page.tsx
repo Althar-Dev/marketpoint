@@ -76,17 +76,6 @@ export default function UserWalletPage() {
       
       <main className="flex-1 w-full pt-20 md:pt-28 pb-20 max-w-screen-xl mx-auto px-4 md:px-8">
         
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-           <div className="space-y-1">
-              <h1 className="text-xl md:text-2xl font-black font-headline tracking-tight">Saldo & MCoins</h1>
-              <p className="text-[10px] md:text-[11px] text-muted-foreground font-bold uppercase tracking-[0.1em]">Pusat Keuangan MarketPoint Anda</p>
-           </div>
-           <Button variant="outline" className="h-9 px-4 rounded-xl font-bold text-[11px] gap-2 border-border bg-white hover:bg-muted/50 transition-all">
-             <History className="w-3.5 h-3.5" /> Riwayat Transaksi
-           </Button>
-        </div>
-
         {/* Balance Cards Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
            
@@ -100,9 +89,7 @@ export default function UserWalletPage() {
               <CardContent className="p-8 md:p-10 relative z-10 flex flex-col justify-between h-full min-h-[220px]">
                  <div className="space-y-4">
                     <div className="flex items-center gap-2.5">
-                       <div className="h-7 w-7 flex items-center justify-center">
-                          <img src="/assets/icon/wallet.png" className="w-full h-full object-contain" alt="" />
-                       </div>
+                       <img src="/assets/icon/wallet.png" className="w-7 h-7 object-contain" alt="" />
                        <span className="text-[11px] font-black uppercase tracking-[0.15em] opacity-90">Saldo Belanja</span>
                     </div>
                     <div className="flex items-baseline gap-2">
@@ -134,9 +121,7 @@ export default function UserWalletPage() {
               <CardContent className="p-8 md:p-10 relative z-10 flex flex-col justify-between h-full min-h-[220px]">
                  <div className="space-y-4">
                     <div className="flex items-center gap-2.5">
-                       <div className="h-7 w-7 flex items-center justify-center">
-                          <img src="/assets/icon/mcoins.png" className="w-full h-full object-contain" alt="" />
-                       </div>
+                       <img src="/assets/icon/mcoins.png" className="w-7 h-7 object-contain" alt="" />
                        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-[#FFC400]">Mcoin Rewards</span>
                     </div>
                     <div className="flex items-baseline gap-2">
@@ -176,7 +161,7 @@ export default function UserWalletPage() {
                  ) : transactions && transactions.length > 0 ? (
                     <div className="divide-y divide-border/40">
                        {transactions.map((t: any) => (
-                          <div key={t.id} className="p-5 md:p-6 flex items-center justify-between hover:bg-[#F8FAFC] transition-all cursor-pointer group">
+                          <div className="p-5 md:p-6 flex items-center justify-between hover:bg-[#F8FAFC] transition-all cursor-pointer group">
                              <div className="flex items-center gap-5">
                                 <div className={cn(
                                    "h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 border-[1.5px] transition-transform group-hover:scale-105",
@@ -207,7 +192,7 @@ export default function UserWalletPage() {
                                 )}>
                                    {t.type === 'SALES' || t.type === 'TOPUP' ? '+' : '-'} Rp {t.amount?.toLocaleString('id-ID')}
                                 </p>
-                                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity">ID: {t.id.substring(0, 8)}</p>
+                                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity">ID: {t.id?.substring(0, 8) || 'TRX'}</p>
                              </div>
                           </div>
                        ))}
