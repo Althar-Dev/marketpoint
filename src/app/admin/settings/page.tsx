@@ -48,12 +48,35 @@ export default function AdminSettingsPage() {
 
       <div className="max-w-screen-lg">
         <Tabs defaultValue="umum" className="w-full space-y-5">
-           <TabsList className="bg-white border border-border/40 p-1 h-9 rounded-xl w-fit flex gap-1 shadow-sm">
-              <TabsTrigger value="umum" className="rounded-lg text-[10px] font-medium px-4 data-[state=active]:bg-green-50 data-[state=active]:text-[#00AA5B] data-[state=active]:shadow-none border-none">Umum</TabsTrigger>
-              <TabsTrigger value="keamanan" className="rounded-lg text-[10px] font-medium px-4 data-[state=active]:bg-green-50 data-[state=active]:text-[#00AA5B] data-[state=active]:shadow-none border-none">Keamanan</TabsTrigger>
-              <TabsTrigger value="notifikasi" className="rounded-lg text-[10px] font-medium px-4 data-[state=active]:bg-green-50 data-[state=active]:text-[#00AA5B] data-[state=active]:shadow-none border-none">Notifikasi</TabsTrigger>
-              <TabsTrigger value="sistem" className="rounded-lg text-[10px] font-medium px-4 data-[state=active]:bg-green-50 data-[state=active]:text-[#00AA5B] data-[state=active]:shadow-none border-none">Infrastruktur</TabsTrigger>
-           </TabsList>
+           {/* Refined Tabs List */}
+           <div className="w-full overflow-x-auto no-scrollbar pb-1">
+             <TabsList className="bg-slate-100/50 p-1 h-10 rounded-xl w-fit flex gap-1 border border-border/20 shadow-none">
+                <TabsTrigger 
+                  value="umum" 
+                  className="rounded-lg text-[10px] font-bold px-5 h-full data-[state=active]:bg-green-50 data-[state=active]:text-[#00AA5B] data-[state=active]:shadow-none border-none transition-all duration-200"
+                >
+                  Umum
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="keamanan" 
+                  className="rounded-lg text-[10px] font-bold px-5 h-full data-[state=active]:bg-green-50 data-[state=active]:text-[#00AA5B] data-[state=active]:shadow-none border-none transition-all duration-200"
+                >
+                  Keamanan
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="notifikasi" 
+                  className="rounded-lg text-[10px] font-bold px-5 h-full data-[state=active]:bg-green-50 data-[state=active]:text-[#00AA5B] data-[state=active]:shadow-none border-none transition-all duration-200"
+                >
+                  Notifikasi
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="sistem" 
+                  className="rounded-lg text-[10px] font-bold px-5 h-full data-[state=active]:bg-green-50 data-[state=active]:text-[#00AA5B] data-[state=active]:shadow-none border-none transition-all duration-200"
+                >
+                  Infrastruktur
+                </TabsTrigger>
+             </TabsList>
+           </div>
 
            {/* Tab: Umum */}
            <TabsContent value="umum" className="space-y-4 outline-none animate-in fade-in slide-in-from-bottom-1 duration-300">
