@@ -42,7 +42,7 @@ export default function AdminLayout({
       <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden font-body">
         {/* Subtil Background Grid */}
         <div className="absolute inset-0 z-0 opacity-[0.03]" 
-             style={{ backgroundImage: `radial-gradient(#4f46e5 0.5px, transparent 0.5px)`, backgroundSize: '32px 32px' }}>
+             style={{ backgroundImage: `radial-gradient(#10b981 0.5px, transparent 0.5px)`, backgroundSize: '32px 32px' }}>
         </div>
         
         {/* Central Content */}
@@ -57,13 +57,13 @@ export default function AdminLayout({
           </div>
           
           {/* Custom Bouncing Underline */}
-          <div className="w-16 h-[2px] bg-indigo-600/10 rounded-full overflow-hidden relative">
-             <div className="absolute top-0 h-full bg-indigo-600 w-6 rounded-full animate-loading-bounce"></div>
+          <div className="w-16 h-[2px] bg-emerald-600/10 rounded-full overflow-hidden relative">
+             <div className="absolute top-0 h-full bg-emerald-600 w-6 rounded-full animate-loading-bounce"></div>
           </div>
           
           {/* Micro Typography */}
           <div className="mt-6 flex flex-col items-center gap-1.5 opacity-40">
-             <span className="text-[9px] tracking-[0.25em] text-[#2E3137] font-bold uppercase">Autentikasi</span>
+             <span className="text-[9px] tracking-[0.25em] text-[#2E3137] font-medium uppercase">Verifikasi Admin</span>
           </div>
         </div>
 
