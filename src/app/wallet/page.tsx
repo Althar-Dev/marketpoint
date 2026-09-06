@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -101,7 +100,7 @@ export default function UserWalletPage() {
                       Rp {wallet?.balance?.toLocaleString('id-ID') || 0}
                     </p>
                   </div>
-                  <img src="/assets/icon/wallet.png" className="w-10 h-10 object-contain" alt="" />
+                  <img src="/assets/icon/wallets.png" className="w-10 h-10 object-contain" alt="" />
                 </div>
               </CardContent>
             </Card>
@@ -206,12 +205,12 @@ export default function UserWalletPage() {
            {/* Balance Card */}
            <Card className="border-none shadow-xl bg-[#00AA5B] text-white overflow-hidden relative group rounded-[2.5rem]">
               <div className="absolute right-10 top-1/2 -translate-y-1/2 opacity-20 pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                 <img src="/assets/icon/wallet.png" className="w-44 h-44" alt="" />
+                 <img src="/assets/icon/wallets.png" className="w-44 h-44" alt="" />
               </div>
               <CardContent className="p-10 relative z-10 flex flex-col justify-between h-full min-h-[250px]">
                  <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                       <img src="/assets/icon/wallet.png" className="w-8 h-8 object-contain" alt="" />
+                       <img src="/assets/icon/wallets.png" className="w-8 h-8 object-contain" alt="" />
                        <span className="text-[11px] font-black uppercase tracking-[0.2em] opacity-90">Saldo Belanja Utama</span>
                     </div>
                     <div className="flex items-baseline gap-3">
