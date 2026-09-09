@@ -15,7 +15,8 @@ import {
   ChevronRight,
   Database,
   History,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare
 } from "lucide-react";
 import { 
   Sidebar, 
@@ -65,6 +66,7 @@ export function AdminSidebar() {
     {
       label: "System",
       items: [
+        { label: "Bot WhatsApp", icon: MessageSquare, href: "/admin/wa-bot" },
         { label: "Pengaturan", icon: Settings, href: "/admin/settings" },
       ]
     }

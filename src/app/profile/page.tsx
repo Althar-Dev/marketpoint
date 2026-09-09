@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DesktopSettings } from "@/components/desktop-settings";
+import { DesktopProfileSkeleton } from "@/components/desktop-profile-skeleton";
 import Link from "next/link";
 import { 
   Settings, 
@@ -162,6 +163,10 @@ export default function ProfilePage() {
   };
 
   if (!mounted || authLoading || (user && (walletLoading || userLoading || shopLoading))) {
+    if (!isMobile) {
+      return <DesktopProfileSkeleton />;
+    }
+
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
@@ -239,7 +244,10 @@ export default function ProfilePage() {
         <div className="px-4 py-3 flex items-center gap-3">
           <div className="relative cursor-pointer" onClick={() => mobileFileInputRef.current?.click()}>
             <Avatar className="h-14 w-14 border-none shadow-sm ring-2 ring-muted/20 relative">
-              <AvatarImage src={user.photoURL || undefined} />
+              <AvatarImage 
+                src={userData?.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (userData?.photoURL || (user?.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : user?.photoURL) || undefined)} 
+                referrerPolicy="no-referrer"
+              />
               <AvatarFallback className="bg-[#00AA5B] text-white text-lg font-bold">
                 {displayName?.substring(0, 1) || "U"}
               </AvatarFallback>

@@ -140,7 +140,10 @@ export function DesktopSettings({
           <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden p-4 h-auto">
             <div className="flex items-center gap-3 mb-5">
               <Avatar className="h-9 w-9 ring-1 ring-border">
-                <AvatarImage src={user.photoURL || undefined} />
+                <AvatarImage 
+                  src={user.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (user.photoURL || undefined)} 
+                  referrerPolicy="no-referrer" 
+                />
                 <AvatarFallback className="bg-[#00AA5B] text-white font-bold text-[12px]">
                   {displayName?.substring(0, 1) || "U"}
                 </AvatarFallback>
@@ -266,7 +269,11 @@ export function DesktopSettings({
                     <Card className="p-5 border border-border/50 shadow-none bg-white rounded-xl flex flex-col items-center gap-4">
                       <div className="relative">
                         <Avatar className="h-40 w-40 ring-2 ring-[#F8FAFC] rounded-xl overflow-hidden shadow-sm">
-                          <AvatarImage src={user.photoURL || undefined} className="object-cover" />
+                          <AvatarImage 
+                            src={user.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (user.photoURL || undefined)} 
+                            className="object-cover" 
+                            referrerPolicy="no-referrer"
+                          />
                           <AvatarFallback className="bg-[#00AA5B] text-white text-4xl font-bold rounded-none">
                             {displayName?.substring(0, 1) || "U"}
                           </AvatarFallback>

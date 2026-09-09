@@ -153,7 +153,7 @@ export default function AdminUsersPage() {
                     <TableCell className="px-6 py-3.5">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8 rounded-lg border border-border/40 shadow-sm shrink-0">
-                          <AvatarImage src={u.photoURL} />
+                          <AvatarImage src={u.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : u.photoURL} referrerPolicy="no-referrer" />
                           <AvatarFallback className="bg-green-50 text-[#00AA5B] text-[9px] font-medium uppercase">
                             {u.displayName?.substring(0, 1) || "U"}
                           </AvatarFallback>

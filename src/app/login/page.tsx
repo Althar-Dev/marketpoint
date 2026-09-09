@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, updateProfile } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
 import { Button } from "@/components/ui/button";
@@ -45,16 +45,25 @@ export default function SignInPage() {
       const userDoc = await getDoc(userDocRef);
 
       // Logika Avatar Acak jika belum ada
-      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
       const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+
+      const existingData = userDoc.exists() ? userDoc.data() : null;
+      let finalDisplayName = existingData?.displayName || user.displayName || "Pengguna";
+      let finalPhotoURL = existingData?.photoURL || user.photoURL || randomAvatar;
+      if (finalPhotoURL === "/assets/avatar/duck.png") finalPhotoURL = "/assets/avatar/duck.jpg";
 
       await setDoc(userDocRef, {
         uid: user.uid,
         email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL || randomAvatar,
+        displayName: finalDisplayName,
+        photoURL: finalPhotoURL,
         lastLogin: serverTimestamp(),
       }, { merge: true });
+
+      if (user.photoURL !== finalPhotoURL) {
+        await updateProfile(user, { photoURL: finalPhotoURL });
+      }
 
       if (!userDoc.exists()) {
         await setDoc(doc(db, "users", user.uid, "wallet", "info"), {
@@ -66,16 +75,20 @@ export default function SignInPage() {
 
       toast({
         title: "Berhasil Masuk",
-        description: `Selamat datang kembali, ${user.displayName || 'Pengguna'}!`,
+        description: `Selamat datang kembali, ${finalDisplayName}!`,
       });
 
       router.push("/");
     } catch (error: any) {
       console.error("Gagal login Google:", error);
+      const errorMsg =
+        error.code === "auth/account-exists-with-different-credential"
+          ? "Email ini sudah terdaftar via Email & Password. Silakan masuk menggunakan Email & Password terlebih dahulu."
+          : "Terjadi kesalahan saat masuk dengan Google. Silakan coba lagi.";
       toast({
         variant: "destructive",
         title: "Gagal Masuk",
-        description: "Terjadi kesalahan saat masuk dengan Google. Silakan coba lagi.",
+        description: errorMsg,
       });
     } finally {
       setLoading(false);
@@ -117,9 +130,30 @@ export default function SignInPage() {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
 
-      await setDoc(doc(db, "users", user.uid), {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
+
+      let currentPhoto = user.photoURL;
+      if (userDocSnap.exists()) {
+        const data = userDocSnap.data();
+        if (data.photoURL) currentPhoto = data.photoURL;
+      }
+
+      if (!currentPhoto || currentPhoto === "/assets/avatar/duck.png") {
+        currentPhoto = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+      } else if (currentPhoto === "/assets/avatar/duck.png") {
+        currentPhoto = "/assets/avatar/duck.jpg";
+      }
+
+      await setDoc(userDocRef, {
+        photoURL: currentPhoto,
         lastLogin: serverTimestamp(),
       }, { merge: true });
+
+      if (user.photoURL !== currentPhoto) {
+        await updateProfile(user, { photoURL: currentPhoto });
+      }
 
       toast({
         title: "Berhasil Masuk",

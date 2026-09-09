@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MerchantSidebar } from "@/components/merchant-sidebar";
 import { MerchantHeader } from "@/components/merchant-header";
 import { useUser } from "@/firebase";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function MerchantLayout({
   children,
@@ -14,6 +14,7 @@ export default function MerchantLayout({
 }) {
   const { user, loading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
 
   React.useEffect(() => {
     if (!loading && !user) {
@@ -26,6 +27,11 @@ export default function MerchantLayout({
   }
 
   if (!user) return null;
+
+  // Render setup page cleanly without MerchantSidebar and MerchantHeader
+  if (pathname === "/my-shop/setup") {
+    return <div className="min-h-screen w-full bg-[#F8FAFC]">{children}</div>;
+  }
 
   return (
     <SidebarProvider defaultOpen={true}>

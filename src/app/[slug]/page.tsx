@@ -8,6 +8,7 @@ import { collection, query, where, limit } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ShopProfileSkeleton } from "@/components/shop-profile-skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -145,37 +146,7 @@ export default function ShopProfilePage() {
   const shop = shops && shops.length > 0 ? shops[0] : null;
 
   if (!mounted || loading) {
-    return (
-      <main className="flex-1 w-full pt-16">
-        <Skeleton className="h-32 sm:h-44 md:h-72 lg:h-[350px] w-full rounded-none" />
-        <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-20 relative z-10 mb-8">
-          <Card className="border-border border-[1.5px] shadow-lg rounded-2xl bg-white overflow-hidden">
-            <CardContent className="p-4 md:p-8 flex flex-row items-start gap-4 md:gap-8">
-              <Skeleton className="h-16 w-16 md:h-32 md:w-32 rounded-2xl shrink-0" />
-              <div className="flex-1 space-y-4 w-full">
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-40 md:h-8 md:w-64" />
-                  <Skeleton className="h-3 w-24" />
-                </div>
-                <div className="hidden md:flex gap-4">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <Skeleton className="h-9 w-32 rounded-xl" />
-                  <Skeleton className="h-9 w-32 rounded-xl" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="max-w-screen-xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-16">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} className="aspect-[3/4] rounded-xl" />
-          ))}
-        </div>
-      </main>
-    );
+    return <ShopProfileSkeleton />;
   }
 
   if (!shop) {

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GoogleAuthProvider, signInWithCredential, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,35 +42,50 @@ export default function SignUpPage() {
       const result = await signInWithCredential(auth, credential);
       const user = result.user;
 
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
       // Logika Avatar Acak untuk pendaftaran Google pertama kali
-      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
       const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
-      await setDoc(doc(db, "users", user.uid), {
+      const existingData = userDoc.exists() ? userDoc.data() : null;
+      let finalDisplayName = existingData?.displayName || user.displayName || "Pengguna";
+      let finalPhotoURL = existingData?.photoURL || user.photoURL || randomAvatar;
+      if (finalPhotoURL === "/assets/avatar/duck.png") finalPhotoURL = "/assets/avatar/duck.jpg";
+
+      await setDoc(userDocRef, {
         uid: user.uid,
         email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL || randomAvatar,
-        createdAt: serverTimestamp(),
+        displayName: finalDisplayName,
+        photoURL: finalPhotoURL,
+        ...(existingData?.createdAt ? {} : { createdAt: serverTimestamp() }),
+        lastLogin: serverTimestamp(),
       }, { merge: true });
 
-      await setDoc(doc(db, "users", user.uid, "wallet", "info"), {
-        balance: 0,
-        currency: "IDR",
-        userId: user.uid,
-      }, { merge: true });
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, "users", user.uid, "wallet", "info"), {
+          balance: 0,
+          currency: "IDR",
+          userId: user.uid,
+        }, { merge: true });
+      }
 
       toast({
-        title: "Berhasil Mendaftar",
-        description: `Selamat datang di MarketPoint, ${user.displayName || 'Pengguna'}!`,
+        title: "Berhasil Mendaftar / Masuk",
+        description: `Selamat datang di MarketPoint, ${finalDisplayName}!`,
       });
       router.push("/");
     } catch (error: any) {
       console.error("Gagal daftar Google:", error);
+      const errorMsg =
+        error.code === "auth/account-exists-with-different-credential"
+          ? "Email ini sudah terdaftar via Email & Password. Silakan masuk menggunakan Email & Password terlebih dahulu."
+          : "Terjadi kesalahan saat mendaftar dengan Google.";
       toast({
         variant: "destructive",
         title: "Gagal Mendaftar",
-        description: "Terjadi kesalahan saat mendaftar dengan Google.",
+        description: errorMsg,
       });
     } finally {
       setLoading(false);
@@ -110,7 +125,7 @@ export default function SignUpPage() {
     setLoading(true);
     try {
       // Logika Avatar Acak untuk pendaftaran Email
-      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
       const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);

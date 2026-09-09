@@ -19,7 +19,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUser, useAuth } from "@/firebase";
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -27,8 +28,18 @@ import Link from "next/link";
 export function AdminHeader() {
   const { user } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "users", user.uid);
+  }, [db, user]);
+  const { data: userData } = useDoc(userDocRef);
+
+  const rawPhoto = userData?.photoURL || user?.photoURL;
+  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (rawPhoto || undefined);
 
   const handleLogout = async () => {
     try {
@@ -81,7 +92,7 @@ export function AdminHeader() {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-1.5 outline-none group hover:bg-muted/30 p-1 rounded-lg transition-all">
               <Avatar className="h-7 w-7 md:h-8 md:w-8 rounded-md border border-border shadow-sm">
-                <AvatarImage src={user?.photoURL || undefined} />
+                <AvatarImage src={photoURL} referrerPolicy="no-referrer" />
                 <AvatarFallback className="bg-[#00AA5B] text-white text-[9px] md:text-[10px] font-bold">
                   {user?.displayName?.substring(0, 2).toUpperCase() || "AD"}
                 </AvatarFallback>

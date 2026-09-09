@@ -20,7 +20,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useUser, useAuth } from "@/firebase";
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,16 @@ export function MarketHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, loading } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(db, "users", user.uid);
+  }, [db, user]);
+  const { data: userData } = useDoc(userDocRef);
+
+  const rawPhoto = userData?.photoURL || user?.photoURL;
+  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (rawPhoto || undefined);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -132,7 +143,11 @@ export function MarketHeader() {
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center outline-none group">
                     <Avatar className="h-8 w-8 rounded-full border border-border transition-transform group-hover:scale-105">
-                      <AvatarImage src={user.photoURL || undefined} alt={user.displayName || "User"} />
+                      <AvatarImage 
+                        src={photoURL} 
+                        alt={user.displayName || "User"} 
+                        referrerPolicy="no-referrer"
+                      />
                       <AvatarFallback className="bg-[#00AA5B] text-white text-[10px] font-bold">
                         {user.displayName?.substring(0, 2).toUpperCase() || user.email?.substring(0, 2).toUpperCase() || "MP"}
                       </AvatarFallback>

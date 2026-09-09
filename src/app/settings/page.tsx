@@ -15,8 +15,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DesktopSettings } from "@/components/desktop-settings";
+import { DesktopProfileSkeleton } from "@/components/desktop-profile-skeleton";
 import { 
   ChevronLeft, 
+  ChevronRight,
   Menu,
   Pencil,
   MapPinned,
@@ -178,6 +180,10 @@ export default function SettingsPage() {
   };
 
   if (!mounted || authLoading || (user && (userLoading || walletLoading || shopLoading))) {
+    if (!isMobile) {
+      return <DesktopProfileSkeleton />;
+    }
+
     return (
       <div className="min-h-screen bg-white flex flex-col font-body">
         <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
@@ -262,7 +268,10 @@ export default function SettingsPage() {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="h-14 w-14 border-none shadow-sm ring-2 ring-muted/20">
-                <AvatarImage src={user.photoURL || undefined} />
+                <AvatarImage 
+                  src={userData?.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (userData?.photoURL || (user?.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : user?.photoURL) || undefined)} 
+                  referrerPolicy="no-referrer"
+                />
                 <AvatarFallback className="bg-[#00AA5B] text-white text-xl font-bold uppercase">
                   {displayName.substring(0, 1) || "U"}
                 </AvatarFallback>

@@ -1,0 +1,9 @@
+{
+  "botName": "MarketPoint",
+  "otpExpiryMinutes": 5,
+  "otpCooldownSeconds": 6,
+  "communityLink": "https://chat.whatsapp.com/DkdmJDYp3fr080QP3G4Xju",
+  "communityJid": "120363410398124742@g.us",
+  "checkCommunity": true,
+  "sessionDir": "bot-session"
+}
