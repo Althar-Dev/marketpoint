@@ -64,6 +64,8 @@ export function MerchantHeader() {
         return { title: "Statistik Toko" };
       case "/my-shop/wallet": 
         return { title: "Saldo Toko" };
+      case "/my-shop/subscription": 
+        return { title: "Langganan Layanan" };
       case "/my-shop/chat": 
         return { title: "Chat Pembeli" };
       case "/my-shop/reviews": 

@@ -19,7 +19,8 @@ import {
   AlertTriangle,
   Users,
   Ticket,
-  Zap
+  Zap,
+  CreditCard
 } from "lucide-react";
 import { 
   Sidebar, 
@@ -57,6 +58,7 @@ export function MerchantSidebar() {
       items: [
         { label: "Dashboard", icon: LayoutDashboard, href: "/my-shop" },
         { label: "Saldo", icon: Wallet, href: "/my-shop/wallet" },
+        { label: "Subscription", icon: CreditCard, href: "/my-shop/subscription" },
         { label: "Statistik", icon: TrendingUp, href: "/my-shop/stats" },
       ]
     },
