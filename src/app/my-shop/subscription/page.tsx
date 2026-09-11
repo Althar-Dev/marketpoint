@@ -7,13 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
   CheckCircle2,
@@ -23,7 +16,11 @@ import {
   Crown,
   Loader2,
   Check,
-  Sparkles
+  Sparkles,
+  ChevronLeft,
+  CreditCard,
+  Wallet,
+  ArrowRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +42,7 @@ const PLANS: PlanItem[] = [
   {
     id: "plus",
     name: "Plus",
-    description: "Ideal untuk penjual berkembang yang ingin kuota lebih besar & fitur promo.",
+    description: "Ideal untuk penjual berkembang yang ingin kuota lebih besar dan fitur promo.",
     monthlyPrice: 29000,
     yearlyPrice: 290000,
     icon: Zap,
@@ -53,10 +50,10 @@ const PLANS: PlanItem[] = [
     bgColor: "bg-green-50",
     borderColor: "border-border/50",
     features: [
-      "Hingga 50 Produk",
-      "Komisi Rendah",
-      "Voucher Toko",
-      "Flash Sale"
+      "Hingga 50 produk",
+      "Komisi rendah",
+      "Voucher toko",
+      "Flash sale"
     ]
   },
   {
@@ -71,18 +68,18 @@ const PLANS: PlanItem[] = [
     borderColor: "border-border/50",
     popular: true,
     features: [
-      "Hingga 100 Produk",
-      "Komisi Lebih Rendah",
-      "Voucher Toko",
-      "Flash Sale",
-      "Badge Verified",
+      "Hingga 100 produk",
+      "Komisi lebih rendah",
+      "Voucher toko",
+      "Flash sale",
+      "Badge verified",
       "Bot Telegram"
     ]
   },
   {
     id: "prime",
     name: "Prime",
-    description: "Solusi tanpa batas untuk merchant skala besar, API reseller & prioritas support.",
+    description: "Solusi tanpa batas untuk merchant skala besar, API reseller dan prioritas support.",
     monthlyPrice: 149000,
     yearlyPrice: 1490000,
     icon: Crown,
@@ -90,14 +87,14 @@ const PLANS: PlanItem[] = [
     bgColor: "bg-green-50",
     borderColor: "border-border/50",
     features: [
-      "Unlimited Produk",
-      "Komisi Sangat Rendah",
-      "Voucher Toko",
-      "Flash Sale",
-      "Badge Official",
+      "Unlimited produk",
+      "Komisi sangat rendah",
+      "Voucher toko",
+      "Flash sale",
+      "Badge official",
       "Bot Telegram",
-      "API Reseller",
-      "Prioritas Support"
+      "API reseller",
+      "Prioritas support"
     ]
   }
 ];
@@ -108,9 +105,9 @@ export default function MerchantSubscriptionPage() {
   const { toast } = useToast();
 
   const [mounted, setMounted] = useState(false);
+  const [view, setView] = useState<"plans" | "checkout">("plans");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [selectedPlan, setSelectedPlan] = useState<PlanItem | null>(null);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -132,9 +129,9 @@ export default function MerchantSubscriptionPage() {
     status: "ACTIVE"
   };
 
-  const handleOpenUpgradeModal = (plan: PlanItem) => {
+  const handleSelectPlan = (plan: PlanItem) => {
     setSelectedPlan(plan);
-    setShowConfirmModal(true);
+    setView("checkout");
   };
 
   const handleConfirmSubscription = async () => {
@@ -158,15 +155,16 @@ export default function MerchantSubscriptionPage() {
       }
 
       toast({
-        title: "Berlangganan Berhasil!",
-        description: `Toko Anda kini aktif pada Paket ${selectedPlan.name} (${billingCycle === "yearly" ? "Tahunan" : "Bulanan"}).`,
+        title: "Berlangganan berhasil",
+        description: `Toko Anda kini aktif pada paket ${selectedPlan.name} (${billingCycle === "yearly" ? "tahunan" : "bulanan"}).`,
       });
 
-      setShowConfirmModal(false);
+      setView("plans");
+      setSelectedPlan(null);
     } catch (err: any) {
       toast({
         variant: "destructive",
-        title: "Gagal Berlangganan",
+        title: "Gagal berlangganan",
         description: err.message || "Terjadi kesalahan saat memproses.",
       });
     } finally {
@@ -188,6 +186,117 @@ export default function MerchantSubscriptionPage() {
     );
   }
 
+  // --- View Checkout ---
+  if (view === "checkout" && selectedPlan) {
+    const priceDisplay = billingCycle === "yearly" ? selectedPlan.yearlyPrice : selectedPlan.monthlyPrice;
+    
+    return (
+      <main className="p-4 md:p-8 lg:p-12 bg-[#F9FAFB] min-h-screen">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <button 
+            onClick={() => setView("plans")}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-bold group"
+          >
+            <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            Kembali pilih paket
+          </button>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left Column: Order Summary */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-xl md:text-2xl font-black tracking-tight text-[#212121]">Checkout Berlangganan</h2>
+                <p className="text-sm text-muted-foreground">Selesaikan pembayaran untuk mengaktifkan fitur toko Anda.</p>
+              </div>
+
+              <Card className="border-border/50 shadow-sm rounded-2xl overflow-hidden bg-white">
+                <CardHeader className="p-6 border-b border-border/40 bg-slate-50/50">
+                  <CardTitle className="text-sm font-bold">Ringkasan Pesanan</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-green-50 text-[#00AA5B] flex items-center justify-center shrink-0 border border-green-100">
+                      <selectedPlan.icon className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-black text-[#212121]">Paket {selectedPlan.name}</p>
+                      <p className="text-xs text-muted-foreground">Berlaku untuk {billingCycle === "yearly" ? "1 tahun" : "1 bulan"}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-black text-[#00AA5B]">Rp {priceDisplay.toLocaleString('id-ID')}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-6 border-t border-border/40">
+                    <div className="flex justify-between text-xs font-bold text-muted-foreground">
+                      <span>Harga paket</span>
+                      <span className="text-[#212121]">Rp {priceDisplay.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-bold text-muted-foreground">
+                      <span>Pajak (0%)</span>
+                      <span className="text-[#212121]">Rp 0</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-3 border-t border-border/40">
+                      <span className="text-sm font-black text-[#212121]">Total pembayaran</span>
+                      <span className="text-lg font-black text-[#00AA5B]">Rp {priceDisplay.toLocaleString('id-ID')}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="p-4 rounded-2xl bg-[#FFC400]/5 border border-[#FFC400]/20 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-[#FFC400] shrink-0" />
+                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                  Paket akan langsung aktif setelah konfirmasi pembayaran berhasil dilakukan secara otomatis oleh sistem kami.
+                </p>
+              </div>
+            </div>
+
+            {/* Right Column: Payment Method & Action */}
+            <div className="lg:col-span-5 space-y-6">
+               <Card className="border-border/50 shadow-md rounded-2xl overflow-hidden bg-white">
+                 <CardHeader className="p-6 border-b border-border/40">
+                    <CardTitle className="text-sm font-bold">Metode Pembayaran</CardTitle>
+                 </CardHeader>
+                 <CardContent className="p-6 space-y-4">
+                    <div className="p-4 rounded-xl border-2 border-[#00AA5B] bg-[#00AA5B]/5 flex items-center justify-between cursor-pointer">
+                       <div className="flex items-center gap-3">
+                          <Wallet className="w-5 h-5 text-[#00AA5B]" />
+                          <div className="text-left">
+                             <p className="text-xs font-black text-[#212121]">Saldo MarketPoint</p>
+                             <p className="text-[10px] text-muted-foreground font-medium">Tersedia: Rp 0</p>
+                          </div>
+                       </div>
+                       <CheckCircle2 className="w-5 h-5 text-[#00AA5B]" />
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-border bg-white flex items-center justify-between opacity-60 cursor-not-allowed">
+                       <div className="flex items-center gap-3">
+                          <CreditCard className="w-5 h-5 text-muted-foreground" />
+                          <p className="text-xs font-black text-[#212121]">Xendit Gateway (VA/QRIS)</p>
+                       </div>
+                       <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                 </CardContent>
+                 <CardFooter className="p-6 pt-0">
+                    <Button 
+                      onClick={handleConfirmSubscription}
+                      disabled={isSubmitting}
+                      className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-black text-xs gap-2 shadow-lg shadow-[#00AA5B]/20"
+                    >
+                      {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                      Bayar dan Aktifkan Sekarang
+                    </Button>
+                 </CardFooter>
+               </Card>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // --- View Plan Selection ---
   return (
     <main className="p-3 md:p-6 lg:p-8 space-y-5 md:space-y-6 bg-[#F9FAFB] min-h-screen">
       <div className="max-w-screen-xl mx-auto space-y-6">
@@ -196,11 +305,11 @@ export default function MerchantSubscriptionPage() {
         <div className="text-center space-y-2 max-w-xl mx-auto">
           <Badge variant="outline" className="bg-white border-border/50 text-[#00AA5B] font-medium text-[9px] md:text-[10px] px-2.5 py-0.5 rounded-full shadow-sm">
             <Sparkles className="w-3 h-3 mr-1 text-[#00AA5B]" />
-            Paket Berlangganan Toko
+            Paket berlangganan toko
           </Badge>
-          <h2 className="text-base md:text-lg font-medium tracking-tight text-[#212121]">Pilih Paket Fitur Toko Anda</h2>
+          <h2 className="text-base md:text-lg font-bold tracking-tight text-[#212121]">Pilih paket fitur toko Anda</h2>
           <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">
-            Tingkatkan batas produk, aktifkan voucher toko, flash sale, hingga otomatisasi Bot Telegram & API Reseller.
+            Tingkatkan batas produk, aktifkan voucher toko, flash sale, hingga otomatisasi bot Telegram dan API reseller.
           </p>
 
           {/* Billing Cycle Toggle */}
@@ -258,7 +367,7 @@ export default function MerchantSubscriptionPage() {
                 {plan.popular && (
                   <div className="absolute top-0 right-0">
                     <div className="bg-[#00AA5B] text-white text-[8px] md:text-[9px] font-bold px-3 py-1 rounded-bl-xl">
-                      POPULER
+                      Populer
                     </div>
                   </div>
                 )}
@@ -286,7 +395,7 @@ export default function MerchantSubscriptionPage() {
                 </CardHeader>
 
                 <CardContent className="p-5 flex-1 space-y-3">
-                  <p className="text-[8px] md:text-[9px] font-medium text-muted-foreground uppercase tracking-widest">Fitur Paket {plan.name}:</p>
+                  <p className="text-[8px] md:text-[9px] font-medium text-muted-foreground uppercase tracking-widest">Fitur paket {plan.name}:</p>
                   <ul className="space-y-2">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-center gap-2">
@@ -301,7 +410,7 @@ export default function MerchantSubscriptionPage() {
 
                 <CardFooter className="p-5 pt-0 mt-auto">
                   <Button 
-                    onClick={() => handleOpenUpgradeModal(plan)}
+                    onClick={() => handleSelectPlan(plan)}
                     className={cn(
                       "w-full h-8 rounded-lg font-bold text-[10px] md:text-[11px] transition-all shadow-sm",
                       isActive 
@@ -312,7 +421,7 @@ export default function MerchantSubscriptionPage() {
                     )}
                     disabled={isActive}
                   >
-                    {isActive ? "Paket Toko Aktif" : `Pilih Paket ${plan.name}`}
+                    {isActive ? "Paket toko aktif" : `Pilih paket ${plan.name}`}
                   </Button>
                 </CardFooter>
               </Card>
@@ -329,7 +438,7 @@ export default function MerchantSubscriptionPage() {
                   <ShieldCheck className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-[11px] md:text-[12px] font-medium text-[#212121]">Aman & Transparan</h3>
+                  <h3 className="text-[11px] md:text-[12px] font-medium text-[#212121]">Aman dan transparan</h3>
                   <p className="text-[9px] md:text-[10px] text-muted-foreground font-medium mt-0.5">
                     Tidak ada biaya tambahan tersembunyi. Akses fitur langsung aktif begitu proses konfirmasi selesai.
                   </p>
@@ -337,77 +446,13 @@ export default function MerchantSubscriptionPage() {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Button variant="outline" className="rounded-lg text-[10px] font-medium h-8 px-3 border-border/50 bg-white">
-                  Butuh Bantuan?
+                  Butuh bantuan?
                 </Button>
               </div>
             </div>
           </Card>
         </div>
-
       </div>
-
-      {/* Modal Dialog Konfirmasi Upgrade / Berlangganan */}
-      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
-        <DialogContent className="max-w-md rounded-xl md:rounded-2xl p-5 bg-white">
-          <DialogHeader>
-            <DialogTitle className="text-xs md:text-sm font-medium text-[#212121]">
-              Konfirmasi Paket {selectedPlan?.name}
-            </DialogTitle>
-            <DialogDescription className="text-[9px] md:text-[10px] text-muted-foreground font-medium">
-              Aktifkan paket berlangganan toko Anda untuk menikmati fitur pilihan.
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedPlan && (
-            <div className="space-y-3 py-2">
-              <div className="p-3 rounded-xl bg-slate-50 border border-border/50 space-y-1.5">
-                <div className="flex justify-between items-center text-[10px] md:text-[11px] font-medium">
-                  <span className="text-muted-foreground">Paket Pilihan:</span>
-                  <span className="text-[#212121] font-bold">Paket {selectedPlan.name}</span>
-                </div>
-                <div className="flex justify-between items-center text-[10px] md:text-[11px] font-medium">
-                  <span className="text-muted-foreground">Siklus Penagihan:</span>
-                  <span className="text-[#00AA5B] font-bold">
-                    {billingCycle === "yearly" ? "Tahunan (Hemat 2 Bulan)" : "Bulanan"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-[10px] md:text-[11px] font-medium pt-2 border-t border-border/40">
-                  <span className="text-[#212121] font-bold">Total Biaya:</span>
-                  <span className="text-sm font-bold text-[#00AA5B]">
-                    Rp {(billingCycle === "yearly" ? selectedPlan.yearlyPrice : selectedPlan.monthlyPrice).toLocaleString("id-ID")}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-[8px] md:text-[9px] font-medium text-muted-foreground uppercase tracking-widest">Fitur yang akan diaktifkan:</p>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {selectedPlan.features.map((f, i) => (
-                    <div key={i} className="flex items-center gap-1.5 text-[9px] md:text-[10px] font-medium text-[#2E3137]">
-                      <Check className="w-3 h-3 text-[#00AA5B] shrink-0" />
-                      <span className="truncate">{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-end gap-2 pt-2 border-t border-border/40">
-            <Button variant="outline" onClick={() => setShowConfirmModal(false)} className="rounded-lg text-[10px] font-medium h-8 px-3 border-border/50">
-              Batal
-            </Button>
-            <Button
-              onClick={handleConfirmSubscription}
-              disabled={isSubmitting}
-              className="rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-[10px] h-8 px-3 gap-1.5 shadow-sm"
-            >
-              {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-              Aktifkan Berlangganan
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </main>
   );
 }
