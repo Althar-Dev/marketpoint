@@ -6,20 +6,20 @@ import { collection, query, orderBy, limit } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Search, 
-  Filter, 
+import {
+  Search,
+  Filter,
   Database,
   ShieldAlert,
   Zap,
@@ -98,14 +98,14 @@ export default function AdminProductsPage() {
     <main className="p-3 md:p-6 lg:p-8 space-y-5 md:space-y-6 bg-[#F9FAFB] min-h-screen">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="hidden md:block">
           <h2 className="text-base md:text-lg font-medium tracking-tight text-[#212121]">Katalog Produk Global</h2>
           <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Monitoring seluruh aset digital dan kepatuhan katalog platform.</p>
         </div>
         <div className="flex items-center gap-2">
-           <Button variant="outline" className="h-8 px-4 rounded-lg bg-white border-border/50 text-[10px] font-medium gap-2">
-             <Filter className="w-3 h-3" /> Filter Lanjutan
-           </Button>
+          <Button variant="outline" className="h-8 px-4 rounded-lg bg-white border-border/50 text-[10px] font-medium gap-2">
+            <Filter className="w-3 h-3" /> Filter Lanjutan
+          </Button>
         </div>
       </div>
 
@@ -137,11 +137,11 @@ export default function AdminProductsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-3 rounded-xl border border-border/50 shadow-sm">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
-          <Input 
-            placeholder="Cari nama produk atau SKU..." 
+          <Input
+            placeholder="Cari nama produk atau SKU..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10" 
+            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
@@ -176,21 +176,21 @@ export default function AdminProductsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {GLOBAL_PRODUCTS_DUMMY.filter(p => 
+              {GLOBAL_PRODUCTS_DUMMY.filter(p =>
                 p.name.toLowerCase().includes(searchTerm.toLowerCase())
               ).map((p) => (
                 <TableRow key={p.id} className="border-b border-border/30 hover:bg-slate-50/30 transition-colors group">
                   <TableCell className="px-6 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-lg bg-slate-100 border border-border/40 flex items-center justify-center shrink-0 overflow-hidden">
-                         <Package className="w-4 h-4 text-muted-foreground opacity-40" />
+                        <Package className="w-4 h-4 text-muted-foreground opacity-40" />
                       </div>
                       <div className="flex flex-col min-w-0">
                         <span className="text-[11px] font-medium text-[#2E3137] truncate max-w-[220px]">{p.name}</span>
                         <div className="flex items-center gap-1.5">
-                           <span className="text-[9px] text-[#00AA5B] font-medium">{p.shop}</span>
-                           <span className="text-[8px] text-muted-foreground/30">|</span>
-                           <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-tighter">{p.category}</span>
+                          <span className="text-[9px] text-[#00AA5B] font-medium">{p.shop}</span>
+                          <span className="text-[8px] text-muted-foreground/30">|</span>
+                          <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-tighter">{p.category}</span>
                         </div>
                       </div>
                     </div>
@@ -201,8 +201,8 @@ export default function AdminProductsPage() {
                   <TableCell>
                     <Badge variant="outline" className={cn(
                       "text-[8px] font-medium px-2 py-0 rounded-md border-none",
-                      p.status === 'ACTIVE' ? "bg-green-50 text-green-700" : 
-                      p.status === 'OUT_OF_STOCK' ? "bg-orange-50 text-orange-700" : "bg-red-50 text-red-700"
+                      p.status === 'ACTIVE' ? "bg-green-50 text-green-700" :
+                        p.status === 'OUT_OF_STOCK' ? "bg-orange-50 text-orange-700" : "bg-red-50 text-red-700"
                     )}>
                       {p.status === 'ACTIVE' ? 'AKTIF' : p.status === 'OUT_OF_STOCK' ? 'HABIS' : 'AUDIT'}
                     </Badge>
@@ -215,15 +215,15 @@ export default function AdminProductsPage() {
                   </TableCell>
                   <TableCell className="text-right px-6">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
-                          <Eye className="w-3.5 h-3.5" />
-                       </Button>
-                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
-                          <ChevronRight className="w-3.5 h-3.5" />
-                       </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
+                        <Eye className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                     <div className="group-hover:hidden">
-                       <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground ml-auto opacity-30" />
+                      <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground ml-auto opacity-30" />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -231,7 +231,7 @@ export default function AdminProductsPage() {
             </TableBody>
           </Table>
         </div>
-        
+
         {/* Pagination Info */}
         <div className="p-4 border-t border-border/30 flex items-center justify-between bg-slate-50/20">
           <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest px-2">

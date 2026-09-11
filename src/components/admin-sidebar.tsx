@@ -3,28 +3,32 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Users, 
-  Store, 
-  ShoppingBag, 
-  ShieldAlert, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Users,
+  Store,
+  ShoppingBag,
+  ShieldAlert,
+  Settings,
   BarChart3,
   ArrowLeft,
   ChevronRight,
   Database,
   History,
   ShieldCheck,
-  MessageSquare
+  Percent,
+  Coins,
+  MessageSquare,
+  CreditCard,
+  Zap
 } from "lucide-react";
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarFooter, 
-  SidebarHeader, 
-  SidebarMenu, 
-  SidebarMenuButton, 
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
   SidebarGroup,
   SidebarGroupLabel,
@@ -45,7 +49,6 @@ export function AdminSidebar() {
       items: [
         { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
         { label: "Analitik Platform", icon: BarChart3, href: "/admin/analytics" },
-        { label: "Log Sistem", icon: History, href: "/admin/logs" },
       ]
     },
     {
@@ -57,9 +60,12 @@ export function AdminSidebar() {
       ]
     },
     {
-      label: "Finance & Disputes",
+      label: "Finance & Integrations",
       items: [
         { label: "Semua Transaksi", icon: ShoppingBag, href: "/admin/transactions" },
+        { label: "Komisi Penjual", icon: Percent, href: "/admin/commissions" },
+        { label: "Xendit", icon: CreditCard, href: "/admin/xendit" },
+        { label: "DigiFlazz", icon: Zap, href: "/admin/digiflazz" },
         { label: "Resolusi Dispute", icon: ShieldAlert, href: "/admin/disputes" },
       ]
     },
@@ -133,7 +139,7 @@ export function AdminSidebar() {
         {state !== "collapsed" && user && (
           <div className="mt-3 p-2 rounded-lg bg-muted/30 border border-border flex items-center gap-2">
             <div className="h-7 w-7 rounded-md bg-green-100 flex items-center justify-center shrink-0">
-               <span className="text-[10px] font-bold text-[#00AA5B]">{user.displayName?.substring(0, 1) || "A"}</span>
+              <span className="text-[10px] font-bold text-[#00AA5B]">{user.displayName?.substring(0, 1) || "A"}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-medium truncate leading-tight">{user.displayName || "Admin"}</p>

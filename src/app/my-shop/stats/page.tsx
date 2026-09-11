@@ -5,42 +5,42 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  TrendingUp, 
-  Users, 
-  ShoppingBag, 
-  Eye, 
-  ArrowUp, 
-  ArrowDown, 
+import {
+  TrendingUp,
+  Users,
+  ShoppingBag,
+  Eye,
+  ArrowUp,
+  ArrowDown,
   Calendar,
   MousePointer2,
   Package,
   Star
 } from "lucide-react";
-import { 
-  ResponsiveContainer, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
+import {
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
   CartesianGrid,
   Line,
   LineChart,
   Area,
   AreaChart
 } from "recharts";
-import { 
-  ChartContainer, 
-  ChartTooltip, 
+import {
+  ChartContainer,
+  ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig 
+  type ChartConfig
 } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 
@@ -97,9 +97,9 @@ export default function MerchantStatsPage() {
   }
 
   return (
-    <main className="flex-1 p-4 md:p-6 lg:p-8">
+    <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F9FAFB]">
       <div className="max-w-screen-xl mx-auto space-y-6">
-        
+
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="hidden sm:flex flex-col">
@@ -135,8 +135,8 @@ export default function MerchantStatsPage() {
                   </div>
                   <span className={cn(
                     "text-[9px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-0.5",
-                    stat.change.startsWith('+') ? "bg-green-100 text-green-700" : 
-                    stat.change.startsWith('-') ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"
+                    stat.change.startsWith('+') ? "bg-green-100 text-green-700" :
+                      stat.change.startsWith('-') ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"
                   )}>
                     {stat.change.startsWith('+') && <ArrowUp className="w-2 h-2" />}
                     {stat.change.startsWith('-') && <ArrowDown className="w-2 h-2" />}
@@ -165,43 +165,43 @@ export default function MerchantStatsPage() {
                   <AreaChart data={PERFORMANCE_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorVisits" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00AA5B" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#00AA5B" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#00AA5B" stopOpacity={0.1} />
+                        <stop offset="95%" stopColor="#00AA5B" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="day" 
-                      axisLine={false} 
-                      tickLine={false} 
+                    <XAxis
+                      dataKey="day"
+                      axisLine={false}
+                      tickLine={false}
                       tick={{ fontSize: 10, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }}
                       dy={10}
                     />
-                    <YAxis 
-                      axisLine={false} 
-                      tickLine={false} 
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
                       tick={{ fontSize: 10, fontWeight: 700, fill: 'hsl(var(--muted-foreground))' }}
                     />
                     <Tooltip content={<ChartTooltipContent hideLabel />} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="visits" 
-                      stroke="hsl(var(--primary))" 
+                    <Area
+                      type="monotone"
+                      dataKey="visits"
+                      stroke="hsl(var(--primary))"
                       strokeWidth={3}
-                      fillOpacity={1} 
-                      fill="url(#colorVisits)" 
+                      fillOpacity={1}
+                      fill="url(#colorVisits)"
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="orders" 
-                      stroke="#00AA5B" 
+                    <Area
+                      type="monotone"
+                      dataKey="orders"
+                      stroke="#00AA5B"
                       strokeWidth={3}
-                      fillOpacity={1} 
-                      fill="url(#colorOrders)" 
+                      fillOpacity={1}
+                      fill="url(#colorOrders)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -238,8 +238,8 @@ export default function MerchantStatsPage() {
                       <span className="text-[#2E3137]">{cat.percent}%</span>
                     </div>
                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className={cn("h-full rounded-full transition-all duration-1000", cat.color)} 
+                      <div
+                        className={cn("h-full rounded-full transition-all duration-1000", cat.color)}
                         style={{ width: `${cat.percent}%` }}
                       ></div>
                     </div>

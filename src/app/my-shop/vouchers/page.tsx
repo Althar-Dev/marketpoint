@@ -6,13 +6,13 @@ import { doc } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -91,9 +91,9 @@ export default function MerchantVouchersPage() {
   }
 
   return (
-    <main className="flex-1 p-4 md:p-6 lg:p-8">
+    <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F9FAFB]">
       <div className="max-w-screen-xl mx-auto space-y-6">
-        
+
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="hidden sm:flex flex-col">
@@ -134,7 +134,7 @@ export default function MerchantVouchersPage() {
         {/* List Section */}
         <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
           <div className="p-4 border-b border-border bg-[#F8FAFC]">
-             <h3 className="text-xs font-black text-[#2E3137] uppercase tracking-wider">Daftar Voucher</h3>
+            <h3 className="text-xs font-black text-[#2E3137] uppercase tracking-wider">Daftar Voucher</h3>
           </div>
           <Table>
             <TableHeader className="bg-white">

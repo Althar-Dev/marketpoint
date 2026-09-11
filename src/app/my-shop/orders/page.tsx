@@ -6,13 +6,13 @@ import { doc } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -102,9 +102,9 @@ export default function MerchantOrdersPage() {
   }
 
   return (
-    <main className="flex-1 p-4 md:p-6 lg:p-8">
+    <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F9FAFB]">
       <div className="max-w-screen-xl mx-auto space-y-6">
-        
+
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="hidden sm:flex flex-col">
@@ -201,8 +201,8 @@ export default function MerchantOrdersPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                       <span className="text-[11px] font-black text-[#2E3137]">{order.buyer}</span>
-                       <span className="text-[9px] text-muted-foreground font-medium">{order.paymentMethod}</span>
+                      <span className="text-[11px] font-black text-[#2E3137]">{order.buyer}</span>
+                      <span className="text-[9px] text-muted-foreground font-medium">{order.paymentMethod}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -211,13 +211,13 @@ export default function MerchantOrdersPage() {
                   <TableCell>
                     <Badge className={cn(
                       "text-[8px] font-black px-2 py-0.5 rounded-md border-none",
-                      order.status === 'COMPLETED' ? "bg-green-100 text-green-700" : 
-                      order.status === 'PROCESSING' ? "bg-blue-100 text-blue-700" : 
-                      order.status === 'PENDING' ? "bg-orange-100 text-orange-700" : "bg-red-100 text-red-700"
+                      order.status === 'COMPLETED' ? "bg-green-100 text-green-700" :
+                        order.status === 'PROCESSING' ? "bg-blue-100 text-blue-700" :
+                          order.status === 'PENDING' ? "bg-orange-100 text-orange-700" : "bg-red-100 text-red-700"
                     )}>
-                      {order.status === 'COMPLETED' ? "SELESAI" : 
-                       order.status === 'PROCESSING' ? "DIPROSES" : 
-                       order.status === 'PENDING' ? "MENUNGGU" : "DIBATALKAN"}
+                      {order.status === 'COMPLETED' ? "SELESAI" :
+                        order.status === 'PROCESSING' ? "DIPROSES" :
+                          order.status === 'PENDING' ? "MENUNGGU" : "DIBATALKAN"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right px-6">
@@ -247,32 +247,32 @@ export default function MerchantOrdersPage() {
 
         {/* Quick Tips for Seller */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-           <Card className="border-dashed border-border border-[1.5px] bg-[#F8FAFC] rounded-2xl p-5">
-             <div className="flex items-start gap-3">
-               <div className="h-8 w-8 rounded-lg bg-[#00AA5B]/10 flex items-center justify-center shrink-0">
-                 <Icon icon="ph:lightning-bold" className="w-4 h-4 text-[#00AA5B]" />
-               </div>
-               <div>
-                 <h3 className="text-[11px] font-black text-[#2E3137] uppercase tracking-wide">Tips Kecepatan</h3>
-                 <p className="text-[10px] text-muted-foreground mt-1 font-medium leading-relaxed">
-                   Pesanan yang diproses dalam <span className="text-[#00AA5B] font-bold">kurang dari 1 jam</span> mendapatkan rating 5 bintang 40% lebih sering.
-                 </p>
-               </div>
-             </div>
-           </Card>
-           <Card className="border-dashed border-border border-[1.5px] bg-[#F8FAFC] rounded-2xl p-5">
-             <div className="flex items-start gap-3">
-               <div className="h-8 w-8 rounded-lg bg-[#8B5CF6]/10 flex items-center justify-center shrink-0">
-                 <Icon icon="ph:shield-check-bold" className="w-4 h-4 text-[#8B5CF6]" />
-               </div>
-               <div>
-                 <h3 className="text-[11px] font-black text-[#2E3137] uppercase tracking-wide">Keamanan Transaksi</h3>
-                 <p className="text-[10px] text-muted-foreground mt-1 font-medium leading-relaxed">
-                   Selalu kirim lisensi melalui sistem MarketPoint untuk memastikan <span className="text-[#8B5CF6] font-bold">perlindungan saldo</span> otomatis.
-                 </p>
-               </div>
-             </div>
-           </Card>
+          <Card className="border-dashed border-border border-[1.5px] bg-[#F8FAFC] rounded-2xl p-5">
+            <div className="flex items-start gap-3">
+              <div className="h-8 w-8 rounded-lg bg-[#00AA5B]/10 flex items-center justify-center shrink-0">
+                <Icon icon="ph:lightning-bold" className="w-4 h-4 text-[#00AA5B]" />
+              </div>
+              <div>
+                <h3 className="text-[11px] font-black text-[#2E3137] uppercase tracking-wide">Tips Kecepatan</h3>
+                <p className="text-[10px] text-muted-foreground mt-1 font-medium leading-relaxed">
+                  Pesanan yang diproses dalam <span className="text-[#00AA5B] font-bold">kurang dari 1 jam</span> mendapatkan rating 5 bintang 40% lebih sering.
+                </p>
+              </div>
+            </div>
+          </Card>
+          <Card className="border-dashed border-border border-[1.5px] bg-[#F8FAFC] rounded-2xl p-5">
+            <div className="flex items-start gap-3">
+              <div className="h-8 w-8 rounded-lg bg-[#8B5CF6]/10 flex items-center justify-center shrink-0">
+                <Icon icon="ph:shield-check-bold" className="w-4 h-4 text-[#8B5CF6]" />
+              </div>
+              <div>
+                <h3 className="text-[11px] font-black text-[#2E3137] uppercase tracking-wide">Keamanan Transaksi</h3>
+                <p className="text-[10px] text-muted-foreground mt-1 font-medium leading-relaxed">
+                  Selalu kirim lisensi melalui sistem MarketPoint untuk memastikan <span className="text-[#8B5CF6] font-bold">perlindungan saldo</span> otomatis.
+                </p>
+              </div>
+            </div>
+          </Card>
         </div>
 
       </div>

@@ -4,18 +4,18 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Search, 
-  Filter, 
+import {
+  Search,
+  Filter,
   ShieldAlert,
   AlertTriangle,
   CheckCircle2,
@@ -94,14 +94,14 @@ export default function AdminDisputesPage() {
     <main className="p-3 md:p-6 lg:p-8 space-y-5 md:space-y-6 bg-[#F9FAFB] min-h-screen">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="hidden md:block">
           <h2 className="text-base md:text-lg font-medium tracking-tight text-[#212121]">Pusat Resolusi Dispute</h2>
           <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Investigasi dan selesaikan sengketa transaksi di seluruh platform.</p>
         </div>
         <div className="flex items-center gap-2">
-           <Button variant="outline" className="h-8 px-4 rounded-lg bg-white border-border/50 text-[10px] font-medium gap-2">
-             <Scale className="w-3 h-3" /> Kebijakan Refund
-           </Button>
+          <Button variant="outline" className="h-8 px-4 rounded-lg bg-white border-border/50 text-[10px] font-medium gap-2">
+            <Scale className="w-3 h-3" /> Kebijakan Refund
+          </Button>
         </div>
       </div>
 
@@ -133,11 +133,11 @@ export default function AdminDisputesPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-3 rounded-xl border border-border/50 shadow-sm">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
-          <Input 
-            placeholder="Cari ID Dispute atau Order..." 
+          <Input
+            placeholder="Cari ID Dispute atau Order..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10" 
+            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
@@ -173,7 +173,7 @@ export default function AdminDisputesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {GLOBAL_DISPUTES_DUMMY.filter(d => 
+              {GLOBAL_DISPUTES_DUMMY.filter(d =>
                 d.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 d.orderId.toLowerCase().includes(searchTerm.toLowerCase())
               ).map((d) => (
@@ -189,17 +189,17 @@ export default function AdminDisputesPage() {
                     <div className="flex flex-col gap-1">
                       <Badge variant="outline" className={cn(
                         "text-[8px] font-medium px-2 py-0 rounded-md border-none w-fit",
-                        d.status === 'RESOLVED' ? "bg-green-50 text-green-700" : 
-                        d.status === 'PENDING_ADMIN' ? "bg-orange-50 text-orange-700" : "bg-blue-50 text-blue-700"
+                        d.status === 'RESOLVED' ? "bg-green-50 text-green-700" :
+                          d.status === 'PENDING_ADMIN' ? "bg-orange-50 text-orange-700" : "bg-blue-50 text-blue-700"
                       )}>
                         {d.status.replace('_', ' ')}
                       </Badge>
                       <div className="flex items-center gap-1">
-                         <div className={cn(
-                           "h-1 w-1 rounded-full",
-                           d.priority === 'HIGH' ? "bg-red-500" : d.priority === 'MEDIUM' ? "bg-orange-400" : "bg-blue-400"
-                         )}></div>
-                         <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tight">{d.priority}</span>
+                        <div className={cn(
+                          "h-1 w-1 rounded-full",
+                          d.priority === 'HIGH' ? "bg-red-500" : d.priority === 'MEDIUM' ? "bg-orange-400" : "bg-blue-400"
+                        )}></div>
+                        <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tight">{d.priority}</span>
                       </div>
                     </div>
                   </TableCell>
@@ -220,15 +220,15 @@ export default function AdminDisputesPage() {
                   </TableCell>
                   <TableCell className="text-right px-6">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
-                          <MessageSquare className="w-3.5 h-3.5" />
-                       </Button>
-                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
-                          <ChevronRight className="w-3.5 h-3.5" />
-                       </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                     <div className="group-hover:hidden">
-                       <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground ml-auto opacity-30" />
+                      <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground ml-auto opacity-30" />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -236,7 +236,7 @@ export default function AdminDisputesPage() {
             </TableBody>
           </Table>
         </div>
-        
+
         {/* Pagination Info */}
         <div className="p-4 border-t border-border/30 flex items-center justify-between bg-slate-50/20">
           <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest px-2">

@@ -6,13 +6,13 @@ import { doc } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -106,9 +106,9 @@ export default function MerchantCustomersPage() {
   }
 
   return (
-    <main className="flex-1 p-4 md:p-6 lg:p-8">
+    <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F9FAFB]">
       <div className="max-w-screen-xl mx-auto space-y-6">
-        
+
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="hidden sm:flex flex-col">
@@ -202,9 +202,9 @@ export default function MerchantCustomersPage() {
                   <TableCell>
                     <Badge className={cn(
                       "text-[8px] font-black px-2 py-0.5 rounded-md border-none",
-                      customer.status === 'VIP' ? "bg-[#FFC400] text-black" : 
-                      customer.status === 'LOYAL' ? "bg-[#8B5CF6] text-white" : 
-                      customer.status === 'ACTIVE' ? "bg-[#00AA5B] text-white" : "bg-gray-400 text-white"
+                      customer.status === 'VIP' ? "bg-[#FFC400] text-black" :
+                        customer.status === 'LOYAL' ? "bg-[#8B5CF6] text-white" :
+                          customer.status === 'ACTIVE' ? "bg-[#00AA5B] text-white" : "bg-gray-400 text-white"
                     )}>
                       {customer.status}
                     </Badge>

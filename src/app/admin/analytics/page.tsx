@@ -3,30 +3,30 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
-import { 
-  TrendingUp, 
-  Users, 
-  ShoppingBag, 
-  ArrowUpRight, 
-  ArrowDownRight, 
+import {
+  TrendingUp,
+  Users,
+  ShoppingBag,
+  ArrowUpRight,
+  ArrowDownRight,
   Calendar,
   DollarSign,
   Activity,
   Globe,
   PieChart
 } from "lucide-react";
-import { 
-  ResponsiveContainer, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
+import {
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
   CartesianGrid,
   Area,
   AreaChart,
@@ -34,11 +34,11 @@ import {
   BarChart,
   Cell
 } from "recharts";
-import { 
-  ChartContainer, 
-  ChartTooltip, 
+import {
+  ChartContainer,
+  ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig 
+  type ChartConfig
 } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 
@@ -78,9 +78,9 @@ export default function AdminAnalytics() {
     <main className="p-4 md:p-6 lg:p-8 max-w-screen-xl mx-auto space-y-6 md:space-y-8 bg-[#F9FAFB] min-h-screen">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div className="space-y-1">
-           <h2 className="text-base md:text-lg font-medium tracking-tight text-[#212121]">Analitik Platform</h2>
-           <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Laporan performa pertumbuhan ekonomi dan aktivitas global.</p>
+        <div className="space-y-1 hidden md:block">
+          <h2 className="text-base md:text-lg font-medium tracking-tight text-[#212121]">Analitik Platform</h2>
+          <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Laporan performa pertumbuhan ekonomi dan aktivitas global.</p>
         </div>
         <div className="flex items-center gap-2">
           <Select defaultValue="6months">
@@ -148,31 +148,31 @@ export default function AdminAnalytics() {
                 <AreaChart data={REVENUE_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00AA5B" stopOpacity={0.08}/>
-                      <stop offset="95%" stopColor="#00AA5B" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#00AA5B" stopOpacity={0.08} />
+                      <stop offset="95%" stopColor="#00AA5B" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="month" 
-                    axisLine={false} 
-                    tickLine={false} 
+                  <XAxis
+                    dataKey="month"
+                    axisLine={false}
+                    tickLine={false}
                     tick={{ fontSize: 9, fill: '#999', fontWeight: 500 }}
                     dy={10}
                   />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
                     tick={{ fontSize: 9, fill: '#999', fontWeight: 500 }}
                   />
                   <Tooltip content={<ChartTooltipContent hideLabel />} />
-                  <Area 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="#00AA5B" 
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#00AA5B"
                     strokeWidth={2}
-                    fillOpacity={1} 
-                    fill="url(#colorRev)" 
+                    fillOpacity={1}
+                    fill="url(#colorRev)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -208,8 +208,8 @@ export default function AdminAnalytics() {
                     <span className="text-[9px] font-medium text-[#00AA5B] opacity-80">{cat.value}%</span>
                   </div>
                   <div className="h-1 w-full bg-slate-50 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full transition-all duration-1000 ease-out" 
+                    <div
+                      className="h-full rounded-full transition-all duration-1000 ease-out"
                       style={{ width: `${cat.value}%`, backgroundColor: cat.color }}
                     ></div>
                   </div>
@@ -218,15 +218,15 @@ export default function AdminAnalytics() {
             </div>
 
             <div className="mt-8 p-3 rounded-xl bg-green-50/40 border border-green-100/30">
-               <div className="flex items-start gap-3">
-                  <Globe className="w-3.5 h-3.5 text-[#00AA5B] opacity-60 mt-0.5" />
-                  <div>
-                    <p className="text-[9px] font-medium text-[#2E3137]">Wawasan Sektoral</p>
-                    <p className="text-[8px] text-muted-foreground mt-0.5 leading-relaxed font-medium">
-                      Kategori <span className="text-[#00AA5B]">API Bridge</span> tumbuh 12% secara konsisten dalam kurun waktu 3 bulan terakhir.
-                    </p>
-                  </div>
-               </div>
+              <div className="flex items-start gap-3">
+                <Globe className="w-3.5 h-3.5 text-[#00AA5B] opacity-60 mt-0.5" />
+                <div>
+                  <p className="text-[9px] font-medium text-[#2E3137]">Wawasan Sektoral</p>
+                  <p className="text-[8px] text-muted-foreground mt-0.5 leading-relaxed font-medium">
+                    Kategori <span className="text-[#00AA5B]">API Bridge</span> tumbuh 12% secara konsisten dalam kurun waktu 3 bulan terakhir.
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -234,35 +234,35 @@ export default function AdminAnalytics() {
 
       {/* Bottom Insights Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-         <Card className="border-border/50 border-dashed bg-white rounded-xl md:rounded-2xl p-4 flex items-center justify-between group hover:border-green-200 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50">
-                 <Activity className="w-3.5 h-3.5 text-[#00AA5B] opacity-70" />
-              </div>
-              <div>
-                 <h3 className="text-[11px] font-medium text-[#2E3137]">Laporan Audit Infrastruktur</h3>
-                 <p className="text-[9px] text-muted-foreground mt-0.5 font-medium">Parameter sistem dalam kondisi optimal.</p>
-              </div>
+        <Card className="border-border/50 border-dashed bg-white rounded-xl md:rounded-2xl p-4 flex items-center justify-between group hover:border-green-200 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50">
+              <Activity className="w-3.5 h-3.5 text-[#00AA5B] opacity-70" />
             </div>
-            <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[9px] font-medium text-[#00AA5B] hover:bg-green-50">
-               Log Detail
-            </Button>
-         </Card>
+            <div>
+              <h3 className="text-[11px] font-medium text-[#2E3137]">Laporan Audit Infrastruktur</h3>
+              <p className="text-[9px] text-muted-foreground mt-0.5 font-medium">Parameter sistem dalam kondisi optimal.</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[9px] font-medium text-[#00AA5B] hover:bg-green-50">
+            Log Detail
+          </Button>
+        </Card>
 
-         <Card className="border-border/50 border-dashed bg-white rounded-xl md:rounded-2xl p-4 flex items-center justify-between group hover:border-green-200 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50">
-                 <Users className="w-3.5 h-3.5 text-[#00AA5B] opacity-70" />
-              </div>
-              <div>
-                 <h3 className="text-[11px] font-medium text-[#2E3137]">Analisa Cohort Merchant</h3>
-                 <p className="text-[9px] text-muted-foreground mt-0.5 font-medium">Tinjauan retensi merchant aktif platform.</p>
-              </div>
+        <Card className="border-border/50 border-dashed bg-white rounded-xl md:rounded-2xl p-4 flex items-center justify-between group hover:border-green-200 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50">
+              <Users className="w-3.5 h-3.5 text-[#00AA5B] opacity-70" />
             </div>
-            <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[9px] font-medium text-[#00AA5B] hover:bg-green-50">
-               Buka Analisa
-            </Button>
-         </Card>
+            <div>
+              <h3 className="text-[11px] font-medium text-[#2E3137]">Analisa Cohort Merchant</h3>
+              <p className="text-[9px] text-muted-foreground mt-0.5 font-medium">Tinjauan retensi merchant aktif platform.</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" className="h-7 rounded-lg text-[9px] font-medium text-[#00AA5B] hover:bg-green-50">
+            Buka Analisa
+          </Button>
+        </Card>
       </div>
     </main>
   );

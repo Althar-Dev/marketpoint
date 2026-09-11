@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { 
+import {
   ChevronDown,
   PanelLeft,
   User as UserIcon,
@@ -9,7 +9,7 @@ import {
   Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -50,35 +50,35 @@ export function MerchantHeader() {
 
   const getPageInfo = (path: string) => {
     switch (path) {
-      case "/my-shop": 
+      case "/my-shop":
         return { title: "Dashboard" };
-      case "/my-shop/settings": 
+      case "/my-shop/settings":
         return { title: "Pengaturan Toko" };
-      case "/my-shop/setup": 
+      case "/my-shop/setup":
         return { title: "Pengaturan Profil Toko" };
-      case "/my-shop/orders": 
+      case "/my-shop/orders":
         return { title: "Pesanan Toko" };
-      case "/my-shop/products": 
+      case "/my-shop/products":
         return { title: "Daftar Produk" };
-      case "/my-shop/stats": 
+      case "/my-shop/stats":
         return { title: "Statistik Toko" };
-      case "/my-shop/wallet": 
+      case "/my-shop/wallet":
         return { title: "Saldo Toko" };
-      case "/my-shop/subscription": 
-        return { title: "Langganan Layanan" };
-      case "/my-shop/chat": 
+      case "/my-shop/subscription":
+        return { title: "Langganan" };
+      case "/my-shop/chat":
         return { title: "Chat Pembeli" };
-      case "/my-shop/reviews": 
+      case "/my-shop/reviews":
         return { title: "Ulasan Pembeli" };
-      case "/my-shop/disputes": 
+      case "/my-shop/disputes":
         return { title: "Komplain & Dispute" };
-      case "/my-shop/customers": 
+      case "/my-shop/customers":
         return { title: "Data Pelanggan" };
-      case "/my-shop/vouchers": 
+      case "/my-shop/vouchers":
         return { title: "Manajemen Voucher" };
-      case "/my-shop/flash-sale": 
+      case "/my-shop/flash-sale":
         return { title: "Manajemen Flash Sale" };
-      default: 
+      default:
         return { title: "Seller Center" };
     }
   };
@@ -88,10 +88,10 @@ export function MerchantHeader() {
   return (
     <header className="h-16 border-b border-border bg-white sticky top-0 z-40 px-3 md:px-6 flex items-center justify-between gap-3 shrink-0">
       <div className="flex items-center gap-4 flex-1 min-w-0">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleSidebar} 
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
           className="h-8 w-8 text-muted-foreground shrink-0"
         >
           <PanelLeft className="h-4 w-4" />
@@ -142,7 +142,7 @@ export function MerchantHeader() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={handleLogout}
               className="rounded-md py-1.5 cursor-pointer focus:bg-destructive/5 text-destructive focus:text-destructive"
             >

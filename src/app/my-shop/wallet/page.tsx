@@ -6,40 +6,40 @@ import { doc, collection, query, orderBy, limit } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Wallet, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  Download, 
-  Filter, 
-  Search, 
-  TrendingUp, 
+import {
+  Wallet,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Download,
+  Filter,
+  Search,
+  TrendingUp,
   Clock,
   CheckCircle2,
   AlertCircle,
@@ -91,9 +91,9 @@ export default function MerchantWalletPage() {
   }
 
   return (
-    <main className="flex-1 p-4 md:p-6 lg:p-8">
+    <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F9FAFB]">
       <div className="max-w-screen-xl mx-auto space-y-6">
-        
+
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="hidden sm:flex flex-col">
@@ -104,7 +104,7 @@ export default function MerchantWalletPage() {
             <Button variant="outline" className="h-9 px-4 rounded-xl font-bold text-[11px] gap-2 border-border bg-white shadow-sm">
               <Download className="w-3.5 h-3.5" /> Unduh Laporan
             </Button>
-            
+
             <Dialog>
               <DialogTrigger asChild>
                 <Button className="h-9 px-6 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-[11px] gap-2 shadow-md shadow-[#00AA5B]/10">
@@ -319,7 +319,7 @@ export default function MerchantWalletPage() {
               )}
             </TableBody>
           </Table>
-          
+
           {(transactions?.length || 0) > 0 && (
             <div className="p-4 border-t border-border/50 flex justify-center bg-[#F8FAFC]/30">
               <Button variant="ghost" className="text-[10px] font-bold text-[#00AA5B] hover:bg-white hover:text-[#00AA5B]">

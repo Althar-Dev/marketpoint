@@ -91,9 +91,9 @@ export default function MerchantDisputePage() {
   }
 
   return (
-    <main className="flex-1 p-4 md:p-6 lg:p-8">
+    <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F9FAFB]">
       <div className="max-w-screen-xl mx-auto space-y-6">
-        
+
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="hidden sm:flex flex-col">
@@ -169,8 +169,8 @@ export default function MerchantDisputePage() {
                     </div>
                     <Badge className={cn(
                       "text-[8px] font-black px-2 py-0.5 rounded-md border-none",
-                      dispute.status === 'ACTIVE' ? "bg-orange-500 text-white" : 
-                      dispute.status === 'PENDING_BUYER' ? "bg-blue-500 text-white" : "bg-[#00AA5B] text-white"
+                      dispute.status === 'ACTIVE' ? "bg-orange-500 text-white" :
+                        dispute.status === 'PENDING_BUYER' ? "bg-blue-500 text-white" : "bg-[#00AA5B] text-white"
                     )}>
                       {dispute.status.replace('_', ' ')}
                     </Badge>

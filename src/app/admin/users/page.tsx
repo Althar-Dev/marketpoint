@@ -6,22 +6,22 @@ import { collection, query, orderBy, limit } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Search, 
-  UserPlus, 
-  MoreHorizontal, 
-  Filter, 
+import {
+  Search,
+  UserPlus,
+  MoreHorizontal,
+  Filter,
   Users as UsersIcon,
   ShieldCheck,
   UserCheck,
@@ -58,7 +58,7 @@ export default function AdminUsersPage() {
     <main className="p-3 md:p-6 lg:p-8 space-y-5 md:space-y-6 bg-[#F9FAFB] min-h-screen">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="hidden md:block">
           <h2 className="text-base md:text-lg font-medium tracking-tight text-[#212121]">Manajemen Pengguna</h2>
           <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Pantau dan kelola hak akses seluruh basis pengguna platform.</p>
         </div>
@@ -95,11 +95,11 @@ export default function AdminUsersPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-3 rounded-xl border border-border/50 shadow-sm">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
-          <Input 
-            placeholder="Cari nama atau email..." 
+          <Input
+            placeholder="Cari nama atau email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10" 
+            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
@@ -145,8 +145,8 @@ export default function AdminUsersPage() {
                   </TableRow>
                 ))
               ) : (
-                users?.filter((u: any) => 
-                  u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                users?.filter((u: any) =>
+                  u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                   u.email?.toLowerCase().includes(searchTerm.toLowerCase())
                 ).map((u: any) => (
                   <TableRow key={u.id} className="border-b border-border/30 hover:bg-slate-50/30 transition-colors group">
@@ -185,15 +185,15 @@ export default function AdminUsersPage() {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
-                            <Mail className="w-3.5 h-3.5" />
-                         </Button>
-                         <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
-                            <ChevronRight className="w-3.5 h-3.5" />
-                         </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
+                          <Mail className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                       <div className="group-hover:hidden">
-                         <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground ml-auto opacity-30" />
+                        <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground ml-auto opacity-30" />
                       </div>
                     </TableCell>
                   </TableRow>
@@ -202,7 +202,7 @@ export default function AdminUsersPage() {
             </TableBody>
           </Table>
         </div>
-        
+
         {/* Pagination Info */}
         <div className="p-4 border-t border-border/30 flex items-center justify-between bg-slate-50/20">
           <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest px-2">

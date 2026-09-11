@@ -4,18 +4,18 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Search, 
-  Filter, 
+import {
+  Search,
+  Filter,
   ShoppingBag,
   ArrowUpRight,
   ArrowDownLeft,
@@ -95,14 +95,14 @@ export default function AdminTransactionsPage() {
     <main className="p-3 md:p-6 lg:p-8 space-y-5 md:space-y-6 bg-[#F9FAFB] min-h-screen">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="hidden md:block">
           <h2 className="text-base md:text-lg font-medium tracking-tight text-[#212121]">Transaksi Global</h2>
           <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Buku besar seluruh aktivitas keuangan di dalam ekosistem platform.</p>
         </div>
         <div className="flex items-center gap-2">
-           <Button variant="outline" className="h-8 px-4 rounded-lg bg-white border-border/50 text-[10px] font-medium gap-2">
-             <Download className="w-3 h-3" /> Ekspor Laporan
-           </Button>
+          <Button variant="outline" className="h-8 px-4 rounded-lg bg-white border-border/50 text-[10px] font-medium gap-2">
+            <Download className="w-3 h-3" /> Ekspor Laporan
+          </Button>
         </div>
       </div>
 
@@ -134,11 +134,11 @@ export default function AdminTransactionsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-3 rounded-xl border border-border/50 shadow-sm">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
-          <Input 
-            placeholder="Cari ID transaksi atau nama..." 
+          <Input
+            placeholder="Cari ID transaksi atau nama..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10" 
+            className="h-8 pl-9 rounded-lg bg-slate-50/50 border-border/50 text-[10px] md:text-[11px] focus:ring-[#00AA5B]/10"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
@@ -174,7 +174,7 @@ export default function AdminTransactionsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {GLOBAL_TRANSACTIONS_DUMMY.filter(t => 
+              {GLOBAL_TRANSACTIONS_DUMMY.filter(t =>
                 t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 t.user.toLowerCase().includes(searchTerm.toLowerCase())
               ).map((t) => (
@@ -189,35 +189,35 @@ export default function AdminTransactionsPage() {
                     <div className="flex flex-col min-w-[140px]">
                       <span className="text-[10px] font-medium text-[#2E3137]">{t.user}</span>
                       <div className="flex items-center gap-1">
-                         <span className="text-[8px] text-[#00AA5B] font-medium">ke {t.shop}</span>
-                         <span className="text-[8px] text-muted-foreground/30">•</span>
-                         <span className="text-[8px] text-muted-foreground font-medium uppercase tracking-tighter">{t.type}</span>
+                        <span className="text-[8px] text-[#00AA5B] font-medium">ke {t.shop}</span>
+                        <span className="text-[8px] text-muted-foreground/30">•</span>
+                        <span className="text-[8px] text-muted-foreground font-medium uppercase tracking-tighter">{t.type}</span>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                       <span className="text-[10px] font-medium text-[#2E3137]">Rp {t.amount.toLocaleString('id-ID')}</span>
-                       <span className="text-[8px] text-muted-foreground font-medium uppercase">{t.method}</span>
+                      <span className="text-[10px] font-medium text-[#2E3137]">Rp {t.amount.toLocaleString('id-ID')}</span>
+                      <span className="text-[8px] text-muted-foreground font-medium uppercase">{t.method}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn(
                       "text-[8px] font-medium px-2 py-0 rounded-md border-none",
-                      t.status === 'SUCCESS' ? "bg-green-50 text-green-700" : 
-                      t.status === 'PENDING' ? "bg-orange-50 text-orange-700" : "bg-red-50 text-red-700"
+                      t.status === 'SUCCESS' ? "bg-green-50 text-green-700" :
+                        t.status === 'PENDING' ? "bg-orange-50 text-orange-700" : "bg-red-50 text-red-700"
                     )}>
                       {t.status === 'SUCCESS' ? 'BERHASIL' : t.status === 'PENDING' ? 'PROSES' : 'GAGAL'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right px-6">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
-                          <ChevronRight className="w-3.5 h-3.5" />
-                       </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50">
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                     <div className="group-hover:hidden">
-                       <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground ml-auto opacity-30" />
+                      <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground ml-auto opacity-30" />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -225,7 +225,7 @@ export default function AdminTransactionsPage() {
             </TableBody>
           </Table>
         </div>
-        
+
         {/* Pagination Info */}
         <div className="p-4 border-t border-border/30 flex items-center justify-between bg-slate-50/20">
           <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest px-2">

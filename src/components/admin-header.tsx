@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { 
+import {
   ChevronDown,
   PanelLeft,
   User as UserIcon,
@@ -10,7 +10,7 @@ import {
   ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -66,10 +66,10 @@ export function AdminHeader() {
   return (
     <header className="h-14 md:h-16 border-b border-border bg-white sticky top-0 z-40 px-3 md:px-6 flex items-center justify-between gap-3 shrink-0">
       <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleSidebar} 
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
           className="h-8 w-8 text-muted-foreground shrink-0"
         >
           <PanelLeft className="h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -84,8 +84,8 @@ export function AdminHeader() {
 
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.2 rounded-full bg-green-50 border border-green-100">
-           <ShieldCheck className="w-2.5 h-2.5 text-[#00AA5B]" />
-           <span className="text-[9px] font-medium text-[#00AA5B]">Sistem Aktif</span>
+          <ShieldCheck className="w-2.5 h-2.5 text-[#00AA5B]" />
+          <span className="text-[9px] font-medium text-[#00AA5B]">Sistem Aktif</span>
         </div>
 
         <DropdownMenu>
@@ -125,7 +125,7 @@ export function AdminHeader() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={handleLogout}
               className="rounded-lg py-2 cursor-pointer focus:bg-destructive/5 text-destructive focus:text-destructive"
             >

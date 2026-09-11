@@ -22,9 +22,11 @@ export async function POST(req: Request) {
     }
 
     // Determine target folder based on type
-    let folder = 'logo';
+    let folder = 'products';
     if (type === 'banner') folder = 'banner';
     if (type === 'avatar') folder = 'avatar';
+    if (type === 'logo') folder = 'logo';
+    if (type === 'products' || type === 'product') folder = 'products';
     
     const extension = file.name.split('.').pop();
     const uniqueId = crypto.randomUUID();

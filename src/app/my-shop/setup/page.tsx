@@ -477,7 +477,7 @@ export default function MerchantSetupPage() {
         </div>
       </header>
 
-      <main className="flex-1 p-4 md:p-6 lg:p-8">
+      <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F9FAFB]">
         <div className="max-w-screen-md mx-auto space-y-5">
           <div className="space-y-1 text-center md:text-left mb-6">
             <h1 className="text-xl font-bold tracking-tight">Informasi Toko</h1>
