@@ -201,59 +201,14 @@ export default function MerchantSubscriptionPage() {
             Kembali pilih paket
           </button>
 
+          <div className="space-y-2">
+            <h2 className="text-xl md:text-2xl font-black tracking-tight text-[#212121]">Checkout Berlangganan</h2>
+            <p className="text-sm text-muted-foreground">Selesaikan pembayaran untuk mengaktifkan fitur toko Anda.</p>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left Column: Order Summary */}
+            {/* Left Column: Payment Method & Action */}
             <div className="lg:col-span-7 space-y-6">
-              <div className="space-y-2">
-                <h2 className="text-xl md:text-2xl font-black tracking-tight text-[#212121]">Checkout Berlangganan</h2>
-                <p className="text-sm text-muted-foreground">Selesaikan pembayaran untuk mengaktifkan fitur toko Anda.</p>
-              </div>
-
-              <Card className="border-border/50 shadow-sm rounded-2xl overflow-hidden bg-white">
-                <CardHeader className="p-6 border-b border-border/40 bg-slate-50/50">
-                  <CardTitle className="text-sm font-bold">Ringkasan Pesanan</CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-green-50 text-[#00AA5B] flex items-center justify-center shrink-0 border border-green-100">
-                      <selectedPlan.icon className="w-6 h-6" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-[#212121]">Paket {selectedPlan.name}</p>
-                      <p className="text-xs text-muted-foreground">Berlaku untuk {billingCycle === "yearly" ? "1 tahun" : "1 bulan"}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-black text-[#00AA5B]">Rp {priceDisplay.toLocaleString('id-ID')}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 pt-6 border-t border-border/40">
-                    <div className="flex justify-between text-xs font-bold text-muted-foreground">
-                      <span>Harga paket</span>
-                      <span className="text-[#212121]">Rp {priceDisplay.toLocaleString('id-ID')}</span>
-                    </div>
-                    <div className="flex justify-between text-xs font-bold text-muted-foreground">
-                      <span>Pajak (0%)</span>
-                      <span className="text-[#212121]">Rp 0</span>
-                    </div>
-                    <div className="flex justify-between items-center pt-3 border-t border-border/40">
-                      <span className="text-sm font-black text-[#212121]">Total pembayaran</span>
-                      <span className="text-lg font-black text-[#00AA5B]">Rp {priceDisplay.toLocaleString('id-ID')}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="p-4 rounded-2xl bg-[#FFC400]/5 border border-[#FFC400]/20 flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-[#FFC400] shrink-0" />
-                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                  Paket akan langsung aktif setelah konfirmasi pembayaran berhasil dilakukan secara otomatis oleh sistem kami.
-                </p>
-              </div>
-            </div>
-
-            {/* Right Column: Payment Method & Action */}
-            <div className="lg:col-span-5 space-y-6">
                <Card className="border-border/50 shadow-md rounded-2xl overflow-hidden bg-white">
                  <CardHeader className="p-6 border-b border-border/40">
                     <CardTitle className="text-sm font-bold">Metode Pembayaran</CardTitle>
@@ -289,6 +244,51 @@ export default function MerchantSubscriptionPage() {
                     </Button>
                  </CardFooter>
                </Card>
+
+               <div className="p-4 rounded-2xl bg-[#FFC400]/5 border border-[#FFC400]/20 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-[#FFC400] shrink-0" />
+                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                  Paket akan langsung aktif setelah konfirmasi pembayaran berhasil dilakukan secara otomatis oleh sistem kami.
+                </p>
+              </div>
+            </div>
+
+            {/* Right Column: Order Summary */}
+            <div className="lg:col-span-5 space-y-6">
+              <Card className="border-border/50 shadow-sm rounded-2xl overflow-hidden bg-white">
+                <CardHeader className="p-6 border-b border-border/40 bg-slate-50/50">
+                  <CardTitle className="text-sm font-bold">Ringkasan Pesanan</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-green-50 text-[#00AA5B] flex items-center justify-center shrink-0 border border-green-100">
+                      <selectedPlan.icon className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-black text-[#212121]">Paket {selectedPlan.name}</p>
+                      <p className="text-xs text-muted-foreground">Berlaku untuk {billingCycle === "yearly" ? "1 tahun" : "1 bulan"}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-black text-[#00AA5B]">Rp {priceDisplay.toLocaleString('id-ID')}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-6 border-t border-border/40">
+                    <div className="flex justify-between text-xs font-bold text-muted-foreground">
+                      <span>Harga paket</span>
+                      <span className="text-[#212121]">Rp {priceDisplay.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-bold text-muted-foreground">
+                      <span>Pajak (0%)</span>
+                      <span className="text-[#212121]">Rp 0</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-3 border-t border-border/40">
+                      <span className="text-sm font-black text-[#212121]">Total pembayaran</span>
+                      <span className="text-lg font-black text-[#00AA5B]">Rp {priceDisplay.toLocaleString('id-ID')}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
