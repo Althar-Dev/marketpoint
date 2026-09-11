@@ -7,11 +7,6 @@ export interface CommissionSettings {
   prime: number;
 }
 
-export interface XenditSettings {
-  secretKey: string;
-  webhookToken: string;
-}
-
 export interface DigiFlazzSettings {
   mode: "development" | "production";
   username: string;
@@ -21,8 +16,8 @@ export interface DigiFlazzSettings {
 
 export interface PlatformSettings {
   commissions: CommissionSettings;
-  xendit: XenditSettings;
   digiflazz: DigiFlazzSettings;
+  // Xendit removed from here, managed in Firestore client-side
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -31,10 +26,6 @@ const DEFAULT_SETTINGS: PlatformSettings = {
     plus: 3.0,
     pro: 1.5,
     prime: 0.0,
-  },
-  xendit: {
-    secretKey: process.env.XENDIT_SECRET_KEY || "",
-    webhookToken: process.env.XENDIT_WEBHOOK_TOKEN || "",
   },
   digiflazz: {
     mode: "development",
@@ -62,10 +53,6 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
         plus: parseFloat(map.commission_plus ?? "3.0") || 3.0,
         pro: parseFloat(map.commission_pro ?? "1.5") || 1.5,
         prime: parseFloat(map.commission_prime ?? "0.0") || 0.0,
-      },
-      xendit: {
-        secretKey: map.xendit_secret_key || process.env.XENDIT_SECRET_KEY || "",
-        webhookToken: map.xendit_webhook_token || process.env.XENDIT_WEBHOOK_TOKEN || "",
       },
       digiflazz: {
         mode: (map.digiflazz_mode as any) || "development",
@@ -98,12 +85,6 @@ export async function updateCommissionSettings(commissions: CommissionSettings):
   await updatePlatformSetting("commission_plus", String(commissions.plus));
   await updatePlatformSetting("commission_pro", String(commissions.pro));
   await updatePlatformSetting("commission_prime", String(commissions.prime));
-  return true;
-}
-
-export async function updateXenditSettings(xendit: XenditSettings): Promise<boolean> {
-  await updatePlatformSetting("xendit_secret_key", xendit.secretKey);
-  await updatePlatformSetting("xendit_webhook_token", xendit.webhookToken);
   return true;
 }
 

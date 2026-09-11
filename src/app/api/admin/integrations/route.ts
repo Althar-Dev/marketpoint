@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import {
   getPlatformSettings,
   updateCommissionSettings,
-  updateXenditSettings,
   updateDigiFlazzSettings,
 } from "@/lib/database/settings";
 import { testXenditConnection } from "@/lib/xendit";
@@ -11,15 +10,6 @@ import { checkDigiFlazzBalance } from "@/lib/digiflazz";
 export async function GET() {
   try {
     const settings = await getPlatformSettings();
-
-    // Perform background live status checks if credentials are present
-    let xenditStatus: { success: boolean; message: string; balance?: number } = {
-      success: false,
-      message: "Belum dikonfigurasi",
-    };
-    if (settings.xendit.secretKey) {
-      xenditStatus = await testXenditConnection(settings.xendit.secretKey);
-    }
 
     let digiflazzStatus: { success: boolean; message: string; deposit?: number } = {
       success: false,
@@ -34,7 +24,6 @@ export async function GET() {
 
     return NextResponse.json({
       settings,
-      xenditStatus,
       digiflazzStatus,
     });
   } catch (error: any) {
@@ -61,20 +50,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, message: "Pengaturan komisi berhasil disimpan!" });
     }
 
-    if (action === "update_xendit") {
-      const { xendit } = body;
-      if (!xendit) {
-        return NextResponse.json({ error: "Data Xendit tidak valid" }, { status: 400 });
-      }
-      await updateXenditSettings({
-        secretKey: xendit.secretKey || "",
-        webhookToken: xendit.webhookToken || "",
-      });
-      return NextResponse.json({ success: true, message: "Pengaturan Xendit berhasil disimpan!" });
-    }
-
     if (action === "test_xendit") {
       const { secretKey } = body;
+      if (!secretKey) return NextResponse.json({ success: false, message: "Secret key kosong" }, { status: 400 });
       const result = await testXenditConnection(secretKey);
       return NextResponse.json(result);
     }

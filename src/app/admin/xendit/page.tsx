@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
+import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,27 +16,27 @@ import {
   Save,
   Eye,
   EyeOff,
-  Copy
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 export default function AdminXenditPage() {
   const { toast } = useToast();
+  const db = useFirestore();
   const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [savingXendit, setSavingXendit] = useState(false);
   const [testingXendit, setTestingXendit] = useState(false);
 
   // Show/hide password states
   const [showXenditKey, setShowXenditKey] = useState(false);
 
-  // Data States
-  const [xendit, setXendit] = useState({
-    secretKey: "",
-    webhookToken: "",
-  });
+  // Firestore Document Binding
+  const xenditDocRef = useMemoFirebase(() => doc(db, "settings", "xendit"), [db]);
+  const { data: xenditData, loading: xenditLoading } = useDoc(xenditDocRef);
 
+  // Form State
+  const [secretKey, setSecretKey] = useState("");
   const [xenditStatus, setXenditStatus] = useState<{
     success: boolean;
     message: string;
@@ -45,58 +47,34 @@ export default function AdminXenditPage() {
     setMounted(true);
   }, []);
 
-  // Load Settings
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/integrations");
-      const data = await res.json();
-      if (res.ok && data.settings?.xendit) {
-        setXendit(data.settings.xendit);
-        if (data.xenditStatus) setXenditStatus(data.xenditStatus);
-      } else {
-        toast({ variant: "destructive", title: "Error", description: data.error || "Gagal memuat pengaturan Xendit" });
-      }
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: "Terjadi kesalahan koneksi ke server" });
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
+  // Sync state with firestore data
   useEffect(() => {
-    if (mounted) {
-      loadData();
+    if (xenditData) {
+      setSecretKey(xenditData.secretKey || "");
     }
-  }, [mounted, loadData]);
+  }, [xenditData]);
 
   // Handlers
   const handleSaveXendit = async () => {
+    if (!mounted) return;
     setSavingXendit(true);
     try {
-      const res = await fetch("/api/admin/integrations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update_xendit",
-          xendit,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        toast({ title: "Berhasil", description: "Pengaturan Xendit berhasil disimpan!" });
-        handleTestXendit();
-      } else {
-        toast({ variant: "destructive", title: "Gagal", description: data.error || "Gagal menyimpan Xendit" });
-      }
+      await setDoc(xenditDocRef, {
+        secretKey,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+      
+      toast({ title: "Berhasil", description: "Secret Key Xendit disimpan ke Firestore!" });
+      handleTestXendit();
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Gagal", description: "Terjadi kesalahan saat menyimpan" });
+      toast({ variant: "destructive", title: "Gagal", description: "Gagal menyimpan ke Firestore" });
     } finally {
       setSavingXendit(false);
     }
   };
 
   const handleTestXendit = async () => {
+    if (!secretKey) return;
     setTestingXendit(true);
     try {
       const res = await fetch("/api/admin/integrations", {
@@ -104,7 +82,7 @@ export default function AdminXenditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "test_xendit",
-          secretKey: xendit.secretKey,
+          secretKey: secretKey,
         }),
       });
       const data = await res.json();
@@ -132,24 +110,23 @@ export default function AdminXenditPage() {
             <CreditCard className="w-4 h-4 text-blue-600" /> Gateway Xendit
           </h2>
           <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">
-            Kelola kredensial Secret API Key Xendit dan token webhook callback untuk pembayaran transaksi & berlangganan toko.
+            Kelola kredensial Secret API Key Xendit untuk pembayaran transaksi & berlangganan toko. Data disimpan aman di Firestore.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={loadData}
-            disabled={loading}
+            onClick={() => window.location.reload()}
             className="h-8 px-3 rounded-lg border-border/60 bg-white hover:bg-slate-50 text-[10px] font-bold gap-2 shadow-sm transition-transform active:scale-95"
           >
-            <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin text-[#00AA5B]")} /> Refresh
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
           </Button>
           <Button
             onClick={handleSaveXendit}
-            disabled={savingXendit}
+            disabled={savingXendit || xenditLoading}
             className="h-8 px-4 rounded-lg bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white text-[10px] font-bold gap-1.5 shadow-sm transition-transform active:scale-95"
           >
-            <Save className="w-3.5 h-3.5" />
+            {savingXendit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
             {savingXendit ? "Menyimpan..." : "Simpan Xendit"}
           </Button>
         </div>
@@ -195,7 +172,7 @@ export default function AdminXenditPage() {
 
                 <Button
                   onClick={handleTestXendit}
-                  disabled={testingXendit || !xendit.secretKey}
+                  disabled={testingXendit || !secretKey}
                   variant="outline"
                   className="w-full h-8 text-[10px] font-bold border-border/60 hover:bg-slate-50 gap-2 transition-transform active:scale-95"
                 >
@@ -219,8 +196,8 @@ export default function AdminXenditPage() {
                   <div className="relative">
                     <Input
                       type={showXenditKey ? "text" : "password"}
-                      value={xendit.secretKey}
-                      onChange={(e) => setXendit({ ...xendit, secretKey: e.target.value })}
+                      value={secretKey}
+                      onChange={(e) => setSecretKey(e.target.value)}
                       placeholder="xnd_development_... atau xnd_production_..."
                       className="h-9 rounded-lg bg-slate-50/50 border-border/50 text-[11px] font-mono pr-9 focus:ring-green-500/10"
                     />
@@ -233,50 +210,11 @@ export default function AdminXenditPage() {
                     </button>
                   </div>
                 </div>
-
-                {/* Webhook Token */}
-                <div className="space-y-1.5">
-                  <Label className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest ml-0.5">Webhook Verification Token</Label>
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      value={xendit.webhookToken}
-                      onChange={(e) => setXendit({ ...xendit, webhookToken: e.target.value })}
-                      placeholder="Token callback dari dashboard Xendit"
-                      className="h-9 rounded-lg bg-slate-50/50 border-border/50 text-[11px] font-mono pr-9 focus:ring-green-500/10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (xendit.webhookToken) {
-                          navigator.clipboard.writeText(xendit.webhookToken);
-                          toast({ title: "Berhasil", description: "Webhook Token disalin!" });
-                        }
-                      }}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Webhook URL Helper */}
-                <div className="p-3 bg-slate-50/70 rounded-xl border border-border/50 space-y-1">
-                  <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground block">URL Webhook Callback:</span>
-                  <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-border/30 text-[10px] font-mono text-[#212121]">
-                    <span className="truncate">https://marketpoint.id/api/webhooks/xendit</span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-6 text-[9px] font-bold px-2 text-[#00AA5B] hover:text-[#00AA5B]/80"
-                      onClick={() => {
-                        navigator.clipboard.writeText("https://marketpoint.id/api/webhooks/xendit");
-                        toast({ title: "Berhasil", description: "URL Webhook disalin!" });
-                      }}
-                    >
-                      Copy
-                    </Button>
-                  </div>
+                
+                <div className="p-3 bg-blue-50/30 border border-blue-100 rounded-xl">
+                  <p className="text-[9px] text-blue-800 leading-relaxed font-medium">
+                    Pastikan API Key memiliki izin read/write untuk <b>Invoices</b> dan <b>Balance</b>. Simpan Secret Key untuk mengaktifkan sistem pembayaran otomatis di platform.
+                  </p>
                 </div>
               </CardContent>
             </Card>
