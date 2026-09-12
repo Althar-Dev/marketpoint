@@ -382,7 +382,7 @@ export default function ProductDetailPage() {
                     src={img.imageUrl || "https://picsum.photos/seed/placeholder/800/800"}
                     alt={`${product.title} ${idx + 1}`}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover"
                     priority={idx === 0}
                   />
                 </div>
@@ -403,7 +403,7 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Previous & Next Chevron Buttons */}
+            {/* Previous & Next Chevron Buttons (Desktop Only) */}
             {images.length > 1 && (
               <>
                 <button
@@ -412,7 +412,7 @@ export default function ProductDetailPage() {
                   disabled={activeImage === 0}
                   aria-label="Previous Image"
                   className={cn(
-                    "absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-foreground flex items-center justify-center shadow-md backdrop-blur-xs transition-opacity z-10",
+                    "absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-foreground hidden lg:flex items-center justify-center shadow-md backdrop-blur-xs transition-opacity z-10",
                     activeImage === 0 ? "opacity-0 pointer-events-none" : "opacity-90 hover:opacity-100"
                   )}
                 >
@@ -424,7 +424,7 @@ export default function ProductDetailPage() {
                   disabled={activeImage === images.length - 1}
                   aria-label="Next Image"
                   className={cn(
-                    "absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-foreground flex items-center justify-center shadow-md backdrop-blur-xs transition-opacity z-10",
+                    "absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-foreground hidden lg:flex items-center justify-center shadow-md backdrop-blur-xs transition-opacity z-10",
                     activeImage === images.length - 1 ? "opacity-0 pointer-events-none" : "opacity-90 hover:opacity-100"
                   )}
                 >
