@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { 
   Search, 
@@ -33,6 +34,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function MarketHeader() {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, loading } = useUser();
   const auth = useAuth();
@@ -111,15 +113,26 @@ export function MarketHeader() {
         </div>
 
         {/* Search Bar - Stretches to fill space */}
-        <div className="flex-1 relative group">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            const form = e.currentTarget;
+            const input = form.querySelector('input') as HTMLInputElement;
+            if (input && input.value.trim()) {
+              router.push(`/search?q=${encodeURIComponent(input.value.trim())}`);
+            }
+          }}
+          className="flex-1 relative group"
+        >
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
             <Search className="w-4 h-4" />
           </div>
           <Input 
+            name="q"
             placeholder="Cari solusi infrastruktur atau API..." 
             className="h-10 pl-10 pr-4 rounded-xl bg-muted/40 border-border focus:bg-background focus:ring-primary/5 transition-all text-xs"
           />
-        </div>
+        </form>
 
         {/* Action Area */}
         <div className="flex items-center gap-1 sm:gap-4 shrink-0">

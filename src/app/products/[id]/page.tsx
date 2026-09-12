@@ -208,7 +208,7 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Column 1: Image & Shop Info */}
           <div className="lg:col-span-3 space-y-3.5">
-            <Skeleton className="aspect-square w-full max-w-[280px] sm:max-w-[320px] lg:max-w-none rounded-xl mx-auto" />
+            <Skeleton className="aspect-square w-full rounded-2xl lg:rounded-xl mx-auto" />
             <div className="flex gap-2 justify-center lg:justify-start">
               {[1, 2].map((i) => (
                 <Skeleton key={i} className="w-12 h-12 rounded-lg" />
@@ -344,7 +344,7 @@ export default function ProductDetailPage() {
 
         {/* Column 1: Image Gallery & Shop Info */}
         <div className="lg:col-span-3 space-y-3.5 lg:sticky lg:top-20">
-          <div className="relative aspect-square w-full max-w-[280px] sm:max-w-[320px] lg:max-w-none rounded-xl overflow-hidden bg-white border border-border/80 shadow-xs group mx-auto">
+          <div className="relative aspect-square w-full rounded-2xl lg:rounded-xl overflow-hidden bg-white border border-border/80 shadow-xs group mx-auto">
             <Image
               src={images[activeImage]?.imageUrl || "https://picsum.photos/seed/placeholder/800/800"}
               alt={product.title}
@@ -360,7 +360,7 @@ export default function ProductDetailPage() {
           </div>
 
           {images.length > 1 && (
-            <div className="grid grid-cols-5 gap-1.5 w-full max-w-[280px] sm:max-w-[320px] lg:max-w-none mx-auto">
+            <div className="grid grid-cols-5 gap-1.5 w-full">
               {images.map((img: any, idx: number) => (
                 <button
                   key={idx}
@@ -376,8 +376,8 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          {/* Shop Info Card */}
-          <Card className="border-border/70 bg-white rounded-xl overflow-hidden shadow-2xs max-w-[280px] sm:max-w-[320px] lg:max-w-none mx-auto">
+          {/* Shop Info Card - Desktop Only */}
+          <Card className="hidden lg:block border-border/70 bg-white rounded-xl overflow-hidden shadow-2xs max-w-[280px] sm:max-w-[320px] lg:max-w-none mx-auto">
             <CardContent className="p-3 flex items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5 min-w-0">
                 <Avatar className="h-8 w-8 rounded-lg border border-border/80 shadow-2xs shrink-0">
@@ -530,8 +530,54 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Ulasan Pembeli */}
+            {/* Ulasan Pembeli Section */}
             <div className="pt-4 border-t border-border/60 space-y-4">
+              {/* Shop Info Card - Mobile Only (Below the divider line) */}
+              <Card className="lg:hidden border-border/70 bg-white rounded-xl overflow-hidden shadow-2xs w-full">
+                <CardContent className="p-3 flex items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Avatar className="h-8 w-8 rounded-lg border border-border/80 shadow-2xs shrink-0">
+                      <AvatarImage src={shop?.logoUrl} />
+                      <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-bold">
+                        {shop?.name?.substring(0, 1) || "T"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <span className="text-xs font-bold text-foreground truncate max-w-[130px]">
+                          {shop?.name || "Toko Seller"}
+                        </span>
+                        {isVerified && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img src="/assets/badge/verified.png" alt="Verified" className="w-3.5 h-3.5 object-contain shrink-0" />
+                        )}
+                        {isOfficial && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img src="/assets/badge/officials.png" alt="Official" className="w-3.5 h-3.5 object-contain shrink-0" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mt-0.5">
+                        <span className="flex items-center gap-0.5 text-amber-500 font-bold">
+                          <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                          {Number(shop?.ratingAvg || shop?.rating || product?.ratingAvg || 5.0).toFixed(1)}
+                        </span>
+                        <span className="text-muted-foreground/30">•</span>
+                        <span className="flex items-center gap-1 text-muted-foreground font-semibold">
+                          <Package className="w-3 h-3 text-[#00AA5B]" />
+                          {shopProductsCount !== null ? `${shopProductsCount} Produk` : `${shop?.productsCount || shop?.totalProducts || 1} Produk`}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {(shop?.slug || product?.shopSlug) && (
+                    <Button asChild variant="outline" size="sm" className="h-7 px-3 rounded-lg text-[10px] font-bold border-border hover:border-[#00AA5B] hover:text-[#00AA5B] shrink-0">
+                      <Link href={`/${shop?.slug || product?.shopSlug}`}>Lihat</Link>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+
               <h3 className="text-xs font-bold text-[#212121] tracking-wider">
                 Ulasan Pembeli ({product.ratingCount || 1809})
               </h3>
@@ -983,6 +1029,11 @@ export default function ProductDetailPage() {
               const itemPrice = Number(item.price || 0);
               const itemOriginalPrice = item.discountPrice ? Number(item.discountPrice) : itemPrice;
               const itemHasDiscount = itemOriginalPrice > itemPrice;
+              const itemDiscountPercent = itemHasDiscount ? Math.round(((itemOriginalPrice - itemPrice) / itemOriginalPrice) * 100) : null;
+              const itemRating = Number(item.ratingAvg || 5.0).toFixed(1);
+              const itemSoldText = item.salesCount ? `${item.salesCount} terjual` : "0 terjual";
+              const shopNameStr = shop?.name || shop?.shopName || product?.shopName || "Toko Seller";
+              const shopLogo = shop?.logoUrl || shop?.avatar || product?.shopLogoUrl || "";
               const shopSlug = shop?.slug || product?.shopSlug || 'marketpoint';
               const targetUrl = `/${shopSlug}/${item.slug || item.id}`;
 
@@ -997,26 +1048,76 @@ export default function ProductDetailPage() {
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
+                        {itemDiscountPercent && (
+                          <div className="absolute top-1.5 left-1.5 bg-[#FF5E5E] text-white text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-xs shadow-xs">
+                            {itemDiscountPercent}%
+                          </div>
+                        )}
                       </div>
-                      <div className="p-2.5 flex flex-col flex-1 justify-between space-y-1.5">
-                        <h3 className="text-xs font-bold text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">
-                          {item.title}
-                        </h3>
-                        <div className="space-y-0.5 pt-1">
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-[10px] font-bold text-[#00AA5B]">Rp</span>
-                            <span className="text-xs sm:text-sm font-extrabold text-[#212121]">
-                              {itemPrice.toLocaleString('id-ID')}
+
+                      <div className="p-2 sm:p-2.5 md:p-3 space-y-1.5 flex-1 flex flex-col justify-between">
+                        <div className="space-y-1">
+                          <h4 className="text-[11px] sm:text-xs font-medium text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">
+                            {item.title}
+                          </h4>
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1">
+                              <span className="text-[#000000] text-xs sm:text-sm font-bold">
+                                Rp {itemPrice.toLocaleString('id-ID')}
+                              </span>
+                            </div>
+                            {itemHasDiscount && (
+                              <p className="text-[9px] sm:text-[10px] text-muted-foreground line-through opacity-60">
+                                Rp {itemOriginalPrice.toLocaleString('id-ID')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 pt-1">
+                          <div className="flex items-center gap-1">
+                            <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#FFC400] fill-[#FFC400]" />
+                            <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground">
+                              {itemRating} <span className="opacity-40">|</span> {itemSoldText}
                             </span>
                           </div>
-                          {item.ratingAvg > 0 && (
-                            <div className="flex items-center gap-1 pt-0.5 text-[10px] text-muted-foreground font-medium">
-                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                              <span>{Number(item.ratingAvg).toFixed(1)}</span>
-                              <span>•</span>
-                              <span>{item.salesCount || 0} Terjual</span>
+                          <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 min-w-0">
+                              {shopLogo ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img
+                                  src={shopLogo}
+                                  alt={String(shopNameStr)}
+                                  className="w-[18px] h-[18px] rounded-md object-cover shrink-0 border border-border/80"
+                                />
+                              ) : (
+                                <div className="w-[18px] h-[18px] bg-[#00AA5B] rounded-xs flex items-center justify-center shrink-0">
+                                  <Store className="w-2.5 h-2.5 text-white" />
+                                </div>
+                              )}
+                              <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground truncate max-w-[70px] sm:max-w-[90px]">
+                                {String(shopNameStr)}
+                              </span>
+                              <div className="flex items-center gap-0.5 shrink-0">
+                                {isVerified && (
+                                  /* eslint-disable-next-line @next/next/no-img-element */
+                                  <img
+                                    src="/assets/badge/verified.png"
+                                    alt="Verified"
+                                    className="w-[17px] h-[17px] object-contain shrink-0"
+                                  />
+                                )}
+                                {isOfficial && (
+                                  /* eslint-disable-next-line @next/next/no-img-element */
+                                  <img
+                                    src="/assets/badge/officials.png"
+                                    alt="Official"
+                                    className="w-[17px] h-[17px] object-contain shrink-0"
+                                  />
+                                )}
+                              </div>
                             </div>
-                          )}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
