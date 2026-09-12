@@ -172,6 +172,9 @@ export default function ShopProfilePage() {
     }
   };
 
+  const isVerified = Boolean(shop.isVerified ?? shop.verified ?? shop.is_verified);
+  const isOfficial = Boolean(shop.isOfficial ?? shop.official ?? shop.is_official);
+
   const handleShare = () => {
     if (typeof window !== 'undefined' && navigator.share) {
       navigator.share({
@@ -183,8 +186,8 @@ export default function ShopProfilePage() {
 
   return (
     <main className="flex-1 w-full pt-14 md:pt-16 pb-20 lg:pb-0">
-      {/* Banner Section - Optimized for 1300:500 */}
-      <div className="relative h-32 sm:h-44 md:h-72 lg:h-[350px] w-full bg-muted overflow-hidden">
+      {/* Banner Section - Optimized ratio */}
+      <div className="relative h-28 sm:h-40 md:h-52 lg:h-60 w-full bg-muted overflow-hidden">
         {shop.bannerUrl ? (
           <Image
             src={shop.bannerUrl}
@@ -203,44 +206,93 @@ export default function ShopProfilePage() {
       </div>
 
       {/* Shop Info Card */}
-      <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-20 relative z-20 mb-8">
-        <Card className="border-border border-[1.5px] shadow-xl rounded-2xl bg-white overflow-hidden relative">
-          <CardContent className="p-4 md:p-8 relative">
+      <div className="max-w-screen-xl mx-auto px-3 sm:px-4 -mt-8 sm:-mt-12 md:-mt-14 relative z-20 mb-6">
+        <Card className="border-border border-[1px] shadow-lg rounded-2xl bg-white overflow-hidden relative">
+          <CardContent className="p-3.5 sm:p-5 md:p-6 relative">
 
-            <div className="flex flex-row items-start gap-4 md:gap-8">
+            <div className="flex flex-row items-start gap-3 md:gap-6">
               {/* Logo Section - Aligned Left */}
               <div className="relative shrink-0">
-                <div className="h-16 w-16 md:h-32 md:w-32 rounded-2xl md:rounded-3xl bg-white border-[1.5px] border-border shadow-md overflow-hidden relative">
+                <div className="h-14 w-14 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-xl md:rounded-2xl bg-white border border-border shadow-sm overflow-hidden relative">
                   {shop.logoUrl ? (
                     <Image src={shop.logoUrl} alt={shop.name} fill className="object-cover" data-ai-hint="shop logo" />
                   ) : (
                     <div className="w-full h-full bg-[#00AA5B] flex items-center justify-center">
-                      <span className="text-xl md:text-4xl font-bold text-white uppercase">{shop.name?.substring(0, 1)}</span>
+                      <span className="text-lg md:text-3xl font-bold text-white uppercase">{shop.name?.substring(0, 1)}</span>
                     </div>
                   )}
                 </div>
-                <div className="absolute -bottom-1 -right-1 h-5 w-5 md:h-7 md:w-7 rounded-full bg-white flex items-center justify-center border-[1.5px] border-border shadow-sm">
-                  <div className="h-2.5 w-2.5 md:h-3.5 md:w-3.5 rounded-full bg-[#00AA5B] animate-pulse"></div>
+                <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 md:h-5 md:w-5 rounded-full bg-white flex items-center justify-center border border-border shadow-xs">
+                  <div className="h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-[#00AA5B] animate-pulse"></div>
                 </div>
               </div>
 
               {/* Info Container - Right of Logo */}
               <div className="flex-1 min-w-0 pr-0">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-lg md:text-3xl font-black font-headline tracking-tight truncate max-w-[180px] md:max-w-md">
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h1 className="text-base sm:text-xl md:text-2xl font-bold font-headline tracking-tight truncate max-w-[150px] sm:max-w-xs md:max-w-md">
                       {shop.name}
                     </h1>
 
-                    {shop.official === true && (
+                    {/* Verified Badge - Rendered 1st */}
+                    {isVerified && (
                       <Dialog>
                         <DialogTrigger asChild>
-                          <button className="relative h-5 w-20 md:h-6 md:w-24 shrink-0 transition-transform active:scale-95">
-                            <Image
+                          <button className="relative h-5 md:h-6 w-auto shrink-0 transition-transform active:scale-95 inline-flex items-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src="/assets/badge/verified.png"
+                              alt="Verified Store"
+                              className="h-5 md:h-6 w-auto object-contain"
+                            />
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="rounded-2xl max-w-sm md:max-w-md border-border p-6">
+                          <DialogHeader>
+                            <div className="flex justify-center mb-4">
+                              <div className="relative h-10 w-40">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src="/assets/badge/verified.png"
+                                  alt="Verified Store"
+                                  className="h-10 object-contain mx-auto"
+                                />
+                              </div>
+                            </div>
+                            <DialogTitle className="text-center text-xl font-black font-headline">Toko Terverifikasi MarketPoint</DialogTitle>
+                            <DialogDescription className="text-center pt-2 font-medium">
+                              Toko ini telah melalui proses verifikasi identitas dan legalitas seller oleh MarketPoint.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 mt-6">
+                            <div className="flex items-start gap-4 p-3 rounded-xl bg-[#00AA5B]/5 border border-[#00AA5B]/10">
+                              <div className="h-8 w-8 rounded-full bg-[#00AA5B] flex items-center justify-center shrink-0">
+                                <CheckCircle2 className="w-5 h-5 text-white" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-black">Identitas Terverifikasi</p>
+                                <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Penjual terverifikasi resmi oleh sistem MarketPoint.</p>
+                              </div>
+                            </div>
+                          </div>
+                          <Button className="w-full mt-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black rounded-xl text-white py-3 h-auto" onClick={() => (document.querySelector('[data-state="open"]') as any)?.click()}>
+                            Mengerti
+                          </Button>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+
+                    {/* Official Badge - Rendered 2nd */}
+                    {isOfficial && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <button className="relative h-5 md:h-6 w-auto shrink-0 transition-transform active:scale-95 inline-flex items-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
                               src="/assets/badge/officials.png"
                               alt="Official Store"
-                              fill
-                              className="object-contain object-left"
+                              className="h-5 md:h-6 w-auto object-contain"
                             />
                           </button>
                         </DialogTrigger>
@@ -248,11 +300,11 @@ export default function ShopProfilePage() {
                           <DialogHeader>
                             <div className="flex justify-center mb-4">
                               <div className="relative h-12 w-48">
-                                <Image
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
                                   src="/assets/badge/officials.png"
                                   alt="Official Store"
-                                  fill
-                                  className="object-contain"
+                                  className="h-12 object-contain mx-auto"
                                 />
                               </div>
                             </div>
@@ -338,11 +390,11 @@ export default function ShopProfilePage() {
                 <div className="hidden md:flex items-center gap-3 pt-6">
                   <Button
                     onClick={handleContactWhatsApp}
-                    className="h-10 px-8 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-xs gap-2 shadow-lg shadow-[#00AA5B]/10 transition-transform active:scale-95"
+                    className="h-10 px-8 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2 shadow-lg shadow-[#00AA5B]/10 transition-transform active:scale-95"
                   >
                     <MessageCircle className="w-4 h-4" /> Chat
                   </Button>
-                  <Button variant="outline" className="h-10 px-8 rounded-xl border-border font-black text-xs gap-2 hover:bg-[#F8FAFC] transition-transform active:scale-95">
+                  <Button variant="outline" className="h-10 px-8 rounded-xl border-border font-bold text-xs gap-2 hover:bg-[#F8FAFC] transition-transform active:scale-95">
                     <Heart className="w-4 h-4" /> Follow
                   </Button>
                   <Button
@@ -361,11 +413,11 @@ export default function ShopProfilePage() {
             <div className="flex md:hidden items-center gap-2 mt-6 pt-4 border-t border-border/50">
               <Button
                 onClick={handleContactWhatsApp}
-                className="flex-1 h-9 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-[10px] gap-2 shadow-sm"
+                className="flex-1 h-9 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-[10px] gap-2 shadow-sm"
               >
                 <MessageCircle className="w-3.5 h-3.5" /> Chat
               </Button>
-              <Button variant="outline" className="flex-1 h-9 rounded-xl border-border font-black text-[10px] gap-2">
+              <Button variant="outline" className="flex-1 h-9 rounded-xl border-border font-bold text-[10px] gap-2">
                 <Heart className="w-3.5 h-3.5" /> Follow
               </Button>
             </div>

@@ -238,6 +238,19 @@ export async function getProductById(id: string): Promise<DigitalProduct | null>
 }
 
 /**
+ * Generate clean, URL-safe product ID from title
+ */
+export function generateProductIdFromTitle(title: string): string {
+  return (
+    title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "product"
+  );
+}
+
+/**
  * Create new digital product
  */
 export async function createProduct(input: CreateProductInput): Promise<DigitalProduct> {
@@ -247,7 +260,17 @@ export async function createProduct(input: CreateProductInput): Promise<DigitalP
   try {
     await client.query("BEGIN");
 
-    const productId = `prod_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    // Generate clean base ID from product title (sanitized from special characters)
+    const baseId = generateProductIdFromTitle(input.title);
+    let productId = baseId;
+    let existingIdCheck = await client.query("SELECT id FROM products WHERE id = $1", [productId]);
+
+    while (existingIdCheck.rows.length > 0) {
+      const randomSuffix = Math.random().toString(36).substring(2, 7);
+      productId = `${baseId}-${randomSuffix}`;
+      existingIdCheck = await client.query("SELECT id FROM products WHERE id = $1", [productId]);
+    }
+
     const slug = input.slug?.trim() || generateProductSlug(input.title);
 
     const productSql = `
@@ -344,13 +367,228 @@ export async function createProduct(input: CreateProductInput): Promise<DigitalP
 }
 
 /**
- * Delete / Archive product
+ * Delete product and its related database records
  */
-export async function deleteProduct(productId: string, shopId: string): Promise<boolean> {
+export async function deleteProduct(productId: string, shopId: string): Promise<DigitalProduct | null> {
   await ensureSchema();
-  const res = await query(
-    `UPDATE products SET status = 'ARCHIVED', updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND shop_id = $2`,
-    [productId, shopId]
-  );
-  return (res.rowCount || 0) > 0;
+  const product = await getProductById(productId);
+  if (!product || product.shopId !== shopId) return null;
+
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM product_images WHERE product_id = $1", [productId]);
+    await client.query("DELETE FROM product_files WHERE product_id = $1", [productId]);
+    await client.query("DELETE FROM product_license_keys WHERE product_id = $1", [productId]);
+    await client.query("DELETE FROM products WHERE id = $1 AND shop_id = $2", [productId, shopId]);
+    await client.query("COMMIT");
+    return product;
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("[DELETE PRODUCT ERROR]", err);
+    throw err;
+  } finally {
+    client.release();
+  }
 }
+
+export interface UpdateProductInput {
+  id: string;
+  shopId: string;
+  categoryId?: number;
+  title?: string;
+  shortDescription?: string;
+  description?: string;
+  price?: number;
+  discountPrice?: number | null;
+  stockType?: "REUSABLE" | "SINGLE_USE";
+  stockCount?: number;
+  demoUrl?: string;
+  status?: "DRAFT" | "ACTIVE" | "INACTIVE";
+  attributes?: Record<string, any>;
+  images?: string[];
+  files?: Array<{ fileName: string; fileUrl: string; fileSize?: number }>;
+  licenseKeys?: string[];
+}
+
+/**
+ * Update an existing digital product
+ */
+export async function updateProduct(input: UpdateProductInput): Promise<DigitalProduct | null> {
+  await ensureSchema();
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+
+    const { id, shopId } = input;
+
+    const checkRes = await client.query("SELECT id FROM products WHERE id = $1 AND shop_id = $2", [id, shopId]);
+    if (checkRes.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return null;
+    }
+
+    const updates: string[] = [];
+    const params: any[] = [id, shopId];
+
+    if (input.title !== undefined) {
+      params.push(input.title);
+      updates.push(`title = $${params.length}`);
+    }
+    if (input.categoryId !== undefined) {
+      params.push(input.categoryId);
+      updates.push(`category_id = $${params.length}`);
+    }
+    if (input.price !== undefined) {
+      params.push(input.price);
+      updates.push(`price = $${params.length}`);
+    }
+    if (input.shortDescription !== undefined) {
+      params.push(input.shortDescription || null);
+      updates.push(`short_description = $${params.length}`);
+    }
+    if (input.description !== undefined) {
+      params.push(input.description || null);
+      updates.push(`description = $${params.length}`);
+    }
+    if (input.stockType !== undefined) {
+      params.push(input.stockType);
+      updates.push(`stock_type = $${params.length}`);
+    }
+    if (input.stockCount !== undefined) {
+      params.push(input.stockCount);
+      updates.push(`stock_count = $${params.length}`);
+    }
+    if (input.demoUrl !== undefined) {
+      params.push(input.demoUrl || null);
+      updates.push(`demo_url = $${params.length}`);
+    }
+    if (input.status !== undefined) {
+      params.push(input.status);
+      updates.push(`status = $${params.length}`);
+    }
+    if (input.attributes !== undefined) {
+      params.push(JSON.stringify(input.attributes || {}));
+      updates.push(`attributes = $${params.length}`);
+    }
+
+    updates.push(`updated_at = CURRENT_TIMESTAMP`);
+
+    if (updates.length > 2) {
+      const sql = `UPDATE products SET ${updates.join(", ")} WHERE id = $1 AND shop_id = $2`;
+      await client.query(sql, params);
+    }
+
+    if (input.images !== undefined) {
+      await client.query("DELETE FROM product_images WHERE product_id = $1", [id]);
+      for (let i = 0; i < input.images.length; i++) {
+        const imgUrl = input.images[i];
+        const isPrimary = i === 0;
+        await client.query(
+          "INSERT INTO product_images (product_id, image_url, is_primary, sort_order) VALUES ($1, $2, $3, $4)",
+          [id, imgUrl, isPrimary, i]
+        );
+      }
+    }
+
+    if (input.files !== undefined) {
+      await client.query("DELETE FROM product_files WHERE product_id = $1", [id]);
+      for (const f of input.files) {
+        await client.query(
+          "INSERT INTO product_files (product_id, file_name, file_url, file_size, version) VALUES ($1, $2, $3, $4, $5)",
+          [id, f.fileName, f.fileUrl, f.fileSize || 0, "v1.0.0"]
+        );
+      }
+    }
+
+    if (input.stockType === "SINGLE_USE" && input.licenseKeys !== undefined) {
+      await client.query("DELETE FROM product_license_keys WHERE product_id = $1", [id]);
+      for (const key of input.licenseKeys) {
+        await client.query(
+          "INSERT INTO product_license_keys (product_id, license_key) VALUES ($1, $2)",
+          [id, key]
+        );
+      }
+    }
+
+    await client.query("COMMIT");
+    return await getProductById(id);
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("[UPDATE PRODUCT ERROR]", err);
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Get all active products across all shops for public market listing
+ */
+export async function getAllActiveProducts(categoryId?: number, limit = 60): Promise<DigitalProduct[]> {
+  try {
+    await ensureSchema();
+
+    const runQuery = async () => {
+      let sql = `
+        SELECT 
+          p.id, p.shop_id as "shopId",
+          p.category_id as "categoryId", c.name as "categoryName",
+          p.title, p.slug, p.short_description as "shortDescription", p.description,
+          p.price, p.discount_price as "discountPrice", p.stock_type as "stockType",
+          p.stock_count as "stockCount", p.demo_url as "demoUrl", p.status,
+          p.attributes, p.sales_count as "salesCount", p.views_count as "viewsCount",
+          p.rating_avg as "ratingAvg", p.rating_count as "ratingCount",
+          p.created_at as "createdAt", p.updated_at as "updatedAt"
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.status = 'ACTIVE'
+      `;
+      const params: any[] = [];
+
+      if (categoryId && !isNaN(Number(categoryId))) {
+        params.push(Number(categoryId));
+        sql += ` AND p.category_id = $${params.length}`;
+      }
+
+      sql += ` ORDER BY p.created_at DESC LIMIT ${limit}`;
+
+      const res = await query(sql, params);
+      const products = res.rows;
+
+      if (products.length === 0) return [];
+
+      const productIds = products.map((p) => p.id);
+
+      const imgRes = await query(
+        `SELECT id, product_id as "productId", image_url as "imageUrl", is_primary as "isPrimary" FROM product_images WHERE product_id = ANY($1::varchar[]) ORDER BY sort_order ASC`,
+        [productIds]
+      );
+
+      return products.map((p) => ({
+        ...p,
+        price: Number(p.price),
+        discountPrice: p.discountPrice ? Number(p.discountPrice) : null,
+        ratingAvg: Number(p.ratingAvg || 5.0),
+        images: imgRes.rows.filter((img) => img.productId === p.id),
+        files: [],
+      }));
+    };
+
+    return await runQuery();
+  } catch (err: any) {
+    if (err?.code === "42P01") {
+      try {
+        await initDatabaseSchema(true);
+        const res = await query("SELECT p.id FROM products p WHERE p.status = 'ACTIVE' LIMIT 1");
+        if (res.rows.length === 0) return [];
+      } catch (retryErr) {
+        console.warn("⚠️ PostgreSQL belum terhubung / schema error:", retryErr);
+        return [];
+      }
+    }
+    console.warn("⚠️ Error fetching active products:", err);
+    return [];
+  }
+}
+

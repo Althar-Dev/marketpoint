@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,7 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Trash2, Globe, FileText, Image as ImageIcon, CheckCircle2, Repeat, Key, Sparkles, X, Upload } from "lucide-react";
+import { Loader2, Plus, Trash2, Globe, FileText, Image as ImageIcon, CheckCircle2, Repeat, Key, Sparkles, Layers, X, Upload, MoreVertical, Pencil } from "lucide-react";
 import Image from "next/image";
 
 interface ProductCategory {
@@ -52,21 +52,42 @@ interface ProductCategory {
   icon?: string;
 }
 
+interface ProductVariantItem {
+  id: string;
+  name: string;
+  price: number;
+  fileUrl?: string;
+}
+
 interface ProductItem {
   id: string;
   title: string;
   slug: string;
+  categoryId?: number;
   categoryName?: string;
+  shortDescription?: string;
+  description?: string;
+  demoUrl?: string;
   price: number;
   discountPrice?: number | null;
   stockType: "REUSABLE" | "SINGLE_USE";
   stockCount: number;
   status: "DRAFT" | "ACTIVE" | "INACTIVE" | "ARCHIVED";
+  attributes?: {
+    variants?: ProductVariantItem[];
+    [key: string]: any;
+  };
   salesCount: number;
   ratingAvg: number;
   images: Array<{ imageUrl: string }>;
   files: Array<{ fileName: string; fileUrl: string; fileSize?: number }>;
   createdAt?: string;
+}
+
+interface FormImageItem {
+  id: string;
+  file?: File;
+  previewUrl: string;
 }
 
 export default function MerchantProductsPage() {
@@ -84,7 +105,9 @@ export default function MerchantProductsPage() {
   // Modal State
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [productToDelete, setProductToDelete] = useState<ProductItem | null>(null);
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
 
   // Form State
   const [formTitle, setFormTitle] = useState("");
@@ -96,9 +119,35 @@ export default function MerchantProductsPage() {
   const [formStockCount, setFormStockCount] = useState("10");
   const [formLicenseKeysText, setFormLicenseKeysText] = useState("");
   const [formDemoUrl, setFormDemoUrl] = useState("");
-  const [formImages, setFormImages] = useState<string[]>([]);
-  const [formFileUrl, setFormFileUrl] = useState("");
-  const [formFileName, setFormFileName] = useState("");
+  const [formImages, setFormImages] = useState<FormImageItem[]>([]);
+  const [formVariants, setFormVariants] = useState<ProductVariantItem[]>([
+    { id: Math.random().toString(36).substring(7), name: "Default", price: 0, fileUrl: "" }
+  ]);
+
+  const handleAddVariant = () => {
+    setFormVariants((prev) => [
+      ...prev,
+      { id: Math.random().toString(36).substring(7), name: "", price: 0, fileUrl: "" },
+    ]);
+  };
+
+  const handleUpdateVariant = (index: number, field: "name" | "price" | "fileUrl", value: any) => {
+    setFormVariants((prev) => {
+      const updated = [...prev];
+      if (field === "price") {
+        updated[index] = { ...updated[index], price: Number(value) || 0 };
+      } else if (field === "fileUrl") {
+        updated[index] = { ...updated[index], fileUrl: String(value || "") };
+      } else {
+        updated[index] = { ...updated[index], name: String(value || "") };
+      }
+      return updated;
+    });
+  };
+
+  const handleRemoveVariant = (index: number) => {
+    setFormVariants((prev) => prev.filter((_, idx) => idx !== index));
+  };
 
   const shopRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -153,7 +202,7 @@ export default function MerchantProductsPage() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -172,42 +221,121 @@ export default function MerchantProductsPage() {
       return;
     }
 
-    setUploadingImage(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("type", "products");
+    const previewUrl = URL.createObjectURL(file);
+    const newItem: FormImageItem = {
+      id: Math.random().toString(36).substring(7),
+      file,
+      previewUrl,
+    };
 
-    try {
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (res.ok && data.url) {
-        setFormImages((prev) => [...prev, data.url]);
-        toast({ title: "Berhasil Upload Foto", description: "Foto produk berhasil diunggah." });
-      } else {
-        throw new Error(data.error || "Gagal mengunggah gambar.");
-      }
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Upload Gagal", description: err.message });
-    } finally {
-      setUploadingImage(false);
-      e.target.value = "";
-    }
+    setFormImages((prev) => [...prev, newItem]);
+    e.target.value = "";
   };
 
   const handleRemoveImage = (indexToRemove: number) => {
-    setFormImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    setFormImages((prev) => {
+      const itemToRemove = prev[indexToRemove];
+      if (itemToRemove && itemToRemove.file && itemToRemove.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(itemToRemove.previewUrl);
+      }
+      return prev.filter((_, idx) => idx !== indexToRemove);
+    });
   };
+
+  const handleEditProduct = (prod: ProductItem) => {
+    setEditingProduct(prod);
+    setFormTitle(prod.title || "");
+    setFormPrice(String(prod.price || 0));
+    setFormShortDesc(prod.shortDescription || "");
+    setFormDesc(prod.description || "");
+    setFormStockType(prod.stockType || "REUSABLE");
+    setFormStockCount(String(prod.stockCount || 10));
+    setFormDemoUrl(prod.demoUrl || "");
+    setFormImages(
+      (prod.images || []).map((img) => ({
+        id: Math.random().toString(36).substring(7),
+        previewUrl: img.imageUrl,
+      }))
+    );
+    if (prod.categoryId) {
+      setFormCategoryId(String(prod.categoryId));
+    } else if (categories.length > 0) {
+      setFormCategoryId(String(categories[0].id));
+    }
+
+    if (prod.attributes?.variants && Array.isArray(prod.attributes.variants) && prod.attributes.variants.length > 0) {
+      setFormVariants(
+        prod.attributes.variants.map((v: any) => ({
+          id: v.id || Math.random().toString(36).substring(7),
+          name: v.name || "Default",
+          price: Number(v.price) || 0,
+          fileUrl: v.fileUrl || "",
+        }))
+      );
+    } else {
+      setFormVariants([
+        {
+          id: Math.random().toString(36).substring(7),
+          name: "Default",
+          price: Number(prod.price) || 0,
+          fileUrl: prod.files?.[0]?.fileUrl || "",
+        },
+      ]);
+    }
+
+    // Delay opening dialog slightly so Radix DropdownMenu releases pointer-events lock
+    setTimeout(() => {
+      document.body.style.pointerEvents = "";
+      setShowAddDialog(true);
+    }, 50);
+  };
+
+  const isFormValid = useMemo(() => {
+    if (!formTitle.trim() || formTitle.trim().length < 3) return false;
+    if (!formCategoryId) return false;
+    if (!formDesc.trim() || formDesc.length > 10000) return false;
+    if (formImages.length === 0) return false;
+    if (formVariants.length === 0) return false;
+
+    for (const v of formVariants) {
+      if (!v.name || !v.name.trim()) return false;
+      if (
+        v.price === undefined ||
+        v.price === null ||
+        String(v.price).trim() === "" ||
+        isNaN(Number(v.price)) ||
+        Number(v.price) < 0
+      ) return false;
+      if (formStockType === "REUSABLE" && (!v.fileUrl || !v.fileUrl.trim())) return false;
+    }
+
+    if (formStockType === "SINGLE_USE" && !editingProduct) {
+      const singleUseLines = formLicenseKeysText
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+      if (singleUseLines.length === 0) return false;
+    }
+
+    return true;
+  }, [
+    formTitle,
+    formCategoryId,
+    formDesc,
+    formImages,
+    formVariants,
+    formStockType,
+    formLicenseKeysText,
+    editingProduct,
+  ]);
 
   const handleCreateProduct = async () => {
     if (!user) return;
 
-    if (!formTitle.trim() || formTitle.trim().length < 3) {
-      toast({ variant: "destructive", title: "Judul Wajib Diisi", description: "Masukkan judul produk minimal 3 karakter." });
-      return;
-    }
+    const isEditMode = Boolean(editingProduct);
 
-    if (!formPrice || Number(formPrice) < 0) {
-      toast({ variant: "destructive", title: "Harga Tidak Valid", description: "Masukkan harga produk yang sesuai." });
+    if (!formTitle.trim() || formTitle.trim().length < 3) {
+      toast({ variant: "destructive", title: "Judul Produk Wajib Diisi", description: "Masukkan judul produk minimal 3 karakter." });
       return;
     }
 
@@ -216,39 +344,146 @@ export default function MerchantProductsPage() {
       return;
     }
 
+    if (!formDesc.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Deskripsi Produk Wajib Diisi",
+        description: "Tuliskan deskripsi penjelasan produk digital Anda (maksimal 10.000 karakter).",
+      });
+      return;
+    }
+
+    if (formImages.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Foto Produk Wajib Unggah",
+        description: "Unggah setidaknya 1 foto produk digital Anda.",
+      });
+      return;
+    }
+
+    if (formVariants.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Varian Produk Wajib Diisi",
+        description: "Minimal 1 varian produk harus ditambahkan.",
+      });
+      return;
+    }
+
+    for (let i = 0; i < formVariants.length; i++) {
+      const v = formVariants[i];
+      if (!v.name || !v.name.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Nama Varian Wajib Diisi",
+          description: `Masukkan nama varian untuk Varian #${i + 1}.`,
+        });
+        return;
+      }
+      if (v.price === undefined || v.price === null || String(v.price).trim() === "" || isNaN(Number(v.price)) || Number(v.price) < 0) {
+        toast({
+          variant: "destructive",
+          title: "Harga Varian Wajib Diisi",
+          description: `Masukkan harga yang valid untuk Varian #${i + 1} ("${v.name || "Default"}").`,
+        });
+        return;
+      }
+      if (formStockType === "REUSABLE" && (!v.fileUrl || !v.fileUrl.trim())) {
+        toast({
+          variant: "destructive",
+          title: "URL Link Digital Wajib Diisi",
+          description: `Masukkan URL link file/data digital untuk Varian #${i + 1} ("${v.name}").`,
+        });
+        return;
+      }
+    }
+
     const singleUseLines = formLicenseKeysText
       .split("\n")
       .map((l) => l.trim())
       .filter((l) => l.length > 0);
 
-    if (formStockType === "SINGLE_USE" && singleUseLines.length === 0) {
+    if (formStockType === "SINGLE_USE" && singleUseLines.length === 0 && !editingProduct) {
       toast({
         variant: "destructive",
-        title: "Stok Akun Kosong",
+        title: "Stok Akun Wajib Diisi",
         description: "Masukkan setidaknya 1 baris akun/lisensi di kolom Single Use.",
+      });
+      return;
+    }
+
+    const validVariants = formVariants
+      .filter((v) => v.name.trim().length > 0 && v.price >= 0)
+      .map((v) => ({
+        id: v.id,
+        name: v.name.trim(),
+        price: Number(v.price),
+        fileUrl: (v.fileUrl || "").trim(),
+      }));
+
+    if (validVariants.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Varian Produk Wajib Diisi",
+        description: "Minimal 1 varian produk harus diisi dengan nama dan harga.",
       });
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const payload = {
+      // Upload new image files to R2 if any File object exists
+      const uploadedUrls: string[] = [];
+      for (const imgItem of formImages) {
+        if (imgItem.file) {
+          const formData = new FormData();
+          formData.append("file", imgItem.file);
+          formData.append("type", "products");
+
+          const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+          const uploadData = await uploadRes.json();
+          if (!uploadRes.ok || !uploadData.url) {
+            throw new Error(uploadData.error || "Gagal mengunggah foto produk.");
+          }
+          uploadedUrls.push(uploadData.url);
+        } else {
+          uploadedUrls.push(imgItem.previewUrl);
+        }
+      }
+
+      const url = "/api/products";
+      const method = isEditMode ? "PUT" : "POST";
+
+      const variantFiles = validVariants
+        .filter((v) => v.fileUrl && v.fileUrl.length > 0)
+        .map((v) => ({ fileName: `${v.name}.zip`, fileUrl: v.fileUrl }));
+
+      const payload: any = {
         shopId: user.uid,
         categoryId: Number(formCategoryId),
         title: formTitle.trim(),
-        price: Number(formPrice),
+        price: validVariants[0]?.price || 0,
         shortDescription: formShortDesc.trim(),
         description: formDesc.trim(),
         stockType: formStockType,
-        stockCount: formStockType === "SINGLE_USE" ? singleUseLines.length : 9999,
+        stockCount: formStockType === "SINGLE_USE" ? (singleUseLines.length || Number(formStockCount) || 0) : (Number(formStockCount) || 9999),
         demoUrl: formDemoUrl.trim(),
-        images: formImages.length > 0 ? formImages : ["https://cdn.marketpoint.id/marketpoint.png"],
-        files: formStockType === "REUSABLE" && formFileUrl ? [{ fileName: formFileName || "produk-digital.zip", fileUrl: formFileUrl }] : [],
-        licenseKeys: formStockType === "SINGLE_USE" ? singleUseLines : undefined,
+        images: uploadedUrls.length > 0 ? uploadedUrls : ["https://cdn.marketpoint.id/marketpoint.png"],
+        files: formStockType === "REUSABLE" ? variantFiles : [],
+        licenseKeys: formStockType === "SINGLE_USE" && singleUseLines.length > 0 ? singleUseLines : undefined,
+        attributes: {
+          ...(editingProduct?.attributes || {}),
+          variants: validVariants,
+        },
       };
 
-      const res = await fetch("/api/products", {
-        method: "POST",
+      if (isEditMode && editingProduct) {
+        payload.id = editingProduct.id;
+      }
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -256,35 +491,42 @@ export default function MerchantProductsPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Gagal menambahkan produk.");
+        throw new Error(data.error || `Gagal ${isEditMode ? "memperbarui" : "menambahkan"} produk.`);
       }
 
       toast({
-        title: "Produk Berhasil Dibuat!",
-        description: `Produk "${formTitle}" telah aktif dan tersimpan di database.`,
+        title: isEditMode ? "Produk Berhasil Diperbarui!" : "Produk Berhasil Dibuat!",
+        description: `Produk "${formTitle}" telah tersimpan.`,
       });
 
       setShowAddDialog(false);
       resetForm();
       fetchProducts(user.uid);
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Gagal Membuat Produk", description: err.message });
+      toast({ variant: "destructive", title: isEditMode ? "Gagal Update Produk" : "Gagal Membuat Produk", description: err.message });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteProduct = async (productId: string) => {
-    if (!user) return;
-    if (!confirm("Apakah Anda yakin ingin menghapus produk ini?")) return;
+  const handleOpenDeleteDialog = (product: ProductItem) => {
+    setTimeout(() => {
+      document.body.style.pointerEvents = "";
+      setProductToDelete(product);
+    }, 50);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!user || !productToDelete) return;
+    setIsDeletingProduct(true);
     try {
-      const res = await fetch(`/api/products?id=${productId}&shopId=${user.uid}`, {
+      const res = await fetch(`/api/products?id=${productToDelete.id}&shopId=${user.uid}`, {
         method: "DELETE",
       });
 
       if (res.ok) {
-        toast({ title: "Produk Dihapus", description: "Produk telah berhasil diarsipkan/dihapus." });
+        toast({ title: "Produk Berhasil Dihapus", description: `Produk "${productToDelete.title}" telah berhasil dihapus permanen.` });
+        setProductToDelete(null);
         fetchProducts(user.uid);
       } else {
         const data = await res.json();
@@ -292,10 +534,18 @@ export default function MerchantProductsPage() {
       }
     } catch (err: any) {
       toast({ variant: "destructive", title: "Gagal Hapus Produk", description: err.message });
+    } finally {
+      setIsDeletingProduct(false);
     }
   };
 
   const resetForm = () => {
+    formImages.forEach((img) => {
+      if (img.file && img.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(img.previewUrl);
+      }
+    });
+    setEditingProduct(null);
     setFormTitle("");
     setFormPrice("");
     setFormShortDesc("");
@@ -305,8 +555,9 @@ export default function MerchantProductsPage() {
     setFormLicenseKeysText("");
     setFormDemoUrl("");
     setFormImages([]);
-    setFormFileUrl("");
-    setFormFileName("");
+    setFormVariants([
+      { id: Math.random().toString(36).substring(7), name: "Default", price: 0, fileUrl: "" }
+    ]);
   };
 
   const filteredProducts = products.filter((p) => {
@@ -349,7 +600,7 @@ export default function MerchantProductsPage() {
               onClick={() => setShowAddDialog(true)}
               className="h-10 px-5 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2 shadow-md shadow-[#00AA5B]/10 active:scale-[0.98] transition-all"
             >
-              <Plus className="w-4 h-4" /> Tambah Produk Digital
+              <Plus className="w-4 h-4" /> Tambah Produk
             </Button>
           </div>
         </div>
@@ -488,14 +739,39 @@ export default function MerchantProductsPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right px-6">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteProduct(product.id)}
-                          className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-36 rounded-xl border-border p-1">
+                            <DropdownMenuItem
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                handleEditProduct(product);
+                              }}
+                              className="text-xs font-bold gap-2 cursor-pointer py-2 focus:bg-muted"
+                            >
+                              <Pencil className="w-3.5 h-3.5 text-blue-600" />
+                              Edit Produk
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                handleOpenDeleteDialog(product);
+                              }}
+                              className="text-xs font-bold gap-2 cursor-pointer py-2 focus:bg-red-50 text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Hapus Produk
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   );
@@ -507,11 +783,16 @@ export default function MerchantProductsPage() {
 
       </div>
 
-      {/* Modal Dialog Tambah Produk Digital */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+      {/* Modal Dialog Tambah / Edit Produk Digital */}
+      <Dialog open={showAddDialog} onOpenChange={(open) => {
+        if (!open) resetForm();
+        setShowAddDialog(open);
+      }}>
         <DialogContent className="max-w-md md:max-w-lg rounded-2xl p-6 bg-white max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-base font-black text-[#212121]">Tambah Produk Digital Baru</DialogTitle>
+            <DialogTitle className="text-base font-black text-[#212121]">
+              {editingProduct ? "Edit Produk Digital" : "Tambah Produk Baru"}
+            </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground font-medium">
               Isi informasi produk digital Anda untuk disimpan di database MarketPoint.
             </DialogDescription>
@@ -519,7 +800,7 @@ export default function MerchantProductsPage() {
 
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-muted-foreground">Judul Produk</Label>
+              <Label className="text-xs font-bold text-muted-foreground">Judul Produk <span className="text-red-500">*</span></Label>
               <Input
                 placeholder="Contoh: Source Code Website Top Up Game Next.js"
                 value={formTitle}
@@ -528,33 +809,37 @@ export default function MerchantProductsPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-muted-foreground">Kategori Produk</Label>
-                <Select value={formCategoryId} onValueChange={setFormCategoryId}>
-                  <SelectTrigger className="h-10 rounded-xl text-xs font-bold bg-muted/20">
-                    <SelectValue placeholder="Pilih Kategori" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    {categories.map((c) => (
-                      <SelectItem key={c.id} value={String(c.id)} className="text-xs font-medium">
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-muted-foreground">Kategori Produk <span className="text-red-500">*</span></Label>
+              <Select value={formCategoryId} onValueChange={setFormCategoryId}>
+                <SelectTrigger className="h-10 rounded-xl text-xs font-bold bg-muted/20">
+                  <SelectValue placeholder="Pilih Kategori" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={String(c.id)} className="text-xs font-medium">
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-muted-foreground">Harga (Rp)</Label>
-                <Input
-                  type="number"
-                  placeholder="150000"
-                  value={formPrice}
-                  onChange={(e) => setFormPrice(e.target.value)}
-                  className="h-10 rounded-xl text-xs font-bold bg-muted/20"
-                />
+            {/* Deskripsi Produk (Maksimal 10.000 Karakter) */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-bold text-muted-foreground">Deskripsi Produk <span className="text-red-500">*</span></Label>
+                <span className={cn("text-[10px] font-bold", formDesc.length > 10000 ? "text-red-600" : "text-muted-foreground")}>
+                  {formDesc.length}/10.000 Karakter
+                </span>
               </div>
+              <Textarea
+                placeholder="Tuliskan deskripsi lengkap fitur, keunggulan, dan instruksi penggunaan produk digital Anda di sini..."
+                value={formDesc}
+                maxLength={10000}
+                onChange={(e) => setFormDesc(e.target.value)}
+                className="min-h-[110px] rounded-xl text-xs font-medium bg-muted/20 resize-y leading-relaxed"
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -581,16 +866,16 @@ export default function MerchantProductsPage() {
             </div>
 
             {/* Multi-Image Upload (Max 3 Images, Max 3MB/file) */}
-            <div className="space-y-2">
+            <div className="space-y-2 pt-2 border-t border-border/60">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-bold text-muted-foreground">Foto Produk (Maksimal 3 Foto, Max 3MB/file)</Label>
+                <Label className="text-xs font-bold text-muted-foreground">Foto Produk (Maksimal 3 Foto) <span className="text-red-500">*</span></Label>
                 <span className="text-[10px] font-bold text-muted-foreground">{formImages.length}/3 Foto</span>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
-                {formImages.map((url, idx) => (
-                  <div key={idx} className="relative h-20 rounded-xl overflow-hidden border border-border group bg-muted shadow-sm">
-                    <Image src={url} alt={`Foto ${idx + 1}`} fill className="object-cover" />
+                {formImages.map((img, idx) => (
+                  <div key={img.id || idx} className="relative h-20 rounded-xl overflow-hidden border border-border group bg-muted shadow-sm">
+                    <Image src={img.previewUrl} alt={`Foto ${idx + 1}`} fill className="object-cover" />
                     {idx === 0 && (
                       <span className="absolute bottom-1 left-1 text-[8px] font-extrabold bg-[#00AA5B] text-white px-1.5 py-0.5 rounded shadow">
                         Utama
@@ -611,29 +896,110 @@ export default function MerchantProductsPage() {
                     <input
                       type="file"
                       accept="image/png, image/jpeg, image/webp"
-                      onChange={handleImageUpload}
-                      disabled={uploadingImage}
+                      onChange={handleImageSelect}
+                      disabled={isSubmitting}
                       className="hidden"
                     />
-                    {uploadingImage ? (
-                      <Loader2 className="w-5 h-5 animate-spin text-[#00AA5B]" />
-                    ) : (
-                      <>
-                        <Upload className="w-4 h-4 text-muted-foreground mb-1" />
-                        <span className="text-[10px] font-bold text-muted-foreground">Upload Foto</span>
-                      </>
-                    )}
+                    <Upload className="w-4 h-4 text-muted-foreground mb-1" />
+                    <span className="text-[10px] font-bold text-muted-foreground">Pilih Foto</span>
                   </label>
                 )}
               </div>
             </div>
 
-            {formStockType === "SINGLE_USE" ? (
+            {/* Fitur Varian Produk (Wajib Minimal 1 Varian) */}
+            <div className="space-y-2.5 pt-2 border-t border-border/60">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-xs font-bold text-[#212121] flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-[#00AA5B]" /> Varian Produk <span className="text-red-500">*</span>
+                  </Label>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddVariant}
+                  className="h-7 px-2.5 rounded-lg text-[10px] font-bold border-[#00AA5B]/40 text-[#00AA5B] hover:bg-[#00AA5B]/10 gap-1 shrink-0"
+                >
+                  <Plus className="w-3 h-3" /> Tambah Varian
+                </Button>
+              </div>
+
+              {formVariants.length > 0 && (
+                <div className="space-y-2.5">
+                  {formVariants.map((variant, idx) => (
+                    <div key={variant.id || idx} className="p-3.5 rounded-xl border border-border bg-muted/10 space-y-2.5 relative">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-black text-[#00AA5B] bg-[#00AA5B]/10 px-2 py-0.5 rounded-md">
+                          Varian #{idx + 1}
+                        </span>
+                        {formVariants.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveVariant(idx)}
+                            className="h-6 w-6 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div className="space-y-1">
+                          <Label className="text-[10px] font-bold text-muted-foreground">Nama Varian <span className="text-red-500">*</span></Label>
+                          <Input
+                            placeholder="Contoh: Default / 1 Bulan / License Pro"
+                            value={variant.name}
+                            onChange={(e) => handleUpdateVariant(idx, "name", e.target.value)}
+                            className="h-9 rounded-xl text-xs font-medium bg-white border-border"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[10px] font-bold text-muted-foreground">Harga Varian (Rp) <span className="text-red-500">*</span></Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground">Rp</span>
+                            <Input
+                              type="number"
+                              placeholder="50000"
+                              value={variant.price || ""}
+                              onChange={(e) => handleUpdateVariant(idx, "price", e.target.value)}
+                              className="h-9 pl-8 rounded-xl text-xs font-bold bg-white border-border"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {formStockType === "REUSABLE" && (
+                        <div className="space-y-1 pt-1.5 border-t border-border/50">
+                          <Label className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+                            <Globe className="w-3 h-3 text-[#00AA5B]" /> URL Link File / Data Digital Varian <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            placeholder="https://cdn.marketpoint.id/files/varian-1bulan.zip"
+                            value={variant.fileUrl || ""}
+                            onChange={(e) => handleUpdateVariant(idx, "fileUrl", e.target.value)}
+                            className="h-9 rounded-xl text-xs font-medium bg-white border-border"
+                          />
+                          <p className="text-[9px] text-muted-foreground font-medium">
+                            Link file digital ini akan diberikan otomatis kepada pembeli varian ini.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {formStockType === "SINGLE_USE" && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold text-muted-foreground">Daftar Akun / Lisensi (1 Baris = 1 Stok)</Label>
                   <Badge variant="outline" className="text-[10px] font-bold text-[#00AA5B] border-[#00AA5B]/30">
-                    {formLicenseKeysText.split("\n").map(l => l.trim()).filter(Boolean).length} Stok Terdeteksi
+                    {formLicenseKeysText.split("\n").map(l => l.trim()).filter(Boolean).length} Stok
                   </Badge>
                 </div>
                 <Textarea
@@ -646,17 +1012,6 @@ export default function MerchantProductsPage() {
                   Setiap baris akun/lisensi akan diberikan secara eksklusif ke 1 pembeli saja.
                 </p>
               </div>
-            ) : (
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-muted-foreground">URL Link File Digital (.zip / .pdf)</Label>
-                <Input
-                  placeholder="https://cdn.marketpoint.id/files/sourcecode.zip"
-                  value={formFileUrl}
-                  onChange={(e) => setFormFileUrl(e.target.value)}
-                  className="h-10 rounded-xl text-xs font-medium bg-muted/20"
-                />
-                <p className="text-[10px] text-muted-foreground">Link file ini akan otomatis diberikan ke pembeli setelah transaksi berhasil.</p>
-              </div>
             )}
           </div>
 
@@ -666,11 +1021,51 @@ export default function MerchantProductsPage() {
             </Button>
             <Button
               onClick={handleCreateProduct}
-              disabled={isSubmitting || !formTitle || !formPrice}
-              className="rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs gap-2"
+              disabled={isSubmitting || !isFormValid}
+              className="rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-              Simpan Produk
+              {editingProduct ? "Simpan Perubahan" : "Simpan Produk"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Konfirmasi Hapus Produk */}
+      <Dialog
+        open={Boolean(productToDelete)}
+        onOpenChange={(open) => {
+          if (!open && !isDeletingProduct) setProductToDelete(null);
+        }}
+      >
+        <DialogContent className="max-w-md rounded-2xl p-6 bg-white">
+          <DialogHeader className="space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center text-red-600">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <DialogTitle className="text-base font-black text-[#212121]">
+              Hapus Produk Digital?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground font-medium leading-relaxed">
+              Apakah Anda yakin ingin menghapus produk <span className="font-bold text-[#212121]">"{productToDelete?.title}"</span>? Gambar produk di storage R2 juga akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-3">
+            <Button
+              variant="outline"
+              onClick={() => setProductToDelete(null)}
+              disabled={isDeletingProduct}
+              className="rounded-xl text-xs font-bold"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              disabled={isDeletingProduct}
+              className="rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs gap-2 shadow-sm"
+            >
+              {isDeletingProduct ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              Hapus Produk
             </Button>
           </div>
         </DialogContent>

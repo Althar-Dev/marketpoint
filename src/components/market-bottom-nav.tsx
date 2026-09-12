@@ -9,7 +9,7 @@ export function MarketBottomNav() {
   const pathname = usePathname();
 
   // Logika untuk menyembunyikan bottom nav di rute tertentu
-  const hideOnPaths = ['/login', '/register', '/my-shop'];
+  const hideOnPaths = ['/login', '/register', '/my-shop', '/products'];
   const shouldHide = hideOnPaths.some(path => pathname?.startsWith(path));
 
   if (shouldHide) return null;
