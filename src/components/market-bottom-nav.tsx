@@ -8,9 +8,12 @@ import { cn } from "@/lib/utils";
 export function MarketBottomNav() {
   const pathname = usePathname();
 
-  // Logika untuk menyembunyikan bottom nav di rute tertentu
+  // Logika untuk menyembunyikan bottom nav di rute tertentu (termasuk halaman detail produk ala Tokopedia /[shop]/[product])
   const hideOnPaths = ['/login', '/register', '/my-shop', '/products'];
-  const shouldHide = hideOnPaths.some(path => pathname?.startsWith(path));
+  const segments = pathname ? pathname.split('/').filter(Boolean) : [];
+  const isTokopediaProductPage = segments.length === 2 && !['admin', 'feed', 'mall', 'transactions', 'profile', 'my-shop', 'login', 'register', 'checkout', 'api'].includes(segments[0]);
+
+  const shouldHide = hideOnPaths.some(path => pathname?.startsWith(path)) || isTokopediaProductPage;
 
   if (shouldHide) return null;
 

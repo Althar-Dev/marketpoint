@@ -460,7 +460,7 @@ export default function MarketPage() {
                   : (product.shopCity && typeof product.shopCity === "object" ? (product.shopCity.city || product.shopCity.province || "") : "");
 
                 return (
-                  <Link key={product.id} href={`/products/${product.id}`}>
+                  <Link key={product.id} href={`/${product.shopSlug || 'marketpoint'}/${product.slug || product.id}`}>
                     <Card className="group border-border/70 shadow-2xs rounded-xl overflow-hidden bg-card hover:shadow-md transition-all duration-300 flex flex-col cursor-pointer border-[1px] h-full">
                       <CardContent className="p-0 flex flex-col h-full">
                         <div className="relative aspect-square w-full bg-muted/20 overflow-hidden">

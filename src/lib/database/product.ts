@@ -209,22 +209,23 @@ export async function getProductById(id: string): Promise<DigitalProduct | null>
       p.created_at as "createdAt", p.updated_at as "updatedAt"
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p.id = $1
+    WHERE p.id = $1 OR p.slug = $1
   `;
 
   const res = await query(sql, [id]);
   if (res.rows.length === 0) return null;
 
   const product = res.rows[0];
+  const actualId = product.id;
 
   const imgRes = await query(
     `SELECT id, product_id as "productId", image_url as "imageUrl", is_primary as "isPrimary" FROM product_images WHERE product_id = $1 ORDER BY sort_order ASC`,
-    [id]
+    [actualId]
   );
 
   const fileRes = await query(
     `SELECT id, product_id as "productId", file_name as "fileName", file_url as "fileUrl", file_size as "fileSize", version FROM product_files WHERE product_id = $1`,
-    [id]
+    [actualId]
   );
 
   return {
@@ -271,7 +272,7 @@ export async function createProduct(input: CreateProductInput): Promise<DigitalP
       existingIdCheck = await client.query("SELECT id FROM products WHERE id = $1", [productId]);
     }
 
-    const slug = input.slug?.trim() || generateProductSlug(input.title);
+    const slug = input.slug?.trim() || generateProductIdFromTitle(input.title);
 
     const productSql = `
       INSERT INTO products (
@@ -434,6 +435,9 @@ export async function updateProduct(input: UpdateProductInput): Promise<DigitalP
     if (input.title !== undefined) {
       params.push(input.title);
       updates.push(`title = $${params.length}`);
+      const newSlug = generateProductIdFromTitle(input.title);
+      params.push(newSlug);
+      updates.push(`slug = $${params.length}`);
     }
     if (input.categoryId !== undefined) {
       params.push(input.categoryId);

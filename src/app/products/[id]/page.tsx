@@ -35,7 +35,8 @@ import {
   Plus,
   Minus,
   ThumbsUp,
-  CornerDownRight
+  CornerDownRight,
+  X
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -53,11 +54,12 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetClose,
 } from "@/components/ui/sheet";
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const id = params.id as string;
+  const id = ((params?.productSlug as string) || (params?.id as string)) || "";
   const router = useRouter();
   const db = useFirestore();
   const { toast } = useToast();
@@ -76,6 +78,7 @@ export default function ProductDetailPage() {
     "rev-1": true,
   });
   const [showMobileSheet, setShowMobileSheet] = useState(false);
+  const [otherShopProducts, setOtherShopProducts] = useState<any[]>([]);
 
   const toggleReply = (revId: string) => {
     setShowReplyMap((prev) => ({ ...prev, [revId]: !prev[revId] }));
@@ -88,11 +91,13 @@ export default function ProductDetailPage() {
         .then((data) => {
           if (data.success && Array.isArray(data.products)) {
             setShopProductsCount(data.products.length);
+            const filtered = data.products.filter((p: any) => p.id !== product.id && p.id !== id);
+            setOtherShopProducts(filtered.slice(0, 12));
           }
         })
         .catch(() => { });
     }
-  }, [product?.shopId]);
+  }, [product?.shopId, product?.id, id]);
 
   useEffect(() => {
     setMounted(true);
@@ -189,27 +194,111 @@ export default function ProductDetailPage() {
 
   if (!mounted || loading) {
     return (
-      <main className="max-w-screen-xl mx-auto px-4 py-12 md:py-20 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-5 space-y-3">
-            <Skeleton className="aspect-square w-full rounded-2xl" />
-            <div className="grid grid-cols-5 gap-2">
-              {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="aspect-square rounded-lg" />)}
+      <main className="max-w-screen-xl mx-auto px-3 sm:px-4 pt-14 md:pt-16 pb-24 md:pb-28">
+        {/* Breadcrumb Skeleton */}
+        <div className="flex items-center gap-2 py-2.5">
+          <Skeleton className="h-3 w-16 rounded-md" />
+          <Skeleton className="h-3 w-3 rounded-full" />
+          <Skeleton className="h-3 w-20 rounded-md" />
+          <Skeleton className="h-3 w-3 rounded-full" />
+          <Skeleton className="h-3 w-32 rounded-md" />
+        </div>
+
+        {/* 3-Column Layout Skeleton Matching Actual Page */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Column 1: Image & Shop Info */}
+          <div className="lg:col-span-3 space-y-3.5">
+            <Skeleton className="aspect-square w-full max-w-[280px] sm:max-w-[320px] lg:max-w-none rounded-xl mx-auto" />
+            <div className="flex gap-2 justify-center lg:justify-start">
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="w-12 h-12 rounded-lg" />
+              ))}
+            </div>
+            {/* Shop Info Card Skeleton */}
+            <div className="border border-border/70 rounded-xl p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <Skeleton className="w-9 h-9 rounded-full" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3.5 w-24 rounded-md" />
+                    <Skeleton className="h-3 w-16 rounded-md" />
+                  </div>
+                </div>
+                <Skeleton className="h-7 w-12 rounded-lg" />
+              </div>
             </div>
           </div>
-          <div className="lg:col-span-7 space-y-4">
-            <Skeleton className="h-8 w-3/4 rounded-lg" />
-            <div className="flex gap-3">
-              <Skeleton className="h-5 w-20 rounded-md" />
-              <Skeleton className="h-5 w-28 rounded-md" />
+
+          {/* Column 2: Product Info & Details */}
+          <div className="lg:col-span-6 space-y-4">
+            <div className="flex gap-2">
+              <Skeleton className="h-5 w-20 rounded-full" />
+              <Skeleton className="h-5 w-20 rounded-full" />
             </div>
-            <Skeleton className="h-10 w-40 rounded-lg" />
-            <div className="space-y-3 pt-4">
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-full rounded-md" />
+              <Skeleton className="h-6 w-3/4 rounded-md" />
+            </div>
+            <div className="flex gap-3 items-center">
+              <Skeleton className="h-4 w-16 rounded-md" />
+              <Skeleton className="h-4 w-16 rounded-md" />
+            </div>
+            <Skeleton className="h-9 w-32 rounded-md" />
+
+            {/* Varian Selector Skeleton */}
+            <div className="pt-3 border-t border-border/60 space-y-2.5">
+              <Skeleton className="h-4 w-24 rounded-md" />
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-20 rounded-xl" />
+                <Skeleton className="h-8 w-20 rounded-xl" />
+              </div>
+            </div>
+
+            {/* Deskripsi Skeleton */}
+            <div className="pt-4 border-t border-border/60 space-y-3">
+              <Skeleton className="h-5 w-32 rounded-md" />
               <Skeleton className="h-3.5 w-full rounded-md" />
-              <Skeleton className="h-3.5 w-full rounded-md" />
-              <Skeleton className="h-3.5 w-2/3 rounded-md" />
+              <Skeleton className="h-3.5 w-5/6 rounded-md" />
+              <Skeleton className="h-3.5 w-4/6 rounded-md" />
+            </div>
+
+            {/* Ulasan Pembeli Skeleton */}
+            <div className="pt-5 border-t border-border/60 space-y-4">
+              <Skeleton className="h-5 w-40 rounded-md" />
+              <Skeleton className="h-28 w-full rounded-2xl" />
             </div>
           </div>
+
+          {/* Column 3: Desktop Purchase Card Skeleton */}
+          <div className="hidden lg:block lg:col-span-3">
+            <div className="border border-border/80 rounded-2xl p-4 space-y-4 shadow-2xs">
+              <Skeleton className="h-4 w-36 rounded-md" />
+              <div className="space-y-2 pt-2 border-t border-border/60">
+                <Skeleton className="h-3 w-20 rounded-md" />
+                <Skeleton className="h-8 w-28 rounded-xl" />
+              </div>
+              <div className="pt-3 border-t border-border/60 flex justify-between items-center">
+                <Skeleton className="h-4 w-16 rounded-md" />
+                <Skeleton className="h-6 w-24 rounded-md" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-full rounded-xl" />
+                <Skeleton className="h-10 w-full rounded-xl" />
+              </div>
+              <div className="flex justify-around pt-2 border-t border-border/60">
+                <Skeleton className="h-6 w-12 rounded-md" />
+                <Skeleton className="h-6 w-12 rounded-md" />
+                <Skeleton className="h-6 w-12 rounded-md" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Bottom Bar Skeleton */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border/60 px-4 py-2.5 flex items-center gap-2">
+          <Skeleton className="h-10 w-10 rounded-xl" />
+          <Skeleton className="h-10 flex-1 rounded-xl" />
+          <Skeleton className="h-10 flex-1 rounded-xl" />
         </div>
       </main>
     );
@@ -866,6 +955,79 @@ export default function ProductDetailPage() {
 
       </div>
 
+      {/* Lainnya di Toko Ini Section */}
+      {otherShopProducts.length > 0 && (
+        <section className="mt-10 pt-8 border-t border-border/80 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Store className="w-5 h-5 text-[#00AA5B]" />
+              <h2 className="text-base sm:text-lg font-black text-[#212121]">
+                Lainnya di toko ini
+              </h2>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-xl border-border text-xs font-bold text-foreground hover:bg-muted/30"
+            >
+              <Link href={`/${shop?.slug || product?.shopSlug || product?.shopId || 'marketpoint'}`}>
+                Lihat Semua <ChevronRight className="w-3.5 h-3.5 ml-1 text-muted-foreground" />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            {otherShopProducts.map((item: any) => {
+              const itemImg = item.images?.find((img: any) => img.isPrimary)?.imageUrl || item.images?.[0]?.imageUrl || "https://picsum.photos/seed/placeholder/400/400";
+              const itemPrice = Number(item.price || 0);
+              const itemOriginalPrice = item.discountPrice ? Number(item.discountPrice) : itemPrice;
+              const itemHasDiscount = itemOriginalPrice > itemPrice;
+              const shopSlug = shop?.slug || product?.shopSlug || 'marketpoint';
+              const targetUrl = `/${shopSlug}/${item.slug || item.id}`;
+
+              return (
+                <Link key={item.id} href={targetUrl}>
+                  <Card className="group border-border/70 shadow-2xs rounded-xl overflow-hidden bg-card hover:shadow-md transition-all duration-300 flex flex-col cursor-pointer border-[1px] h-full">
+                    <CardContent className="p-0 flex flex-col h-full">
+                      <div className="relative aspect-square w-full bg-muted/20 overflow-hidden">
+                        <Image
+                          src={itemImg}
+                          alt={item.title}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </div>
+                      <div className="p-2.5 flex flex-col flex-1 justify-between space-y-1.5">
+                        <h3 className="text-xs font-bold text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">
+                          {item.title}
+                        </h3>
+                        <div className="space-y-0.5 pt-1">
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-[10px] font-bold text-[#00AA5B]">Rp</span>
+                            <span className="text-xs sm:text-sm font-extrabold text-[#212121]">
+                              {itemPrice.toLocaleString('id-ID')}
+                            </span>
+                          </div>
+                          {item.ratingAvg > 0 && (
+                            <div className="flex items-center gap-1 pt-0.5 text-[10px] text-muted-foreground font-medium">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                              <span>{Number(item.ratingAvg).toFixed(1)}</span>
+                              <span>•</span>
+                              <span>{item.salesCount || 0} Terjual</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* Floating Action Bar - Mobile Only */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border/60 px-4 py-2.5 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
         <div className="max-w-screen-xl mx-auto flex items-center gap-2">
@@ -897,11 +1059,17 @@ export default function ProductDetailPage() {
 
       {/* Mobile Bottom Sheet: Atur jumlah & Ringkasan */}
       <Sheet open={showMobileSheet} onOpenChange={setShowMobileSheet}>
-        <SheetContent side="bottom" className="rounded-t-3xl p-5 bg-white space-y-4 max-h-[85vh] overflow-y-auto">
-          <SheetHeader className="text-left border-b border-border/60 pb-3 pr-8">
-            <SheetTitle className="text-sm font-black text-[#212121]">
-              Atur jumlah & Ringkasan
-            </SheetTitle>
+        <SheetContent side="bottom" hideClose className="rounded-t-3xl p-5 bg-white space-y-4 max-h-[85vh] overflow-y-auto">
+          <SheetHeader className="text-left border-b border-border/60 pb-3">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="text-sm font-black text-[#212121]">
+                Atur jumlah & Ringkasan
+              </SheetTitle>
+              <SheetClose className="h-7 w-7 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer outline-none">
+                <X className="w-4 h-4" />
+                <span className="sr-only">Close</span>
+              </SheetClose>
+            </div>
           </SheetHeader>
 
           {/* Varian Selector in Mobile Sheet */}
