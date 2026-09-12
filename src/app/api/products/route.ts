@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
-import { getProductsByShop, createProduct, deleteProduct, getCategories } from "@/lib/database/product";
+import { getProductsByShop, createProduct, deleteProduct, getCategories, getProductById } from "@/lib/database/product";
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const shopId = searchParams.get("shopId");
+    const productId = searchParams.get("id");
     const getCats = searchParams.get("categories");
 
     if (getCats === "true") {
       const categories = await getCategories();
       return NextResponse.json({ success: true, categories });
+    }
+
+    if (productId) {
+      const product = await getProductById(productId);
+      if (!product) {
+        return NextResponse.json({ success: false, error: "Produk tidak ditemukan." }, { status: 404 });
+      }
+      return NextResponse.json({ success: true, product });
     }
 
     if (!shopId) {

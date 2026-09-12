@@ -134,8 +134,8 @@ const PAYMENT_CATEGORIES = [
     id: "qr_payments",
     label: "QR PAYMENTS",
     icon: QrCode,
-    logos: ["gopay", "qris"],
-    previewCount: 2
+    logos: ["qris"],
+    previewCount: 1
   }
 ];
 
@@ -288,7 +288,7 @@ export default function MerchantSubscriptionPage() {
                             </div>
                             <div className="flex items-center gap-2.5 mr-2 ml-auto overflow-hidden">
                                {cat.logos.slice(0, cat.previewCount).map((logo) => (
-                                 <img key={logo} src={`/assets/payments/${logo}.png`} alt={logo} className="h-3 w-auto object-contain opacity-80" />
+                                 <img key={logo} src={`/assets/payments/${logo}.png`} alt={logo} className="h-4 w-auto object-contain opacity-80" />
                                ))}
                                {cat.logos.length > cat.previewCount && (
                                  <span className="text-[9px] font-bold text-muted-foreground">+{cat.logos.length - cat.previewCount}</span>
@@ -306,7 +306,7 @@ export default function MerchantSubscriptionPage() {
                                       selectedMethod === logo ? "border-[#00AA5B] bg-[#00AA5B]/5 ring-2 ring-[#00AA5B]/10" : "border-border/60"
                                     )}
                                   >
-                                    <img src={`/assets/payments/${logo}.png`} alt={logo} className="h-4 sm:h-5 w-auto object-contain" />
+                                    <img src={`/assets/payments/${logo}.png`} alt={logo} className="h-7 sm:h-8 w-auto object-contain" />
                                     {selectedMethod === logo && (
                                       <div className="absolute -top-1 -right-1 bg-[#00AA5B] text-white rounded-full p-0.5">
                                         <Check className="w-2 h-2 stroke-[4]" />
