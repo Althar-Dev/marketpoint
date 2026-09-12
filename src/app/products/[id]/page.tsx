@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -79,6 +79,31 @@ export default function ProductDetailPage() {
   });
   const [showMobileSheet, setShowMobileSheet] = useState(false);
   const [otherShopProducts, setOtherShopProducts] = useState<any[]>([]);
+
+  const imageSliderRef = useRef<HTMLDivElement>(null);
+
+  const handleImageScroll = () => {
+    if (imageSliderRef.current) {
+      const width = imageSliderRef.current.clientWidth;
+      if (width > 0) {
+        const index = Math.round(imageSliderRef.current.scrollLeft / width);
+        if (index >= 0 && index < (product?.images?.length || 1)) {
+          setActiveImage(index);
+        }
+      }
+    }
+  };
+
+  const scrollToImage = (idx: number) => {
+    setActiveImage(idx);
+    if (imageSliderRef.current) {
+      const width = imageSliderRef.current.clientWidth;
+      imageSliderRef.current.scrollTo({
+        left: idx * width,
+        behavior: "smooth"
+      });
+    }
+  };
 
   const toggleReply = (revId: string) => {
     setShowReplyMap((prev) => ({ ...prev, [revId]: !prev[revId] }));
@@ -345,28 +370,79 @@ export default function ProductDetailPage() {
         {/* Column 1: Image Gallery & Shop Info */}
         <div className="lg:col-span-3 space-y-3.5 lg:sticky lg:top-20">
           <div className="relative aspect-square w-full rounded-2xl lg:rounded-xl overflow-hidden bg-white border border-border/80 shadow-xs group mx-auto">
-            <Image
-              src={images[activeImage]?.imageUrl || "https://picsum.photos/seed/placeholder/800/800"}
-              alt={product.title}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-              priority
-            />
+            {/* Slideable Image Container for Mobile & Desktop */}
+            <div
+              ref={imageSliderRef}
+              onScroll={handleImageScroll}
+              className="flex w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth"
+            >
+              {images.map((img: any, idx: number) => (
+                <div key={idx} className="relative aspect-square w-full h-full flex-shrink-0 snap-center">
+                  <Image
+                    src={img.imageUrl || "https://picsum.photos/seed/placeholder/800/800"}
+                    alt={`${product.title} ${idx + 1}`}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    priority={idx === 0}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Discount Badge */}
             {hasDiscount && (
-              <div className="absolute top-2.5 left-2.5 bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-xs shadow-xs uppercase tracking-wider">
+              <div className="absolute top-2.5 left-2.5 bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-xs shadow-xs uppercase tracking-wider z-10">
                 HEMAT {discountPercent}%
               </div>
             )}
+
+            {/* Image Counter Badge (1/3, 2/3, etc) */}
+            {images.length > 1 && (
+              <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-xs text-white text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full shadow-xs z-10 pointer-events-none">
+                {activeImage + 1} / {images.length}
+              </div>
+            )}
+
+            {/* Previous & Next Chevron Buttons */}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => scrollToImage(Math.max(0, activeImage - 1))}
+                  disabled={activeImage === 0}
+                  aria-label="Previous Image"
+                  className={cn(
+                    "absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-foreground flex items-center justify-center shadow-md backdrop-blur-xs transition-opacity z-10",
+                    activeImage === 0 ? "opacity-0 pointer-events-none" : "opacity-90 hover:opacity-100"
+                  )}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollToImage(Math.min(images.length - 1, activeImage + 1))}
+                  disabled={activeImage === images.length - 1}
+                  aria-label="Next Image"
+                  className={cn(
+                    "absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white text-foreground flex items-center justify-center shadow-md backdrop-blur-xs transition-opacity z-10",
+                    activeImage === images.length - 1 ? "opacity-0 pointer-events-none" : "opacity-90 hover:opacity-100"
+                  )}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </>
+            )}
           </div>
 
+          {/* Thumbnails below slider */}
           {images.length > 1 && (
-            <div className="grid grid-cols-5 gap-1.5 w-full">
+            <div className="flex gap-1.5 w-full overflow-x-auto pb-1 no-scrollbar">
               {images.map((img: any, idx: number) => (
                 <button
                   key={idx}
-                  onClick={() => setActiveImage(idx)}
+                  onClick={() => scrollToImage(idx)}
                   className={cn(
-                    "relative aspect-square rounded-lg overflow-hidden border transition-all",
+                    "relative aspect-square w-12 sm:w-14 rounded-lg overflow-hidden border shrink-0 transition-all cursor-pointer",
                     activeImage === idx ? "border-[#00AA5B] ring-2 ring-[#00AA5B]/15" : "border-border/60 hover:border-border"
                   )}
                 >
