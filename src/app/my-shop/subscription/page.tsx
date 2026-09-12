@@ -20,9 +20,18 @@ import {
   ChevronLeft,
   CreditCard,
   Wallet,
-  ArrowRight
+  ArrowRight,
+  Landmark,
+  QrCode,
+  Store
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface PlanItem {
   id: "plus" | "pro" | "prime";
@@ -99,6 +108,37 @@ const PLANS: PlanItem[] = [
   }
 ];
 
+const PAYMENT_CATEGORIES = [
+  {
+    id: "bank_transfer",
+    label: "BANK TRANSFER",
+    icon: Landmark,
+    logos: ["bsi", "bca", "bni", "bri", "mandiri", "permata", "bjb", "cimb", "bss"],
+    previewCount: 3
+  },
+  {
+    id: "retail_outlet",
+    label: "RETAIL OUTLET",
+    icon: Store,
+    logos: ["alfamart", "indomaret"],
+    previewCount: 2
+  },
+  {
+    id: "e_wallet",
+    label: "E-WALLET",
+    icon: Wallet,
+    logos: ["gopay", "ovo", "linkaja"],
+    previewCount: 2
+  },
+  {
+    id: "qr_payments",
+    label: "QR PAYMENTS",
+    icon: QrCode,
+    logos: ["gopay", "qris"],
+    previewCount: 2
+  }
+];
+
 export default function MerchantSubscriptionPage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
@@ -109,6 +149,7 @@ export default function MerchantSubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [selectedPlan, setSelectedPlan] = useState<PlanItem | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -137,6 +178,11 @@ export default function MerchantSubscriptionPage() {
   const handleConfirmSubscription = async () => {
     if (!user || !selectedPlan) return;
 
+    if (!selectedMethod) {
+      toast({ variant: "destructive", title: "Pilih Pembayaran", description: "Silakan pilih salah satu metode pembayaran terlebih dahulu." });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/subscription", {
@@ -161,6 +207,7 @@ export default function MerchantSubscriptionPage() {
 
       setView("plans");
       setSelectedPlan(null);
+      setSelectedMethod(null);
     } catch (err: any) {
       toast({
         variant: "destructive",
@@ -186,7 +233,6 @@ export default function MerchantSubscriptionPage() {
     );
   }
 
-  // --- View Checkout ---
   if (view === "checkout" && selectedPlan) {
     const priceDisplay = billingCycle === "yearly" ? selectedPlan.yearlyPrice : selectedPlan.monthlyPrice;
     
@@ -207,37 +253,78 @@ export default function MerchantSubscriptionPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 items-start">
-            {/* Left Column: Payment Method & Action */}
             <div className="lg:col-span-7 space-y-5">
                <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl overflow-hidden bg-white">
                  <CardHeader className="p-4 md:p-5 border-b border-border/40 bg-slate-50/30">
-                    <CardTitle className="text-[11px] md:text-[12px] font-bold">Metode Pembayaran</CardTitle>
+                    <CardTitle className="text-[11px] md:text-[12px] font-bold">Pilih Metode Pembayaran</CardTitle>
                  </CardHeader>
-                 <CardContent className="p-4 md:p-5 space-y-3">
-                    <div className="p-3 md:p-4 rounded-xl border-2 border-[#00AA5B] bg-[#00AA5B]/5 flex items-center justify-between cursor-pointer transition-all">
-                       <div className="flex items-center gap-3">
-                          <Wallet className="w-4.5 h-4.5 text-[#00AA5B]" />
-                          <div className="text-left">
-                             <p className="text-[11px] font-bold text-[#212121]">Saldo MarketPoint</p>
-                             <p className="text-[9px] text-muted-foreground font-medium">Tersedia: Rp 0</p>
+                 <CardContent className="p-0">
+                    <Accordion type="single" collapsible className="w-full">
+                      {/* Saldo MarketPoint (Internal) */}
+                      <AccordionItem value="wallet" className="border-b border-border/40 px-4 md:px-6">
+                        <AccordionTrigger className="hover:no-underline py-4">
+                          <div className="flex items-center gap-3">
+                            <Wallet className="w-4 h-4 text-[#8B5CF6]" />
+                            <span className="text-[10px] font-black tracking-wider text-[#2E3137]">SALDO MARKETPOINT</span>
                           </div>
-                       </div>
-                       <CheckCircle2 className="w-4.5 h-4.5 text-[#00AA5B]" />
-                    </div>
+                          <div className="flex items-center gap-2 mr-2">
+                             <span className="text-[9px] font-bold text-muted-foreground">Rp 0</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-5">
+                           <div className="p-4 rounded-xl border border-dashed border-border bg-slate-50/50 text-center">
+                              <p className="text-[10px] text-muted-foreground font-medium">Saldo Anda tidak mencukupi untuk melakukan transaksi ini.</p>
+                           </div>
+                        </AccordionContent>
+                      </AccordionItem>
 
-                    <div className="p-3 md:p-4 rounded-xl border border-border bg-white flex items-center justify-between opacity-60 cursor-not-allowed">
-                       <div className="flex items-center gap-3">
-                          <CreditCard className="w-4.5 h-4.5 text-muted-foreground" />
-                          <p className="text-[11px] font-bold text-[#212121]">Xendit Gateway (VA/QRIS)</p>
-                       </div>
-                       <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
+                      {/* Payment Categories from Design */}
+                      {PAYMENT_CATEGORIES.map((cat) => (
+                        <AccordionItem key={cat.id} value={cat.id} className="border-b border-border/40 px-4 md:px-6 last:border-0">
+                          <AccordionTrigger className="hover:no-underline py-4">
+                            <div className="flex items-center gap-3">
+                              <cat.icon className="w-4 h-4 text-[#8B5CF6]" />
+                              <span className="text-[10px] font-black tracking-wider text-[#2E3137]">{cat.label}</span>
+                            </div>
+                            <div className="flex items-center gap-2.5 mr-2 ml-auto overflow-hidden">
+                               {cat.logos.slice(0, cat.previewCount).map((logo) => (
+                                 <img key={logo} src={`/assets/payments/${logo}.png`} alt={logo} className="h-3 w-auto object-contain opacity-80" />
+                               ))}
+                               {cat.logos.length > cat.previewCount && (
+                                 <span className="text-[9px] font-bold text-muted-foreground">+{cat.logos.length - cat.previewCount}</span>
+                               )}
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-5">
+                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                {cat.logos.map((logo) => (
+                                  <button 
+                                    key={logo} 
+                                    onClick={() => setSelectedMethod(logo)}
+                                    className={cn(
+                                      "p-3 border rounded-xl flex items-center justify-center transition-all hover:bg-slate-50 group relative",
+                                      selectedMethod === logo ? "border-[#00AA5B] bg-[#00AA5B]/5 ring-2 ring-[#00AA5B]/10" : "border-border/60"
+                                    )}
+                                  >
+                                    <img src={`/assets/payments/${logo}.png`} alt={logo} className="h-4 sm:h-5 w-auto object-contain" />
+                                    {selectedMethod === logo && (
+                                      <div className="absolute -top-1 -right-1 bg-[#00AA5B] text-white rounded-full p-0.5">
+                                        <Check className="w-2 h-2 stroke-[4]" />
+                                      </div>
+                                    )}
+                                  </button>
+                                ))}
+                             </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
                  </CardContent>
-                 <CardFooter className="p-4 md:p-5 pt-0">
+                 <CardFooter className="p-4 md:p-5 border-t border-border/40 bg-slate-50/20">
                     <Button 
                       onClick={handleConfirmSubscription}
-                      disabled={isSubmitting}
-                      className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-[11px] gap-2 shadow-md shadow-[#00AA5B]/10 transition-transform active:scale-[0.98]"
+                      disabled={isSubmitting || !selectedMethod}
+                      className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-[11px] gap-2 shadow-md shadow-[#00AA5B]/10 transition-transform active:scale-[0.98] disabled:opacity-50"
                     >
                       {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
                       Bayar dan Aktifkan Sekarang
@@ -253,7 +340,6 @@ export default function MerchantSubscriptionPage() {
               </div>
             </div>
 
-            {/* Right Column: Order Summary */}
             <div className="lg:col-span-5 space-y-5">
               <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl overflow-hidden bg-white">
                 <CardHeader className="p-4 md:p-5 border-b border-border/40 bg-slate-50/30">
@@ -296,12 +382,10 @@ export default function MerchantSubscriptionPage() {
     );
   }
 
-  // --- View Plan Selection ---
   return (
     <main className="p-3 md:p-6 lg:p-8 space-y-5 md:space-y-6 bg-[#F9FAFB] min-h-screen">
       <div className="max-w-screen-xl mx-auto space-y-6">
         
-        {/* Header Section */}
         <div className="text-center space-y-2 max-w-xl mx-auto">
           <Badge variant="outline" className="bg-white border-border/50 text-[#00AA5B] font-medium text-[9px] md:text-[10px] px-2.5 py-0.5 rounded-full shadow-sm">
             <Sparkles className="w-3 h-3 mr-1 text-[#00AA5B]" />
@@ -312,7 +396,6 @@ export default function MerchantSubscriptionPage() {
             Tingkatkan batas produk, aktifkan voucher toko, flash sale, hingga otomatisasi bot Telegram dan API reseller.
           </p>
 
-          {/* Billing Cycle Toggle */}
           <div className="flex items-center justify-center pt-3">
             <div className="bg-white p-1 rounded-xl border border-border/50 shadow-sm flex items-center gap-1">
               <button
@@ -349,7 +432,6 @@ export default function MerchantSubscriptionPage() {
           </div>
         </div>
 
-        {/* Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 items-stretch">
           {PLANS.map((plan) => {
             const isActive = activeSubscription.planId === plan.id;
@@ -429,7 +511,6 @@ export default function MerchantSubscriptionPage() {
           })}
         </div>
 
-        {/* Info Guarantee Section */}
         <div className="pt-2">
           <Card className="border border-border/50 bg-white rounded-xl md:rounded-2xl p-4 md:p-5 shadow-sm">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
