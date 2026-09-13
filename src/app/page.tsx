@@ -40,7 +40,13 @@ import {
   MoreVertical,
   MapPin,
   Store,
-  TrendingUp
+  TrendingUp,
+  Gamepad2,
+  Zap,
+  Droplets,
+  Tv,
+  Film,
+  Ticket
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MarketHeader } from "@/components/market-header";
@@ -59,21 +65,26 @@ const BANNERS = [
 ];
 
 const QUICK_CHIPS = [
-  { label: "Kategori", icon: LayoutGrid },
-  { label: "Handphone & Tablet", icon: Smartphone },
-  { label: "Top-Up & Tagihan", icon: SmartphoneNfc },
-  { label: "Elektronik", icon: Headphones },
-  { label: "Perawatan Hewan", icon: Dog },
-  { label: "Keuangan", icon: Wallet },
-  { label: "Komputer & Laptop", icon: Monitor },
+  { label: "Kategori", icon: "/assets/icons/more.png" },
+  { label: "Pulsa & Paket Data", icon: "/assets/icons/pulsadata.png" },
+  { label: "Game", icon: "/assets/icons/game.png" },
+  { label: "Voucher", icon: "/assets/icons/voucher.png" },
+  { label: "E-Wallet", icon: "/assets/icons/ewallet.png" },
+  { label: "Listrik", icon: "/assets/icons/listrik.png" },
+  { label: "Air PDAM", icon: "/assets/icons/pdam.png" },
+  { label: "TV Kabel", icon: "/assets/icons/tv.png" },
+  { label: "Streaming", icon: "/assets/icons/stream.png" },
 ];
 
 const MOBILE_MENU_ITEMS = [
   { label: "Pulsa & Data", icon: "/assets/icons/pulsadata.png" },
   { label: "Game", icon: "/assets/icons/game.png" },
+  { label: "Voucher", icon: "/assets/icons/voucher.png" },
   { label: "E-Wallet", icon: "/assets/icons/ewallet.png" },
   { label: "Listrik", icon: "/assets/icons/listrik.png" },
   { label: "Air PDAM", icon: "/assets/icons/pdam.png" },
+  { label: "TV Kabel", icon: "/assets/icons/tv.png" },
+  { label: "Streaming", icon: "/assets/icons/stream.png" },
 ];
 
 const MARKET_TABS = [
@@ -199,7 +210,7 @@ export default function MarketPage() {
               {BANNERS.map((banner, index) => (
                 <CarouselItem key={banner.id} className="pl-2 md:pl-4 basis-[92%] sm:basis-[75%] md:basis-[70%] lg:basis-[65%]">
                   <div className={cn(
-                    "relative aspect-[2.8/1] sm:aspect-[3.2/1] md:aspect-[3.5/1] w-full rounded-xl sm:rounded-2xl md:rounded-[1.5rem] overflow-hidden bg-muted shadow-sm border border-border group transition-all duration-500",
+                    "relative aspect-[3/1] w-full rounded-xl sm:rounded-2xl md:rounded-[1.5rem] overflow-hidden bg-muted shadow-sm border border-border group transition-all duration-500",
                     current === index ? "opacity-100 scale-100" : "opacity-40 scale-[0.97]"
                   )}>
                     <Image
@@ -230,15 +241,16 @@ export default function MarketPage() {
           </div>
         </section>
 
-        {/* Mobile Menu Grid (Hidden on Desktop) */}
-        <section className="lg:hidden px-3 py-4 w-full bg-white border-b border-border/40">
-          <div className="grid grid-cols-5 gap-1.5 sm:gap-3">
+        {/* Mobile Menu Row (Single Row Horizontal Scroll with Visual Peek & Fade Hint) */}
+        <section className="lg:hidden relative py-3 w-full bg-white border-b border-border/40 overflow-hidden">
+          <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar px-3.5 pb-0.5 scroll-smooth">
             {MOBILE_MENU_ITEMS.map((item, idx) => (
-              <button
+              <Link
                 key={idx}
-                className="flex flex-col items-center gap-1.5 group transition-transform active:scale-95 py-1"
+                href={`/search?q=${encodeURIComponent(item.label)}`}
+                className="flex flex-col items-center gap-1.5 group transition-transform active:scale-95 py-1 shrink-0 w-[68px]"
               >
-                <div className="w-10 h-10 relative flex items-center justify-center bg-muted/20 rounded-xl p-1 border border-border/40 shadow-2xs">
+                <div className="w-11 h-11 relative flex items-center justify-center bg-muted/20 rounded-xl p-1.5 border border-border/40 shadow-2xs group-hover:bg-[#00AA5B]/10 transition-colors">
                   <Image
                     src={item.icon}
                     alt={item.label}
@@ -247,12 +259,17 @@ export default function MarketPage() {
                     className="object-contain"
                   />
                 </div>
-                <span className="text-[10px] font-semibold text-[#2E3137] text-center leading-tight">
+                <span className="text-[10px] font-semibold text-[#2E3137] text-center leading-tight whitespace-nowrap truncate max-w-full">
                   {item.label}
                 </span>
-              </button>
+              </Link>
             ))}
+            {/* Padding right buffer so last item scrolls cleanly past fade mask */}
+            <div className="w-4 shrink-0 h-1" />
           </div>
+
+          {/* Right Edge Fade Gradient (Visual hint that content continues to the right) */}
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white via-white/70 to-transparent pointer-events-none z-10" />
         </section>
 
         {/* Section: Popular Category & Top Up Widget */}
@@ -350,13 +367,20 @@ export default function MarketPage() {
 
             <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1 px-1">
               {QUICK_CHIPS.map((chip, idx) => (
-                <button
+                <Link
                   key={idx}
-                  className="flex items-center gap-3 px-4 h-11 rounded-xl border border-border bg-white hover:border-[#00AA5B]/30 hover:bg-[#00AA5B]/5 transition-all shrink-0 group shadow-sm"
+                  href={chip.label === "Kategori" ? "/search" : `/search?q=${encodeURIComponent(chip.label)}`}
+                  className="flex items-center gap-2.5 px-3.5 h-11 rounded-xl border border-border bg-white hover:border-[#00AA5B]/30 hover:bg-[#00AA5B]/5 transition-all shrink-0 group shadow-2xs"
                 >
-                  <chip.icon className="w-4 h-4 text-primary opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all" />
+                  <Image
+                    src={chip.icon}
+                    alt={chip.label}
+                    width={22}
+                    height={22}
+                    className="w-5 h-5 object-contain transition-transform group-hover:scale-110"
+                  />
                   <span className="text-[11px] font-bold text-muted-foreground group-hover:text-primary whitespace-nowrap">{chip.label}</span>
-                </button>
+                </Link>
               ))}
             </div>
           </Card>

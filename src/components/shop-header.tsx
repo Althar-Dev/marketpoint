@@ -77,8 +77,9 @@ export function ShopHeader() {
             slug: data.slug || doc.id,
             city: shopCity,
             logo: data.logoUrl || data.photoURL || data.logo,
-            isVerified: data.isVerified ?? true,
-            isOfficial: data.isOfficial ?? (data.slug === "marketpoint" || doc.id === "marketpoint" || (data.isOfficialStore ?? true)),
+            isVerified: Boolean(data.isVerified ?? data.verified ?? data.is_verified ?? true),
+            isOfficial: Boolean(data.isOfficial ?? data.official ?? data.is_official ?? data.isOfficialStore ?? (data.slug === "marketpoint" || doc.id === "marketpoint" || true)),
+            ratingAvg: data.ratingAvg || data.rating || 5.0,
           };
         });
         setRealShops(docs);
@@ -191,9 +192,9 @@ export function ShopHeader() {
               <ArrowLeft className="w-5 h-5" />
             </button>
 
-            {/* Tokopedia-Style Input Box */}
-            <div className="flex-1 flex items-center gap-2 border border-foreground/30 focus-within:border-foreground rounded-xl px-3 py-1.5 bg-white transition-all">
-              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+            {/* Tokopedia-Style Input Box matching Image 1 */}
+            <div className="flex-1 flex items-center gap-2 border border-gray-600 focus-within:border-black rounded-full px-3.5 py-1.5 bg-white transition-all">
+              <Search className="w-4 h-4 text-muted-foreground/80 shrink-0" />
               <input
                 ref={inputRef}
                 autoFocus
@@ -201,7 +202,7 @@ export function ShopHeader() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari..."
-                className="flex-1 bg-transparent text-xs sm:text-sm font-bold text-foreground focus:outline-none placeholder:text-muted-foreground/60 placeholder:font-normal"
+                className="flex-1 bg-transparent text-xs font-medium text-foreground focus:outline-none placeholder:text-muted-foreground/60"
               />
               {searchQuery && (
                 <button
@@ -214,7 +215,7 @@ export function ShopHeader() {
               )}
               <button
                 type="submit"
-                className="text-xs sm:text-sm font-black text-foreground pl-1 hover:text-[#00AA5B] transition-colors shrink-0"
+                className="text-xs font-bold text-foreground pl-1 hover:text-[#00AA5B] transition-colors shrink-0"
               >
                 Cari
               </button>
@@ -298,9 +299,16 @@ export function ShopHeader() {
                                   <img src="/assets/badge/officials.png" alt="Official Store" className="w-3.5 h-3.5 object-contain shrink-0" />
                                 )}
                               </div>
-                              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
-                                {item.city}
-                              </span>
+                              <div className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-muted-foreground">
+                                <span>Toko</span>
+                                <span className="opacity-40">•</span>
+                                <div className="flex items-center gap-0.5 text-[#FFC400]">
+                                  <Star className="w-3 h-3 fill-[#FFC400]" />
+                                  <span className="text-foreground font-bold text-[10px] sm:text-xs">
+                                    {Number(item.ratingAvg || item.rating || 5.0).toFixed(1)}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </Link>
                         );

@@ -89,8 +89,9 @@ function SearchContent() {
                 slug: shopData.slug || docSnap.id,
                 city: shopCity || "Jakarta Pusat",
                 logo: shopData.logoUrl || shopData.photoURL || shopData.logo,
-                isVerified: shopData.isVerified ?? true,
-                isOfficial: shopData.isOfficial ?? (shopData.slug === "marketpoint" || docSnap.id === "marketpoint" || (shopData.isOfficialStore ?? true)),
+                isVerified: Boolean(shopData.isVerified ?? shopData.verified ?? shopData.is_verified ?? true),
+                isOfficial: Boolean(shopData.isOfficial ?? shopData.official ?? shopData.is_official ?? shopData.isOfficialStore ?? (shopData.slug === "marketpoint" || docSnap.id === "marketpoint" || true)),
+                ratingAvg: shopData.ratingAvg || shopData.rating || 5.0,
               });
             });
 
@@ -692,9 +693,16 @@ function SearchContent() {
                               <img src="/assets/badge/officials.png" alt="Official Store" className="w-3.5 h-3.5 object-contain shrink-0" />
                             )}
                           </div>
-                          <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
-                            {item.city || "Jakarta Pusat"}
-                          </span>
+                          <div className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-muted-foreground">
+                            <span>Toko</span>
+                            <span className="opacity-40">•</span>
+                            <div className="flex items-center gap-0.5 text-[#FFC400]">
+                              <Star className="w-3 h-3 fill-[#FFC400]" />
+                              <span className="text-foreground font-bold text-[10px] sm:text-xs">
+                                {Number(item.ratingAvg || item.rating || 5.0).toFixed(1)}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </Link>
                     );
