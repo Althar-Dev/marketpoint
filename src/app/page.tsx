@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -29,6 +29,7 @@ import {
   Star,
   LayoutGrid,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   ShoppingBag,
   Wallet,
@@ -104,6 +105,29 @@ export default function MarketPage() {
   const [mounted, setMounted] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const [canScrollMobileLeft, setCanScrollMobileLeft] = useState(false);
+  const [canScrollMobileRight, setCanScrollMobileRight] = useState(true);
+
+  const checkMobileMenuScroll = () => {
+    if (!mobileMenuRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = mobileMenuRef.current;
+    setCanScrollMobileLeft(scrollLeft > 8);
+    setCanScrollMobileRight(scrollLeft + clientWidth < scrollWidth - 8);
+  };
+
+  const scrollMobileMenu = (direction: "left" | "right") => {
+    if (!mobileMenuRef.current) return;
+    const scrollAmount = direction === "left" ? -180 : 180;
+    mobileMenuRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    checkMobileMenuScroll();
+    window.addEventListener("resize", checkMobileMenuScroll);
+    return () => window.removeEventListener("resize", checkMobileMenuScroll);
+  }, []);
 
   const db = useFirestore();
   const [products, setProducts] = useState<any[]>([]);
@@ -241,16 +265,31 @@ export default function MarketPage() {
           </div>
         </section>
 
-        {/* Mobile Menu Row (Single Row Horizontal Scroll with Visual Peek & Fade Hint) */}
-        <section className="lg:hidden relative py-3 w-full bg-white border-b border-border/40 overflow-hidden">
-          <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar px-3.5 pb-0.5 scroll-smooth">
+        {/* Mobile Menu Row (Single Row Horizontal Scroll with Dynamic Chevron Navigation) */}
+        <section className="lg:hidden relative py-3 w-full bg-white border-b border-border/40 overflow-hidden group">
+          {/* Chevron Left Button (Shows when scrolled to the right) */}
+          {canScrollMobileLeft && (
+            <button
+              onClick={() => scrollMobileMenu("left")}
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/95 border border-border shadow-md flex items-center justify-center text-foreground hover:text-[#00AA5B] active:scale-95 transition-all"
+              aria-label="Scroll Left"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
+
+          <div
+            ref={mobileMenuRef}
+            onScroll={checkMobileMenuScroll}
+            className="flex items-center gap-2.5 overflow-x-auto no-scrollbar px-3.5 pb-0.5 scroll-smooth"
+          >
             {MOBILE_MENU_ITEMS.map((item, idx) => (
               <Link
                 key={idx}
                 href={`/search?q=${encodeURIComponent(item.label)}`}
-                className="flex flex-col items-center gap-1.5 group transition-transform active:scale-95 py-1 shrink-0 w-[68px]"
+                className="flex flex-col items-center gap-1.5 group/item transition-transform active:scale-95 py-1 shrink-0 w-[68px]"
               >
-                <div className="w-11 h-11 relative flex items-center justify-center bg-muted/20 rounded-xl p-1.5 border border-border/40 shadow-2xs group-hover:bg-[#00AA5B]/10 transition-colors">
+                <div className="w-11 h-11 relative flex items-center justify-center bg-muted/20 rounded-xl p-1.5 border border-border/40 shadow-2xs group-hover/item:bg-[#00AA5B]/10 transition-colors">
                   <Image
                     src={item.icon}
                     alt={item.label}
@@ -264,12 +303,28 @@ export default function MarketPage() {
                 </span>
               </Link>
             ))}
-            {/* Padding right buffer so last item scrolls cleanly past fade mask */}
+            {/* Buffer space */}
             <div className="w-4 shrink-0 h-1" />
           </div>
 
-          {/* Right Edge Fade Gradient (Visual hint that content continues to the right) */}
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white via-white/70 to-transparent pointer-events-none z-10" />
+          {/* Chevron Right Button (Shows when at the beginning or middle) */}
+          {canScrollMobileRight && (
+            <button
+              onClick={() => scrollMobileMenu("right")}
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/95 border border-border shadow-md flex items-center justify-center text-foreground hover:text-[#00AA5B] active:scale-95 transition-all"
+              aria-label="Scroll Right"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Dynamic Fade Mask Hints */}
+          {canScrollMobileLeft && (
+            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none z-10" />
+          )}
+          {canScrollMobileRight && (
+            <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none z-10" />
+          )}
         </section>
 
         {/* Section: Popular Category & Top Up Widget */}
