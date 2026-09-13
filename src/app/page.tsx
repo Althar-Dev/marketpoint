@@ -265,13 +265,13 @@ export default function MarketPage() {
           </div>
         </section>
 
-        {/* Mobile Menu Row (Single Row Horizontal Scroll with Dynamic Chevron Navigation) */}
-        <section className="lg:hidden relative py-3 w-full bg-white border-b border-border/40 overflow-hidden group">
+        {/* Mobile Menu Row (Only on mobile < 768px, single row with icon-aligned Chevrons) */}
+        <section className="md:hidden relative py-3 w-full bg-white border-b border-border/40 overflow-hidden group">
           {/* Chevron Left Button (Shows when scrolled to the right) */}
           {canScrollMobileLeft && (
             <button
               onClick={() => scrollMobileMenu("left")}
-              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/95 border border-border shadow-md flex items-center justify-center text-foreground hover:text-[#00AA5B] active:scale-95 transition-all"
+              className="absolute left-1 top-[40px] -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/95 border border-border shadow-md flex items-center justify-center text-foreground hover:text-[#00AA5B] active:scale-95 transition-all"
               aria-label="Scroll Left"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -311,7 +311,7 @@ export default function MarketPage() {
           {canScrollMobileRight && (
             <button
               onClick={() => scrollMobileMenu("right")}
-              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/95 border border-border shadow-md flex items-center justify-center text-foreground hover:text-[#00AA5B] active:scale-95 transition-all"
+              className="absolute right-1 top-[40px] -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/95 border border-border shadow-md flex items-center justify-center text-foreground hover:text-[#00AA5B] active:scale-95 transition-all"
               aria-label="Scroll Right"
             >
               <ChevronRight className="w-4 h-4" />
