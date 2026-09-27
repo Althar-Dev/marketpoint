@@ -213,13 +213,12 @@ export default function TopUpHubPage() {
                   Maaf, tidak ada layanan DigiFlazz yang sesuai dengan pencarian atau kategori Anda saat ini.
                 </p>
               </div>
-              <Button 
+              <button 
                 onClick={() => {setSearch(""); setSelectedCat("all");}}
-                variant="outline" 
-                className="h-9 px-6 rounded-xl text-xs font-bold border-border bg-white"
+                className="h-9 px-6 rounded-xl text-xs font-bold border border-border bg-white hover:bg-muted transition-colors"
               >
                 Reset Filter
-              </Button>
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
@@ -233,14 +232,14 @@ export default function TopUpHubPage() {
                       className="group relative h-full rounded-2xl overflow-hidden border border-border/70 bg-white hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col shadow-xs"
                     >
                       {/* Top Visual Area (Aspect Square 1:1) - White BG with centered Icon */}
-                      <div className="relative aspect-square w-full overflow-hidden bg-white flex items-center justify-center p-6 border-b border-border/40">
+                      <div className="relative aspect-square w-full overflow-hidden bg-white flex items-center justify-center p-4 border-b border-border/40">
                         {visual?.iconUrl ? (
                            <div className="relative w-full h-full">
                              <Image 
                                src={visual.iconUrl} 
                                alt={b.brand} 
                                fill
-                               className="object-contain transition-transform duration-500 group-hover:scale-105"
+                               className="object-contain transition-transform duration-500 group-hover:scale-110"
                              />
                            </div>
                         ) : (
@@ -249,25 +248,22 @@ export default function TopUpHubPage() {
                            </div>
                         )}
                         
-                        {/* Status Badge - Top Right, matching reference image */}
-                        <div className="absolute top-3 right-3 z-20">
-                           <span className="bg-[#666666] text-white font-black text-[8px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                        {/* Status Badge - Top Right */}
+                        <div className="absolute top-2.5 right-2.5 z-20">
+                           <span className="bg-[#4B5563] text-white font-black text-[8px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
                               {b.cmdType}
                            </span>
                         </div>
                       </div>
 
                       {/* Info Panel - Theme Compliant (White Background) */}
-                      <div className="p-3.5 bg-white space-y-1">
+                      <div className="p-3 bg-white space-y-1">
                         <p className="text-[#00AA5B] text-[9px] font-black uppercase tracking-tight truncate">
                           {visual?.badgeText || b.category.split(' ')[0]}
                         </p>
-                        <h4 className="text-[#212121] text-[13px] sm:text-sm font-black leading-tight tracking-tight truncate group-hover:text-[#00AA5B] transition-colors">
+                        <h4 className="text-[#212121] text-[12px] sm:text-sm font-black leading-tight tracking-tight truncate group-hover:text-[#00AA5B] transition-colors">
                           {b.brand}
                         </h4>
-                        <div className="flex items-center justify-between pt-1">
-                           <span className="text-muted-foreground text-[9px] font-bold">Mulai Rp {b.minPrice.toLocaleString('id-ID')}</span>
-                        </div>
                       </div>
                     </Card>
                   </Link>
