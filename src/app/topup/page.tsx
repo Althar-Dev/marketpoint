@@ -127,7 +127,7 @@ export default function TopUpHubPage() {
   if (!mounted) return null;
 
   return (
-    <main className="flex-1 w-full pt-20 pb-24 md:pb-12 bg-white font-body">
+    <main className="flex-1 w-full pt-20 pb-24 md:pb-12 bg-[#F8FAFC] font-body">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-12 lg:px-20 space-y-8">
         
         {/* Header Section */}
@@ -143,7 +143,7 @@ export default function TopUpHubPage() {
                 placeholder="Cari brand game atau provider..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-11 pl-10 rounded-2xl bg-muted/30 border-transparent focus:bg-white focus:border-[#00AA5B] transition-all font-bold text-xs"
+                className="h-11 pl-10 rounded-2xl bg-white border-border shadow-sm focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-bold text-xs"
               />
             </div>
           </div>
@@ -191,7 +191,7 @@ export default function TopUpHubPage() {
                 {selectedCat === 'all' ? "Semua Layanan" : `Layanan ${TOPUP_CATEGORIES.find(c => c.id === selectedCat)?.label}`}
               </h2>
             </div>
-            <span className="text-[10px] font-bold text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-muted-foreground bg-white border border-border/50 px-3 py-1 rounded-full shadow-xs">
               {filteredBrands.length} Brand
             </span>
           </div>
@@ -203,8 +203,8 @@ export default function TopUpHubPage() {
               ))}
             </div>
           ) : filteredBrands.length === 0 ? (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/5 rounded-3xl border border-dashed border-border/60">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-border/40">
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-white rounded-3xl border border-dashed border-border/60">
+              <div className="w-16 h-16 bg-muted/20 rounded-2xl flex items-center justify-center shadow-sm border border-border/40">
                 <Search className="w-8 h-8 text-muted-foreground/30" />
               </div>
               <div className="space-y-1">
@@ -216,13 +216,13 @@ export default function TopUpHubPage() {
               <Button 
                 onClick={() => {setSearch(""); setSelectedCat("all");}}
                 variant="outline" 
-                className="h-9 px-6 rounded-xl text-xs font-bold border-border"
+                className="h-9 px-6 rounded-xl text-xs font-bold border-border bg-white"
               >
                 Reset Filter
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4">
               {filteredBrands.map((b) => {
                 // Get visual style from Firestore if available
                 const visual = visuals?.brands?.[b.brand];
@@ -231,7 +231,7 @@ export default function TopUpHubPage() {
                 return (
                   <Link key={b.brand} href={`/search?q=${encodeURIComponent(b.brand)}`}>
                     <Card 
-                      className="group relative h-full rounded-2xl overflow-hidden border-none bg-[#1A1A1A] hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col shadow-md"
+                      className="group relative h-full rounded-2xl overflow-hidden border border-border/70 bg-white hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col shadow-xs"
                     >
                       {/* Top Visual Area (Aspect 4/5) */}
                       <div 
@@ -266,16 +266,16 @@ export default function TopUpHubPage() {
                         </div>
                       </div>
 
-                      {/* Dark Info Panel matching the reference image */}
-                      <div className="p-3.5 bg-[#262626] space-y-1">
+                      {/* Info Panel - Theme Compliant (Light) */}
+                      <div className="p-3.5 bg-white space-y-1">
                         <p className="text-[#00AA5B] text-[10px] font-black uppercase tracking-tight truncate">
                           {visual?.badgeText || b.category.split(' ')[0]}
                         </p>
-                        <h4 className="text-white text-[13px] sm:text-sm font-black leading-tight tracking-tight truncate group-hover:text-[#00AA5B] transition-colors">
+                        <h4 className="text-[#212121] text-[13px] sm:text-sm font-black leading-tight tracking-tight truncate group-hover:text-[#00AA5B] transition-colors">
                           {b.brand}
                         </h4>
-                        <div className="flex items-center justify-between pt-1 opacity-60">
-                           <span className="text-white text-[9px] font-medium">Mulai Rp {b.minPrice.toLocaleString('id-ID')}</span>
+                        <div className="flex items-center justify-between pt-1">
+                           <span className="text-muted-foreground text-[9px] font-bold">Mulai Rp {b.minPrice.toLocaleString('id-ID')}</span>
                         </div>
                       </div>
                     </Card>
@@ -288,8 +288,8 @@ export default function TopUpHubPage() {
 
         {/* Security & Reliability Info */}
         <section className="pt-8 border-t border-border/60 pb-10">
-           <Card className="bg-[#F8FAFC] border-none rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
-              <div className="h-16 w-16 md:h-20 md:w-20 rounded-[2rem] bg-white shadow-xl flex items-center justify-center shrink-0">
+           <Card className="bg-white border border-border/60 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 text-center md:text-left shadow-sm">
+              <div className="h-16 w-16 md:h-20 md:w-20 rounded-[2rem] bg-[#00AA5B]/5 shadow-inner border border-[#00AA5B]/10 flex items-center justify-center shrink-0">
                  <ShieldCheck className="w-8 h-8 md:w-10 md:h-10 text-[#00AA5B]" />
               </div>
               <div className="space-y-2 flex-1">
@@ -298,7 +298,7 @@ export default function TopUpHubPage() {
                     Semua transaksi di hub Top Up MarketPoint terhubung langsung ke sistem DigiFlazz yang menjamin kecepatan pengiriman saldo dan token dalam hitungan detik. Keamanan dana Anda dijamin 100% oleh sistem verifikasi kami.
                  </p>
               </div>
-              <Button variant="outline" className="h-10 px-8 rounded-xl border-border bg-white text-xs font-bold hover:bg-white hover:text-[#00AA5B] hover:border-[#00AA5B] transition-all shrink-0">
+              <Button variant="outline" className="h-10 px-8 rounded-xl border-border bg-white text-xs font-bold hover:bg-white hover:text-[#00AA5B] hover:border-[#00AA5B] transition-all shrink-0 shadow-xs">
                  Bantuan Center
               </Button>
            </Card>
