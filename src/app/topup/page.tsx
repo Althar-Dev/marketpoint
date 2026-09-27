@@ -238,17 +238,7 @@ export default function TopUpHubPage() {
                         className="relative aspect-[4/5] w-full flex items-center justify-center overflow-hidden"
                         style={{ background: bgStyle }}
                       >
-                        {/* Background Image if available */}
-                        {visual?.bgImageUrl && (
-                          <Image 
-                            src={visual.bgImageUrl} 
-                            alt={b.brand} 
-                            fill 
-                            className="object-cover transition-transform duration-500 group-hover:scale-110 opacity-40" 
-                          />
-                        )}
-
-                        {/* Centered White Square for 1:1 Logo */}
+                        {/* Centered White Square for 1:1 Logo (Icon Only) */}
                         <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl shadow-xl flex items-center justify-center p-2.5 transition-transform duration-300 group-hover:scale-105">
                            {visual?.iconUrl ? (
                               /* eslint-disable-next-line @next/next/no-img-element */
@@ -264,7 +254,7 @@ export default function TopUpHubPage() {
                         
                         {/* Status Badge in visual area - Top Right */}
                         <div className="absolute top-3 right-3 z-20">
-                           <span className="bg-black/60 backdrop-blur-sm text-white/90 font-black text-[8px] px-2 py-0.5 rounded-md uppercase tracking-widest border border-white/10">
+                           <span className="bg-black/60 backdrop-blur-sm text-white/90 font-black text-[8px] px-2.5 py-0.5 rounded-md uppercase tracking-widest border border-white/10">
                               {b.cmdType}
                            </span>
                         </div>
