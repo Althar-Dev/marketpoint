@@ -222,7 +222,7 @@ export default function TopUpHubPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
               {filteredBrands.map((b) => {
                 // Get visual style from Firestore if available
                 const visual = visuals?.brands?.[b.brand];
@@ -233,42 +233,46 @@ export default function TopUpHubPage() {
                     <Card 
                       className="group relative h-full rounded-2xl overflow-hidden border border-border/70 bg-white hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col shadow-xs"
                     >
-                      {/* Top Visual Area (Aspect 4/5) */}
+                      {/* Top Visual Area (Aspect 4/5) with brand color background */}
                       <div 
                         className="relative aspect-[4/5] w-full flex items-center justify-center overflow-hidden"
                         style={{ background: bgStyle }}
                       >
-                        {/* If there's a background image in settings */}
-                        {visual?.bgImageUrl ? (
+                        {/* Background Image if available */}
+                        {visual?.bgImageUrl && (
                           <Image 
                             src={visual.bgImageUrl} 
                             alt={b.brand} 
                             fill 
-                            className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                            className="object-cover transition-transform duration-500 group-hover:scale-110 opacity-40" 
                           />
-                        ) : (
-                          <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center drop-shadow-lg transition-transform group-hover:scale-110 duration-300">
-                            {visual?.iconUrl ? (
-                              <img src={visual.iconUrl} alt={b.brand} className="w-full h-full object-contain filter drop-shadow-sm" />
-                            ) : (
-                              <div className="w-full h-full rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/10">
-                                 <Gamepad2 className="w-8 h-8 text-white/40" />
-                              </div>
-                            )}
-                          </div>
                         )}
+
+                        {/* Centered White Square for 1:1 Logo */}
+                        <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl shadow-xl flex items-center justify-center p-2.5 transition-transform duration-300 group-hover:scale-105">
+                           {visual?.iconUrl ? (
+                              /* eslint-disable-next-line @next/next/no-img-element */
+                              <img 
+                                src={visual.iconUrl} 
+                                alt={b.brand} 
+                                className="w-full h-full object-contain"
+                              />
+                           ) : (
+                              <Gamepad2 className="w-8 h-8 text-slate-300" />
+                           )}
+                        </div>
                         
-                        {/* Status Badge in visual area */}
-                        <div className="absolute top-3 right-3">
-                           <span className="bg-black/40 backdrop-blur-sm text-white/90 font-black text-[8px] px-2 py-0.5 rounded-full uppercase tracking-widest border border-white/10">
+                        {/* Status Badge in visual area - Top Right */}
+                        <div className="absolute top-3 right-3 z-20">
+                           <span className="bg-black/60 backdrop-blur-sm text-white/90 font-black text-[8px] px-2 py-0.5 rounded-md uppercase tracking-widest border border-white/10">
                               {b.cmdType}
                            </span>
                         </div>
                       </div>
 
-                      {/* Info Panel - Theme Compliant (Light) */}
-                      <div className="p-3.5 bg-white space-y-1">
-                        <p className="text-[#00AA5B] text-[10px] font-black uppercase tracking-tight truncate">
+                      {/* Info Panel - Theme Compliant (White Background) */}
+                      <div className="p-3.5 bg-white space-y-1 border-t border-border/40">
+                        <p className="text-[#00AA5B] text-[9px] font-black uppercase tracking-tight truncate">
                           {visual?.badgeText || b.category.split(' ')[0]}
                         </p>
                         <h4 className="text-[#212121] text-[13px] sm:text-sm font-black leading-tight tracking-tight truncate group-hover:text-[#00AA5B] transition-colors">
