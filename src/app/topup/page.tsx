@@ -233,27 +233,28 @@ export default function TopUpHubPage() {
                     <Card 
                       className="group relative h-full rounded-2xl overflow-hidden border border-border/70 bg-white hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col shadow-xs"
                     >
-                      {/* Top Visual Area (Aspect 4/5) with brand color background */}
+                      {/* Top Visual Area (Aspect 4/5) - Now Full Icon/Image */}
                       <div 
-                        className="relative aspect-[4/5] w-full flex items-center justify-center overflow-hidden"
-                        style={{ background: bgStyle }}
+                        className="relative aspect-[4/5] w-full overflow-hidden bg-muted"
                       >
-                        {/* Centered White Square for 1:1 Logo (Icon Only) */}
-                        <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl shadow-xl flex items-center justify-center p-2.5 transition-transform duration-300 group-hover:scale-105">
-                           {visual?.iconUrl ? (
-                              /* eslint-disable-next-line @next/next/no-img-element */
-                              <img 
-                                src={visual.iconUrl} 
-                                alt={b.brand} 
-                                className="w-full h-full object-contain"
-                              />
-                           ) : (
-                              <Gamepad2 className="w-8 h-8 text-slate-300" />
-                           )}
-                        </div>
+                        {visual?.iconUrl ? (
+                           <Image 
+                             src={visual.iconUrl} 
+                             alt={b.brand} 
+                             fill
+                             className="object-cover transition-transform duration-500 group-hover:scale-110"
+                           />
+                        ) : (
+                           <div 
+                             className="w-full h-full flex items-center justify-center"
+                             style={{ background: bgStyle }}
+                           >
+                             <Gamepad2 className="w-12 h-12 text-white/20" />
+                           </div>
+                        )}
                         
                         {/* Status Badge in visual area - Top Right */}
-                        <div className="absolute top-3 right-3 z-20">
+                        <div className="absolute top-2.5 right-2.5 z-20">
                            <span className="bg-black/60 backdrop-blur-sm text-white/90 font-black text-[8px] px-2.5 py-0.5 rounded-md uppercase tracking-widest border border-white/10">
                               {b.cmdType}
                            </span>
@@ -261,7 +262,7 @@ export default function TopUpHubPage() {
                       </div>
 
                       {/* Info Panel - Theme Compliant (White Background) */}
-                      <div className="p-3.5 bg-white space-y-1 border-t border-border/40">
+                      <div className="p-3.5 bg-white space-y-1">
                         <p className="text-[#00AA5B] text-[9px] font-black uppercase tracking-tight truncate">
                           {visual?.badgeText || b.category.split(' ')[0]}
                         </p>
