@@ -4,21 +4,20 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Search, 
   ChevronRight, 
-  History, 
   Star, 
-  TrendingUp,
-  Clock,
-  ArrowRight,
   ShieldCheck,
-  Zap
+  Store,
+  ShoppingBag
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useFirestore } from "@/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 const TOPUP_CATEGORIES = [
   { id: "pulsa", label: "Pulsa & Data", icon: "/assets/icons/pulsadata.png", color: "bg-blue-50" },
@@ -31,18 +30,79 @@ const TOPUP_CATEGORIES = [
   { id: "voucher", label: "Voucher", icon: "/assets/icons/voucher.png", color: "bg-orange-50" },
 ];
 
-const RECENT_TRANSACTIONS = [
-  { id: 1, label: "Pulsa Telkomsel 50rb", target: "081234567890", date: "2 hari lalu" },
-  { id: 2, label: "Mobile Legends 86 DM", target: "12345678 (2001)", date: "5 hari lalu" },
-];
-
 export default function TopUpHubPage() {
   const [mounted, setMounted] = useState(false);
   const [search, setSearch] = useState("");
+  const db = useFirestore();
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
   useEffect(() => {
     setMounted(true);
+    fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    setIsLoadingProducts(true);
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      if (res.ok && data.products) {
+        let rawProducts = data.products;
+
+        // Fetch real shop profiles from Firestore to enrich product data
+        try {
+          if (db) {
+            const shopsSnap = await getDocs(collection(db, "shops"));
+            const shopsMap: Record<string, any> = {};
+            shopsSnap.forEach((docSnap) => {
+              shopsMap[docSnap.id] = docSnap.data();
+            });
+
+            const extractString = (val: any): string => {
+              if (!val) return "";
+              if (typeof val === "string") return val;
+              if (typeof val === "object") {
+                if (typeof val.city === "string" && val.city) return val.city;
+                if (typeof val.province === "string" && val.province) return val.province;
+                if (typeof val.district === "string" && val.district) return val.district;
+                if (typeof val.address === "string" && val.address) return val.address;
+                if (typeof val.name === "string" && val.name) return val.name;
+              }
+              return "";
+            };
+
+            rawProducts = rawProducts.map((p: any) => {
+              const shop = shopsMap[p.shopId];
+              const realName = extractString(shop?.shopName) || extractString(shop?.name) || extractString(shop?.title) || extractString(shop?.slug);
+              const fallbackName = typeof p.shopName === "string" && p.shopName && p.shopName !== "MarketPoint Seller"
+                ? p.shopName
+                : (p.shopId ? `Toko ${p.shopId.substring(0, 6)}` : "Toko Seller");
+
+              const rawCity = extractString(shop?.city) || extractString(shop?.province) || extractString(shop?.location) || extractString(shop?.address) || extractString(p.shopCity);
+
+              return {
+                ...p,
+                shopName: realName || fallbackName,
+                shopLogoUrl: shop?.logoUrl || shop?.logo || shop?.avatar || shop?.photoUrl || p.shopLogoUrl || "",
+                shopIsVerified: shop?.isVerified ?? shop?.verified ?? shop?.is_verified ?? p.shopIsVerified ?? false,
+                shopIsOfficial: shop?.isOfficial ?? shop?.official ?? shop?.is_official ?? p.shopIsOfficial ?? false,
+                shopCity: rawCity,
+              };
+            });
+          }
+        } catch (e) {
+          console.warn("⚠️ Gagal mengambil profil toko dari Firestore:", e);
+        }
+
+        setProducts(rawProducts);
+      }
+    } catch (err) {
+      console.error("Gagal mengambil produk beranda:", err);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
 
   if (!mounted) return null;
 
@@ -100,78 +160,114 @@ export default function TopUpHubPage() {
           ))}
         </section>
 
-        {/* Promo & Recent Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
-          
-          {/* Left: Recent Transactions */}
-          <div className="lg:col-span-4 space-y-4">
-            <div className="flex items-center justify-between px-1">
-              <h2 className="text-xs font-black text-[#2E3137] uppercase tracking-widest flex items-center gap-2">
-                <History className="w-4 h-4 text-[#00AA5B]" /> Beli Lagi
-              </h2>
-              <button className="text-[10px] font-bold text-[#00AA5B] hover:underline">Lihat Semua</button>
-            </div>
-            
-            <div className="space-y-3">
-              {RECENT_TRANSACTIONS.map((item) => (
-                <Card key={item.id} className="border-border border-[1px] shadow-2xs rounded-2xl hover:border-[#00AA5B]/30 cursor-pointer transition-all">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-xl bg-muted/40 flex items-center justify-center">
-                        <Zap className="w-4 h-4 text-[#00AA5B]" />
-                      </div>
-                      <div className="space-y-0.5">
-                        <p className="text-[11px] font-black text-[#2E3137]">{item.label}</p>
-                        <p className="text-[10px] text-muted-foreground font-medium">{item.target} • {item.date}</p>
-                      </div>
+        {/* Product Card Section */}
+        <section className="space-y-4 pt-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-sm md:text-lg font-black tracking-tight text-[#212121]">Produk Terpopuler</h2>
+            <Link href="/" className="text-xs font-bold text-[#00AA5B] hover:underline">
+              Lihat Semua
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
+            {isLoadingProducts ? (
+              Array.from({ length: 6 }).map((_, idx) => (
+                <Card key={idx} className="border-border/80 shadow-2xs rounded-xl overflow-hidden bg-card flex flex-col border-[1px]">
+                  <CardContent className="p-0 flex flex-col h-full">
+                    <Skeleton className="aspect-square w-full rounded-none" />
+                    <div className="p-2 sm:p-2.5 space-y-1.5">
+                      <Skeleton className="h-3 w-3/4 rounded-md" />
+                      <Skeleton className="h-3.5 w-1/2 rounded-md" />
+                      <Skeleton className="h-2.5 w-1/3 rounded-md" />
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-40" />
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Right: Featured Promos */}
-          <div className="lg:col-span-8 space-y-4">
-            <div className="flex items-center justify-between px-1">
-              <h2 className="text-xs font-black text-[#2E3137] uppercase tracking-widest flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-[#00AA5B]" /> Promo Spesial
-              </h2>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="relative h-40 rounded-3xl overflow-hidden bg-gradient-to-br from-[#00AA5B] to-[#009650] group cursor-pointer shadow-md">
-                <div className="absolute inset-0 p-6 flex flex-col justify-between z-10 text-white">
-                  <Badge className="w-fit bg-white/20 text-white border-none font-bold text-[9px]">CASHBACK 10%</Badge>
-                  <div>
-                    <h3 className="text-base font-black leading-tight">Top Up Game Pakai MarketBalance</h3>
-                    <p className="text-[10px] opacity-80 mt-1 font-medium">Khusus pengguna Pro & Prime.</p>
-                  </div>
-                </div>
-                <div className="absolute right-0 bottom-0 w-1/2 h-full opacity-20 group-hover:scale-110 transition-transform duration-700">
-                   <Image src="https://picsum.photos/seed/promo1/300/300" alt="Promo" fill className="object-cover" />
+              ))
+            ) : products.length === 0 ? (
+              <div className="col-span-full py-12 flex flex-col items-center justify-center text-center space-y-3 bg-muted/10 rounded-2xl border border-dashed border-border p-8">
+                <ShoppingBag className="w-10 h-10 text-muted-foreground/50" />
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-foreground">Belum Ada Produk Ditampilkan</h3>
+                  <p className="text-xs text-muted-foreground max-w-sm">
+                    Produk digital yang ditambahkan oleh penjual akan otomatis muncul di sini secara realtime.
+                  </p>
                 </div>
               </div>
+            ) : (
+              products.slice(0, 12).map((product) => {
+                const imageUrl = product.images && product.images.length > 0 ? product.images[0].imageUrl : "https://cdn.marketpoint.id/marketpoint.png";
+                const price = Number(product.price || 0);
+                const rating = Number(product.ratingAvg || 5.0).toFixed(1);
+                const soldText = product.salesCount ? `${product.salesCount} terjual` : "0 terjual";
+                const shopName = typeof product.shopName === "string" ? product.shopName : "Toko Seller";
+                const isVerified = Boolean(product.shopIsVerified);
+                const isOfficial = Boolean(product.shopIsOfficial);
 
-              <div className="relative h-40 rounded-3xl overflow-hidden bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] group cursor-pointer shadow-md">
-                <div className="absolute inset-0 p-6 flex flex-col justify-between z-10 text-white">
-                  <Badge className="w-fit bg-white/20 text-white border-none font-bold text-[9px]">NEW USER</Badge>
-                  <div>
-                    <h3 className="text-base font-black leading-tight">Potongan Rp 5.000 Transaksi Pertama</h3>
-                    <p className="text-[10px] opacity-80 mt-1 font-medium">Berlaku untuk semua tagihan.</p>
-                  </div>
-                </div>
-                <div className="absolute right-0 bottom-0 w-1/2 h-full opacity-20 group-hover:scale-110 transition-transform duration-700">
-                   <Image src="https://picsum.photos/seed/promo2/300/300" alt="Promo" fill className="object-cover" />
-                </div>
-              </div>
-            </div>
+                return (
+                  <Link key={product.id} href={`/${product.shopSlug || 'marketpoint'}/${product.slug || product.id}`}>
+                    <Card className="group border-border/70 shadow-2xs rounded-xl overflow-hidden bg-card hover:shadow-md transition-all duration-300 flex flex-col cursor-pointer border-[1px] h-full">
+                      <CardContent className="p-0 flex flex-col h-full">
+                        <div className="relative aspect-square w-full bg-muted/20 overflow-hidden">
+                          <Image
+                            src={imageUrl}
+                            alt={product.title}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </div>
+
+                        <div className="p-2 sm:p-2.5 md:p-3 space-y-1.5 flex-1 flex flex-col justify-between">
+                          <div className="space-y-1">
+                            <h4 className="text-[10px] sm:text-xs font-medium text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">
+                              {product.title}
+                            </h4>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[#000000] text-xs sm:text-sm font-bold">
+                                Rp {price.toLocaleString('id-ID')}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1 pt-1">
+                            <div className="flex items-center gap-1">
+                              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#FFC400] fill-[#FFC400]" />
+                              <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground">
+                                {rating} <span className="opacity-40">|</span> {soldText}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1 min-w-0">
+                                <div className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] bg-[#00AA5B] rounded-xs flex items-center justify-center shrink-0">
+                                  <Store className="w-2.5 h-2.5 text-white" />
+                                </div>
+                                <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground truncate max-w-[60px] sm:max-w-[90px]">
+                                  {shopName}
+                                </span>
+                                <div className="flex items-center gap-0.5 shrink-0">
+                                  {isVerified && (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img src="/assets/badge/verified.png" alt="Verified" className="w-[14px] h-[14px] sm:w-[17px] sm:h-[17px] object-contain shrink-0" />
+                                  )}
+                                  {isOfficial && (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img src="/assets/badge/officials.png" alt="Official" className="w-[14px] h-[14px] sm:w-[17px] sm:h-[17px] object-contain shrink-0" />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })
+            )}
           </div>
-        </div>
+        </section>
 
         {/* Security & Reliability Info */}
-        <section className="pt-8 border-t border-border/60">
+        <section className="pt-8 border-t border-border/60 pb-10">
            <Card className="bg-[#F8FAFC] border-none rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
               <div className="h-16 w-16 md:h-20 md:w-20 rounded-[2rem] bg-white shadow-xl flex items-center justify-center shrink-0">
                  <ShieldCheck className="w-8 h-8 md:w-10 md:h-10 text-[#00AA5B]" />
