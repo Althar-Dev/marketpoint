@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
@@ -53,7 +52,6 @@ export default function TopUpHubPage() {
 
   const db = useFirestore();
   
-  // Fetch Visual Settings for DigiFlazz Brands (official logos, colors)
   const visualsRef = useMemoFirebase(() => doc(db, "settings", "digiflazz_visuals"), [db]);
   const { data: visuals } = useDoc(visualsRef);
 
@@ -77,11 +75,8 @@ export default function TopUpHubPage() {
     }
   };
 
-  // Group SKUs by Brand to show "Game/Provider Cards"
   const brandCards = useMemo(() => {
     const groups: Record<string, DigiFlazzBrand> = {};
-    
-    // Filter active items only
     const activeItems = digiflazzItems.filter(item => item.buyer_product_status && item.seller_product_status);
 
     activeItems.forEach((item) => {
@@ -107,14 +102,11 @@ export default function TopUpHubPage() {
     return Object.values(groups).sort((a, b) => a.brand.localeCompare(b.brand));
   }, [digiflazzItems]);
 
-  // Apply filters (Category & Search)
   const filteredBrands = useMemo(() => {
     return brandCards.filter((b) => {
-      // 1. Search filter
       const matchesSearch = b.brand.toLowerCase().includes(search.toLowerCase().trim());
       if (!matchesSearch) return false;
 
-      // 2. Category filter
       if (selectedCat === "all") return true;
       const catConfig = TOPUP_CATEGORIES.find(c => c.id === selectedCat);
       if (catConfig?.match) {
@@ -124,13 +116,16 @@ export default function TopUpHubPage() {
     });
   }, [brandCards, search, selectedCat]);
 
+  const getSlugify = (text: string) => {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  };
+
   if (!mounted) return null;
 
   return (
     <main className="flex-1 w-full pt-20 pb-24 md:pb-12 bg-[#F8FAFC] font-body">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-12 lg:px-20 space-y-8">
         
-        {/* Header Section */}
         <section className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
@@ -149,7 +144,6 @@ export default function TopUpHubPage() {
           </div>
         </section>
 
-        {/* Categories Navigation */}
         <section className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
           {TOPUP_CATEGORIES.map((cat) => (
             <button 
@@ -182,7 +176,6 @@ export default function TopUpHubPage() {
           ))}
         </section>
 
-        {/* Brands Grid Section */}
         <section className="space-y-6 pt-4">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
@@ -223,15 +216,15 @@ export default function TopUpHubPage() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
               {filteredBrands.map((b) => {
-                // Get visual style from Firestore if available
                 const visual = visuals?.brands?.[b.brand];
+                const catSlug = getSlugify(b.category);
+                const brandSlug = getSlugify(b.brand);
                 
                 return (
-                  <Link key={b.brand} href={`/search?q=${encodeURIComponent(b.brand)}`}>
+                  <Link key={b.brand} href={`/topup/${catSlug}/${brandSlug}`}>
                     <Card 
                       className="group relative h-full rounded-2xl overflow-hidden border border-border/70 bg-white hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col shadow-xs"
                     >
-                      {/* Top Visual Area (Aspect Square 1:1) - White BG with centered Icon */}
                       <div className="relative aspect-square w-full overflow-hidden bg-white flex items-center justify-center p-4 border-b border-border/40">
                         {visual?.iconUrl ? (
                            <div className="relative w-full h-full">
@@ -249,7 +242,6 @@ export default function TopUpHubPage() {
                         )}
                       </div>
 
-                      {/* Info Panel - Theme Compliant (White Background) */}
                       <div className="p-3 bg-white space-y-1">
                         <p className="text-[#00AA5B] text-[9px] font-black uppercase tracking-tight truncate">
                           {visual?.badgeText || b.category.split(' ')[0]}
@@ -266,7 +258,6 @@ export default function TopUpHubPage() {
           )}
         </section>
 
-        {/* Security & Reliability Info */}
         <section className="pt-8 border-t border-border/60 pb-10">
            <Card className="bg-white border border-border/60 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 text-center md:text-left shadow-sm">
               <div className="h-16 w-16 md:h-20 md:w-20 rounded-[2rem] bg-[#00AA5B]/5 shadow-inner border border-[#00AA5B]/10 flex items-center justify-center shrink-0">
