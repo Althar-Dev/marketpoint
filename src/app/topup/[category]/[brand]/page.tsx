@@ -21,7 +21,8 @@ import {
   User,
   History,
   HelpCircle,
-  MoreHorizontal
+  MoreHorizontal,
+  ShoppingBag
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
