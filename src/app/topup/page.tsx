@@ -199,7 +199,7 @@ export default function TopUpHubPage() {
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
               {Array.from({ length: 12 }).map((_, idx) => (
-                <div key={idx} className="aspect-[4/6] rounded-2xl bg-muted/40 animate-pulse border border-border" />
+                <div key={idx} className="aspect-square rounded-2xl bg-muted/40 animate-pulse border border-border" />
               ))}
             </div>
           ) : filteredBrands.length === 0 ? (
@@ -226,36 +226,32 @@ export default function TopUpHubPage() {
               {filteredBrands.map((b) => {
                 // Get visual style from Firestore if available
                 const visual = visuals?.brands?.[b.brand];
-                const bgStyle = visual?.bgGradient || "linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)";
                 
                 return (
                   <Link key={b.brand} href={`/search?q=${encodeURIComponent(b.brand)}`}>
                     <Card 
                       className="group relative h-full rounded-2xl overflow-hidden border border-border/70 bg-white hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col shadow-xs"
                     >
-                      {/* Top Visual Area (Aspect 4/5) - Now Full Icon/Image */}
-                      <div 
-                        className="relative aspect-[4/5] w-full overflow-hidden bg-muted"
-                      >
+                      {/* Top Visual Area (Aspect Square 1:1) - White BG with centered Icon */}
+                      <div className="relative aspect-square w-full overflow-hidden bg-white flex items-center justify-center p-6 border-b border-border/40">
                         {visual?.iconUrl ? (
-                           <Image 
-                             src={visual.iconUrl} 
-                             alt={b.brand} 
-                             fill
-                             className="object-cover transition-transform duration-500 group-hover:scale-110"
-                           />
+                           <div className="relative w-full h-full">
+                             <Image 
+                               src={visual.iconUrl} 
+                               alt={b.brand} 
+                               fill
+                               className="object-contain transition-transform duration-500 group-hover:scale-105"
+                             />
+                           </div>
                         ) : (
-                           <div 
-                             className="w-full h-full flex items-center justify-center"
-                             style={{ background: bgStyle }}
-                           >
-                             <Gamepad2 className="w-12 h-12 text-white/20" />
+                           <div className="w-full h-full flex items-center justify-center bg-slate-50 rounded-2xl">
+                             <Gamepad2 className="w-10 h-10 text-muted-foreground/20" />
                            </div>
                         )}
                         
-                        {/* Status Badge in visual area - Top Right */}
-                        <div className="absolute top-2.5 right-2.5 z-20">
-                           <span className="bg-black/60 backdrop-blur-sm text-white/90 font-black text-[8px] px-2.5 py-0.5 rounded-md uppercase tracking-widest border border-white/10">
+                        {/* Status Badge - Top Right, matching reference image */}
+                        <div className="absolute top-3 right-3 z-20">
+                           <span className="bg-[#666666] text-white font-black text-[8px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
                               {b.cmdType}
                            </span>
                         </div>
