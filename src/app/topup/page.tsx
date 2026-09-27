@@ -134,8 +134,8 @@ export default function TopUpHubPage() {
         <section className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
-              <h1 className="text-xl md:text-2xl font-black tracking-tight text-[#212121]">Top Up & Tagihan DigiFlazz</h1>
-              <p className="text-xs md:text-sm text-muted-foreground font-medium">Isi pulsa, kuota, token PLN, dan top up game favorit Anda secara instan.</p>
+              <h1 className="text-xl md:text-2xl font-black tracking-tight text-[#212121]">Top Up & Tagihan</h1>
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">Layanan instan pengisian pulsa, kuota, token, dan top up game favorit.</p>
             </div>
             <div className="relative w-full md:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -192,14 +192,14 @@ export default function TopUpHubPage() {
               </h2>
             </div>
             <span className="text-[10px] font-bold text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full">
-              {filteredBrands.length} Brand Ditemukan
+              {filteredBrands.length} Brand
             </span>
           </div>
 
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
               {Array.from({ length: 12 }).map((_, idx) => (
-                <div key={idx} className="aspect-[4/5] rounded-2xl bg-muted/40 animate-pulse border border-border" />
+                <div key={idx} className="aspect-[4/6] rounded-2xl bg-muted/40 animate-pulse border border-border" />
               ))}
             </div>
           ) : filteredBrands.length === 0 ? (
@@ -222,72 +222,62 @@ export default function TopUpHubPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               {filteredBrands.map((b) => {
                 // Get visual style from Firestore if available
                 const visual = visuals?.brands?.[b.brand];
                 const bgStyle = visual?.bgGradient || "linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)";
-                const isDarkBg = visual?.bgGradient && !visual.bgGradient.includes("#FFFFFF");
                 
                 return (
                   <Link key={b.brand} href={`/search?q=${encodeURIComponent(b.brand)}`}>
                     <Card 
-                      className="group relative h-full rounded-2xl overflow-hidden border-border/60 bg-white hover:shadow-xl hover:border-[#00AA5B]/30 transition-all duration-300 cursor-pointer flex flex-col shadow-2xs border-[1px]"
+                      className="group relative h-full rounded-2xl overflow-hidden border-none bg-[#1A1A1A] hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col shadow-md"
                     >
-                      {/* Top Visual Header */}
+                      {/* Top Visual Area (Aspect 4/5) */}
                       <div 
-                        className="relative aspect-[4/3] w-full flex items-center justify-center overflow-hidden"
+                        className="relative aspect-[4/5] w-full flex items-center justify-center overflow-hidden"
                         style={{ background: bgStyle }}
                       >
                         {/* If there's a background image in settings */}
-                        {visual?.bgImageUrl && (
-                          <Image src={visual.bgImageUrl} alt="" fill className="object-cover opacity-60 group-hover:scale-110 transition-transform duration-500" />
+                        {visual?.bgImageUrl ? (
+                          <Image 
+                            src={visual.bgImageUrl} 
+                            alt={b.brand} 
+                            fill 
+                            className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                          />
+                        ) : (
+                          <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center drop-shadow-lg transition-transform group-hover:scale-110 duration-300">
+                            {visual?.iconUrl ? (
+                              <img src={visual.iconUrl} alt={b.brand} className="w-full h-full object-contain filter drop-shadow-sm" />
+                            ) : (
+                              <div className="w-full h-full rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                                 <Gamepad2 className="w-8 h-8 text-white/40" />
+                              </div>
+                            )}
+                          </div>
                         )}
                         
-                        {/* Brand Icon/Logo */}
-                        <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center drop-shadow-lg transition-transform group-hover:scale-110 duration-300">
-                          {visual?.iconUrl ? (
-                            <img src={visual.iconUrl} alt={b.brand} className="w-full h-full object-contain filter drop-shadow-sm" />
-                          ) : (
-                            <div className="w-full h-full rounded-2xl bg-white/80 backdrop-blur-sm flex items-center justify-center border border-border/40">
-                               <Gamepad2 className="w-6 h-6 text-muted-foreground/50" />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Badge for Type or Category */}
-                        <div className="absolute top-2 right-2">
-                           <Badge className="bg-white/90 backdrop-blur-sm text-slate-900 border-none font-black text-[8px] px-1.5 py-0.5 rounded shadow-xs uppercase">
-                              {b.category.split(' ')[0]}
-                           </Badge>
+                        {/* Status Badge in visual area */}
+                        <div className="absolute top-3 right-3">
+                           <span className="bg-black/40 backdrop-blur-sm text-white/90 font-black text-[8px] px-2 py-0.5 rounded-full uppercase tracking-widest border border-white/10">
+                              {b.cmdType}
+                           </span>
                         </div>
                       </div>
 
-                      {/* Info Body */}
-                      <CardContent className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2">
-                        <div className="space-y-0.5">
-                          <h4 className="text-[11px] sm:text-[13px] font-black text-[#212121] leading-tight truncate group-hover:text-[#00AA5B] transition-colors">
-                            {b.brand}
-                          </h4>
-                          <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                            {b.cmdType === 'pasca' ? 'Pascabayar' : 'Prabayar'}
-                          </p>
+                      {/* Dark Info Panel matching the reference image */}
+                      <div className="p-3.5 bg-[#262626] space-y-1">
+                        <p className="text-[#00AA5B] text-[10px] font-black uppercase tracking-tight truncate">
+                          {visual?.badgeText || b.category.split(' ')[0]}
+                        </p>
+                        <h4 className="text-white text-[13px] sm:text-sm font-black leading-tight tracking-tight truncate group-hover:text-[#00AA5B] transition-colors">
+                          {b.brand}
+                        </h4>
+                        <div className="flex items-center justify-between pt-1 opacity-60">
+                           <span className="text-white text-[9px] font-medium">Mulai Rp {b.minPrice.toLocaleString('id-ID')}</span>
                         </div>
-
-                        <div className="space-y-1.5">
-                          <div className="flex items-baseline gap-1">
-                             <span className="text-[9px] font-bold text-muted-foreground">Mulai</span>
-                             <span className="text-[11px] sm:text-xs font-black text-[#00AA5B]">
-                                Rp {b.minPrice.toLocaleString('id-ID')}
-                             </span>
-                          </div>
-                          
-                          <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground border-t border-border/40 pt-2">
-                             <Layers className="w-3 h-3 text-[#8B5CF6]" />
-                             <span>{b.skusCount} Pilihan Produk</span>
-                          </div>
-                        </div>
-                      </CardContent>
+                      </div>
                     </Card>
                   </Link>
                 );
