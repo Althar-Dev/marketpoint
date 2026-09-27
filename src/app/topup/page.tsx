@@ -1,130 +1,146 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
   ChevronRight, 
   Star, 
   ShieldCheck,
   Store,
-  ShoppingBag
+  ShoppingBag,
+  Zap,
+  Info,
+  Layers,
+  Gamepad2,
+  Smartphone,
+  Wallet as WalletIcon
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useFirestore } from "@/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
 
 const TOPUP_CATEGORIES = [
-  { id: "pulsa", label: "Pulsa & Data", icon: "/assets/icons/pulsadata.png", color: "bg-blue-50" },
-  { id: "game", label: "Game", icon: "/assets/icons/game.png", color: "bg-purple-50" },
-  { id: "ewallet", label: "E-Wallet", icon: "/assets/icons/ewallet.png", color: "bg-emerald-50" },
-  { id: "pln", label: "Listrik PLN", icon: "/assets/icons/listrik.png", color: "bg-amber-50" },
-  { id: "pdam", label: "Air PDAM", icon: "/assets/icons/pdam.png", color: "bg-cyan-50" },
-  { id: "tv", label: "TV Kabel", icon: "/assets/icons/tv.png", color: "bg-indigo-50" },
-  { id: "stream", label: "Streaming", icon: "/assets/icons/stream.png", color: "bg-rose-50" },
-  { id: "voucher", label: "Voucher", icon: "/assets/icons/voucher.png", color: "bg-orange-50" },
+  { id: "all", label: "Semua", icon: "/assets/icons/more.png", color: "bg-slate-50" },
+  { id: "pulsa", label: "Pulsa & Data", icon: "/assets/icons/pulsadata.png", color: "bg-blue-50", match: ["PULSA", "DATA"] },
+  { id: "game", label: "Game", icon: "/assets/icons/game.png", color: "bg-purple-50", match: ["GAMES", "GAME"] },
+  { id: "ewallet", label: "E-Wallet", icon: "/assets/icons/ewallet.png", color: "bg-emerald-50", match: ["E-MONEY", "E-WALLET", "SALDO"] },
+  { id: "pln", label: "Listrik PLN", icon: "/assets/icons/listrik.png", color: "bg-amber-50", match: ["PLN"] },
+  { id: "pdam", label: "Air PDAM", icon: "/assets/icons/pdam.png", color: "bg-cyan-50", match: ["PDAM"] },
+  { id: "voucher", label: "Voucher", icon: "/assets/icons/voucher.png", color: "bg-orange-50", match: ["VOUCHER"] },
 ];
+
+interface DigiFlazzBrand {
+  brand: string;
+  category: string;
+  minPrice: number;
+  skusCount: number;
+  cmdType: string;
+}
 
 export default function TopUpHubPage() {
   const [mounted, setMounted] = useState(false);
   const [search, setSearch] = useState("");
+  const [selectedCat, setSelectedCat] = useState("all");
+  const [digiflazzItems, setDigiflazzItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const db = useFirestore();
-  const [products, setProducts] = useState<any[]>([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  
+  // Fetch Visual Settings for DigiFlazz Brands (official logos, colors)
+  const visualsRef = useMemoFirebase(() => doc(db, "settings", "digiflazz_visuals"), [db]);
+  const { data: visuals } = useDoc(visualsRef);
 
   useEffect(() => {
     setMounted(true);
-    fetchProducts();
+    fetchDigiFlazzCatalog();
   }, []);
 
-  const fetchProducts = async () => {
-    setIsLoadingProducts(true);
+  const fetchDigiFlazzCatalog = async () => {
+    setLoading(true);
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch("/api/admin/digiflazz/products");
       const data = await res.json();
-      if (res.ok && data.products) {
-        let rawProducts = data.products;
-
-        // Fetch real shop profiles from Firestore to enrich product data
-        try {
-          if (db) {
-            const shopsSnap = await getDocs(collection(db, "shops"));
-            const shopsMap: Record<string, any> = {};
-            shopsSnap.forEach((docSnap) => {
-              shopsMap[docSnap.id] = docSnap.data();
-            });
-
-            const extractString = (val: any): string => {
-              if (!val) return "";
-              if (typeof val === "string") return val;
-              if (typeof val === "object") {
-                if (typeof val.city === "string" && val.city) return val.city;
-                if (typeof val.province === "string" && val.province) return val.province;
-                if (typeof val.district === "string" && val.district) return val.district;
-                if (typeof val.address === "string" && val.address) return val.address;
-                if (typeof val.name === "string" && val.name) return val.name;
-              }
-              return "";
-            };
-
-            rawProducts = rawProducts.map((p: any) => {
-              const shop = shopsMap[p.shopId];
-              const realName = extractString(shop?.shopName) || extractString(shop?.name) || extractString(shop?.title) || extractString(shop?.slug);
-              const fallbackName = typeof p.shopName === "string" && p.shopName && p.shopName !== "MarketPoint Seller"
-                ? p.shopName
-                : (p.shopId ? `Toko ${p.shopId.substring(0, 6)}` : "Toko Seller");
-
-              const rawCity = extractString(shop?.city) || extractString(shop?.province) || extractString(shop?.location) || extractString(shop?.address) || extractString(p.shopCity);
-
-              return {
-                ...p,
-                shopName: realName || fallbackName,
-                shopLogoUrl: shop?.logoUrl || shop?.logo || shop?.avatar || shop?.photoUrl || p.shopLogoUrl || "",
-                shopIsVerified: shop?.isVerified ?? shop?.verified ?? shop?.is_verified ?? p.shopIsVerified ?? false,
-                shopIsOfficial: shop?.isOfficial ?? shop?.official ?? shop?.is_official ?? p.shopIsOfficial ?? false,
-                shopCity: rawCity,
-              };
-            });
-          }
-        } catch (e) {
-          console.warn("⚠️ Gagal mengambil profil toko dari Firestore:", e);
-        }
-
-        setProducts(rawProducts);
+      if (data.success && Array.isArray(data.data)) {
+        setDigiflazzItems(data.data);
       }
     } catch (err) {
-      console.error("Gagal mengambil produk beranda:", err);
+      console.error("Gagal mengambil katalog DigiFlazz:", err);
     } finally {
-      setIsLoadingProducts(false);
+      setLoading(false);
     }
   };
 
+  // Group SKUs by Brand to show "Game/Provider Cards"
+  const brandCards = useMemo(() => {
+    const groups: Record<string, DigiFlazzBrand> = {};
+    
+    // Filter active items only
+    const activeItems = digiflazzItems.filter(item => item.buyer_product_status && item.seller_product_status);
+
+    activeItems.forEach((item) => {
+      const brandName = item.brand ? item.brand.toUpperCase() : "UNKNOWN";
+      const price = item.price || item.admin || 0;
+
+      if (!groups[brandName]) {
+        groups[brandName] = {
+          brand: brandName,
+          category: item.category || "",
+          minPrice: price,
+          skusCount: 1,
+          cmdType: item.cmd_type || "prepaid"
+        };
+      } else {
+        groups[brandName].skusCount += 1;
+        if (price > 0 && (groups[brandName].minPrice === 0 || price < groups[brandName].minPrice)) {
+          groups[brandName].minPrice = price;
+        }
+      }
+    });
+
+    return Object.values(groups).sort((a, b) => a.brand.localeCompare(b.brand));
+  }, [digiflazzItems]);
+
+  // Apply filters (Category & Search)
+  const filteredBrands = useMemo(() => {
+    return brandCards.filter((b) => {
+      // 1. Search filter
+      const matchesSearch = b.brand.toLowerCase().includes(search.toLowerCase().trim());
+      if (!matchesSearch) return false;
+
+      // 2. Category filter
+      if (selectedCat === "all") return true;
+      const catConfig = TOPUP_CATEGORIES.find(c => c.id === selectedCat);
+      if (catConfig?.match) {
+        return catConfig.match.some(m => b.category.toUpperCase().includes(m));
+      }
+      return true;
+    });
+  }, [brandCards, search, selectedCat]);
+
   if (!mounted) return null;
 
-  const filteredCategories = TOPUP_CATEGORIES.filter(cat => 
-    cat.label.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
-    <main className="flex-1 w-full pt-20 pb-24 md:pb-12 bg-white">
+    <main className="flex-1 w-full pt-20 pb-24 md:pb-12 bg-white font-body">
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-12 lg:px-20 space-y-8">
         
-        {/* Search Header */}
+        {/* Header Section */}
         <section className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
-              <h1 className="text-xl md:text-2xl font-black tracking-tight text-[#212121]">Top Up & Tagihan</h1>
-              <p className="text-xs md:text-sm text-muted-foreground font-medium">Layanan digital lengkap untuk kebutuhan harian Anda.</p>
+              <h1 className="text-xl md:text-2xl font-black tracking-tight text-[#212121]">Top Up & Tagihan DigiFlazz</h1>
+              <p className="text-xs md:text-sm text-muted-foreground font-medium">Isi pulsa, kuota, token PLN, dan top up game favorit Anda secara instan.</p>
             </div>
             <div className="relative w-full md:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input 
-                placeholder="Cari layanan digital..." 
+                placeholder="Cari brand game atau provider..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="h-11 pl-10 rounded-2xl bg-muted/30 border-transparent focus:bg-white focus:border-[#00AA5B] transition-all font-bold text-xs"
@@ -133,137 +149,151 @@ export default function TopUpHubPage() {
           </div>
         </section>
 
-        {/* Categories Grid */}
-        <section className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-6">
-          {filteredCategories.map((cat) => (
-            <Link 
+        {/* Categories Navigation */}
+        <section className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
+          {TOPUP_CATEGORIES.map((cat) => (
+            <button 
               key={cat.id} 
-              href={`/search?q=${encodeURIComponent(cat.label)}`}
-              className="group flex flex-col items-center gap-3 transition-all active:scale-95"
+              onClick={() => setSelectedCat(cat.id)}
+              className={cn(
+                "group flex flex-col items-center gap-2.5 transition-all shrink-0 w-[70px] sm:w-[85px]",
+                selectedCat === cat.id ? "opacity-100" : "opacity-60 hover:opacity-100"
+              )}
             >
               <div className={cn(
-                "w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center border border-border/40 shadow-2xs group-hover:shadow-md group-hover:border-[#00AA5B]/30 transition-all",
-                cat.color
+                "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center border transition-all duration-300 shadow-2xs",
+                selectedCat === cat.id ? "bg-[#00AA5B] border-[#00AA5B] shadow-lg shadow-[#00AA5B]/20 scale-110" : cn("bg-white border-border/60", cat.color)
               )}>
                 <Image 
                   src={cat.icon} 
                   alt={cat.label} 
-                  width={36} 
-                  height={36} 
-                  className="object-contain transition-transform group-hover:scale-110"
+                  width={28} 
+                  height={28} 
+                  className={cn("object-contain transition-transform group-hover:scale-110", selectedCat === cat.id && "brightness-0 invert")}
                 />
               </div>
-              <span className="text-[10px] md:text-[11px] font-black text-[#2E3137] text-center leading-tight">
+              <span className={cn(
+                "text-[9px] sm:text-[10px] font-bold text-center leading-tight whitespace-nowrap",
+                selectedCat === cat.id ? "text-[#00AA5B]" : "text-muted-foreground"
+              )}>
                 {cat.label}
               </span>
-            </Link>
+            </button>
           ))}
         </section>
 
-        {/* Product Card Section */}
-        <section className="space-y-4 pt-4">
+        {/* Brands Grid Section */}
+        <section className="space-y-6 pt-4">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-sm md:text-lg font-black tracking-tight text-[#212121]">Produk Terpopuler</h2>
-            <Link href="/" className="text-xs font-bold text-[#00AA5B] hover:underline">
-              Lihat Semua
-            </Link>
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
+              <h2 className="text-base md:text-lg font-black tracking-tight text-[#212121]">
+                {selectedCat === 'all' ? "Semua Layanan" : `Layanan ${TOPUP_CATEGORIES.find(c => c.id === selectedCat)?.label}`}
+              </h2>
+            </div>
+            <span className="text-[10px] font-bold text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full">
+              {filteredBrands.length} Brand Ditemukan
+            </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
-            {isLoadingProducts ? (
-              Array.from({ length: 6 }).map((_, idx) => (
-                <Card key={idx} className="border-border/80 shadow-2xs rounded-xl overflow-hidden bg-card flex flex-col border-[1px]">
-                  <CardContent className="p-0 flex flex-col h-full">
-                    <Skeleton className="aspect-square w-full rounded-none" />
-                    <div className="p-2 sm:p-2.5 space-y-1.5">
-                      <Skeleton className="h-3 w-3/4 rounded-md" />
-                      <Skeleton className="h-3.5 w-1/2 rounded-md" />
-                      <Skeleton className="h-2.5 w-1/3 rounded-md" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : products.length === 0 ? (
-              <div className="col-span-full py-12 flex flex-col items-center justify-center text-center space-y-3 bg-muted/10 rounded-2xl border border-dashed border-border p-8">
-                <ShoppingBag className="w-10 h-10 text-muted-foreground/50" />
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-foreground">Belum Ada Produk Ditampilkan</h3>
-                  <p className="text-xs text-muted-foreground max-w-sm">
-                    Produk digital yang ditambahkan oleh penjual akan otomatis muncul di sini secara realtime.
-                  </p>
-                </div>
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+              {Array.from({ length: 12 }).map((_, idx) => (
+                <div key={idx} className="aspect-[4/5] rounded-2xl bg-muted/40 animate-pulse border border-border" />
+              ))}
+            </div>
+          ) : filteredBrands.length === 0 ? (
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/5 rounded-3xl border border-dashed border-border/60">
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-border/40">
+                <Search className="w-8 h-8 text-muted-foreground/30" />
               </div>
-            ) : (
-              products.slice(0, 12).map((product) => {
-                const imageUrl = product.images && product.images.length > 0 ? product.images[0].imageUrl : "https://cdn.marketpoint.id/marketpoint.png";
-                const price = Number(product.price || 0);
-                const rating = Number(product.ratingAvg || 5.0).toFixed(1);
-                const soldText = product.salesCount ? `${product.salesCount} terjual` : "0 terjual";
-                const shopName = typeof product.shopName === "string" ? product.shopName : "Toko Seller";
-                const isVerified = Boolean(product.shopIsVerified);
-                const isOfficial = Boolean(product.shopIsOfficial);
-
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-foreground">Brand Tidak Ditemukan</h3>
+                <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                  Maaf, tidak ada layanan DigiFlazz yang sesuai dengan pencarian atau kategori Anda saat ini.
+                </p>
+              </div>
+              <Button 
+                onClick={() => {setSearch(""); setSelectedCat("all");}}
+                variant="outline" 
+                className="h-9 px-6 rounded-xl text-xs font-bold border-border"
+              >
+                Reset Filter
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+              {filteredBrands.map((b) => {
+                // Get visual style from Firestore if available
+                const visual = visuals?.brands?.[b.brand];
+                const bgStyle = visual?.bgGradient || "linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)";
+                const isDarkBg = visual?.bgGradient && !visual.bgGradient.includes("#FFFFFF");
+                
                 return (
-                  <Link key={product.id} href={`/${product.shopSlug || 'marketpoint'}/${product.slug || product.id}`}>
-                    <Card className="group border-border/70 shadow-2xs rounded-xl overflow-hidden bg-card hover:shadow-md transition-all duration-300 flex flex-col cursor-pointer border-[1px] h-full">
-                      <CardContent className="p-0 flex flex-col h-full">
-                        <div className="relative aspect-square w-full bg-muted/20 overflow-hidden">
-                          <Image
-                            src={imageUrl}
-                            alt={product.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
+                  <Link key={b.brand} href={`/search?q=${encodeURIComponent(b.brand)}`}>
+                    <Card 
+                      className="group relative h-full rounded-2xl overflow-hidden border-border/60 bg-white hover:shadow-xl hover:border-[#00AA5B]/30 transition-all duration-300 cursor-pointer flex flex-col shadow-2xs border-[1px]"
+                    >
+                      {/* Top Visual Header */}
+                      <div 
+                        className="relative aspect-[4/3] w-full flex items-center justify-center overflow-hidden"
+                        style={{ background: bgStyle }}
+                      >
+                        {/* If there's a background image in settings */}
+                        {visual?.bgImageUrl && (
+                          <Image src={visual.bgImageUrl} alt="" fill className="object-cover opacity-60 group-hover:scale-110 transition-transform duration-500" />
+                        )}
+                        
+                        {/* Brand Icon/Logo */}
+                        <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center drop-shadow-lg transition-transform group-hover:scale-110 duration-300">
+                          {visual?.iconUrl ? (
+                            <img src={visual.iconUrl} alt={b.brand} className="w-full h-full object-contain filter drop-shadow-sm" />
+                          ) : (
+                            <div className="w-full h-full rounded-2xl bg-white/80 backdrop-blur-sm flex items-center justify-center border border-border/40">
+                               <Gamepad2 className="w-6 h-6 text-muted-foreground/50" />
+                            </div>
+                          )}
                         </div>
 
-                        <div className="p-2 sm:p-2.5 md:p-3 space-y-1.5 flex-1 flex flex-col justify-between">
-                          <div className="space-y-1">
-                            <h4 className="text-[10px] sm:text-xs font-medium text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">
-                              {product.title}
-                            </h4>
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-[#000000] text-xs sm:text-sm font-bold">
-                                Rp {price.toLocaleString('id-ID')}
-                              </span>
-                            </div>
-                          </div>
+                        {/* Badge for Type or Category */}
+                        <div className="absolute top-2 right-2">
+                           <Badge className="bg-white/90 backdrop-blur-sm text-slate-900 border-none font-black text-[8px] px-1.5 py-0.5 rounded shadow-xs uppercase">
+                              {b.category.split(' ')[0]}
+                           </Badge>
+                        </div>
+                      </div>
 
-                          <div className="space-y-1 pt-1">
-                            <div className="flex items-center gap-1">
-                              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#FFC400] fill-[#FFC400]" />
-                              <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground">
-                                {rating} <span className="opacity-40">|</span> {soldText}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <div className="flex items-center gap-1 min-w-0">
-                                <div className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] bg-[#00AA5B] rounded-xs flex items-center justify-center shrink-0">
-                                  <Store className="w-2.5 h-2.5 text-white" />
-                                </div>
-                                <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground truncate max-w-[60px] sm:max-w-[90px]">
-                                  {shopName}
-                                </span>
-                                <div className="flex items-center gap-0.5 shrink-0">
-                                  {isVerified && (
-                                    /* eslint-disable-next-line @next/next/no-img-element */
-                                    <img src="/assets/badge/verified.png" alt="Verified" className="w-[14px] h-[14px] sm:w-[17px] sm:h-[17px] object-contain shrink-0" />
-                                  )}
-                                  {isOfficial && (
-                                    /* eslint-disable-next-line @next/next/no-img-element */
-                                    <img src="/assets/badge/officials.png" alt="Official" className="w-[14px] h-[14px] sm:w-[17px] sm:h-[17px] object-contain shrink-0" />
-                                  )}
-                                </div>
-                              </div>
-                            </div>
+                      {/* Info Body */}
+                      <CardContent className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2">
+                        <div className="space-y-0.5">
+                          <h4 className="text-[11px] sm:text-[13px] font-black text-[#212121] leading-tight truncate group-hover:text-[#00AA5B] transition-colors">
+                            {b.brand}
+                          </h4>
+                          <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                            {b.cmdType === 'pasca' ? 'Pascabayar' : 'Prabayar'}
+                          </p>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="flex items-baseline gap-1">
+                             <span className="text-[9px] font-bold text-muted-foreground">Mulai</span>
+                             <span className="text-[11px] sm:text-xs font-black text-[#00AA5B]">
+                                Rp {b.minPrice.toLocaleString('id-ID')}
+                             </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground border-t border-border/40 pt-2">
+                             <Layers className="w-3 h-3 text-[#8B5CF6]" />
+                             <span>{b.skusCount} Pilihan Produk</span>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
                   </Link>
                 );
-              })
-            )}
-          </div>
+              })}
+            </div>
+          )}
         </section>
 
         {/* Security & Reliability Info */}
@@ -273,9 +303,9 @@ export default function TopUpHubPage() {
                  <ShieldCheck className="w-8 h-8 md:w-10 md:h-10 text-[#00AA5B]" />
               </div>
               <div className="space-y-2 flex-1">
-                 <h3 className="text-base md:text-lg font-black text-[#2E3137]">Transaksi Aman & Instan 24 Jam</h3>
+                 <h3 className="text-base md:text-lg font-black text-[#2E3137]">Sistem Top Up Otomatis 24 Jam</h3>
                  <p className="text-[11px] md:text-xs text-muted-foreground font-medium leading-relaxed max-w-2xl">
-                    Semua transaksi Top Up dan Tagihan di MarketPoint diproses secara otomatis dalam hitungan detik. Saldo Anda akan terlindungi oleh sistem rekber kami yang menjamin dana kembali jika transaksi gagal.
+                    Semua transaksi di hub Top Up MarketPoint terhubung langsung ke sistem DigiFlazz yang menjamin kecepatan pengiriman saldo dan token dalam hitungan detik. Keamanan dana Anda dijamin 100% oleh sistem verifikasi kami.
                  </p>
               </div>
               <Button variant="outline" className="h-10 px-8 rounded-xl border-border bg-white text-xs font-bold hover:bg-white hover:text-[#00AA5B] hover:border-[#00AA5B] transition-all shrink-0">
