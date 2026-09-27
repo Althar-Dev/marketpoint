@@ -265,9 +265,8 @@ export default function MarketPage() {
           </div>
         </section>
 
-        {/* Mobile Menu Row (Only on mobile < 768px, single row with icon-aligned Chevrons) */}
+        {/* Mobile Menu Row (Directly to /topup hub) */}
         <section className="md:hidden relative py-3 w-full bg-white border-b border-border/40 overflow-hidden group">
-          {/* Chevron Left Button (Shows when scrolled to the right) */}
           {canScrollMobileLeft && (
             <button
               onClick={() => scrollMobileMenu("left")}
@@ -286,7 +285,7 @@ export default function MarketPage() {
             {MOBILE_MENU_ITEMS.map((item, idx) => (
               <Link
                 key={idx}
-                href={`/search?q=${encodeURIComponent(item.label)}`}
+                href="/topup"
                 className="flex flex-col items-center gap-1.5 group/item transition-transform active:scale-95 py-1 shrink-0 w-[68px]"
               >
                 <div className="w-11 h-11 relative flex items-center justify-center bg-muted/20 rounded-xl p-1.5 border border-border/40 shadow-2xs group-hover/item:bg-[#00AA5B]/10 transition-colors">
@@ -303,11 +302,9 @@ export default function MarketPage() {
                 </span>
               </Link>
             ))}
-            {/* Buffer space */}
             <div className="w-4 shrink-0 h-1" />
           </div>
 
-          {/* Chevron Right Button (Shows when at the beginning or middle) */}
           {canScrollMobileRight && (
             <button
               onClick={() => scrollMobileMenu("right")}
@@ -316,14 +313,6 @@ export default function MarketPage() {
             >
               <ChevronRight className="w-4 h-4" />
             </button>
-          )}
-
-          {/* Dynamic Fade Mask Hints */}
-          {canScrollMobileLeft && (
-            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none z-10" />
-          )}
-          {canScrollMobileRight && (
-            <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none z-10" />
           )}
         </section>
 
@@ -361,7 +350,7 @@ export default function MarketPage() {
               <div className="lg:col-span-6 flex flex-col space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold tracking-tight">Top Up & Tagihan</h2>
-                  <Link href="#" className="text-xs font-bold text-[#00AA5B] hover:underline flex items-center gap-1">
+                  <Link href="/topup" className="text-xs font-bold text-[#00AA5B] hover:underline flex items-center gap-1">
                     Lihat Semua
                   </Link>
                 </div>
@@ -424,7 +413,7 @@ export default function MarketPage() {
               {QUICK_CHIPS.map((chip, idx) => (
                 <Link
                   key={idx}
-                  href={chip.label === "Kategori" ? "/search" : `/search?q=${encodeURIComponent(chip.label)}`}
+                  href={chip.label === "Kategori" ? "/topup" : `/search?q=${encodeURIComponent(chip.label)}`}
                   className="flex items-center gap-2.5 px-3.5 h-11 rounded-xl border border-border bg-white hover:border-[#00AA5B]/30 hover:bg-[#00AA5B]/5 transition-all shrink-0 group shadow-2xs"
                 >
                   <Image
