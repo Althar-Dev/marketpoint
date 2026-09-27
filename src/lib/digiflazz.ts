@@ -72,16 +72,26 @@ export async function checkDigiFlazzBalance(customConfig?: { username: string; a
 
     const result = await response.json();
 
-    if (result.data && typeof result.data.deposit === "number") {
+    const rawDeposit = result.data?.deposit;
+    const parsedDeposit = typeof rawDeposit === "number" ? rawDeposit : Number(rawDeposit);
+
+    if (result.data && !isNaN(parsedDeposit) && rawDeposit !== undefined && rawDeposit !== null) {
       return {
         success: true,
         message: "Berhasil mengambil saldo DigiFlazz",
-        deposit: result.data.deposit,
+        deposit: parsedDeposit,
       };
     } else {
+      const errMsg =
+        result.data?.message ||
+        result.message ||
+        (result.data?.rc ? `Kode error: ${result.data.rc}` : null) ||
+        (result.rc ? `Kode error: ${result.rc}` : null) ||
+        "Gagal cek saldo DigiFlazz";
+
       return {
         success: false,
-        message: result.message || result.rc || "Gagal cek saldo DigiFlazz",
+        message: errMsg,
       };
     }
   } catch (err: any) {
@@ -92,9 +102,18 @@ export async function checkDigiFlazzBalance(customConfig?: { username: string; a
   }
 }
 
-export async function getDigiFlazzPriceList(): Promise<DigiFlazzPriceListItem[]> {
-  const settings = await getPlatformSettings();
-  const { username, apiKey } = settings.digiflazz;
+export async function getDigiFlazzPriceList(
+  cmd: "prepaid" | "pasca" = "prepaid",
+  customConfig?: { username: string; apiKey: string }
+): Promise<DigiFlazzPriceListItem[]> {
+  let username = customConfig?.username;
+  let apiKey = customConfig?.apiKey;
+
+  if (!username || !apiKey) {
+    const settings = await getPlatformSettings();
+    username = settings.digiflazz.username;
+    apiKey = settings.digiflazz.apiKey;
+  }
 
   if (!username || !apiKey) {
     throw new Error("Username dan API Key DigiFlazz belum diatur.");
@@ -108,7 +127,7 @@ export async function getDigiFlazzPriceList(): Promise<DigiFlazzPriceListItem[]>
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      cmd: "prepaid",
+      cmd,
       username,
       sign,
     }),
@@ -118,6 +137,12 @@ export async function getDigiFlazzPriceList(): Promise<DigiFlazzPriceListItem[]>
   if (result.data && Array.isArray(result.data)) {
     return result.data;
   }
+
+  const errMsg = result.data?.message || result.message || (result.data?.rc ? `Response code: ${result.data.rc}` : null);
+  if (errMsg) {
+    throw new Error(`DigiFlazz API (${cmd}): ${errMsg}`);
+  }
+
   return [];
 }
 

@@ -8,7 +8,7 @@ export interface CommissionSettings {
 }
 
 export interface DigiFlazzSettings {
-  mode: "development" | "production";
+  mode: "production" | string;
   username: string;
   apiKey: string;
   webhookSecret: string;
@@ -28,7 +28,7 @@ const DEFAULT_SETTINGS: PlatformSettings = {
     prime: 0.0,
   },
   digiflazz: {
-    mode: "development",
+    mode: "production",
     username: process.env.DIGIFLAZZ_USERNAME || "",
     apiKey: process.env.DIGIFLAZZ_API_KEY || "",
     webhookSecret: process.env.DIGIFLAZZ_WEBHOOK_SECRET || "",
@@ -55,7 +55,7 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
         prime: parseFloat(map.commission_prime ?? "0.0") || 0.0,
       },
       digiflazz: {
-        mode: (map.digiflazz_mode as any) || "development",
+        mode: map.digiflazz_mode || "production",
         username: map.digiflazz_username || process.env.DIGIFLAZZ_USERNAME || "",
         apiKey: map.digiflazz_api_key || process.env.DIGIFLAZZ_API_KEY || "",
         webhookSecret: map.digiflazz_webhook_secret || process.env.DIGIFLAZZ_WEBHOOK_SECRET || "",

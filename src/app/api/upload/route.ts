@@ -15,18 +15,26 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
-    const type = formData.get('type') as string; // 'logo', 'banner', or 'avatar'
+    const type = (formData.get('type') as string) || '';
+    const folderParam = (formData.get('folder') as string) || '';
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Determine target folder based on type
+    // Determine target folder based on folderParam or type
     let folder = 'products';
-    if (type === 'banner') folder = 'banner';
-    if (type === 'avatar') folder = 'avatar';
-    if (type === 'logo') folder = 'logo';
-    if (type === 'products' || type === 'product') folder = 'products';
+    if (folderParam) {
+      folder = folderParam.replace(/^\/+|\/+$/g, '');
+    } else if (type.startsWith('gallery/')) {
+      folder = type;
+    } else if (type === 'badge') folder = 'gallery/badge';
+    else if (type === 'icon') folder = 'gallery/icon';
+    else if (type === 'background') folder = 'gallery/background';
+    else if (type === 'banner') folder = 'gallery/banner';
+    else if (type === 'avatar') folder = 'avatar';
+    else if (type === 'logo') folder = 'logo';
+    else if (type === 'products' || type === 'product') folder = 'products';
     
     const extension = file.name.split('.').pop();
     const uniqueId = crypto.randomUUID();
@@ -45,6 +53,25 @@ export async function POST(req: Request) {
 
     // Return the public URL
     const publicUrl = `${process.env.R2_PUBLIC_URL}/${filename}`;
+
+    // Automatically record item into SQLite database/gallery.db if it's a gallery upload
+    if (folder.startsWith('gallery/')) {
+      const galleryCategory = folder.split('/')[1] || type || 'general';
+      try {
+        const { addGalleryItem } = await import('@/lib/database/gallery-db');
+        await addGalleryItem({
+          name: file.name,
+          url: publicUrl,
+          category: galleryCategory,
+          folder: folder,
+          size: file.size,
+          type: file.type,
+        });
+      } catch (dbErr) {
+        console.warn('Failed to record upload in database/gallery.db:', dbErr);
+      }
+    }
+
     return NextResponse.json({ url: publicUrl });
   } catch (error: any) {
     console.error('R2 Upload Error:', error);

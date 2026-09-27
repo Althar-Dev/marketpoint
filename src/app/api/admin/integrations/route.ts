@@ -5,7 +5,7 @@ import {
   updateDigiFlazzSettings,
 } from "@/lib/database/settings";
 import { testXenditConnection } from "@/lib/xendit";
-import { checkDigiFlazzBalance } from "@/lib/digiflazz";
+import { checkDigiFlazzBalance, getDigiFlazzPriceList } from "@/lib/digiflazz";
 
 export async function GET() {
   try {
@@ -75,6 +75,16 @@ export async function POST(req: Request) {
       const { username, apiKey } = body;
       const result = await checkDigiFlazzBalance(username && apiKey ? { username, apiKey } : undefined);
       return NextResponse.json(result);
+    }
+
+    if (action === "get_digiflazz_pricelist") {
+      const { username, apiKey, cmd } = body;
+      const pricelist = await getDigiFlazzPriceList(cmd || "prepaid", username && apiKey ? { username, apiKey } : undefined);
+      return NextResponse.json({
+        success: true,
+        count: pricelist.length,
+        data: pricelist,
+      });
     }
 
     return NextResponse.json({ error: "Aksi tidak diketahui" }, { status: 400 });

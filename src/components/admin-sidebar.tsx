@@ -20,7 +20,13 @@ import {
   Coins,
   MessageSquare,
   CreditCard,
-  Zap
+  Zap,
+  Layers,
+  Settings2,
+  Award,
+  Image as ImageIcon,
+  Sparkles,
+  Palette
 } from "lucide-react";
 import {
   Sidebar,
@@ -57,6 +63,7 @@ export function AdminSidebar() {
         { label: "Manajemen User", icon: Users, href: "/admin/users" },
         { label: "Daftar Toko", icon: Store, href: "/admin/shops" },
         { label: "Katalog Produk", icon: Database, href: "/admin/products" },
+        { label: "Resolusi Dispute", icon: ShieldAlert, href: "/admin/disputes" },
       ]
     },
     {
@@ -65,8 +72,23 @@ export function AdminSidebar() {
         { label: "Semua Transaksi", icon: ShoppingBag, href: "/admin/transactions" },
         { label: "Komisi Penjual", icon: Percent, href: "/admin/commissions" },
         { label: "Xendit", icon: CreditCard, href: "/admin/xendit" },
-        { label: "DigiFlazz", icon: Zap, href: "/admin/digiflazz" },
-        { label: "Resolusi Dispute", icon: ShieldAlert, href: "/admin/disputes" },
+      ]
+    },
+    {
+      label: "DigiFlazz",
+      items: [
+        { label: "Catalog", icon: Layers, href: "/admin/digiflazz/catalog" },
+        { label: "Config", icon: Settings2, href: "/admin/digiflazz/config" },
+        { label: "Icon & Background", icon: Palette, href: "/admin/digiflazz/visuals" },
+      ]
+    },
+    {
+      label: "Gallery",
+      items: [
+        { label: "Badge", icon: Award, href: "/admin/gallery/badge" },
+        { label: "Banner", icon: ImageIcon, href: "/admin/gallery/banner" },
+        { label: "Icon", icon: Sparkles, href: "/admin/gallery/icon" },
+        { label: "Background", icon: Palette, href: "/admin/gallery/background" },
       ]
     },
     {
@@ -103,7 +125,8 @@ export function AdminSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
-                  const isActive = pathname === item.href;
+                  const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
+
                   return (
                     <SidebarMenuItem key={item.label}>
                       <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>

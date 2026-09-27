@@ -92,6 +92,10 @@
     @apply border-border;
   }
 
+  div:focus, div:focus-visible, table:focus, table:focus-visible, section:focus, section:focus-visible, main:focus, main:focus-visible {
+    outline: none !important;
+  }
+
   html {
     @apply h-full;
     touch-action: pan-x pan-y;
