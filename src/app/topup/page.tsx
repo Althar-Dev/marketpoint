@@ -247,13 +247,6 @@ export default function TopUpHubPage() {
                              <Gamepad2 className="w-10 h-10 text-muted-foreground/20" />
                            </div>
                         )}
-                        
-                        {/* Status Badge - Top Right */}
-                        <div className="absolute top-2.5 right-2.5 z-20">
-                           <span className="bg-[#4B5563] text-white font-black text-[8px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                              {b.cmdType}
-                           </span>
-                        </div>
                       </div>
 
                       {/* Info Panel - Theme Compliant (White Background) */}
