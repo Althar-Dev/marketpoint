@@ -19,6 +19,7 @@ const VALID_ADMIN_PATHS = new Set([
   "/admin/digiflazz/markup",
   "/admin/digiflazz/visuals",
   "/admin/disputes",
+  "/admin/email",
   "/admin/gallery",
   "/admin/gallery/background",
   "/admin/gallery/badge",

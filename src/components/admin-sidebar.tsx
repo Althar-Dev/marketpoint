@@ -27,7 +27,8 @@ import {
   Image as ImageIcon,
   Sparkles,
   Palette,
-  TrendingUp
+  TrendingUp,
+  Mail
 } from "lucide-react";
 import {
   Sidebar,
@@ -102,6 +103,7 @@ export function AdminSidebar() {
     {
       label: "System",
       items: [
+        { label: "Email Business", icon: Mail, href: "/admin/email" },
         { label: "Bot WhatsApp", icon: MessageSquare, href: "/admin/wa-bot" },
         { label: "Pengaturan", icon: Settings, href: "/admin/settings" },
       ]
