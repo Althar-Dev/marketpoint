@@ -27,7 +27,8 @@ import {
   Clock,
   ArrowRight,
   LayoutGrid,
-  Download
+  Download,
+  ArrowLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,10 +40,10 @@ const ACCOUNTS = [
 ];
 
 const MOCK_EMAILS = [
-  { id: "1", from: "billing@marketpoint.id", to: "admin@marketpoint.id", subject: "Laporan Pendapatan Mingguan", preview: "Halo Admin, berikut kami lampirkan rekapitulasi...", date: "09:15", isUnread: true, isStarred: true },
-  { id: "2", from: "system@aws.com", to: "admin@marketpoint.id", subject: "[Alert] CPU Usage High - Production Server", preview: "Your instance i-09823129837 is experiencing high CPU...", date: "08:45", isUnread: false, isStarred: false },
-  { id: "3", from: "no-reply@xendit.co", to: "billing@marketpoint.id", subject: "Invoice PAID: INV-990120", preview: "Pembayaran untuk invoice tersebut telah berhasil...", date: "Kemarin", isUnread: false, isStarred: true },
-  { id: "4", from: "noreply@digiflazz.com", to: "admin@marketpoint.id", subject: "Pembaruan Price List - 10 Oktober 2026", preview: "Terdapat perubahan harga pada beberapa SKU provider...", date: "Kemarin", isUnread: true, isStarred: false },
+  { id: "1", from: "billing@marketpoint.id", to: "admin@marketpoint.id", subject: "Laporan Pendapatan Mingguan", preview: "Halo Admin, berikut kami lampirkan rekapitulasi...", date: "09:15", isUnread: true, isStarred: true, content: "Halo Admin,\n\nSistem monitoring kami mendeteksi adanya lonjakan aktivitas pada node server utama. Mohon lakukan pengecekan pada dashboard infrastruktur untuk memastikan ketersediaan resource tetap dalam batas aman.\n\nRekapitulasi penggunaan bandwidth dan CPU terlampir pada dokumen di bawah ini. Harap segera berikan konfirmasi jika diperlukan penambahan instance baru." },
+  { id: "2", from: "system@aws.com", to: "admin@marketpoint.id", subject: "[Alert] CPU Usage High - Production Server", preview: "Your instance i-09823129837 is experiencing high CPU...", date: "08:45", isUnread: false, isStarred: false, content: "Warning: High CPU utilization detected on instance i-09823129837. Performance may be degraded. Please review the metrics in the CloudWatch dashboard." },
+  { id: "3", from: "no-reply@xendit.co", to: "billing@marketpoint.id", subject: "Invoice PAID: INV-990120", preview: "Pembayaran untuk invoice tersebut telah berhasil...", date: "Kemarin", isUnread: false, isStarred: true, content: "Pembayaran untuk invoice tersebut telah berhasil diverifikasi oleh sistem Xendit. Dana telah diteruskan ke saldo toko terkait." },
+  { id: "4", from: "noreply@digiflazz.com", to: "admin@marketpoint.id", subject: "Pembaruan Price List - 10 Oktober 2026", preview: "Terdapat perubahan harga pada beberapa SKU provider...", date: "Kemarin", isUnread: true, isStarred: false, content: "Terdapat perubahan harga pada beberapa SKU provider DigiFlazz. Mohon periksa kembali pengaturan markup Anda untuk memastikan margin tetap terjaga." },
 ];
 
 export default function EmailManagementPage() {
@@ -51,8 +52,19 @@ export default function EmailManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"inbox" | "accounts">("inbox");
 
+  const handleFolderChange = (folder: string) => {
+    setViewMode("inbox");
+    setActiveFolder(folder);
+    setSelectedEmail(null);
+  };
+
+  const handleAccountView = () => {
+    setViewMode("accounts");
+    setSelectedEmail(null);
+  };
+
   return (
-    <div className="flex flex-1 overflow-hidden h-full">
+    <div className="flex flex-1 overflow-hidden h-full bg-white">
       {/* 1. Sidebar: Folder & Account Management */}
       <aside className="w-64 border-r border-border bg-slate-50/50 flex flex-col shrink-0">
         <div className="p-4 space-y-4">
@@ -65,7 +77,7 @@ export default function EmailManagementPage() {
 
           <div className="space-y-1">
             <button 
-              onClick={() => { setViewMode("inbox"); setActiveFolder("inbox"); }}
+              onClick={() => handleFolderChange("inbox")}
               className={cn(
                 "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all",
                 viewMode === "inbox" && activeFolder === "inbox" ? "bg-white text-[#00AA5B] shadow-sm border border-border" : "text-muted-foreground hover:bg-slate-100"
@@ -77,7 +89,7 @@ export default function EmailManagementPage() {
               <span className="text-[10px] opacity-60">12</span>
             </button>
             <button 
-              onClick={() => { setViewMode("inbox"); setActiveFolder("sent"); }}
+              onClick={() => handleFolderChange("sent")}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all",
                 viewMode === "inbox" && activeFolder === "sent" ? "bg-white text-[#00AA5B] shadow-sm border border-border" : "text-muted-foreground hover:bg-slate-100"
@@ -86,7 +98,7 @@ export default function EmailManagementPage() {
               <Send className="w-4 h-4" /> Terkirim
             </button>
             <button 
-              onClick={() => { setViewMode("inbox"); setActiveFolder("drafts"); }}
+              onClick={() => handleFolderChange("drafts")}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all",
                 viewMode === "inbox" && activeFolder === "drafts" ? "bg-white text-[#00AA5B] shadow-sm border border-border" : "text-muted-foreground hover:bg-slate-100"
@@ -103,7 +115,7 @@ export default function EmailManagementPage() {
           <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest px-1">Infrastructure</p>
           <div className="space-y-1">
             <button 
-              onClick={() => setViewMode("accounts")}
+              onClick={handleAccountView}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all",
                 viewMode === "accounts" ? "bg-white text-[#00AA5B] shadow-sm border border-border" : "text-muted-foreground hover:bg-slate-100"
@@ -141,118 +153,57 @@ export default function EmailManagementPage() {
         </div>
       </aside>
 
-      {/* 2. Middle: List View */}
-      <section className="flex-1 flex flex-col min-w-0 border-r border-border bg-white">
-        <div className="h-14 px-4 border-b border-border flex items-center justify-between shrink-0">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input 
-              placeholder="Cari dalam kotak masuk..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8.5 pl-9 rounded-xl bg-slate-50 border-border text-[11px] font-medium focus:bg-white transition-all" 
-            />
-          </div>
-          <div className="flex items-center gap-1.5 ml-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/50">
-              <RefreshCw className="w-3.5 h-3.5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/50">
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </div>
-
-        {viewMode === "inbox" ? (
-          <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-border/40">
-            {MOCK_EMAILS.map((email) => (
-              <div 
-                key={email.id}
-                onClick={() => setSelectedEmail(email)}
-                className={cn(
-                  "p-5 cursor-pointer transition-all hover:bg-slate-50 relative group",
-                  selectedEmail?.id === email.id ? "bg-[#00AA5B]/5 shadow-inner after:absolute after:left-0 after:top-0 after:bottom-0 after:w-1 after:bg-[#00AA5B]" : "",
-                  email.isUnread && "bg-emerald-50/20"
-                )}
-              >
-                <div className="flex justify-between items-start gap-2 mb-1.5">
-                  <div className="flex items-center gap-2 min-w-0">
-                     <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", email.isUnread ? "bg-[#00AA5B]" : "bg-transparent")} />
-                     <span className={cn("text-xs truncate font-bold uppercase tracking-wide", email.isUnread ? "text-slate-950" : "text-slate-500")}>
-                       {email.from.split('@')[0]}
-                     </span>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground shrink-0 font-bold">{email.date}</span>
-                </div>
-                <h4 className={cn(
-                  "text-[12px] mb-1 line-clamp-1 leading-snug",
-                  email.isUnread ? "font-black text-slate-900" : "font-bold text-slate-700"
-                )}>
-                  {email.subject}
-                </h4>
-                <p className="text-[11px] text-muted-foreground/80 line-clamp-1 font-medium">{email.preview}</p>
-                
-                <div className="absolute right-4 bottom-5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {email.isStarred && <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex-1 overflow-y-auto p-5 space-y-5 no-scrollbar bg-slate-50/30">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <h3 className="text-sm font-black text-slate-900">Akun Email Bisnis</h3>
-                <p className="text-[10px] text-muted-foreground font-medium">Domain utama @marketpoint.id</p>
-              </div>
-              <Button size="sm" className="h-8 text-[11px] font-black gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 shadow-md">
-                <Plus className="w-3.5 h-3.5" /> Akun Baru
-              </Button>
+      {/* 2. Main Content Area: Responsive between List and Detail */}
+      <section className="flex-1 flex flex-col min-w-0 bg-white">
+        {viewMode === "accounts" ? (
+          /* Tampilan Manajemen Akun */
+          <div className="flex flex-col h-full animate-in fade-in duration-300">
+            <div className="h-14 px-6 border-b border-border flex items-center justify-between bg-white shrink-0">
+               <h3 className="text-sm font-black text-slate-900">Manajemen Akun Email Bisnis</h3>
+               <Button size="sm" className="h-8 text-[11px] font-black gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 shadow-md">
+                 <Plus className="w-3.5 h-3.5" /> Akun Baru
+               </Button>
             </div>
-            
-            <div className="grid gap-3">
-              {ACCOUNTS.map((acc) => (
-                <div key={acc.email} className="p-4 rounded-2xl border border-border/80 bg-white flex items-center justify-between group hover:border-[#00AA5B]/40 hover:shadow-sm transition-all cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-green-50 text-[#00AA5B] flex items-center justify-center font-black text-sm border border-green-100">
-                      {acc.email.substring(0, 1).toUpperCase()}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {ACCOUNTS.map((acc) => (
+                  <div key={acc.email} className="p-4 rounded-2xl border border-border/80 bg-white flex items-center justify-between group hover:border-[#00AA5B]/40 hover:shadow-sm transition-all cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-xl bg-green-50 text-[#00AA5B] flex items-center justify-center font-black text-sm border border-green-100">
+                        {acc.email.substring(0, 1).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-[12px] font-black text-slate-900">{acc.email}</p>
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">{acc.name} • {acc.role}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[12px] font-black text-slate-900">{acc.email}</p>
-                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">{acc.name} • {acc.role}</p>
-                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-all" />
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="hidden sm:block text-right">
-                       <p className="text-[10px] font-bold text-slate-700">{acc.usage} / {acc.quota}</p>
-                       <div className="w-16 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                          <div className="h-full bg-[#00AA5B] w-[40%]" />
-                       </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                  </div>
-                </div>
-              ))}
+                ))}
+               </div>
             </div>
           </div>
-        )}
-      </section>
-
-      {/* 3. Right: Email Viewer */}
-      <section className="hidden lg:flex w-[480px] xl:w-[680px] flex-col bg-slate-50/20 overflow-hidden">
-        {selectedEmail ? (
+        ) : selectedEmail ? (
+          /* Tampilan Detail Email (Layar Penuh) */
           <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="h-14 px-6 border-b border-border flex items-center justify-between bg-white shrink-0 shadow-2xs">
+            {/* Header Action Bar with Back Button */}
+            <div className="h-14 px-4 sm:px-6 border-b border-border flex items-center justify-between bg-white shrink-0 shadow-2xs">
               <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setSelectedEmail(null)}
+                  className="h-8.5 rounded-xl text-slate-700 hover:bg-slate-100 font-bold text-xs gap-1"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Kembali</span>
+                </Button>
+                <div className="h-4 w-px bg-border mx-1" />
                 <Button variant="ghost" size="icon" className="h-8.5 w-8.5 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8.5 w-8.5 rounded-xl text-muted-foreground hover:bg-muted transition-colors">
-                  <AlertCircle className="w-4 h-4" />
-                </Button>
-                <div className="h-4 w-px bg-border mx-1" />
                 <Button variant="ghost" size="icon" className="h-8.5 w-8.5 rounded-xl text-muted-foreground hover:bg-muted">
-                  <Star className="w-4 h-4" />
+                  <Star className={cn("w-4 h-4", selectedEmail.isStarred ? "text-amber-400 fill-amber-400" : "")} />
                 </Button>
               </div>
               <div className="flex items-center gap-2">
@@ -265,8 +216,8 @@ export default function EmailManagementPage() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-white no-scrollbar">
-              <div className="space-y-6">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-white no-scrollbar">
+              <div className="max-w-4xl mx-auto space-y-6">
                 <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">
                   {selectedEmail.subject}
                 </h2>
@@ -288,62 +239,94 @@ export default function EmailManagementPage() {
                     </span>
                   </div>
                 </div>
-              </div>
 
-              <div className="prose prose-slate max-w-none text-sm leading-relaxed text-slate-700 font-medium space-y-5">
-                <p>Halo Admin,</p>
-                <p>
-                  Sistem monitoring kami mendeteksi adanya lonjakan aktivitas pada node server utama. Mohon lakukan pengecekan pada dashboard infrastruktur untuk memastikan ketersediaan resource tetap dalam batas aman.
-                </p>
-                <p>
-                  Rekapitulasi penggunaan bandwidth dan CPU terlampir pada dokumen di bawah ini. Harap segera berikan konfirmasi jika diperlukan penambahan instance baru.
-                </p>
-                
-                <div className="p-4 rounded-2xl border border-border bg-slate-50 flex items-center justify-between group hover:border-[#00AA5B]/40 hover:bg-white transition-all cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-white border border-border flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-                      <FileText className="w-6 h-6 text-blue-600" />
+                <div className="prose prose-slate max-w-none text-sm leading-relaxed text-slate-700 font-medium space-y-5">
+                  <p className="whitespace-pre-line">{selectedEmail.content}</p>
+                  
+                  <div className="p-4 rounded-2xl border border-border bg-slate-50 flex items-center justify-between group hover:border-[#00AA5B]/40 hover:bg-white transition-all cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-xl bg-white border border-border flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                        <FileText className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-[12px] font-black text-slate-900">attachment_document.pdf</p>
+                        <p className="text-[10px] text-muted-foreground font-bold">2.4 MB • PDF Document</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[12px] font-black text-slate-900">server_usage_report.pdf</p>
-                      <p className="text-[10px] text-muted-foreground font-bold">2.4 MB • PDF Document</p>
-                    </div>
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-[#00AA5B] hover:bg-[#00AA5B]/10">
+                      <Download className="w-5 h-5" />
+                    </Button>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-[#00AA5B] hover:bg-[#00AA5B]/10">
-                    <Download className="w-5 h-5" />
-                  </Button>
-                </div>
 
-                <p className="pt-4 border-t border-border/40">Terima kasih,<br/><span className="font-black text-slate-900 uppercase tracking-wide">System Monitoring Team</span></p>
+                  <p className="pt-4 border-t border-border/40">Terima kasih,<br/><span className="font-black text-slate-900 uppercase tracking-wide">System Team</span></p>
+                </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-6">
-            <div className="h-24 w-24 rounded-[2.5rem] bg-white border border-border/60 flex items-center justify-center shadow-xl shadow-slate-200/50">
-              <Mail className="w-12 h-12 text-slate-300" />
+          /* Tampilan Daftar Email (Layar Penuh) */
+          <div className="flex flex-col h-full animate-in fade-in duration-300">
+            <div className="h-14 px-4 border-b border-border flex items-center justify-between shrink-0 bg-white">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input 
+                  placeholder="Cari dalam kotak masuk..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8.5 pl-9 rounded-xl bg-slate-50 border-border text-[11px] font-medium focus:bg-white transition-all" 
+                />
+              </div>
+              <div className="flex items-center gap-1.5 ml-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/50">
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/50">
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             </div>
-            <div className="space-y-2">
-              <h3 className="text-base font-black text-slate-900">Pilih pesan untuk dibaca</h3>
-              <p className="text-[11px] text-muted-foreground max-w-[280px] mx-auto leading-relaxed font-bold uppercase tracking-wider">
-                Safe Communication Suite @marketpoint.id
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 pt-4 w-full max-w-sm">
-              <Card className="p-4 bg-white border-border/60 shadow-none rounded-2xl text-left space-y-2 group hover:border-[#00AA5B]/40 transition-colors">
-                <ShieldCheck className="w-5 h-5 text-[#00AA5B]" />
-                <div>
-                  <p className="text-[11px] font-black">Secure Mail</p>
-                  <p className="text-[9px] text-muted-foreground leading-tight font-medium">E2E Encryption aktif pada seluruh percakapan.</p>
+
+            <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-border/40">
+              {MOCK_EMAILS.filter(e => e.subject.toLowerCase().includes(searchQuery.toLowerCase())).map((email) => (
+                <div 
+                  key={email.id}
+                  onClick={() => setSelectedEmail(email)}
+                  className={cn(
+                    "p-5 cursor-pointer transition-all hover:bg-slate-50 relative group",
+                    email.isUnread && "bg-emerald-50/20"
+                  )}
+                >
+                  <div className="flex justify-between items-start gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                       <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", email.isUnread ? "bg-[#00AA5B]" : "bg-transparent")} />
+                       <span className={cn("text-xs truncate font-bold uppercase tracking-wide", email.isUnread ? "text-slate-950" : "text-slate-500")}>
+                         {email.from}
+                       </span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground shrink-0 font-bold">{email.date}</span>
+                  </div>
+                  <h4 className={cn(
+                    "text-sm mb-1 line-clamp-1 leading-snug",
+                    email.isUnread ? "font-black text-slate-900" : "font-bold text-slate-700"
+                  )}>
+                    {email.subject}
+                  </h4>
+                  <p className="text-xs text-muted-foreground/80 line-clamp-1 font-medium">{email.preview}</p>
+                  
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-3">
+                    {email.isStarred && <Star className="w-4 h-4 text-amber-400 fill-amber-400" />}
+                    <ChevronRight className="w-4 h-4 text-[#00AA5B]" />
+                  </div>
                 </div>
-              </Card>
-              <Card className="p-4 bg-white border-border/60 shadow-none rounded-2xl text-left space-y-2 group hover:border-blue-400/40 transition-colors">
-                <Server className="w-5 h-5 text-blue-600" />
-                <div>
-                  <p className="text-[11px] font-black">Cloud Storage</p>
-                  <p className="text-[9px] text-muted-foreground leading-tight font-medium">Dihosting mandiri di infrastruktur MarketPoint.</p>
+              ))}
+              {MOCK_EMAILS.filter(e => e.subject.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                <div className="py-20 text-center space-y-3">
+                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300 border border-border">
+                     <Mail className="w-8 h-8" />
+                   </div>
+                   <p className="text-xs font-bold text-slate-500">Tidak ada pesan yang ditemukan</p>
                 </div>
-              </Card>
+              )}
             </div>
           </div>
         )}
