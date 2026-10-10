@@ -101,11 +101,12 @@ export default function SignUpPage() {
 
       if (googleBtnRef.current) {
         googleBtnRef.current.innerHTML = "";
+        const containerWidth = googleBtnRef.current.clientWidth || 360;
         window.google.accounts.id.renderButton(googleBtnRef.current, {
           type: "standard",
           theme: "outline",
           size: "large",
-          width: "360",
+          width: Math.min(Math.max(containerWidth, 240), 400).toString(),
           text: "signup_with",
           shape: "rectangular",
           logo_alignment: "left",
@@ -114,10 +115,44 @@ export default function SignUpPage() {
     }
   };
 
-  useEffect(() => {
+  const handleManualGoogleClick = () => {
     if (typeof window !== "undefined" && window.google?.accounts?.id) {
-      initializeGoogleAuth();
+      const innerTarget =
+        googleBtnRef.current?.querySelector<HTMLElement>("iframe") ||
+        googleBtnRef.current?.querySelector<HTMLElement>("div[role='button']");
+      if (innerTarget) {
+        innerTarget.click();
+      } else {
+        window.google.accounts.id.prompt();
+      }
     }
+  };
+
+  useEffect(() => {
+    let intervalId: any;
+    let attempts = 0;
+    const maxAttempts = 30; // 3 detik polling
+
+    const checkAndInit = () => {
+      attempts++;
+      if (typeof window !== "undefined" && window.google?.accounts?.id) {
+        initializeGoogleAuth();
+        if (intervalId) clearInterval(intervalId);
+        return true;
+      }
+      if (attempts >= maxAttempts && intervalId) {
+        clearInterval(intervalId);
+      }
+      return false;
+    };
+
+    if (!checkAndInit()) {
+      intervalId = setInterval(checkAndInit, 100);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, []);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -263,7 +298,8 @@ export default function SignUpPage() {
                 type="button"
                 variant="outline"
                 disabled={loading}
-                className="w-full h-10 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 border-border hover:bg-muted/50 transition-all active:scale-95"
+                onClick={handleManualGoogleClick}
+                className="w-full h-10 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 border-border hover:bg-muted/50 transition-all active:scale-95 cursor-pointer"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -273,11 +309,14 @@ export default function SignUpPage() {
                 </svg>
                 Daftar dengan Google
               </Button>
-              <div ref={googleBtnRef} className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer" />
+              <div
+                ref={googleBtnRef}
+                className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer flex items-center justify-center pointer-events-auto [&>div]:!w-full [&>div]:!h-full [&_iframe]:!w-full [&_iframe]:!h-full [&_iframe]:!min-w-full [&_iframe]:!scale-105"
+              />
             </div>
           </div>
 
-          <div className="pt-5 border-t border-border flex justify-center">
+          <div className="pt-5 flex justify-center">
             <p className="text-xs text-muted-foreground font-medium">
               Sudah punya akun?{" "}
               <Link href="/login" className="font-bold text-[#00AA5B] hover:underline">

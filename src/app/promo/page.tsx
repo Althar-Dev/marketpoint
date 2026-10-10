@@ -157,31 +157,14 @@ export default function PromoPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-body text-[#212121]">
-      {/* HEADER DESKTOP MARKETPOINT */}
+      {/* HEADER MARKETPOINT */}
       <MarketHeader />
 
-      {/* MOBILE APP BAR */}
-      {isMobile && (
-        <header className="sticky top-0 z-30 bg-white border-b border-border/60 px-4 h-14 flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="p-1 -ml-1 rounded-full hover:bg-muted text-foreground transition-colors">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            </Link>
-            <h1 className="text-sm font-bold leading-tight">Promo & Voucher</h1>
-          </div>
-          <Badge className="bg-[#00AA5B]/10 text-[#00AA5B] border-none text-[10px] font-bold">
-            Hemat s/d 50%
-          </Badge>
-        </header>
-      )}
-
       {/* MAIN CONTAINER */}
-      <main className="flex-1 w-full pt-0 pb-20 md:pb-16">
-        
+      <main className="flex-1 w-full pt-16 md:pt-16 pb-20 md:pb-16">
+
         {/* HERO BANNER SECTION */}
-        <section className="bg-gradient-to-b from-white via-white to-[#F8FAFC] border-b border-border/60 py-10 md:py-14 px-4 sm:px-6 lg:px-8">
+        <section className="bg-gradient-to-b from-white via-white to-[#F8FAFC] border-b border-border/60 pt-6 pb-12 md:pt-8 md:pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-screen-lg mx-auto text-center space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#00AA5B]/10 border border-[#00AA5B]/20 text-[#00AA5B] text-xs font-bold">
               <Sparkles className="w-3.5 h-3.5" />
@@ -224,7 +207,7 @@ export default function PromoPage() {
         {/* CAMPAIGN HIGHLIGHT CARDS */}
         <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8 relative z-20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
+
             {/* Flash Sale Banner Link */}
             <Card className="rounded-3xl border border-red-200 bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white p-6 sm:p-7 shadow-xs relative overflow-hidden flex flex-col justify-between space-y-4">
               <div className="space-y-2 relative z-10">

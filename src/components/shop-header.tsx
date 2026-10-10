@@ -23,9 +23,11 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useFirestore } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
 
 export function ShopHeader() {
   const router = useRouter();
+  const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,6 +37,42 @@ export function ShopHeader() {
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [productResults, setProductResults] = useState<any[]>([]);
   const [shopResults, setShopResults] = useState<any[]>([]);
+
+  const handleShare = async () => {
+    if (typeof window === "undefined") return;
+    const shareData = {
+      title: document.title || "MarketPoint",
+      text: "Lihat halaman produk ini di MarketPoint!",
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.warn("Share API error, fallback to clipboard:", err);
+        } else {
+          return;
+        }
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Tautan Berhasil Disalin! 📋",
+        description: "Link halaman produk telah disalin ke clipboard.",
+      });
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Gagal Menyalin",
+        description: "Tidak dapat menyalin tautan.",
+      });
+    }
+  };
 
   const db = useFirestore();
   const [realShops, setRealShops] = useState<any[]>([]);
@@ -164,11 +202,23 @@ export function ShopHeader() {
               <Search className="w-4.5 h-4.5" />
             </Button>
 
-            <Button size="icon" variant="ghost" title="Keranjang" className="rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted/50">
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              onClick={() => router.push("/checkout")}
+              title="Keranjang" 
+              className="rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer"
+            >
               <ShoppingBag className="w-4.5 h-4.5" />
             </Button>
 
-            <Button size="icon" variant="ghost" title="Bagikan" className="rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted/50">
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              onClick={handleShare}
+              title="Bagikan" 
+              className="rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer"
+            >
               <Share2 className="w-4.5 h-4.5" />
             </Button>
           </div>
