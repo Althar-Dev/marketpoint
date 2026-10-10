@@ -5,15 +5,49 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { AdminHeader } from "@/components/admin-header";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
+
+const VALID_ADMIN_PATHS = new Set([
+  "/admin",
+  "/admin/analytics",
+  "/admin/commissions",
+  "/admin/digiflazz",
+  "/admin/digiflazz/catalog",
+  "/admin/digiflazz/config",
+  "/admin/digiflazz/markup",
+  "/admin/digiflazz/visuals",
+  "/admin/disputes",
+  "/admin/gallery",
+  "/admin/gallery/background",
+  "/admin/gallery/badge",
+  "/admin/gallery/banner",
+  "/admin/gallery/icon",
+  "/admin/products",
+  "/admin/settings",
+  "/admin/shops",
+  "/admin/transactions",
+  "/admin/users",
+  "/admin/wa-bot",
+  "/admin/xendit",
+  "/admin/xendit/channels",
+  "/admin/xendit/config",
+]);
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isValidAdminPath = VALID_ADMIN_PATHS.has(pathname);
+
+  // If path is not a valid admin page (e.g. 404), bypass admin sidebar/header shell
+  if (!isValidAdminPath) {
+    return <>{children}</>;
+  }
+
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
@@ -57,23 +91,29 @@ export default function AdminLayout({
           </div>
           
           {/* Custom Bouncing Underline - Green theme */}
-          <div className="w-12 md:w-16 h-[1.5px] bg-[#00AA5B]/10 rounded-full overflow-hidden relative">
-             <div className="absolute top-0 h-full bg-[#00AA5B] w-5 rounded-full animate-loading-bounce"></div>
+          <div className="w-14 md:w-20 h-[2px] bg-[#00AA5B]/15 rounded-full overflow-hidden relative">
+             <div className="absolute top-0 h-full bg-[#00AA5B] w-6 rounded-full animate-loading-bounce"></div>
           </div>
           
           {/* Micro Typography */}
-          <div className="mt-5 flex flex-col items-center gap-1 opacity-30">
-             <span className="text-[8px] md:text-[9px] tracking-[0.2em] text-[#2E3137] font-medium uppercase">Verifikasi Admin</span>
+          <div className="mt-5 flex flex-col items-center gap-1 opacity-40">
+             <span className="text-[8px] md:text-[9px] tracking-[0.2em] text-[#2E3137] font-semibold uppercase">Verifikasi Admin</span>
           </div>
         </div>
 
         <style jsx global>{`
           @keyframes loading-bounce {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(140%); }
+            0% {
+              left: 0%;
+              transform: translateX(0%);
+            }
+            100% {
+              left: 100%;
+              transform: translateX(-100%);
+            }
           }
           .animate-loading-bounce {
-            animation: loading-bounce 0.6s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
+            animation: loading-bounce 0.75s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
           }
         `}</style>
       </div>

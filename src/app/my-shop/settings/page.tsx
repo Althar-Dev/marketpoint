@@ -24,12 +24,15 @@ import {
   CheckCircle2,
   AlertCircle,
   XCircle,
-  RefreshCw
+  RefreshCw,
+  ShieldAlert
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { useMerchantShop } from "@/context/merchant-context";
 
 export default function MerchantSettingsPage() {
   const { user, loading: authLoading } = useUser();
@@ -39,6 +42,16 @@ export default function MerchantSettingsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploading, setUploading] = useState<{ type: 'logo' | 'banner' | null }>({ type: null });
 
+  const {
+    shopId,
+    isOwner,
+    isStaff,
+    staffRole,
+    loading: merchantLoading
+  } = useMerchantShop();
+
+  const activeShopId = shopId || user?.uid;
+
   // Slug checking states
   const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
@@ -47,9 +60,9 @@ export default function MerchantSettingsPage() {
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const shopRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(db, "shops", user.uid);
-  }, [db, user]);
+    if (!activeShopId) return null;
+    return doc(db, "shops", activeShopId);
+  }, [db, activeShopId]);
 
   const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
@@ -199,7 +212,7 @@ export default function MerchantSettingsPage() {
     setShopData({ ...shopData, slug: val });
   };
 
-  if (!mounted || authLoading || shopLoading) {
+  if (!mounted || authLoading || shopLoading || merchantLoading) {
     return (
       <div className="p-4 md:p-6 lg:p-8 space-y-6">
         <Skeleton className="h-8 w-48 rounded-lg" />
@@ -208,6 +221,28 @@ export default function MerchantSettingsPage() {
           <Skeleton className="lg:col-span-8 h-[600px] rounded-2xl" />
         </div>
       </div>
+    );
+  }
+
+  // Permission guard: Only Owner & Co-Owner can change shop settings
+  if (isStaff && staffRole !== "CO_OWNER") {
+    return (
+      <main className="flex-1 p-4 md:p-8 flex items-center justify-center min-h-[70vh]">
+        <Card className="max-w-md w-full border border-border shadow-md rounded-2xl p-6 text-center space-y-4 bg-white">
+          <div className="h-14 w-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
+            <ShieldAlert className="h-7 w-7" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-foreground">Akses Pengaturan Dibatasi</h2>
+            <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+              Halaman <b>Pengaturan Toko</b> hanya dapat diakses oleh <b>Pemilik Toko</b> dan <b>Co-Owner</b>.
+            </p>
+          </div>
+          <Button asChild className="w-full bg-[#00AA5B] hover:bg-[#00924c] text-white rounded-xl text-xs font-bold h-9 shadow-sm">
+            <Link href="/my-shop">Kembali ke Dashboard Toko</Link>
+          </Button>
+        </Card>
+      </main>
     );
   }
 

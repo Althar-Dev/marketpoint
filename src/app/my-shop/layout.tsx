@@ -6,6 +6,7 @@ import { MerchantSidebar } from "@/components/merchant-sidebar";
 import { MerchantHeader } from "@/components/merchant-header";
 import { useUser } from "@/firebase";
 import { useRouter, usePathname } from "next/navigation";
+import { MerchantProvider } from "@/context/merchant-context";
 
 export default function MerchantLayout({
   children,
@@ -30,20 +31,26 @@ export default function MerchantLayout({
 
   // Render setup page cleanly without MerchantSidebar and MerchantHeader
   if (pathname === "/my-shop/setup") {
-    return <div className="min-h-screen w-full bg-[#F8FAFC]">{children}</div>;
+    return (
+      <MerchantProvider>
+        <div className="min-h-screen w-full bg-[#F8FAFC]">{children}</div>
+      </MerchantProvider>
+    );
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full bg-[#F8FAFC]">
-        <MerchantSidebar />
-        <SidebarInset className="flex flex-col min-w-0 flex-1">
-          <MerchantHeader />
-          <div className="flex-1 overflow-y-auto no-scrollbar">
-            {children}
-          </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+    <MerchantProvider>
+      <SidebarProvider defaultOpen={true}>
+        <div className="flex min-h-screen w-full bg-[#F8FAFC]">
+          <MerchantSidebar />
+          <SidebarInset className="flex flex-col min-w-0 flex-1 bg-[#F8FAFC]">
+            <MerchantHeader />
+            <div className="flex-1 overflow-y-auto no-scrollbar bg-[#F8FAFC]">
+              {children}
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </MerchantProvider>
   );
 }

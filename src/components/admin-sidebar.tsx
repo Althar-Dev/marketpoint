@@ -26,7 +26,8 @@ import {
   Award,
   Image as ImageIcon,
   Sparkles,
-  Palette
+  Palette,
+  TrendingUp
 } from "lucide-react";
 import {
   Sidebar,
@@ -71,15 +72,22 @@ export function AdminSidebar() {
       items: [
         { label: "Semua Transaksi", icon: ShoppingBag, href: "/admin/transactions" },
         { label: "Komisi Penjual", icon: Percent, href: "/admin/commissions" },
-        { label: "Xendit", icon: CreditCard, href: "/admin/xendit" },
+      ]
+    },
+    {
+      label: "Xendit",
+      items: [
+        { label: "Config", icon: Settings2, href: "/admin/xendit/config" },
+        { label: "Payment Channels", icon: CreditCard, href: "/admin/xendit/channels" },
       ]
     },
     {
       label: "DigiFlazz",
       items: [
         { label: "Catalog", icon: Layers, href: "/admin/digiflazz/catalog" },
+        { label: "Markup", icon: TrendingUp, href: "/admin/digiflazz/markup" },
         { label: "Config", icon: Settings2, href: "/admin/digiflazz/config" },
-        { label: "Icon & Background", icon: Palette, href: "/admin/digiflazz/visuals" },
+        { label: "Gallery", icon: Palette, href: "/admin/digiflazz/visuals" },
       ]
     },
     {

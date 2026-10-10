@@ -28,6 +28,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { DesktopAccountSidebar } from "@/components/desktop-account-sidebar";
 import {
   Dialog,
   DialogContent,
@@ -136,105 +137,14 @@ export function DesktopSettings({
     <div className="bg-[#F8FAFC] font-body text-[#212121] min-h-[calc(100vh-64px)]">
       <div className="max-w-screen-xl mx-auto flex gap-6 p-6 items-start">
         
-        <aside className="w-[260px] shrink-0 space-y-4 sticky top-20">
-          <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden p-4 h-auto">
-            <div className="flex items-center gap-3 mb-5">
-              <Avatar className="h-9 w-9 ring-1 ring-border">
-                <AvatarImage 
-                  src={user.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (user.photoURL || undefined)} 
-                  referrerPolicy="no-referrer" 
-                />
-                <AvatarFallback className="bg-[#00AA5B] text-white font-bold text-[12px]">
-                  {displayName?.substring(0, 1) || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="font-bold text-[12px] truncate">{displayName || "User MarketPoint"}</p>
-              </div>
-            </div>
-
-            <div className="space-y-3 pt-3 border-t border-border/50">
-              <Link href={hasShop ? "/my-shop" : "/my-shop/setup"} className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-[#F8FAFC] rounded-full flex items-center justify-center border border-border group-hover:border-[#00AA5B]/30">
-                    <Store className="w-2.5 h-2.5 text-muted-foreground group-hover:text-[#00AA5B]" />
-                  </div>
-                  <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">Toko Saya</span>
-                </div>
-                <span className={cn(
-                  "text-[10px] font-bold",
-                  hasShop ? "text-muted-foreground" : "text-[#00AA5B]"
-                )}>
-                  {hasShop ? "Kelola" : "Buka Gratis"}
-                </span>
-              </Link>
-              
-              <Link href="/wallet" className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                    {/* gausah di ubah lagi gambarnya biarkan w&c.png*/}
-                    <img src="/assets/icon/w&c.png" className="w-full h-full object-contain" alt="Wallet" />
-                  </div>
-                  <span className="text-[11px] font-medium text-muted-foreground">Saldo & MCoins</span>
-                </div>
-                <span className="text-[11px] font-bold">Rp {wallet?.balance?.toLocaleString('id-ID') || 0}</span>
-              </Link>
-            </div>
-
-            <div className="mt-6 pt-3 border-t border-border/50">
-              <Accordion type="single" collapsible defaultValue="profil" className="w-full">
-                <AccordionItem value="inbox" className="border-none">
-                  <AccordionTrigger className="hover:no-underline py-2 text-[12px] font-bold focus:outline-none">
-                    <div className="flex items-center gap-2.5">
-                      <Inbox className="w-3.5 h-3.5 text-muted-foreground" />
-                      Kotak Masuk
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-1 pl-6 space-y-0.5">
-                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Chat</p>
-                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Ulasan</p>
-                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Update</p>
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="pembelian" className="border-none">
-                  <AccordionTrigger className="hover:no-underline py-2 text-[12px] font-bold focus:outline-none">
-                    <div className="flex items-center gap-2.5">
-                      <ShoppingBag className="w-3.5 h-3.5 text-muted-foreground" />
-                      Pembelian
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-1 pl-6 space-y-0.5">
-                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Menunggu Pembayaran</p>
-                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Daftar Transaksi</p>
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="profil" className="border-none">
-                  <AccordionTrigger className="hover:no-underline py-2 text-[12px] font-bold focus:outline-none text-[#00AA5B]">
-                    <div className="flex items-center gap-2.5">
-                      <UserCircle className="w-3.5 h-3.5 text-[#00AA5B]" />
-                      Profil Saya
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-1 pl-6 space-y-0.5">
-                    <p className="text-[11px] text-[#00AA5B] font-bold py-1 px-2 rounded-lg bg-[#00AA5B]/5 cursor-pointer">Pengaturan</p>
-                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Wishlist</p>
-                    <p className="text-[11px] text-muted-foreground py-1 px-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">Toko Favorit</p>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
-
-            <Button 
-              variant="ghost" 
-              onClick={handleLogout}
-              className="w-full justify-start gap-2.5 mt-6 text-destructive hover:text-destructive hover:bg-destructive/5 rounded-lg text-[11px] font-bold h-9 px-2 transition-colors"
-            >
-              <LogOut className="w-3.5 h-3.5" /> Keluar Akun
-            </Button>
-          </Card>
-        </aside>
+        <DesktopAccountSidebar
+          user={user}
+          wallet={wallet}
+          hasShop={hasShop}
+          displayName={displayName}
+          activeItem="profile-settings"
+          handleLogout={handleLogout}
+        />
 
         <main className="flex-1 min-w-0">
           <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden h-auto">

@@ -1,23 +1,27 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Search, 
-  ChevronRight, 
-  Star, 
+import {
+  Search,
+  ChevronRight,
   ShieldCheck,
-  Store,
-  ShoppingBag,
   Zap,
-  Info,
   Layers,
   Gamepad2,
   Smartphone,
-  Wallet as WalletIcon
+  Wallet as WalletIcon,
+  Droplets,
+  Ticket,
+  Sparkles,
+  ArrowRight,
+  Store,
+  RefreshCw,
+  X
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,13 +30,13 @@ import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 
 const TOPUP_CATEGORIES = [
-  { id: "all", label: "Semua", icon: "/assets/icons/more.png", color: "bg-slate-50" },
-  { id: "pulsa", label: "Pulsa & Data", icon: "/assets/icons/pulsadata.png", color: "bg-blue-50", match: ["PULSA", "DATA"] },
-  { id: "game", label: "Game", icon: "/assets/icons/game.png", color: "bg-purple-50", match: ["GAMES", "GAME"] },
-  { id: "ewallet", label: "E-Wallet", icon: "/assets/icons/ewallet.png", color: "bg-emerald-50", match: ["E-MONEY", "E-WALLET", "SALDO"] },
-  { id: "pln", label: "Listrik PLN", icon: "/assets/icons/listrik.png", color: "bg-amber-50", match: ["PLN"] },
-  { id: "pdam", label: "Air PDAM", icon: "/assets/icons/pdam.png", color: "bg-cyan-50", match: ["PDAM"] },
-  { id: "voucher", label: "Voucher", icon: "/assets/icons/voucher.png", color: "bg-orange-50", match: ["VOUCHER"] },
+  { id: "all", label: "Semua", icon: Layers, color: "bg-slate-100 text-slate-700", match: [] },
+  { id: "game", label: "Game", icon: Gamepad2, color: "bg-purple-50 text-purple-600", match: ["GAMES", "GAME"] },
+  { id: "pulsa", label: "Pulsa & Data", icon: Smartphone, color: "bg-blue-50 text-blue-600", match: ["PULSA", "DATA"] },
+  { id: "ewallet", label: "E-Wallet", icon: WalletIcon, color: "bg-emerald-50 text-emerald-600", match: ["E-MONEY", "E-WALLET", "SALDO"] },
+  { id: "pln", label: "Listrik PLN", icon: Zap, color: "bg-amber-50 text-amber-600", match: ["PLN"] },
+  { id: "pdam", label: "Air PDAM", icon: Droplets, color: "bg-cyan-50 text-cyan-600", match: ["PDAM"] },
+  { id: "voucher", label: "Voucher", icon: Ticket, color: "bg-orange-50 text-orange-600", match: ["VOUCHER"] },
 ];
 
 interface DigiFlazzBrand {
@@ -43,27 +47,60 @@ interface DigiFlazzBrand {
   cmdType: string;
 }
 
-export default function TopUpHubPage() {
+function TopUpCardSkeleton() {
+  return (
+    <Card className="rounded-2xl overflow-hidden border border-border/70 bg-white flex flex-col shadow-xs animate-pulse">
+      <div className="aspect-square w-full bg-slate-100 flex items-center justify-center p-4 border-b border-border/40">
+        <div className="w-16 h-16 rounded-2xl bg-slate-200/80" />
+      </div>
+      <div className="p-3 bg-white space-y-1.5">
+        <div className="h-2.5 w-12 bg-slate-200/70 rounded-full" />
+        <div className="h-4 w-3/4 bg-slate-300/80 rounded-md" />
+      </div>
+    </Card>
+  );
+}
+
+function TopUpHubContent() {
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState("all");
   const [digiflazzItems, setDigiflazzItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const db = useFirestore();
-  
-  const visualsRef = useMemoFirebase(() => doc(db, "settings", "digiflazz_visuals"), [db]);
-  const { data: visuals } = useDoc(visualsRef);
+  const [visuals, setVisuals] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
+    const cat = searchParams.get("cat") || searchParams.get("category");
+    const q = searchParams.get("q") || searchParams.get("search");
+    if (cat) setSelectedCat(cat);
+    if (q) setSearch(q);
+
+    window.scrollTo({ top: 0, behavior: "instant" });
     fetchDigiFlazzCatalog();
-  }, []);
+    fetchVisuals();
+  }, [searchParams]);
+
+  const fetchVisuals = async () => {
+    try {
+      const res = await fetch("/api/admin/digiflazz/visuals");
+      const data = await res.json();
+      if (data.success && data.data) {
+        setVisuals(data.data);
+      }
+    } catch (err) {
+      console.error("Gagal mengambil visual config:", err);
+    }
+  };
 
   const fetchDigiFlazzCatalog = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/digiflazz/products");
+      const res = await fetch(`/api/admin/digiflazz/products?_t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setDigiflazzItems(data.data);
@@ -109,7 +146,7 @@ export default function TopUpHubPage() {
 
       if (selectedCat === "all") return true;
       const catConfig = TOPUP_CATEGORIES.find(c => c.id === selectedCat);
-      if (catConfig?.match) {
+      if (catConfig?.match && catConfig.match.length > 0) {
         return catConfig.match.some(m => b.category.toUpperCase().includes(m));
       }
       return true;
@@ -120,162 +157,296 @@ export default function TopUpHubPage() {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   };
 
+  const formatBrandTitle = (raw: string) => {
+    if (!raw) return "";
+    const acronyms = ["PLN", "PDAM", "HP", "ID", "VA", "BCA", "BRI", "BNI", "OVO", "QRIS"];
+    return raw
+      .toLowerCase()
+      .split(" ")
+      .map((word) => {
+        if (acronyms.includes(word.toUpperCase())) return word.toUpperCase();
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join(" ");
+  };
+
+  const getBrandVisual = (brandName?: string) => {
+    if (!brandName || !visuals?.brands) return null;
+    const target = brandName.trim().toLowerCase();
+    let merged: any = null;
+    for (const [k, v] of Object.entries(visuals.brands)) {
+      if (k.trim().toLowerCase() === target) {
+        merged = { ...(merged || {}), ...(v as any) };
+      }
+    }
+    return merged;
+  };
+
+  const groupedCategories = useMemo(() => {
+    const activeCats = TOPUP_CATEGORIES.filter((c) => c.id !== "all");
+    const assignedBrandNames = new Set<string>();
+
+    const groups = activeCats
+      .map((cat) => {
+        const items = filteredBrands.filter((b) => {
+          const catUpper = (b.category || "").toUpperCase();
+          return cat.match.some((m) => catUpper.includes(m));
+        });
+        items.forEach((i) => assignedBrandNames.add(i.brand));
+        return {
+          ...cat,
+          brands: items,
+        };
+      })
+      .filter((g) => g.brands.length > 0);
+
+    const otherBrands = filteredBrands.filter((b) => !assignedBrandNames.has(b.brand));
+    if (otherBrands.length > 0) {
+      groups.push({
+        id: "other",
+        label: "Layanan Lainnya",
+        icon: Sparkles,
+        color: "bg-slate-50 text-slate-700",
+        match: [],
+        brands: otherBrands,
+      });
+    }
+
+    return groups;
+  }, [filteredBrands]);
+
+  const renderBrandCard = (b: DigiFlazzBrand) => {
+    const visual = getBrandVisual(b.brand);
+    const catSlug = getSlugify(b.category);
+    const brandSlug = getSlugify(b.brand);
+
+    return (
+      <Link key={b.brand} href={`/topup/${catSlug}/${brandSlug}`} scroll={true}>
+        <Card className="group relative h-full rounded-2xl overflow-hidden border border-border/70 bg-white hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col shadow-xs hover:-translate-y-0.5">
+          <div className="relative aspect-square w-full overflow-hidden border-b border-border/40">
+            {/* MarketPoint Logo */}
+            <img
+              src="/assets/img/logo.png"
+              alt="MarketPoint"
+              className="absolute top-2 right-2 z-10 h-5 sm:h-6 w-auto object-contain pointer-events-none drop-shadow-sm transition-transform group-hover:scale-105"
+              loading="lazy"
+            />
+
+            {visual?.iconUrl ? (
+              <img
+                src={visual.iconUrl}
+                alt={b.brand}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-slate-50">
+                <Gamepad2 className="w-10 h-10 text-muted-foreground/20" />
+              </div>
+            )}
+          </div>
+
+          <div className="p-2.5 sm:p-3 bg-white flex items-center justify-center">
+            <h4 className="text-[#212121] text-xs sm:text-sm font-black leading-snug tracking-tight truncate w-full text-center group-hover:text-[#00AA5B] transition-colors">
+              {formatBrandTitle(b.brand)}
+            </h4>
+          </div>
+        </Card>
+      </Link>
+    );
+  };
+
   if (!mounted) return null;
 
   return (
-    <main className="flex-1 w-full pt-20 pb-24 md:pb-12 bg-[#F8FAFC] font-body">
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-12 lg:px-20 space-y-8">
-        
-        <section className="space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <main className="flex-1 w-full py-4 sm:py-6 pb-20 md:pb-12 bg-[#F8FAFC] font-body">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+
+        <section className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 border border-border/60 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <div className="space-y-1">
-              <h1 className="text-xl md:text-2xl font-black tracking-tight text-[#212121]">Top Up & Tagihan</h1>
-              <p className="text-xs md:text-sm text-muted-foreground font-medium">Layanan instan pengisian pulsa, kuota, token, dan top up game favorit.</p>
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-green-50 text-[#00AA5B]">
+                  <Zap className="w-4 h-4 fill-[#00AA5B]" />
+                </span>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#212121]">
+                  Top Up & PPOB Store
+                </h1>
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">
+                Pengisian pulsa, paket data, token PLN, e-wallet, & game instan 24 jam nonstop.
+              </p>
             </div>
-            <div className="relative w-full md:w-80">
+
+            <div className="relative w-full sm:w-72 md:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="Cari brand game atau provider..." 
+              <Input
+                placeholder="Cari brand, game, provider..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-11 pl-10 rounded-2xl bg-white border-border shadow-sm focus:border-[#00AA5B] focus:ring-4 focus:ring-[#00AA5B]/5 transition-all font-bold text-xs"
+                className="h-10 pl-9 pr-8 rounded-xl bg-slate-50 border-border/70 text-xs font-bold focus:bg-white focus:border-[#00AA5B] transition-all"
               />
-            </div>
-          </div>
-        </section>
-
-        <section className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
-          {TOPUP_CATEGORIES.map((cat) => (
-            <button 
-              key={cat.id} 
-              onClick={() => setSelectedCat(cat.id)}
-              className={cn(
-                "group flex flex-col items-center gap-2.5 transition-all shrink-0 w-[70px] sm:w-[85px]",
-                selectedCat === cat.id ? "opacity-100" : "opacity-60 hover:opacity-100"
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               )}
-            >
-              <div className={cn(
-                "w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center border transition-all duration-300 shadow-2xs",
-                selectedCat === cat.id ? "bg-[#00AA5B] border-[#00AA5B] shadow-lg shadow-[#00AA5B]/20 scale-110" : cn("bg-white border-border/60", cat.color)
-              )}>
-                <Image 
-                  src={cat.icon} 
-                  alt={cat.label} 
-                  width={28} 
-                  height={28} 
-                  className={cn("object-contain transition-transform group-hover:scale-110", selectedCat === cat.id && "brightness-0 invert")}
-                />
-              </div>
-              <span className={cn(
-                "text-[9px] sm:text-[10px] font-bold text-center leading-tight whitespace-nowrap",
-                selectedCat === cat.id ? "text-[#00AA5B]" : "text-muted-foreground"
-              )}>
-                {cat.label}
-              </span>
-            </button>
-          ))}
-        </section>
-
-        <section className="space-y-6 pt-4">
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
-              <h2 className="text-base md:text-lg font-black tracking-tight text-[#212121]">
-                {selectedCat === 'all' ? "Semua Layanan" : `Layanan ${TOPUP_CATEGORIES.find(c => c.id === selectedCat)?.label}`}
-              </h2>
             </div>
-            <span className="text-[10px] font-bold text-muted-foreground bg-white border border-border/50 px-3 py-1 rounded-full shadow-xs">
-              {filteredBrands.length} Brand
-            </span>
           </div>
 
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1 pb-0.5">
+            {TOPUP_CATEGORIES.map((cat) => {
+              const IconComp = cat.icon;
+              const isActive = selectedCat === cat.id;
+
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCat(cat.id)}
+                  className={cn(
+                    "flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 border whitespace-nowrap",
+                    isActive
+                      ? "bg-[#00AA5B] text-white border-[#00AA5B] shadow-xs scale-[1.02]"
+                      : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-border/50"
+                  )}
+                >
+                  <IconComp className={cn("w-3.5 h-3.5", isActive ? "text-white" : "text-slate-500")} />
+                  <span>{cat.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="space-y-3 sm:space-y-4">
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3.5 md:gap-4">
               {Array.from({ length: 12 }).map((_, idx) => (
-                <div key={idx} className="aspect-square rounded-2xl bg-muted/40 animate-pulse border border-border" />
+                <TopUpCardSkeleton key={idx} />
               ))}
             </div>
           ) : filteredBrands.length === 0 ? (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-white rounded-3xl border border-dashed border-border/60">
-              <div className="w-16 h-16 bg-muted/20 rounded-2xl flex items-center justify-center shadow-sm border border-border/40">
-                <Search className="w-8 h-8 text-muted-foreground/30" />
+            <div className="py-16 px-4 flex flex-col items-center justify-center text-center space-y-3 bg-white rounded-2xl border border-dashed border-border/60">
+              <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center border border-amber-200">
+                <Search className="w-6 h-6 text-amber-500" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-sm font-bold text-foreground">Brand Tidak Ditemukan</h3>
-                <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                  Maaf, tidak ada layanan DigiFlazz yang sesuai dengan pencarian atau kategori Anda saat ini.
+                <h3 className="text-xs sm:text-sm font-bold text-slate-800">Layanan Tidak Ditemukan</h3>
+                <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                  Tidak ada provider atau game yang sesuai dengan filter pencarian &quot;{search}&quot;.
                 </p>
               </div>
-              <button 
-                onClick={() => {setSearch(""); setSelectedCat("all");}}
-                className="h-9 px-6 rounded-xl text-xs font-bold border border-border bg-white hover:bg-muted transition-colors"
+              <Button
+                size="sm"
+                onClick={() => {
+                  setSearch("");
+                  setSelectedCat("all");
+                }}
+                className="h-8 px-4 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl"
               >
-                Reset Filter
-              </button>
+                Reset Filter Pencarian
+              </Button>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
-              {filteredBrands.map((b) => {
-                const visual = visuals?.brands?.[b.brand];
-                const catSlug = getSlugify(b.category);
-                const brandSlug = getSlugify(b.brand);
-                
+          ) : selectedCat === "all" ? (
+            <div className="space-y-6 sm:space-y-8">
+              {groupedCategories.map((group) => {
+                const GroupIcon = group.icon;
                 return (
-                  <Link key={b.brand} href={`/topup/${catSlug}/${brandSlug}`}>
-                    <Card 
-                      className="group relative h-full rounded-2xl overflow-hidden border border-border/70 bg-white hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col shadow-xs"
-                    >
-                      <div className="relative aspect-square w-full overflow-hidden bg-white flex items-center justify-center p-4 border-b border-border/40">
-                        {visual?.iconUrl ? (
-                           <div className="relative w-full h-full">
-                             <Image 
-                               src={visual.iconUrl} 
-                               alt={b.brand} 
-                               fill
-                               className="object-contain transition-transform duration-500 group-hover:scale-110"
-                             />
-                           </div>
-                        ) : (
-                           <div className="w-full h-full flex items-center justify-center bg-slate-50 rounded-2xl">
-                             <Gamepad2 className="w-10 h-10 text-muted-foreground/20" />
-                           </div>
-                        )}
+                  <div key={group.id} className="space-y-3 sm:space-y-4">
+                    <div className="flex items-center justify-between px-1 border-b border-border/40 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1.5 rounded-lg bg-green-50 text-[#00AA5B]">
+                          <GroupIcon className="w-4 h-4" />
+                        </span>
+                        <h2 className="text-sm sm:text-base font-black tracking-tight text-[#212121]">
+                          {group.label}
+                        </h2>
+                        <span className="text-[10px] font-bold text-muted-foreground bg-white border border-border/50 px-2.5 py-0.5 rounded-full shadow-2xs">
+                          {group.brands.length} Brand
+                        </span>
                       </div>
+                      <button
+                        onClick={() => setSelectedCat(group.id)}
+                        className="text-xs font-bold text-[#00AA5B] hover:underline flex items-center gap-0.5"
+                      >
+                        Lihat Semua <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
 
-                      <div className="p-3 bg-white space-y-1">
-                        <p className="text-[#00AA5B] text-[9px] font-black uppercase tracking-tight truncate">
-                          {visual?.badgeText || b.category.split(' ')[0]}
-                        </p>
-                        <h4 className="text-[#212121] text-[12px] sm:text-sm font-black leading-tight tracking-tight truncate group-hover:text-[#00AA5B] transition-colors">
-                          {b.brand}
-                        </h4>
-                      </div>
-                    </Card>
-                  </Link>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3.5 md:gap-4">
+                      {group.brands.map(renderBrandCard)}
+                    </div>
+                  </div>
                 );
               })}
+            </div>
+          ) : (
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center justify-between px-1 border-b border-border/40 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-green-50 text-[#00AA5B]">
+                    {(() => {
+                      const IconComp = TOPUP_CATEGORIES.find((c) => c.id === selectedCat)?.icon || Layers;
+                      return <IconComp className="w-4 h-4" />;
+                    })()}
+                  </span>
+                  <h2 className="text-sm sm:text-base font-black tracking-tight text-[#212121]">
+                    {TOPUP_CATEGORIES.find((c) => c.id === selectedCat)?.label || "Semua Layanan"}
+                  </h2>
+                  <span className="text-[10px] font-bold text-muted-foreground bg-white border border-border/50 px-2.5 py-0.5 rounded-full shadow-2xs">
+                    {filteredBrands.length} Brand Siap
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSelectedCat("all")}
+                  className="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1"
+                >
+                  Tampilkan Semua Kategori
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3.5 md:gap-4">
+                {filteredBrands.map(renderBrandCard)}
+              </div>
             </div>
           )}
         </section>
 
-        <section className="pt-8 border-t border-border/60 pb-10">
-           <Card className="bg-white border border-border/60 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 text-center md:text-left shadow-sm">
-              <div className="h-16 w-16 md:h-20 md:w-20 rounded-[2rem] bg-[#00AA5B]/5 shadow-inner border border-[#00AA5B]/10 flex items-center justify-center shrink-0">
-                 <ShieldCheck className="w-8 h-8 md:w-10 md:h-10 text-[#00AA5B]" />
-              </div>
-              <div className="space-y-2 flex-1">
-                 <h3 className="text-base md:text-lg font-black text-[#2E3137]">Sistem Top Up Otomatis 24 Jam</h3>
-                 <p className="text-[11px] md:text-xs text-muted-foreground font-medium leading-relaxed max-w-2xl">
-                    Semua transaksi di hub Top Up MarketPoint terhubung langsung ke sistem DigiFlazz yang menjamin kecepatan pengiriman saldo dan token dalam hitungan detik. Keamanan dana Anda dijamin 100% oleh sistem verifikasi kami.
-                 </p>
-              </div>
-              <Button variant="outline" className="h-10 px-8 rounded-xl border-border bg-white text-xs font-bold hover:bg-white hover:text-[#00AA5B] hover:border-[#00AA5B] transition-all shrink-0 shadow-xs">
-                 Bantuan Center
-              </Button>
-           </Card>
+        {/* Bottom Guarantee Banner */}
+        <section className="pt-4 pb-8">
+          <Card className="bg-white border border-border/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left shadow-2xs">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-green-50 text-[#00AA5B] border border-green-100 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7" />
+            </div>
+            <div className="space-y-1 flex-1">
+              <h3 className="text-xs sm:text-sm font-black text-slate-800">Sistem Top Up Otomatis Realtime 24 Jam</h3>
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-medium leading-relaxed">
+                Pengisian pulsa, kuota, token PLN, & game diproses otomatis via koneksi DigiFlazz API. Transaksi aman & saldo terverifikasi.
+              </p>
+            </div>
+          </Card>
         </section>
 
       </div>
     </main>
+  );
+}
+
+export default function TopUpHubPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex-1 w-full py-4 sm:py-6 pb-20 md:pb-12 bg-[#F8FAFC] font-body">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4">
+            <div className="h-32 bg-slate-200/60 rounded-3xl animate-pulse" />
+          </div>
+        </main>
+      }
+    >
+      <TopUpHubContent />
+    </Suspense>
   );
 }

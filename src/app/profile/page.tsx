@@ -23,6 +23,7 @@ import {
   ShoppingBag,
   Heart,
   Store,
+  BellRing,
   MessageSquareWarning,
   HelpCircle,
   ScanLine,
@@ -204,7 +205,7 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  const hasShop = userData?.hasShop === true || !!shop;
+  const hasShop = userData?.hasShop === true || !!shop || !!userData?.staffShopId || userData?.isStaff === true;
 
   if (!isMobile) {
     return (
@@ -303,23 +304,44 @@ export default function ProfilePage() {
 
         <div className="py-1">
           {[
-            { label: "Daftar Transaksi", icon: ReceiptText },
-            { label: "Ulasan", icon: Star },
-            { label: "Beli Lagi", icon: ShoppingBag },
-            { label: "Wishlist", icon: Heart },
-            { label: "Toko yang Di-follow", icon: Store },
-          ].map((item, idx) => (
-            <button 
-              key={idx}
-              className="w-full px-5 h-11 flex items-center justify-between hover:bg-muted/30 transition-all active:bg-muted/50"
-            >
-              <div className="flex items-center gap-3">
-                <item.icon className="w-4 h-4 text-foreground opacity-60" />
-                <span className="text-sm font-medium">{item.label}</span>
+            { label: "Daftar Transaksi", icon: ReceiptText, href: "/transactions" },
+            { label: "Ulasan", icon: Star, href: "/inbox/reviews" },
+            { label: "Update Toko", icon: BellRing, href: "/inbox/updates" },
+            { label: "Beli Lagi", icon: ShoppingBag, href: "/transactions" },
+            { label: "Wishlist", icon: Heart, href: "/wishlist" },
+            { label: "Toko yang Di-follow", icon: Store, href: "/favorites" },
+          ].map((item, idx) => {
+            const Content = (
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-3">
+                  <item.icon className="w-4 h-4 text-foreground opacity-60" />
+                  <span className="text-sm font-medium">{item.label}</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-30" />
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-30" />
-            </button>
-          ))}
+            );
+
+            if (item.href) {
+              return (
+                <Link
+                  key={idx}
+                  href={item.href}
+                  className="w-full px-5 h-11 flex items-center hover:bg-muted/30 transition-all active:bg-muted/50"
+                >
+                  {Content}
+                </Link>
+              );
+            }
+
+            return (
+              <button 
+                key={idx}
+                className="w-full px-5 h-11 flex items-center justify-between hover:bg-muted/30 transition-all active:bg-muted/50"
+              >
+                {Content}
+              </button>
+            );
+          })}
         </div>
 
         <div className="h-1.5 bg-muted/20 w-full" />

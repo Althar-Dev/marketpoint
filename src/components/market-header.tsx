@@ -9,7 +9,6 @@ import {
   ChevronDown,
   Bell,
   MessageCircle,
-  LayoutGrid,
   User as UserIcon,
   LogOut,
   Store,
@@ -20,11 +19,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, collection, getDocs } from "firebase/firestore";
 import {
@@ -57,7 +51,10 @@ export function MarketHeader() {
   const { data: shopData } = useDoc(shopDocRef);
 
   const hasShop = Boolean(
-    shopData && (shopData.name || shopData.shopName || shopData.slug || shopData.id || shopData.createdAt)
+    (shopData && (shopData.name || shopData.shopName || shopData.slug || shopData.id || shopData.createdAt)) ||
+    userData?.hasShop ||
+    userData?.staffShopId ||
+    userData?.shopId
   );
 
   const rawPhoto = userData?.photoURL || user?.photoURL;
@@ -154,12 +151,7 @@ export function MarketHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { title: "API Bridge", href: "/s?cat=api" },
-    { title: "Source Code", href: "/s?cat=source" },
-    { title: "Bot Automation", href: "/s?cat=bot" },
-    { title: "AI GenKit", href: "/s?cat=ai" },
-  ];
+
 
   const handleLogout = async () => {
     try {
@@ -187,29 +179,7 @@ export function MarketHeader() {
           </div>
         </Link>
 
-        <div className="hidden lg:block">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors tracking-wider">
-                Kategori <ChevronDown className="w-3 h-3" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-2 rounded-xl border-border" align="start">
-              <div className="grid gap-1">
-                {navLinks.map((link) => (
-                  <Link 
-                    key={link.title} 
-                    href={link.href}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted text-xs font-bold transition-all"
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5 text-primary/40" />
-                    {link.title}
-                  </Link>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+
 
         {/* Search Bar with Live Autocomplete Suggestions */}
         <div ref={searchContainerRef} className="flex-1 relative group">

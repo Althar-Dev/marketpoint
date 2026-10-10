@@ -40,7 +40,6 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 
-// Dummy global products for Admin View
 const GLOBAL_PRODUCTS_DUMMY = [
   {
     id: "PROD-1020",
@@ -232,7 +231,6 @@ export default function AdminProductsPage() {
           </Table>
         </div>
 
-        {/* Pagination Info */}
         <div className="p-4 border-t border-border/30 flex items-center justify-between bg-slate-50/20">
           <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest px-2">
             Menampilkan {GLOBAL_PRODUCTS_DUMMY.length} Produk
@@ -244,7 +242,6 @@ export default function AdminProductsPage() {
         </div>
       </Card>
 
-      {/* Compliance Box */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="border-border/50 border-dashed bg-slate-50/30 rounded-xl md:rounded-2xl p-4 flex items-start gap-3">
           <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center border border-green-100/50 shrink-0">

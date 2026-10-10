@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useParams, useRouter, notFound } from "next/navigation";
+import { useFirestore, useDoc, useMemoFirebase, useUser } from "@/firebase";
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,7 +24,6 @@ import {
   Info,
   ChevronRight,
   ChevronLeft,
-  Zap,
   Key,
   Repeat,
   ExternalLink,
@@ -36,12 +35,16 @@ import {
   Minus,
   ThumbsUp,
   CornerDownRight,
-  X
+  X,
+  Flame,
+  Clock
 } from "lucide-react";
+import { ProductChatModal } from "@/components/product-chat-modal";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { getProductActiveFlashSale, formatCountdown } from "@/lib/flash-sale";
 import {
   Select,
   SelectContent,
@@ -62,6 +65,7 @@ export default function ProductDetailPage() {
   const id = ((params?.productSlug as string) || (params?.id as string)) || "";
   const router = useRouter();
   const db = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
 
   const [mounted, setMounted] = useState(false);
@@ -79,6 +83,13 @@ export default function ProductDetailPage() {
   });
   const [showMobileSheet, setShowMobileSheet] = useState(false);
   const [otherShopProducts, setOtherShopProducts] = useState<any[]>([]);
+
+  // Real-time tick for Flash Sale countdown
+  const [nowTime, setNowTime] = useState<number>(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNowTime(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const imageSliderRef = useRef<HTMLDivElement>(null);
 
@@ -163,34 +174,73 @@ export default function ProductDetailPage() {
 
   const { data: shop } = useDoc(shopRef);
 
+  const activeFlashSale = useMemo(() => {
+    if (!product?.id || !shop?.flashSales) return null;
+    return getProductActiveFlashSale(product.id, shop.flashSales, nowTime);
+  }, [product?.id, shop?.flashSales, nowTime]);
+
   const isVerified = Boolean(shop?.isVerified ?? shop?.verified ?? shop?.is_verified);
   const isOfficial = Boolean(shop?.isOfficial ?? shop?.official ?? shop?.is_official);
 
-  const handleShare = () => {
-    if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(window.location.href);
+  const handleShare = async () => {
+    if (typeof window === "undefined") return;
+    const shareData = {
+      title: product?.title || "Produk di MarketPoint",
+      text: `Lihat ${product?.title || "produk"} di MarketPoint!`,
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.warn("Share API error, fallback to clipboard:", err);
+        } else {
+          return;
+        }
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       toast({
-        title: "Link produk disalin!",
-        description: "Alamat URL produk telah disalin ke clipboard."
+        title: "Link Produk Disalin! 📋",
+        description: "Alamat URL produk telah disalin ke clipboard.",
       });
       setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Gagal Menyalin",
+        description: "Tidak dapat menyalin tautan.",
+      });
     }
   };
 
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+
   const handleContactSeller = () => {
-    if (shop?.whatsapp) {
-      const msg = encodeURIComponent(`Halo, saya tertarik dengan produk ${product?.title || ''} di MarketPoint.`);
-      window.open(`https://wa.me/${shop.whatsapp}?text=${msg}`, "_blank");
+    const shopSlug = shop?.slug || product?.shopId || "shop";
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      router.push(`/chat/${shopSlug}?productId=${product.id}`);
     } else {
-      toast({
-        title: "Kontak Penjual",
-        description: "Penjual belum mendaftarkan nomor WhatsApp aktif."
-      });
+      setIsChatModalOpen(true);
     }
   };
 
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Periksa status wishlist dari database Firestore
+  useEffect(() => {
+    if (!user || !product?.id || !db) return;
+    const wishRef = doc(db, "users", user.uid, "wishlist", String(product.id));
+    getDoc(wishRef)
+      .then((snap) => {
+        setIsWishlisted(snap.exists());
+      })
+      .catch((err) => console.error("Error checking wishlist status:", err));
+  }, [user, product?.id, db]);
 
   const handleAddToCart = () => {
     toast({
@@ -199,14 +249,58 @@ export default function ProductDetailPage() {
     });
   };
 
-  const handleToggleWishlist = () => {
-    setIsWishlisted((prev) => !prev);
-    toast({
-      title: !isWishlisted ? "Ditambahkan ke Wishlist" : "Dihapus dari Wishlist",
-      description: !isWishlisted
-        ? `"${product?.title}" telah disimpan ke wishlist favorit.`
-        : `"${product?.title}" dihapus dari wishlist.`,
-    });
+  const handleToggleWishlist = async () => {
+    if (!product) return;
+    if (!user) {
+      toast({
+        title: "Perlu Masuk",
+        description: "Silakan masuk terlebih dahulu untuk menyimpan produk ke wishlist.",
+      });
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
+    const wishDocRef = doc(db, "users", user.uid, "wishlist", String(product.id));
+    try {
+      if (isWishlisted) {
+        await deleteDoc(wishDocRef);
+        setIsWishlisted(false);
+        toast({
+          title: "Dihapus dari Wishlist",
+          description: `"${product.title}" dihapus dari wishlist.`,
+        });
+      } else {
+        await setDoc(wishDocRef, {
+          id: String(product.id),
+          productId: String(product.id),
+          title: product.title,
+          slug: product.slug || String(product.id),
+          price: Number(product.price || 0),
+          discountPrice: product.discountPrice ? Number(product.discountPrice) : null,
+          images: product.images || (images && images.length > 0 ? [{ imageUrl: images[0].imageUrl }] : []),
+          ratingAvg: Number(product.ratingAvg || 5.0),
+          salesCount: product.salesCount ? `${product.salesCount} terjual` : "0 terjual",
+          shopName: typeof product.shopName === "string" ? product.shopName : (shop?.name || "MarketPoint"),
+          shopSlug: shop?.slug || "marketpoint",
+          shopLogoUrl: typeof shop?.logoUrl === "string" ? shop.logoUrl : "",
+          shopIsOfficial: Boolean(isOfficial),
+          shopIsVerified: Boolean(isVerified),
+          addedAt: new Date().toISOString(),
+        });
+        setIsWishlisted(true);
+        toast({
+          title: "Ditambahkan ke Wishlist! ❤️",
+          description: `"${product.title}" berhasil disimpan ke wishlist Anda.`,
+        });
+      }
+    } catch (err: any) {
+      console.error("Error toggling wishlist:", err);
+      toast({
+        variant: "destructive",
+        title: "Gagal Memperbarui",
+        description: err.message || "Terjadi kesalahan saat memproses wishlist.",
+      });
+    }
   };
 
   const handleBuyNow = () => {
@@ -214,7 +308,8 @@ export default function ProductDetailPage() {
       title: "Memproses Pesanan",
       description: "Mengarahkan Anda ke halaman checkout pembayaran..."
     });
-    router.push(`/checkout?product=${id}`);
+    const variantParam = selectedVariant?.name ? `&variant=${encodeURIComponent(selectedVariant.name)}` : '';
+    router.push(`/checkout?productId=${id}&quantity=${quantity}${variantParam}`);
   };
 
   if (!mounted || loading) {
@@ -330,27 +425,29 @@ export default function ProductDetailPage() {
   }
 
   if (!product) {
-    return (
-      <main className="flex-1 flex flex-col items-center justify-center p-6 text-center min-h-[60vh]">
-        <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mb-3 border border-border">
-          <Info className="w-8 h-8 text-muted-foreground opacity-40" />
-        </div>
-        <h1 className="text-lg font-bold">Produk Tidak Ditemukan</h1>
-        <p className="text-muted-foreground mt-1 max-w-xs text-xs">
-          Maaf, produk yang Anda cari mungkin telah dihapus oleh penjual atau alamat URL salah.
-        </p>
-        <Button asChild className="mt-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold rounded-xl text-white text-xs h-9 px-6">
-          <Link href="/">Kembali Belanja</Link>
-        </Button>
-      </main>
-    );
+    notFound();
   }
 
   const images = product.images?.length > 0 ? product.images : [{ imageUrl: "https://picsum.photos/seed/placeholder/800/800" }];
-  const currentPrice = selectedVariant ? Number(selectedVariant.price || 0) : Number(product.price || 0);
-  const originalPrice = product.discountPrice ? Number(product.discountPrice) : currentPrice;
-  const hasDiscount = originalPrice > currentPrice;
-  const discountPercent = hasDiscount ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
+
+  const basePrice = selectedVariant
+    ? Number(selectedVariant.price || product.price || 0)
+    : Number(product.price || 0);
+
+  const originalPrice = activeFlashSale
+    ? (selectedVariant ? basePrice : activeFlashSale.originalPrice)
+    : (product.discountPrice ? Number(product.discountPrice) : basePrice);
+
+  const currentPrice = activeFlashSale
+    ? (selectedVariant
+        ? Math.max(100, Math.round(basePrice * (1 - (activeFlashSale.discountPercentage / 100))))
+        : activeFlashSale.discountPrice)
+    : basePrice;
+
+  const hasDiscount = Boolean(activeFlashSale) || originalPrice > currentPrice;
+  const discountPercent = activeFlashSale
+    ? activeFlashSale.discountPercentage
+    : (hasDiscount && originalPrice > 0 ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0);
   const stockCount = Number(product.stockCount || 0);
 
   return (
@@ -391,7 +488,18 @@ export default function ProductDetailPage() {
 
             {/* Discount Badge */}
             {hasDiscount && (
-              <div className="absolute top-2.5 left-2.5 bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-xs shadow-xs uppercase tracking-wider z-10">
+              <div className={cn(
+                "absolute top-0 left-0 text-white text-[9px] font-black px-2.5 py-1 rounded-br-lg shadow-xs uppercase tracking-wider z-10 flex items-center gap-1",
+                activeFlashSale ? "bg-gradient-to-r from-red-600 to-amber-500" : "bg-[#FF5E5E]"
+              )}>
+                {activeFlashSale && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src="/assets/icon/bolt.gif"
+                    alt="Flash Sale"
+                    className="w-3.5 h-3.5 object-contain shrink-0"
+                  />
+                )}
                 HEMAT {discountPercent}%
               </div>
             )}
@@ -527,20 +635,63 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* Pricing Display */}
-          <div className="py-2 space-y-0.5 my-1">
-            {hasDiscount && (
-              <div className="flex items-center gap-1.5">
-                <p className="text-[11px] text-muted-foreground line-through opacity-60">Rp {originalPrice.toLocaleString('id-ID')}</p>
-                <span className="bg-rose-100 text-rose-600 text-[9px] font-bold px-1.5 py-0.5 rounded">-{discountPercent}%</span>
+          {/* Flash Sale Banner if Active */}
+          {activeFlashSale && (
+            <div className="rounded-2xl bg-gradient-to-r from-[#D92D20] via-[#EF4444] to-[#F59E0B] p-3.5 text-white shadow-xs space-y-2 my-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 font-black text-xs uppercase tracking-wider">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/assets/icon/fire.gif"
+                    alt="Flash Sale"
+                    className="w-5 h-5 object-contain shrink-0"
+                  />
+                  <span>Flash Sale Sedang Berlangsung</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-black/35 backdrop-blur-md px-2.5 py-1 rounded-lg text-[11px] font-bold">
+                  <Clock className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Berakhir:</span>
+                  <span className="font-mono text-amber-300 font-extrabold text-xs">
+                    {formatCountdown(Math.max(0, Math.floor((activeFlashSale.endTimeMs - nowTime) / 1000)))}
+                  </span>
+                </div>
               </div>
-            )}
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xs font-bold text-[#00AA5B]">Rp</span>
+
+              {/* Quota bar */}
+              <div className="space-y-1">
+                <div className="w-full bg-black/20 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-white h-full rounded-full transition-all"
+                    style={{
+                      width: `${activeFlashSale.sold > 0 ? Math.min(100, Math.round(((activeFlashSale.sold) / (activeFlashSale.quota || 1)) * 100)) : 0}%`
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-white/95 font-semibold">
+                  <span>{activeFlashSale.remainingQuota <= 5 ? `🔥 Segera Habis! Sisa ${activeFlashSale.remainingQuota} kuota` : `Sisa Kuota: ${activeFlashSale.remainingQuota}`}</span>
+                  <span>Terjual {activeFlashSale.sold} / {activeFlashSale.quota}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Pricing Display */}
+          <div className="py-2 space-y-1 my-1">
+            <div className="flex items-baseline">
               <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#212121]">
-                {currentPrice.toLocaleString('id-ID')}
+                Rp{currentPrice.toLocaleString('id-ID')}
               </span>
             </div>
+            {hasDiscount && (
+              <div className="flex items-center gap-1.5 pt-0.5">
+                <span className="bg-[#FFEAEF] text-[#FF385C] font-bold text-xs px-1.5 py-0.5 rounded-[4px]">
+                  {discountPercent}%
+                </span>
+                <span className="text-xs sm:text-sm text-muted-foreground line-through opacity-70">
+                  Rp{originalPrice.toLocaleString('id-ID')}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Fitur Varian Produk Selector */}
@@ -1000,8 +1151,8 @@ export default function ProductDetailPage() {
 
             {/* Price & Subtotal Section */}
             <div className="pt-3 border-t border-border/50 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">Subtotal</span>
+              <div className="flex items-end justify-between">
+                <span className="text-xs font-medium text-muted-foreground pb-0.5">Subtotal</span>
                 <div className="text-right">
                   {hasDiscount && (
                     <p className="text-[10px] text-muted-foreground line-through opacity-60">
@@ -1310,8 +1461,8 @@ export default function ProductDetailPage() {
 
           {/* Price & Subtotal Section */}
           <div className="pt-3 border-t border-border/50 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">Subtotal</span>
+            <div className="flex items-end justify-between">
+              <span className="text-xs font-medium text-muted-foreground pb-0.5">Subtotal</span>
               <div className="text-right">
                 {hasDiscount && (
                   <p className="text-[10px] text-muted-foreground line-through opacity-60">
@@ -1353,6 +1504,33 @@ export default function ProductDetailPage() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {shop && product && (
+        <ProductChatModal
+          isOpen={isChatModalOpen}
+          onClose={() => setIsChatModalOpen(false)}
+          shop={{
+            id: product.shopId,
+            slug: shop.slug || product.shopId,
+            name: shop.name || shop.shopName || "Toko Penjual",
+            logoUrl: shop.logoUrl || shop.logo,
+            isVerified: isVerified,
+            isOfficial: isOfficial,
+            ratingAvg: Number(shop.ratingAvg || shop.rating || 5.0),
+          }}
+          product={{
+            id: product.id,
+            title: product.title,
+            price: currentPrice,
+            originalPrice: originalPrice,
+            imageUrl: images[0]?.imageUrl,
+            slug: product.slug || product.id,
+            categoryName: product.categoryName,
+            stockType: product.stockType,
+            stockCount: stockCount,
+          }}
+        />
+      )}
     </main>
   );
 }

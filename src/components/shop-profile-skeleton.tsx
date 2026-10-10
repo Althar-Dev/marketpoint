@@ -7,12 +7,12 @@ export function ShopProfileSkeleton() {
   return (
     <main className="flex-1 w-full pt-14 md:pt-16 pb-20 lg:pb-0 bg-[#F8FAFC]">
       {/* Banner Section Skeleton */}
-      <div className="relative h-32 sm:h-44 md:h-72 lg:h-[350px] w-full bg-muted overflow-hidden">
+      <div className="relative h-36 sm:h-52 md:h-72 lg:h-[320px] xl:h-[360px] w-full bg-muted overflow-hidden">
         <Skeleton className="w-full h-full rounded-none" />
       </div>
 
       {/* Shop Info Card Skeleton */}
-      <div className="max-w-screen-xl mx-auto px-4 -mt-10 md:-mt-20 relative z-20 mb-8">
+      <div className="max-w-screen-xl mx-auto px-3 sm:px-4 -mt-4 sm:-mt-6 md:-mt-8 relative z-20 mb-6">
         <Card className="border-border border-[1.5px] shadow-xl rounded-2xl bg-white overflow-hidden relative">
           <CardContent className="p-4 md:p-8 relative">
             <div className="flex flex-row items-start gap-4 md:gap-8">

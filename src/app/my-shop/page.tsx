@@ -17,10 +17,13 @@ import {
   ArrowUpRight,
   ShieldCheck,
   Zap,
-  Star
+  Star,
+  Lock
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
+import { useMerchantShop } from "@/context/merchant-context";
 
 export default function MerchantDashboard() {
   const { user, loading: authLoading } = useUser();
@@ -28,23 +31,32 @@ export default function MerchantDashboard() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
+  const {
+    shop,
+    shopId,
+    loading: merchantLoading,
+    isOwner,
+    isStaff,
+    staffRole,
+    staffRoleLabel,
+    staffPermissions,
+  } = useMerchantShop();
+
+  const activeShopTargetId = shopId || user?.uid;
+
+  const canAccessFinance = isOwner || staffRole === "CO_OWNER" || !!staffPermissions?.finance;
+
   const userRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "users", user.uid);
   }, [db, user]);
 
-  const shopRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(db, "shops", user.uid);
-  }, [db, user]);
-
   const walletRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(db, "users", user.uid, "wallet", "info");
-  }, [db, user]);
+    if (!activeShopTargetId) return null;
+    return doc(db, "users", activeShopTargetId, "wallet", "info");
+  }, [db, activeShopTargetId]);
 
   const { data: userData, loading: userLoading } = useDoc(userRef);
-  const { data: shop, loading: shopLoading } = useDoc(shopRef);
   const { data: wallet } = useDoc(walletRef);
 
   useEffect(() => {
@@ -52,7 +64,7 @@ export default function MerchantDashboard() {
   }, []);
 
   useEffect(() => {
-    if (!mounted || authLoading || userLoading || shopLoading) return;
+    if (!mounted || authLoading || userLoading || merchantLoading) return;
 
     if (!user) {
       router.push("/login");
@@ -61,13 +73,15 @@ export default function MerchantDashboard() {
 
     const hasShopFlag = userData?.hasShop === true;
     const hasShopDoc = !!shop;
+    const isStaffMember = isStaff || !!userData?.staffShopId || userData?.isStaff === true;
 
-    if (!hasShopFlag && !hasShopDoc) {
+    // Staff or owner should never be prompted to create a shop
+    if (!hasShopFlag && !hasShopDoc && !isStaffMember) {
       router.replace("/my-shop/setup");
     }
-  }, [userData, userLoading, shop, shopLoading, user, authLoading, router, mounted]);
+  }, [userData, userLoading, shop, merchantLoading, isStaff, user, authLoading, router, mounted]);
 
-  if (!mounted || authLoading || userLoading || shopLoading || !user) {
+  if (!mounted || authLoading || userLoading || merchantLoading || !user) {
     return (
       <main className="flex-1 p-3 md:p-6 lg:p-8">
         <div className="max-w-screen-xl mx-auto space-y-5">
@@ -100,7 +114,14 @@ export default function MerchantDashboard() {
 
         <div className="flex items-center justify-between gap-4">
           <div className="hidden md:block">
-            <h2 className="text-xl font-bold tracking-tight text-[#212121]">Ringkasan Toko</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold tracking-tight text-[#212121]">Ringkasan Toko</h2>
+              {isStaff && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">
+                  {staffRoleLabel || "Staf Toko"}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5">Pantau performa dan kelola operasional toko Anda.</p>
           </div>
           <div className="flex gap-2 ml-auto">
@@ -118,33 +139,25 @@ export default function MerchantDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
 
           <div className="lg:col-span-8">
-            <Card className="h-full border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
-              <CardHeader className="p-5 pb-0 flex flex-row items-center justify-between border-none">
-                <div className="space-y-0.5">
-                  <CardTitle className="text-[13px] font-bold text-[#2E3137]">Statistik Hari Ini</CardTitle>
-                  <p className="text-[10px] text-muted-foreground font-medium">Update real-time performa toko.</p>
+            <div className="grid grid-cols-2 gap-3.5 sm:gap-4 h-full">
+              {[
+                { label: "Pesanan Baru", value: "0", color: "text-foreground", sub: "Menunggu diproses" },
+                { label: "Saldo Tertahan", value: "Rp 0", color: "text-orange-600", sub: "Proses verifikasi" },
+                { label: "Pendapatan", value: "Rp 0", color: "text-[#00AA5B]", sub: "Hari ini" },
+                { label: "Pengunjung", value: "0", color: "text-foreground", sub: "Trafik toko" },
+              ].map((stat, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 sm:p-5 rounded-2xl bg-white border-[1.5px] border-border hover:border-[#00AA5B] transition-all cursor-pointer shadow-xs group flex flex-col justify-center"
+                >
+                  <p className={cn("text-xl sm:text-2xl font-black mb-1 tracking-tight", stat.color)}>
+                    {stat.value}
+                  </p>
+                  <p className="text-xs sm:text-sm font-bold text-[#2E3137]">{stat.label}</p>
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 font-medium">{stat.sub}</p>
                 </div>
-                <Link href="/my-shop/stats" className="text-[10px] font-bold text-[#00AA5B] hover:underline flex items-center gap-1">
-                  Detail <ArrowRight className="w-3 h-3" />
-                </Link>
-              </CardHeader>
-              <CardContent className="p-5 pt-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { label: "Pesanan Baru", value: "0", color: "text-foreground", sub: "Menunggu diproses" },
-                    { label: "Saldo Tertahan", value: "Rp 0", color: "text-orange-600", sub: "Proses verifikasi" },
-                    { label: "Pendapatan", value: "Rp 0", color: "text-[#00AA5B]", sub: "Hari ini" },
-                    { label: "Pengunjung", value: "0", color: "text-foreground", sub: "Trafik toko" },
-                  ].map((stat, idx) => (
-                    <div key={idx} className="p-4 rounded-xl bg-white border-[1.5px] border-border hover:border-[#00AA5B] transition-all cursor-pointer shadow-sm group">
-                      <p className={cn("text-[15px] font-black mb-0.5 tracking-tight", stat.color)}>{stat.value}</p>
-                      <p className="text-[10px] font-bold text-[#2E3137]">{stat.label}</p>
-                      <p className="text-[8px] text-muted-foreground mt-0.5 opacity-60 font-medium">{stat.sub}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
           </div>
 
           <div className="lg:col-span-4 space-y-6">
@@ -157,21 +170,48 @@ export default function MerchantDashboard() {
                   <div className="flex items-center gap-2 opacity-90 mb-1.5">
                     <img src="/assets/icon/wallets.png" className="w-4 h-4" alt="Wallet" />
                     <span className="text-[11px] font-bold tracking-wider">Saldo Penghasilan</span>
+                    {!canAccessFinance && (
+                      <span className="flex items-center gap-1 text-[9px] bg-black/20 px-2 py-0.5 rounded-full font-medium ml-auto">
+                        <Lock className="w-2.5 h-2.5" /> Dibatasi
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-medium">Rp</span>
-                    <p className="text-3xl font-black tracking-tighter">
-                      {wallet?.balance?.toLocaleString('id-ID') || 0}
-                    </p>
-                  </div>
+                  {canAccessFinance ? (
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-medium">Rp</span>
+                      <p className="text-3xl font-black tracking-tighter">
+                        {wallet?.balance?.toLocaleString('id-ID') || 0}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-medium">Rp</span>
+                      <p className="text-2xl font-black tracking-widest opacity-60">
+                        ••••••••
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Button variant="secondary" className="h-9 rounded-xl bg-white/20 hover:bg-white/30 border-none text-white font-bold text-[11px] transition-all">
-                    Tarik Saldo
-                  </Button>
-                  <Button variant="secondary" className="h-9 rounded-xl bg-white/20 hover:bg-white/30 border-none text-white font-bold text-[11px] transition-all">
-                    Riwayat
-                  </Button>
+                  {canAccessFinance ? (
+                    <>
+                      <Button asChild variant="secondary" className="h-9 rounded-xl bg-white/20 hover:bg-white/30 border-none text-white font-bold text-[11px] transition-all">
+                        <Link href="/my-shop/wallet">Tarik Saldo</Link>
+                      </Button>
+                      <Button asChild variant="secondary" className="h-9 rounded-xl bg-white/20 hover:bg-white/30 border-none text-white font-bold text-[11px] transition-all">
+                        <Link href="/my-shop/wallet">Riwayat</Link>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button disabled variant="secondary" className="h-9 rounded-xl bg-white/10 border-none text-white/50 font-medium text-[11px] cursor-not-allowed">
+                        Tarik Saldo
+                      </Button>
+                      <Button disabled variant="secondary" className="h-9 rounded-xl bg-white/10 border-none text-white/50 font-medium text-[11px] cursor-not-allowed">
+                        Riwayat
+                      </Button>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

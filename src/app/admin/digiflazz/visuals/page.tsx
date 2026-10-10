@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -175,7 +173,6 @@ const GRADIENT_PRESETS = [
 
 export default function DigiFlazzVisualsPage() {
   const { toast } = useToast();
-  const db = useFirestore();
 
   const iconFileInputRef = useRef<HTMLInputElement>(null);
   const bgFileInputRef = useRef<HTMLInputElement>(null);
@@ -195,11 +192,8 @@ export default function DigiFlazzVisualsPage() {
   const [galleryIcons, setGalleryIcons] = useState<GalleryDbAsset[]>([]);
   const [galleryBackgrounds, setGalleryBackgrounds] = useState<GalleryDbAsset[]>([]);
 
-  // Firestore Visual Settings Ref
-  const visualsDocRef = useMemoFirebase(() => doc(db, "settings", "digiflazz_visuals"), [db]);
-  const { data: visualsData, loading: visualsLoading } = useDoc(visualsDocRef);
-
   // Local Brand Visual Configurations state
+  const [visualsLoading, setVisualsLoading] = useState(false);
   const [brandVisuals, setBrandVisuals] = useState<Record<string, BrandVisual>>({});
   const [categoryVisuals, setCategoryVisuals] = useState<Record<string, CategoryVisual>>({});
   const [defaultBgGradient, setDefaultBgGradient] = useState("linear-gradient(135deg, #1E293B 0%, #0F172A 100%)");
@@ -211,32 +205,58 @@ export default function DigiFlazzVisualsPage() {
     setMounted(true);
     fetchCatalogMetadata();
     fetchGalleryAssets();
+    fetchVisualSettings();
   }, []);
 
-  useEffect(() => {
-    if (visualsData) {
-      if (visualsData.brands) setBrandVisuals(visualsData.brands);
-      if (visualsData.categories) setCategoryVisuals(visualsData.categories);
-      if (visualsData.defaultBgGradient) setDefaultBgGradient(visualsData.defaultBgGradient);
+  const fetchVisualSettings = async () => {
+    setVisualsLoading(true);
+    try {
+      const res = await fetch("/api/admin/digiflazz/visuals");
+      const data = await res.json();
+      if (data.success && data.data) {
+        if (data.data.brands) setBrandVisuals(data.data.brands);
+        if (data.data.categories) setCategoryVisuals(data.data.categories);
+        if (data.data.defaultBgGradient) setDefaultBgGradient(data.data.defaultBgGradient);
+      }
+    } catch (e) {
+      console.warn("Gagal mengambil visual settings dari /api/admin/digiflazz/visuals:", e);
+    } finally {
+      setVisualsLoading(false);
     }
-  }, [visualsData]);
+  };
 
   const fetchCatalogMetadata = async () => {
     try {
       const res = await fetch("/api/admin/digiflazz/products");
       const data = await res.json();
-      if (data.success && Array.isArray(data.data)) {
+      if (data.success) {
         const bSet = new Set<string>();
         const cSet = new Set<string>();
-        data.data.forEach((item: any) => {
-          if (item.brand) bSet.add(item.brand.toUpperCase());
-          if (item.category) cSet.add(item.category);
-        });
-        const sortedBrands = Array.from(bSet).sort();
-        const sortedCategories = Array.from(cSet).sort();
+
+        if (Array.isArray(data.brands)) {
+          data.brands.forEach((b: string) => {
+            if (b && typeof b === "string" && b.trim()) {
+              bSet.add(b.trim());
+            }
+          });
+        }
+
+        if (Array.isArray(data.data)) {
+          data.data.forEach((item: any) => {
+            if (item.brand && typeof item.brand === "string" && item.brand.trim()) {
+              bSet.add(item.brand.trim());
+            }
+            if (item.category && typeof item.category === "string" && item.category.trim()) {
+              cSet.add(item.category.trim());
+            }
+          });
+        }
+
+        const sortedBrands = Array.from(bSet).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+        const sortedCategories = Array.from(cSet).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
         setBrandsList(sortedBrands);
         setCategoriesList(sortedCategories);
-        if (sortedBrands.length > 0) {
+        if (sortedBrands.length > 0 && !selectedBrandKey) {
           setSelectedBrandKey(sortedBrands[0]);
         }
       }
@@ -315,19 +335,29 @@ export default function DigiFlazzVisualsPage() {
   };
 
   const filteredBrands = useMemo(() => {
-    if (!searchBrand.trim()) return brandsList;
+    const valid = brandsList.filter((b) => typeof b === "string" && b.trim().length > 0);
+    if (!searchBrand.trim()) return valid;
     const q = searchBrand.toLowerCase().trim();
-    return brandsList.filter((b) => b.toLowerCase().includes(q));
+    return valid.filter((b) => b.toLowerCase().includes(q));
   }, [brandsList, searchBrand]);
 
   const handleUpdateBrandVisual = (brandName: string, updates: Partial<BrandVisual>) => {
-    setBrandVisuals((prev) => ({
-      ...prev,
-      [brandName]: {
-        ...(prev[brandName] || { brand: brandName }),
-        ...updates,
-      },
-    }));
+    const target = brandName.trim().toLowerCase();
+    setBrandVisuals((prev) => {
+      let existing: any = null;
+      for (const [k, v] of Object.entries(prev)) {
+        if (k.trim().toLowerCase() === target) {
+          existing = { ...(existing || {}), ...v };
+        }
+      }
+      return {
+        ...prev,
+        [brandName]: {
+          ...(existing || { brand: brandName }),
+          ...updates,
+        },
+      };
+    });
   };
 
   const handleApplyPresetAll = () => {
@@ -358,20 +388,22 @@ export default function DigiFlazzVisualsPage() {
     if (!mounted) return;
     setSaving(true);
     try {
-      await setDoc(
-        visualsDocRef,
-        {
+      const res = await fetch("/api/admin/digiflazz/visuals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           brands: brandVisuals,
           categories: categoryVisuals,
           defaultBgGradient,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+        }),
+      });
+
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Gagal menyimpan visual settings");
 
       toast({
         title: "Tersimpan!",
-        description: "Pengaturan icon & background produk DigiFlazz berhasil disimpan ke Firestore.",
+        description: "Pengaturan icon & background produk DigiFlazz berhasil disimpan ke database/catalog.db!",
       });
     } catch (e: any) {
       toast({
@@ -384,9 +416,26 @@ export default function DigiFlazzVisualsPage() {
     }
   };
 
-  if (!mounted) return null;
+  const currentBrandConfig = useMemo(() => {
+    if (!selectedBrandKey) return null;
+    const target = selectedBrandKey.trim().toLowerCase();
+    let merged: any = null;
+    for (const [k, v] of Object.entries(brandVisuals)) {
+      if (k.trim().toLowerCase() === target) {
+        merged = { ...(merged || {}), ...v };
+      }
+    }
+    return merged || { brand: selectedBrandKey };
+  }, [selectedBrandKey, brandVisuals]);
 
-  const currentBrandConfig = selectedBrandKey ? (brandVisuals[selectedBrandKey] || { brand: selectedBrandKey }) : null;
+  if (!mounted) {
+    return (
+      <main className="p-6 md:p-10 flex flex-col items-center justify-center min-h-[50vh] bg-[#F9FAFB]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#00AA5B] mb-2" />
+        <span className="text-xs font-bold text-slate-600">Memuat Visual Manager...</span>
+      </main>
+    );
+  }
 
   return (
     <main className="p-3 md:p-6 lg:p-8 space-y-5 md:space-y-6 bg-[#F9FAFB] min-h-screen">
@@ -538,24 +587,31 @@ export default function DigiFlazzVisualsPage() {
               {/* Brand Selector Dropdown */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-slate-700">Pilih Brand DigiFlazz</Label>
-                <Select value={selectedBrandKey} onValueChange={setSelectedBrandKey}>
+                <Select value={selectedBrandKey || undefined} onValueChange={setSelectedBrandKey}>
                   <SelectTrigger className="h-10 rounded-xl text-xs font-bold bg-slate-50/70 border-border/70">
                     <SelectValue placeholder="Pilih Brand..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl max-h-60">
-                    {filteredBrands.map((b) => (
-                      <SelectItem key={b} value={b} className="text-xs font-semibold">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[#00AA5B]"></span>
-                          <span>{b}</span>
-                          {brandVisuals[b] && (
-                            <Badge variant="outline" className="text-[8px] font-bold py-0 px-1 bg-green-50 text-green-700 border-green-200">
-                              Customized
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {filteredBrands.filter((b) => typeof b === "string" && b.trim() !== "").map((b) => {
+                      const isCustomized = Boolean(
+                        brandVisuals[b] ||
+                        brandVisuals[b.toUpperCase()] ||
+                        Object.keys(brandVisuals).some((k) => k.toLowerCase() === b.toLowerCase())
+                      );
+                      return (
+                        <SelectItem key={b} value={b} className="text-xs font-semibold">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-[#00AA5B]"></span>
+                            <span>{b}</span>
+                            {isCustomized && (
+                              <Badge variant="outline" className="text-[8px] font-bold py-0 px-1 bg-green-50 text-green-700 border-green-200">
+                                Customized
+                              </Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>

@@ -101,11 +101,16 @@ export default function MerchantSetupPage() {
   const { data: userData, loading: userLoading } = useDoc(userRef);
   const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
+  // Check whether the user already owns their personal shop (shops/{user.uid})
+  const hasPersonalShop = Boolean(
+    shop && (shop.name || shop.shopName || shop.slug || shop.ownerId || shop.createdAt)
+  );
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Redirect logic
+  // Redirect logic: Only redirect if user already owns their personal shop
   useEffect(() => {
     if (!mounted || authLoading || userLoading || shopLoading) return;
 
@@ -114,11 +119,11 @@ export default function MerchantSetupPage() {
       return;
     }
 
-    // If user already has a shop, redirect to my-shop dashboard
-    if (userData?.hasShop === true || !!shop) {
+    // If user already owns their personal shop, redirect to my-shop dashboard
+    if (hasPersonalShop) {
       router.replace("/my-shop");
     }
-  }, [user, authLoading, userData, userLoading, shop, shopLoading, router, mounted]);
+  }, [user, authLoading, userLoading, shopLoading, hasPersonalShop, router, mounted]);
 
   // Availability States for Name & Slug
   const [isCheckingName, setIsCheckingName] = useState(false);
@@ -399,8 +404,14 @@ export default function MerchantSetupPage() {
 
       await setDoc(userRef, {
         hasShop: true,
+        hasOwnShop: true,
+        activeShopId: user.uid,
         shopSlug: slug
       }, { merge: true });
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("active_merchant_shop_id", user.uid);
+      }
 
       // Send WhatsApp Shop Verification Success Notification via WA Bot
       try {
@@ -445,7 +456,14 @@ export default function MerchantSetupPage() {
     }
   };
 
-  if (!mounted || authLoading || userLoading || shopLoading || !user || (userData?.hasShop || !!shop)) {
+  if (
+    !mounted ||
+    authLoading ||
+    userLoading ||
+    shopLoading ||
+    !user ||
+    hasPersonalShop
+  ) {
     return (
       <div className="p-3 md:p-6 lg:p-8">
         <div className="max-w-screen-md mx-auto space-y-5">
@@ -887,7 +905,7 @@ export default function MerchantSetupPage() {
           <div className="py-3 space-y-4">
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-center space-y-2">
               <p className="text-xs font-bold text-amber-700 leading-snug">
-                Nomor WhatsApp Anda (+{whatsapp}) belum terdaftar di Komunitas WhatsApp MarketPoint.
+                Nomor WhatsApp Anda ({whatsapp}) belum terdaftar di Komunitas WhatsApp MarketPoint.
               </p>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
                 Sebelum mendapatkan kode OTP dan memverifikasi toko, Anda diwajibkan bergabung ke komunitas resmi seller MarketPoint terlebih dahulu.

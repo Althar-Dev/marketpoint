@@ -4,7 +4,7 @@ import {
   updateCommissionSettings,
   updateDigiFlazzSettings,
 } from "@/lib/database/settings";
-import { testXenditConnection } from "@/lib/xendit";
+import { testXenditConnection, getXenditPaymentChannels } from "@/lib/xendit";
 import { checkDigiFlazzBalance, getDigiFlazzPriceList } from "@/lib/digiflazz";
 
 export async function GET() {
@@ -54,6 +54,13 @@ export async function POST(req: Request) {
       const { secretKey } = body;
       if (!secretKey) return NextResponse.json({ success: false, message: "Secret key kosong" }, { status: 400 });
       const result = await testXenditConnection(secretKey);
+      return NextResponse.json(result);
+    }
+
+    if (action === "get_xendit_channels") {
+      const { secretKey } = body;
+      if (!secretKey) return NextResponse.json({ success: false, message: "Secret key kosong" }, { status: 400 });
+      const result = await getXenditPaymentChannels(secretKey);
       return NextResponse.json(result);
     }
 

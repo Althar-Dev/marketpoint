@@ -2,9 +2,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, where, limit } from "firebase/firestore";
+import { useParams, useRouter, notFound } from "next/navigation";
+import { ShopHeader } from "@/components/shop-header";
+import { MarketHeader } from "@/components/market-header";
+import { MarketFooter } from "@/components/market-footer";
+
+const RESERVED_PREFIXES = new Set([
+  "admin",
+  "api",
+  "topup",
+  "my-shop",
+  "products",
+  "search",
+  "settings",
+  "profile",
+  "wallet",
+  "terms",
+  "privacy",
+  "login",
+  "register",
+  "checkout",
+  "assets",
+  "favicon.ico"
+]);
+import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase";
+import { collection, query, where, limit, doc, getDoc, setDoc, deleteDoc, updateDoc, increment } from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +50,7 @@ import {
   ShoppingBag,
   Clock,
   Heart,
+  Users,
   Search,
   CheckCircle2,
   ShieldCheck,
@@ -128,10 +152,16 @@ const SHOP_REVIEWS = [
 
 export default function ShopProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string;
   const db = useFirestore();
+  const { user } = useUser();
+  const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState("products");
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followersCount, setFollowersCount] = useState<number>(1250);
 
   useEffect(() => {
     setMounted(true);
@@ -145,30 +175,143 @@ export default function ShopProfilePage() {
   const { data: shops, loading } = useCollection(shopQuery);
   const shop = shops && shops.length > 0 ? shops[0] : null;
 
-  if (!mounted || loading) {
-    return <ShopProfileSkeleton />;
+  // Sync followers count dari data toko
+  useEffect(() => {
+    if (shop) {
+      const count = typeof shop.followersCount === 'number' 
+        ? shop.followersCount 
+        : typeof shop.followers === 'number' 
+        ? shop.followers 
+        : 1250;
+      setFollowersCount(count);
+    }
+  }, [shop]);
+
+  // Cek status follow user terhadap toko
+  useEffect(() => {
+    if (!user || !shop?.id || !db) return;
+    const followDocRef = doc(db, "users", user.uid, "followedShops", shop.id);
+    getDoc(followDocRef)
+      .then((snap) => {
+        setIsFollowing(snap.exists());
+      })
+      .catch((err) => console.error("Error checking follow status:", err));
+  }, [user, shop?.id, db]);
+
+  const formatFollowers = (count: number) => {
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1).replace(/\.0$/, '')}rb pengikut`;
+    }
+    return `${count} pengikut`;
+  };
+
+  if (slug && RESERVED_PREFIXES.has(slug.toLowerCase())) {
+    notFound();
   }
 
-  if (!shop) {
+  if (!mounted || loading) {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center p-6 text-center min-h-[60vh]">
-        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4 border-[1.5px] border-border">
-          <Info className="w-10 h-10 text-muted-foreground" />
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-body text-[#212121]">
+        <div className="hidden lg:block">
+          <MarketHeader />
         </div>
-        <h1 className="text-xl font-bold">Toko tidak ditemukan</h1>
-        <p className="text-muted-foreground mt-2 max-w-xs text-sm">
-          Maaf, toko dengan alamat ini tidak tersedia atau telah dihapus.
-        </p>
-        <Button asChild className="mt-6 bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold rounded-xl text-white">
-          <Link href="/">Kembali ke beranda</Link>
-        </Button>
-      </main>
+        <div className="lg:hidden">
+          <ShopHeader />
+        </div>
+        <div className="flex-1">
+          <ShopProfileSkeleton />
+        </div>
+        <MarketFooter />
+      </div>
     );
   }
 
-  const handleContactWhatsApp = () => {
-    if (shop.whatsapp) {
-      window.open(`https://wa.me/${shop.whatsapp}`, "_blank");
+  if (!shop) {
+    notFound();
+  }
+
+  const handleChat = () => {
+    if (user && (user.uid === shop.id || user.uid === (shop as any).userId || user.uid === (shop as any).ownerId)) {
+      toast({
+        title: "Pemberitahuan",
+        description: "Ini adalah toko milik Anda sendiri.",
+      });
+      return;
+    }
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(`/chat/${shop.slug}`)}`);
+      return;
+    }
+    router.push(`/chat/${shop.slug}`);
+  };
+
+  const handleToggleFollow = async () => {
+    if (!user) {
+      toast({
+        title: "Perlu Masuk",
+        description: "Silakan masuk terlebih dahulu untuk mengikuti toko ini.",
+      });
+      router.push(`/login?redirect=${encodeURIComponent(`/${shop.slug}`)}`);
+      return;
+    }
+
+    if (user.uid === shop.id || user.uid === (shop as any).userId || user.uid === (shop as any).ownerId) {
+      toast({
+        variant: "destructive",
+        title: "Pemberitahuan",
+        description: "Anda tidak dapat mengikuti toko milik Anda sendiri.",
+      });
+      return;
+    }
+
+    setFollowLoading(true);
+    const followDocRef = doc(db, "users", user.uid, "followedShops", shop.id);
+    const shopDocRef = doc(db, "shops", shop.id);
+
+    try {
+      if (isFollowing) {
+        // Unfollow
+        await deleteDoc(followDocRef);
+        try {
+          await updateDoc(shopDocRef, { followersCount: increment(-1) });
+        } catch {}
+        setIsFollowing(false);
+        setFollowersCount((prev) => Math.max(0, prev - 1));
+        toast({
+          title: "Berhenti Mengikuti",
+          description: `Anda telah berhenti mengikuti ${shop.name || "toko ini"}.`,
+        });
+      } else {
+        // Follow
+        await setDoc(followDocRef, {
+          shopId: shop.id,
+          shopName: shop.name || shop.slug,
+          shopSlug: shop.slug,
+          logoUrl: shop.logoUrl || null,
+          city: shop.location?.city || null,
+          isOfficial: Boolean(shop.isOfficial || shop.official),
+          isVerified: Boolean(shop.isVerified || shop.verified),
+          followedAt: new Date().toISOString(),
+        });
+        try {
+          await updateDoc(shopDocRef, { followersCount: increment(1) });
+        } catch {}
+        setIsFollowing(true);
+        setFollowersCount((prev) => prev + 1);
+        toast({
+          title: "Berhasil Mengikuti Toko! ❤️",
+          description: `Anda kini mengikuti ${shop.name || "toko ini"}. Anda akan mendapatkan update promo & rilis produk terbaru mereka.`,
+        });
+      }
+    } catch (err: any) {
+      console.error("Error toggling follow:", err);
+      toast({
+        variant: "destructive",
+        title: "Gagal Memperbarui",
+        description: err.message || "Terjadi kesalahan saat memproses permintaan follow.",
+      });
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -185,15 +328,22 @@ export default function ShopProfilePage() {
   };
 
   return (
-    <main className="flex-1 w-full pt-14 md:pt-16 pb-20 lg:pb-0">
-      {/* Banner Section - Optimized ratio */}
-      <div className="relative h-28 sm:h-40 md:h-52 lg:h-60 w-full bg-muted overflow-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-body text-[#212121]">
+      <div className="hidden lg:block">
+        <MarketHeader />
+      </div>
+      <div className="lg:hidden">
+        <ShopHeader />
+      </div>
+      <main className="flex-1 w-full pt-14 md:pt-16 pb-20 lg:pb-0">
+      {/* Banner Section */}
+      <div className="relative h-36 sm:h-52 md:h-72 lg:h-[320px] xl:h-[360px] w-full bg-muted overflow-hidden">
         {shop.bannerUrl ? (
           <Image
             src={shop.bannerUrl}
             alt={shop.name}
             fill
-            className="object-cover"
+            className="object-cover object-center"
             priority
             data-ai-hint="shop banner"
           />
@@ -202,11 +352,10 @@ export default function ShopProfilePage() {
             <ShoppingBag className="w-16 h-16 text-[#00AA5B] opacity-10" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
       </div>
 
       {/* Shop Info Card */}
-      <div className="max-w-screen-xl mx-auto px-3 sm:px-4 -mt-8 sm:-mt-12 md:-mt-14 relative z-20 mb-6">
+      <div className="max-w-screen-xl mx-auto px-3 sm:px-4 -mt-4 sm:-mt-6 md:-mt-8 relative z-20 mb-6">
         <Card className="border-border border-[1px] shadow-lg rounded-2xl bg-white overflow-hidden relative">
           <CardContent className="p-3.5 sm:p-5 md:p-6 relative">
 
@@ -366,17 +515,22 @@ export default function ShopProfilePage() {
                       <span className="text-[11px] font-medium opacity-60">(2.5rb ulasan)</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground/60" />
-                      <span className="text-[11px] font-medium">Aktif 5 menit lalu</span>
+                      <Users className="w-4 h-4 text-muted-foreground/60" />
+                      <span className="text-[11px] font-medium">{formatFollowers(followersCount)}</span>
                     </div>
                   </div>
 
                   {/* Mobile Stats */}
-                  <div className="flex md:hidden items-center gap-3 mt-1.5 text-muted-foreground">
+                  <div className="flex md:hidden items-center gap-2.5 mt-1.5 text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
                       <span className="text-[10px] font-bold text-[#212121]">4.9</span>
                       <span className="text-[9px] font-medium opacity-60">(2.5rb ulasan)</span>
+                    </div>
+                    <span className="text-muted-foreground/30">|</span>
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3 h-3 text-muted-foreground/60" />
+                      <span className="text-[10px] font-bold text-[#212121]">{formatFollowers(followersCount)}</span>
                     </div>
                     <span className="text-muted-foreground/30">|</span>
                     <div className="flex items-center gap-1">
@@ -389,13 +543,24 @@ export default function ShopProfilePage() {
                 {/* Desktop Action Buttons */}
                 <div className="hidden md:flex items-center gap-3 pt-6">
                   <Button
-                    onClick={handleContactWhatsApp}
+                    onClick={handleChat}
                     className="h-10 px-8 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2 shadow-lg shadow-[#00AA5B]/10 transition-transform active:scale-95"
                   >
                     <MessageCircle className="w-4 h-4" /> Chat
                   </Button>
-                  <Button variant="outline" className="h-10 px-8 rounded-xl border-border font-bold text-xs gap-2 hover:bg-[#F8FAFC] transition-transform active:scale-95">
-                    <Heart className="w-4 h-4" /> Follow
+                  <Button
+                    variant="outline"
+                    onClick={handleToggleFollow}
+                    disabled={followLoading}
+                    className={cn(
+                      "h-10 px-8 rounded-xl font-bold text-xs gap-2 transition-all active:scale-95",
+                      isFollowing
+                        ? "border-[#00AA5B] text-[#00AA5B] bg-[#00AA5B]/10 hover:bg-[#00AA5B]/15"
+                        : "border-border hover:bg-[#F8FAFC]"
+                    )}
+                  >
+                    <Heart className={cn("w-4 h-4 transition-colors", isFollowing ? "fill-red-500 text-red-500" : "text-muted-foreground")} />
+                    {isFollowing ? "Mengikuti" : "Follow"}
                   </Button>
                   <Button
                     variant="outline"
@@ -412,13 +577,24 @@ export default function ShopProfilePage() {
             {/* Mobile Action Buttons */}
             <div className="flex md:hidden items-center gap-2 mt-6 pt-4 border-t border-border/50">
               <Button
-                onClick={handleContactWhatsApp}
+                onClick={handleChat}
                 className="flex-1 h-9 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-[10px] gap-2 shadow-sm"
               >
                 <MessageCircle className="w-3.5 h-3.5" /> Chat
               </Button>
-              <Button variant="outline" className="flex-1 h-9 rounded-xl border-border font-bold text-[10px] gap-2">
-                <Heart className="w-3.5 h-3.5" /> Follow
+              <Button
+                variant="outline"
+                onClick={handleToggleFollow}
+                disabled={followLoading}
+                className={cn(
+                  "flex-1 h-9 rounded-xl font-bold text-[10px] gap-2 transition-all",
+                  isFollowing
+                    ? "border-[#00AA5B] text-[#00AA5B] bg-[#00AA5B]/10 hover:bg-[#00AA5B]/15"
+                    : "border-border"
+                )}
+              >
+                <Heart className={cn("w-3.5 h-3.5 transition-colors", isFollowing ? "fill-red-500 text-red-500" : "")} />
+                {isFollowing ? "Mengikuti" : "Follow"}
               </Button>
             </div>
           </CardContent>
@@ -672,5 +848,7 @@ export default function ShopProfilePage() {
         </div>
       </div>
     </main>
+      <MarketFooter />
+    </div>
   );
 }

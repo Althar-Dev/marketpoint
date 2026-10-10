@@ -477,8 +477,14 @@ function SearchContent() {
             ) : (
               /* Tokopedia Empty State for Produk */
               <div className="py-12 sm:py-16 px-4 flex flex-col items-center justify-center text-center space-y-4 bg-white rounded-2xl border border-border/60 my-6 shadow-xs">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#00AA5B]/10 rounded-full flex items-center justify-center border border-[#00AA5B]/20">
-                  <Store className="w-8 h-8 sm:w-10 sm:h-10 text-[#00AA5B]" />
+                <div className="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto drop-shadow-sm">
+                  <Image
+                    src="/assets/img/product.png"
+                    alt="Oops, produknya nggak ketemu"
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 640px) 192px, 224px"
+                  />
                 </div>
                 <div className="space-y-1 max-w-xs">
                   <h3 className="text-sm sm:text-base font-black text-foreground">
@@ -545,9 +551,15 @@ function SearchContent() {
                                 <img src="/assets/badge/officials.png" alt="Official" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0" />
                               )}
                             </div>
-                            <p className="text-[10px] sm:text-xs font-medium text-muted-foreground/80 truncate">
-                              {shop.city || "Jakarta Pusat"}
-                            </p>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400] shrink-0" />
+                              <span className="text-[10px] sm:text-xs font-bold text-foreground">
+                                {Number(shop.ratingAvg || shop.rating || 5.0).toFixed(1)}
+                              </span>
+                              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground/70">
+                                ({shop.totalReviews || shop.reviewsCount || "2.5rb"} ulasan)
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -596,8 +608,14 @@ function SearchContent() {
             ) : (
               /* Tokopedia Empty State for Toko */
               <div className="py-12 sm:py-16 px-4 flex flex-col items-center justify-center text-center space-y-4 bg-white rounded-2xl border border-border/60 my-6 shadow-xs w-full">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#00AA5B]/10 rounded-full flex items-center justify-center border border-[#00AA5B]/20">
-                  <Store className="w-8 h-8 sm:w-10 sm:h-10 text-[#00AA5B]" />
+                <div className="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto drop-shadow-sm">
+                  <Image
+                    src="/assets/img/shop.png"
+                    alt="Oops, tokonya nggak ketemu"
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 640px) 192px, 224px"
+                  />
                 </div>
                 <div className="space-y-1 max-w-xs">
                   <h3 className="text-sm sm:text-base font-black text-foreground">

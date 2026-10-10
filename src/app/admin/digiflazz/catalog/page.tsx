@@ -73,22 +73,14 @@ export default function DigiFlazzCatalogPage() {
   const [mounted, setMounted] = useState(false);
   const [syncingProducts, setSyncingProducts] = useState(false);
   const [clearingCatalog, setClearingCatalog] = useState(false);
-
-  // Firestore Document Binding for Credentials
   const digiflazzDocRef = useMemoFirebase(() => doc(db, "settings", "digiflazz"), [db]);
   const { data: digiflazzData } = useDoc(digiflazzDocRef);
-
-  // Local Credentials for Sync
   const [username, setUsername] = useState("");
   const [apiKey, setApiKey] = useState("");
-
-  // Synced Products & Storage State
   const [productsList, setProductsList] = useState<DigiFlazzItem[]>([]);
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [dbSize, setDbSize] = useState<string>("0 KB");
   const [loadingProducts, setLoadingProducts] = useState(true);
-
-  // Filter & Sort States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCmd, setSelectedCmd] = useState<"all" | "prepaid" | "pasca">("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -96,8 +88,11 @@ export default function DigiFlazzCatalogPage() {
   const [selectedSort, setSelectedSort] = useState<string>("name_asc");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "inactive">("all");
   const [copiedSku, setCopiedSku] = useState<string | null>(null);
-
-  // Pagination State
+  const [deletingSku, setDeletingSku] = useState<string | null>(null);
+  const [productToDelete, setProductToDelete] = useState<DigiFlazzItem | null>(null);
+  const [selectedSkus, setSelectedSkus] = useState<string[]>([]);
+  const [deletingBulk, setDeletingBulk] = useState(false);
+  const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
@@ -116,7 +111,6 @@ export default function DigiFlazzCatalogPage() {
     }
   }, [digiflazzData]);
 
-  // Fetch Cached Synced Products & Storage Info from SQLite database/catalog.db
   const fetchCachedProducts = async () => {
     setLoadingProducts(true);
     try {
@@ -136,13 +130,12 @@ export default function DigiFlazzCatalogPage() {
         }
       }
     } catch (e) {
-      console.warn("Gagal mengambil ketersediaan katalog SQLite DigiFlazz:", e);
+      console.warn("Gagal mengambil ketersediaan DigiFlazz:", e);
     } finally {
       setLoadingProducts(false);
     }
   };
 
-  // Sync Products Function (Prepaid & Pasca)
   const handleSyncProducts = async () => {
     if (!username || !apiKey) {
       toast({ variant: "destructive", title: "Kredensial Kosong", description: "Silakan atur Username & API Key di menu DigiFlazz Config terlebih dahulu." });
@@ -151,7 +144,6 @@ export default function DigiFlazzCatalogPage() {
 
     setSyncingProducts(true);
     try {
-      // 1. Fetch Prepaid Products
       const resPrepaid = await fetch("/api/admin/integrations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -164,7 +156,6 @@ export default function DigiFlazzCatalogPage() {
       });
       const dataPrepaid = await resPrepaid.json();
 
-      // 2. Fetch Pascabayar Products
       const resPasca = await fetch("/api/admin/integrations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -193,40 +184,49 @@ export default function DigiFlazzCatalogPage() {
         combined = [...combined, ...dataPasca.data.map((item: any) => ({ ...item, cmd_type: "pasca" }))];
       }
 
-      if (combined.length === 0) {
+      const isItemActive = (item: any) => {
+        const buyerOk = item.buyer_product_status === true || item.buyer_product_status === 1 || item.buyer_product_status === "true";
+        const sellerOk = item.seller_product_status === true || item.seller_product_status === 1 || item.seller_product_status === "true";
+        return buyerOk && sellerOk;
+      };
+
+      const activeCombined = combined.filter(isItemActive);
+
+      if (activeCombined.length === 0) {
         toast({
           variant: "destructive",
-          title: "Sinkronisasi Kosong (0 Produk)",
-          description: "API DigiFlazz tidak mengembalikan data produk. Pastikan Username, API Key, dan IP Whitelist pada dashboard DigiFlazz Anda sudah benar.",
+          title: "Sinkronisasi Kosong (0 Produk Aktif)",
+          description: "Tidak ada produk aktif yang dikembalikan dari API DigiFlazz. Pastikan Username, API Key, dan IP Whitelist pada dashboard DigiFlazz Anda sudah benar.",
         });
         return;
       }
 
-      // 3. Save all fetched products to SQLite database/catalog.db
-      await fetch("/api/admin/digiflazz/products", {
+      const syncRes = await fetch("/api/admin/digiflazz/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "save_items",
-          items: combined,
+          items: activeCombined,
         }),
       });
+      const syncData = await syncRes.json();
+      if (!syncData.success) {
+        throw new Error(syncData.error || "Gagal menyimpan hasil sinkronisasi");
+      }
 
       const nowStr = new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
 
-      // Save sync metadata to Firestore settings/digiflazz
       try {
-        await setDoc(digiflazzDocRef, { lastSyncTime: nowStr, totalProducts: combined.length }, { merge: true });
+        await setDoc(digiflazzDocRef, { lastSyncTime: nowStr, totalProducts: activeCombined.length }, { merge: true });
       } catch (e) {
         console.warn("Firestore sync cache update error:", e);
       }
 
-      // Reload products from SQLite catalog.db
       await fetchCachedProducts();
 
       toast({
         title: "Sinkronisasi Berhasil!",
-        description: `Berhasil menyinkronkan ${combined.length.toLocaleString('id-ID')} produk.`,
+        description: `Berhasil memperbarui & menyinkronkan ${activeCombined.length.toLocaleString('id-ID')} produk aktif. Produk lama/terhapus di DigiFlazz telah dibersihkan.`,
       });
     } catch (err: any) {
       toast({
@@ -239,7 +239,6 @@ export default function DigiFlazzCatalogPage() {
     }
   };
 
-  // Clear Catalog SQLite database/catalog.db Function
   const handleClearCatalog = async () => {
     setClearingCatalog(true);
     try {
@@ -270,6 +269,95 @@ export default function DigiFlazzCatalogPage() {
     } finally {
       setClearingCatalog(false);
     }
+  };
+
+  const handleDeleteSingleProduct = async (item: DigiFlazzItem) => {
+    setDeletingSku(item.buyer_sku_code);
+    try {
+      const res = await fetch(`/api/admin/digiflazz/products?sku=${encodeURIComponent(item.buyer_sku_code)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProductsList((prev) => prev.filter((p) => p.buyer_sku_code !== item.buyer_sku_code));
+        setSelectedSkus((prev) => prev.filter((s) => s !== item.buyer_sku_code));
+        if (data.dbSize) setDbSize(data.dbSize);
+        toast({
+          title: "Produk Berhasil Dihapus",
+          description: `"${item.product_name}" (${item.buyer_sku_code}) berhasil dihapus dari .`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Gagal Menghapus",
+          description: data.error || "Gagal menghapus produk dari database.",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Kesalahan Jaringan",
+        description: "Gagal menghubungi server saat menghapus produk.",
+      });
+    } finally {
+      setDeletingSku(null);
+      setProductToDelete(null);
+    }
+  };
+
+  // Bulk Delete Selected Products Function
+  const handleBulkDelete = async () => {
+    if (selectedSkus.length === 0) return;
+    setDeletingBulk(true);
+    try {
+      const res = await fetch("/api/admin/digiflazz/products", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skus: selectedSkus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        const count = data.deletedCount || selectedSkus.length;
+        setProductsList((prev) => prev.filter((p) => !selectedSkus.includes(p.buyer_sku_code)));
+        setSelectedSkus([]);
+        setBulkDeleteModalOpen(false);
+        if (data.dbSize) setDbSize(data.dbSize);
+        toast({
+          title: "Produk Berhasil Dihapus",
+          description: `Berhasil menghapus ${count.toLocaleString("id-ID")} produk terpilih dari .`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Gagal Menghapus",
+          description: data.error || "Gagal menghapus produk terpilih.",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Kesalahan Jaringan",
+        description: "Gagal menghubungi server saat menghapus produk terpilih.",
+      });
+    } finally {
+      setDeletingBulk(false);
+    }
+  };
+
+  const toggleSelectAllPage = () => {
+    const pageSkus = paginatedProducts.map((p) => p.buyer_sku_code);
+    const allSelected = pageSkus.length > 0 && pageSkus.every((sku) => selectedSkus.includes(sku));
+    if (allSelected) {
+      setSelectedSkus((prev) => prev.filter((sku) => !pageSkus.includes(sku)));
+    } else {
+      setSelectedSkus((prev) => Array.from(new Set([...prev, ...pageSkus])));
+    }
+  };
+
+  const toggleSelectSku = (sku: string) => {
+    setSelectedSkus((prev) =>
+      prev.includes(sku) ? prev.filter((s) => s !== sku) : [...prev, sku]
+    );
   };
 
   // Extract Categories
@@ -695,135 +783,218 @@ export default function DigiFlazzCatalogPage() {
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto outline-none focus:outline-none focus-visible:outline-none">
-              <table className="w-full text-left border-collapse whitespace-nowrap outline-none focus:outline-none focus-visible:outline-none">
-                <thead>
-                  <tr className="border-b border-border/50 bg-slate-50/80 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
-                    <th className="py-3 px-4 text-center whitespace-nowrap">Tipe</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Seller</th>
-                    <th className="py-3 px-4 whitespace-nowrap">SKU</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Nama</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Deskripsi</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Kategori</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Brand</th>
-                    <th className="py-3 px-4 text-right whitespace-nowrap">Harga & Admin</th>
-                    <th className="py-3 px-4 text-center whitespace-nowrap">Stok</th>
-                    <th className="py-3 px-4 text-center whitespace-nowrap">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/40 text-xs font-medium whitespace-nowrap">
-                  {paginatedProducts.length > 0 ? (
-                    paginatedProducts.map((item, idx) => {
-                      const isPrepaid = item.cmd_type !== "pasca";
-                      const priceVal = isPrepaid ? (item.price || 0) : (item.admin || 0);
-                      const isAvailable = item.buyer_product_status && item.seller_product_status;
+            <>
+              {/* Floating / Sticky Bulk Action Bar */}
+              {selectedSkus.length > 0 && (
+                <div className="bg-red-50/90 border-b border-red-200/80 px-4 py-2.5 flex items-center justify-between text-xs transition-all">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-red-600 text-white font-bold text-[10px] px-2 py-0.5">
+                      {selectedSkus.length} SKU Terpilih
+                    </Badge>
+                    <span className="text-slate-700 font-medium text-[11px] hidden sm:inline">
+                      Pilih produk yang ingin dihapus dari  lokal.
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedSkus([])}
+                      className="h-8 text-xs font-semibold text-slate-600 hover:text-slate-900"
+                    >
+                      Batal Pilih
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => setBulkDeleteModalOpen(true)}
+                      className="h-8 bg-red-600 hover:bg-red-700 text-white font-bold text-xs gap-1.5 rounded-xl shadow-xs"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Hapus {selectedSkus.length} Produk
+                    </Button>
+                  </div>
+                </div>
+              )}
 
-                      return (
-                        <tr key={item.buyer_sku_code || idx} className="hover:bg-slate-50/60 transition-colors whitespace-nowrap">
-                          {/* 1. Tipe */}
-                          <td className="py-3 px-4 align-middle text-center whitespace-nowrap">
-                            <Badge variant="outline" className="text-[9px] font-bold px-2 py-0.5 uppercase tracking-wider bg-slate-100 border-slate-300 text-slate-700 whitespace-nowrap">
-                              {isPrepaid ? "PREPAID" : "PASCA"}
-                            </Badge>
-                          </td>
-
-                          {/* 2. Seller */}
-                          <td className="py-3 px-4 align-middle whitespace-nowrap font-semibold text-slate-700 text-xs">
-                            {item.seller_name || "DigiFlazz"}
-                          </td>
-
-                          {/* 3. SKU */}
-                          <td className="py-3 px-4 align-middle whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 whitespace-nowrap">
-                              <span className="font-mono font-bold text-[11px] text-[#212121] bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg whitespace-nowrap">
-                                {item.buyer_sku_code}
-                              </span>
-                              <button
-                                onClick={() => copyToClipboard(item.buyer_sku_code)}
-                                className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-slate-200/60 transition-colors"
-                                title="Salin SKU"
-                              >
-                                {copiedSku === item.buyer_sku_code ? (
-                                  <Check className="w-3 h-3 text-[#00AA5B]" />
-                                ) : (
-                                  <Copy className="w-3 h-3" />
-                                )}
-                              </button>
-                            </div>
-                          </td>
-
-                          {/* 4. Nama */}
-                          <td className="py-3 px-4 align-middle whitespace-nowrap font-bold text-[#2E3137] text-xs">
-                            {item.product_name}
-                          </td>
-
-                          {/* 5. Deskripsi */}
-                          <td className="py-3 px-4 align-middle whitespace-nowrap text-[11px] text-muted-foreground">
-                            {item.desc && item.desc !== "-" ? item.desc : "-"}
-                          </td>
-
-                          {/* 6. Kategori */}
-                          <td className="py-3 px-4 align-middle whitespace-nowrap">
-                            <span className="text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/80 px-2 py-0.5 rounded-md whitespace-nowrap">
-                              {item.category}
-                            </span>
-                          </td>
-
-                          {/* 7. Brand */}
-                          <td className="py-3 px-4 align-middle whitespace-nowrap font-bold text-slate-800 text-xs">
-                            {item.brand}
-                          </td>
-
-                          {/* 8. Harga & Admin */}
-                          <td className="py-3 px-4 align-middle text-right whitespace-nowrap">
-                            <span className="font-bold text-[#00AA5B] text-xs whitespace-nowrap">
-                              Rp {priceVal.toLocaleString("id-ID")}
-                            </span>
-                            {!isPrepaid && item.commission !== undefined && (
-                              <span className="text-[9px] text-blue-600 block font-bold whitespace-nowrap">
-                                Komisi: Rp {item.commission.toLocaleString("id-ID")}
-                              </span>
-                            )}
-                          </td>
-
-                          {/* 9. Stok */}
-                          <td className="py-3 px-4 align-middle text-center whitespace-nowrap">
-                            {item.unlimited_stock ? (
-                              <Badge variant="outline" className="text-[9px] font-bold bg-green-50 text-green-700 border-green-200 whitespace-nowrap">
-                                Unlimited
-                              </Badge>
-                            ) : (
-                              <span className="text-xs font-bold text-slate-700 whitespace-nowrap">
-                                {item.stock !== undefined ? item.stock.toLocaleString("id-ID") : "-"}
-                              </span>
-                            )}
-                          </td>
-
-                          {/* 10. Status */}
-                          <td className="py-3 px-4 align-middle text-center whitespace-nowrap">
-                            {isAvailable ? (
-                              <Badge className="bg-green-500 hover:bg-green-600 text-white text-[9px] font-bold px-2.5 py-0.5 gap-1 whitespace-nowrap">
-                                <CheckCircle2 className="w-2.5 h-2.5" /> AKTIF
-                              </Badge>
-                            ) : (
-                              <Badge variant="destructive" className="text-[9px] font-bold px-2.5 py-0.5 gap-1 whitespace-nowrap">
-                                <XCircle className="w-2.5 h-2.5" /> OFF / GANGGUAN
-                              </Badge>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={10} className="py-12 text-center text-xs text-muted-foreground">
-                        Tidak ada produk DigiFlazz yang sesuai dengan filter pencarian.
-                      </td>
+              <div className="overflow-x-auto outline-none focus:outline-none focus-visible:outline-none">
+                <table className="w-full text-left border-collapse whitespace-nowrap outline-none focus:outline-none focus-visible:outline-none">
+                  <thead>
+                    <tr className="border-b border-border/50 bg-slate-50/80 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                      <th className="py-3 px-3 text-center w-10">
+                        <input
+                          type="checkbox"
+                          aria-label="Pilih semua produk di halaman ini"
+                          checked={
+                            paginatedProducts.length > 0 &&
+                            paginatedProducts.every((p) => selectedSkus.includes(p.buyer_sku_code))
+                          }
+                          onChange={toggleSelectAllPage}
+                          className="w-4 h-4 rounded border-slate-300 text-red-600 focus:ring-red-500 cursor-pointer align-middle"
+                        />
+                      </th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap">Tipe</th>
+                      <th className="py-3 px-4 whitespace-nowrap">Seller</th>
+                      <th className="py-3 px-4 whitespace-nowrap">SKU</th>
+                      <th className="py-3 px-4 whitespace-nowrap">Nama</th>
+                      <th className="py-3 px-4 whitespace-nowrap">Deskripsi</th>
+                      <th className="py-3 px-4 whitespace-nowrap">Kategori</th>
+                      <th className="py-3 px-4 whitespace-nowrap">Brand</th>
+                      <th className="py-3 px-4 text-right whitespace-nowrap">Harga & Admin</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap">Stok</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap">Status</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap">Aksi</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-border/40 text-xs font-medium whitespace-nowrap">
+                    {paginatedProducts.length > 0 ? (
+                      paginatedProducts.map((item, idx) => {
+                        const isPrepaid = item.cmd_type !== "pasca";
+                        const priceVal = isPrepaid ? (item.price || 0) : (item.admin || 0);
+                        const isAvailable = item.buyer_product_status && item.seller_product_status;
+                        const isSelected = selectedSkus.includes(item.buyer_sku_code);
+
+                        return (
+                          <tr
+                            key={item.buyer_sku_code || idx}
+                            className={cn(
+                              "transition-colors whitespace-nowrap",
+                              isSelected ? "bg-red-50/40 hover:bg-red-50/60" : "hover:bg-slate-50/60"
+                            )}
+                          >
+                            {/* 0. Checkbox */}
+                            <td className="py-3 px-3 align-middle text-center w-10">
+                              <input
+                                type="checkbox"
+                                aria-label={`Pilih produk ${item.product_name}`}
+                                checked={isSelected}
+                                onChange={() => toggleSelectSku(item.buyer_sku_code)}
+                                className="w-4 h-4 rounded border-slate-300 text-red-600 focus:ring-red-500 cursor-pointer align-middle"
+                              />
+                            </td>
+
+                            {/* 1. Tipe */}
+                            <td className="py-3 px-4 align-middle text-center whitespace-nowrap">
+                              <Badge variant="outline" className="text-[9px] font-bold px-2 py-0.5 uppercase tracking-wider bg-slate-100 border-slate-300 text-slate-700 whitespace-nowrap">
+                                {isPrepaid ? "PREPAID" : "PASCA"}
+                              </Badge>
+                            </td>
+
+                            {/* 2. Seller */}
+                            <td className="py-3 px-4 align-middle whitespace-nowrap font-semibold text-slate-700 text-xs">
+                              {item.seller_name || "DigiFlazz"}
+                            </td>
+
+                            {/* 3. SKU */}
+                            <td className="py-3 px-4 align-middle whitespace-nowrap">
+                              <div className="flex items-center gap-1.5 whitespace-nowrap">
+                                <span className="font-mono font-bold text-[11px] text-[#212121] bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg whitespace-nowrap">
+                                  {item.buyer_sku_code}
+                                </span>
+                                <button
+                                  onClick={() => copyToClipboard(item.buyer_sku_code)}
+                                  className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-slate-200/60 transition-colors"
+                                  title="Salin SKU"
+                                >
+                                  {copiedSku === item.buyer_sku_code ? (
+                                    <Check className="w-3 h-3 text-[#00AA5B]" />
+                                  ) : (
+                                    <Copy className="w-3 h-3" />
+                                  )}
+                                </button>
+                              </div>
+                            </td>
+
+                            {/* 4. Nama */}
+                            <td className="py-3 px-4 align-middle whitespace-nowrap font-bold text-[#2E3137] text-xs">
+                              {item.product_name}
+                            </td>
+
+                            {/* 5. Deskripsi */}
+                            <td className="py-3 px-4 align-middle whitespace-nowrap text-[11px] text-muted-foreground">
+                              {item.desc && item.desc !== "-" ? item.desc : "-"}
+                            </td>
+
+                            {/* 6. Kategori */}
+                            <td className="py-3 px-4 align-middle whitespace-nowrap">
+                              <span className="text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/80 px-2 py-0.5 rounded-md whitespace-nowrap">
+                                {item.category}
+                              </span>
+                            </td>
+
+                            {/* 7. Brand */}
+                            <td className="py-3 px-4 align-middle whitespace-nowrap font-bold text-slate-800 text-xs">
+                              {item.brand}
+                            </td>
+
+                            {/* 8. Harga & Admin */}
+                            <td className="py-3 px-4 align-middle text-right whitespace-nowrap">
+                              <span className="font-bold text-[#00AA5B] text-xs whitespace-nowrap">
+                                Rp {priceVal.toLocaleString("id-ID")}
+                              </span>
+                              {!isPrepaid && item.commission !== undefined && (
+                                <span className="text-[9px] text-blue-600 block font-bold whitespace-nowrap">
+                                  Komisi: Rp {item.commission.toLocaleString("id-ID")}
+                                </span>
+                              )}
+                            </td>
+
+                            {/* 9. Stok */}
+                            <td className="py-3 px-4 align-middle text-center whitespace-nowrap">
+                              {item.unlimited_stock ? (
+                                <Badge variant="outline" className="text-[9px] font-bold bg-green-50 text-green-700 border-green-200 whitespace-nowrap">
+                                  Unlimited
+                                </Badge>
+                              ) : (
+                                <span className="text-xs font-bold text-slate-700 whitespace-nowrap">
+                                  {item.stock !== undefined ? item.stock.toLocaleString("id-ID") : "-"}
+                                </span>
+                              )}
+                            </td>
+
+                            {/* 10. Status */}
+                            <td className="py-3 px-4 align-middle text-center whitespace-nowrap">
+                              {isAvailable ? (
+                                <Badge className="bg-green-500 hover:bg-green-600 text-white text-[9px] font-bold px-2.5 py-0.5 gap-1 whitespace-nowrap">
+                                  <CheckCircle2 className="w-2.5 h-2.5" /> AKTIF
+                                </Badge>
+                              ) : (
+                                <Badge variant="destructive" className="text-[9px] font-bold px-2.5 py-0.5 gap-1 whitespace-nowrap">
+                                  <XCircle className="w-2.5 h-2.5" /> OFF / GANGGUAN
+                                </Badge>
+                              )}
+                            </td>
+
+                            {/* 11. Aksi (Hapus) */}
+                            <td className="py-3 px-4 align-middle text-center whitespace-nowrap">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                disabled={deletingSku === item.buyer_sku_code}
+                                onClick={() => setProductToDelete(item)}
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Hapus produk dari katalog"
+                              >
+                                {deletingSku === item.buyer_sku_code ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-red-600" />
+                                ) : (
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                )}
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={12} className="py-12 text-center text-xs text-muted-foreground">
+                          Tidak ada produk DigiFlazz yang sesuai dengan filter pencarian.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
           {/* Premium Pagination Bar */}
@@ -920,6 +1091,88 @@ export default function DigiFlazzCatalogPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Modal Konfirmasi Hapus Single Produk */}
+      <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <AlertDialogContent className="rounded-2xl max-w-md bg-white border border-border/80 p-5">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-red-500" />
+              Hapus Produk dari Catalog?
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="text-xs text-slate-600 leading-relaxed pt-1 space-y-2">
+                <p>Apakah Anda yakin ingin menghapus produk ini dari database  lokal?</p>
+                {productToDelete && (
+                  <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs space-y-1 mt-2">
+                    <div className="font-bold text-slate-800">{productToDelete.product_name}</div>
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
+                      <span>SKU: {productToDelete.buyer_sku_code}</span>
+                      <span>•</span>
+                      <span>{productToDelete.brand}</span>
+                      <span>•</span>
+                      <span className="font-sans font-bold text-[#00AA5B]">
+                        Rp {(productToDelete.cmd_type === "pasca" ? (productToDelete.admin || 0) : (productToDelete.price || 0)).toLocaleString("id-ID")}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <span className="text-[11px] text-amber-700 block mt-2">
+                  *Produk yang dihapus tidak akan muncul lagi di halaman topup/etalase toko. Anda dapat mengembalikannya kapan saja dengan menekan &quot;Sinkronkan Harga Terbaru&quot;.
+                </span>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-3 gap-2">
+            <AlertDialogCancel className="rounded-xl text-xs font-bold h-9 bg-slate-100 hover:bg-slate-200 text-slate-700 border-0">
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!!deletingSku}
+              onClick={() => productToDelete && handleDeleteSingleProduct(productToDelete)}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs h-9 px-4 gap-1.5"
+            >
+              {deletingSku ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              {deletingSku ? "Menghapus..." : "Ya, Hapus Produk"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal Konfirmasi Hapus Bulk Produk Terpilih */}
+      <AlertDialog open={bulkDeleteModalOpen} onOpenChange={setBulkDeleteModalOpen}>
+        <AlertDialogContent className="rounded-2xl max-w-md bg-white border border-border/80 p-5">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-red-500" />
+              Hapus {selectedSkus.length} Produk Terpilih?
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="text-xs text-slate-600 leading-relaxed pt-1">
+                <p>
+                  Tindakan ini akan menghapus <strong>{selectedSkus.length} produk</strong> yang Anda pilih dari database SQLite lokal (<code className="bg-slate-100 text-red-600 px-1 py-0.5 rounded font-mono font-bold">database/catalog.db</code>).
+                </p>
+                <span className="text-[11px] text-amber-700 block mt-2">
+                  *Produk-produk terpilih tidak akan tampil di etalase pembeli. Anda dapat mengembalikannya kapan saja melalui Sinkronisasi DigiFlazz.
+                </span>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-3 gap-2">
+            <AlertDialogCancel className="rounded-xl text-xs font-bold h-9 bg-slate-100 hover:bg-slate-200 text-slate-700 border-0">
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deletingBulk}
+              onClick={handleBulkDelete}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs h-9 px-4 gap-1.5"
+            >
+              {deletingBulk ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              {deletingBulk ? "Menghapus..." : `Ya, Hapus ${selectedSkus.length} Produk`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }

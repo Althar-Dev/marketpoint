@@ -82,3 +82,42 @@ export async function verifyXenditCallbackToken(tokenFromHeader: string): Promis
   // Logic to verify token against stored secret if needed
   return !!tokenFromHeader;
 }
+
+/**
+ * Fetch active payment channels from Xendit API
+ */
+export async function getXenditPaymentChannels(secretKey: string): Promise<{ success: boolean; message?: string; channels?: any[] }> {
+  try {
+    if (!secretKey) {
+      return { success: false, message: "Secret Key tidak ditemukan." };
+    }
+
+    const authHeader = getXenditAuthHeader(secretKey);
+    const response = await fetch("https://api.xendit.co/payment_channels", {
+      method: "GET",
+      headers: {
+        Authorization: authHeader,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}));
+      return {
+        success: false,
+        message: errJson.message || `Gagal mengambil channel (Status ${response.status})`,
+      };
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      channels: Array.isArray(data) ? data : [],
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "Gagal menghubungi Xendit API",
+    };
+  }
+}

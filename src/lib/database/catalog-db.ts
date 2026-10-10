@@ -82,7 +82,33 @@ export async function initCatalogDb(): Promise<sqlite3.Database> {
                 initPromise = null;
                 return reject(err2);
               }
-              resolve(db);
+              db.run(
+                `CREATE TABLE IF NOT EXISTS digiflazz_visuals_config (
+                  id TEXT PRIMARY KEY,
+                  data_json TEXT NOT NULL,
+                  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+                );`,
+                (err3) => {
+                  if (err3) {
+                    initPromise = null;
+                    return reject(err3);
+                  }
+                  db.run(
+                    `CREATE TABLE IF NOT EXISTS digiflazz_markup_config (
+                      id TEXT PRIMARY KEY,
+                      data_json TEXT NOT NULL,
+                      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+                    );`,
+                    (err4) => {
+                      if (err4) {
+                        initPromise = null;
+                        return reject(err4);
+                      }
+                      resolve(db);
+                    }
+                  );
+                }
+              );
             }
           );
         }
@@ -241,28 +267,45 @@ export function getCatalogDbFileSize(totalProducts: number = 1): { formatted: st
   return { formatted: "0 KB", bytes: 0 };
 }
 
-export async function clearDigiFlazzCatalog(): Promise<boolean> {
-  return new Promise((resolve) => {
-    const doDeleteFile = () => {
-      dbInstance = null;
-      initPromise = null;
-      if (fs.existsSync(dbPath)) {
-        try {
-          fs.unlinkSync(dbPath);
-        } catch (e) {
-          console.warn("Gagal hapus file catalog.db:", e);
-        }
+export async function deleteDigiFlazzProduct(buyerSkuCode: string): Promise<boolean> {
+  const db = await initCatalogDb();
+  return new Promise((resolve, reject) => {
+    db.run(
+      "DELETE FROM digiflazz_catalog WHERE buyer_sku_code = ?",
+      [buyerSkuCode],
+      function (err) {
+        if (err) return reject(err);
+        resolve((this.changes || 0) > 0);
       }
-      resolve(true);
-    };
+    );
+  });
+}
 
-    if (dbInstance) {
-      dbInstance.close(() => {
-        doDeleteFile();
+export async function deleteDigiFlazzProducts(buyerSkuCodes: string[]): Promise<number> {
+  if (!buyerSkuCodes || buyerSkuCodes.length === 0) return 0;
+  const db = await initCatalogDb();
+  return new Promise((resolve, reject) => {
+    const placeholders = buyerSkuCodes.map(() => "?").join(",");
+    db.run(
+      `DELETE FROM digiflazz_catalog WHERE buyer_sku_code IN (${placeholders})`,
+      buyerSkuCodes,
+      function (err) {
+        if (err) return reject(err);
+        resolve(this.changes || 0);
+      }
+    );
+  });
+}
+
+export async function clearDigiFlazzCatalog(): Promise<boolean> {
+  const db = await initCatalogDb();
+  return new Promise((resolve, reject) => {
+    db.run("DELETE FROM digiflazz_catalog", (err) => {
+      if (err) return reject(err);
+      db.run("VACUUM", () => {
+        resolve(true);
       });
-    } else {
-      doDeleteFile();
-    }
+    });
   });
 }
 
@@ -329,6 +372,98 @@ export async function getCatalogStats(): Promise<{
             );
           }
         );
+      }
+    );
+  });
+}
+
+export async function getDigiFlazzVisualsData(): Promise<any> {
+  const db = await initCatalogDb();
+  return new Promise((resolve) => {
+    db.get(
+      `SELECT data_json FROM digiflazz_visuals_config WHERE id = 'visuals_data'`,
+      (err, row: any) => {
+        if (err || !row || !row.data_json) {
+          resolve(null);
+        } else {
+          try {
+            resolve(JSON.parse(row.data_json));
+          } catch {
+            resolve(null);
+          }
+        }
+      }
+    );
+  });
+}
+
+export async function saveDigiFlazzVisualsData(data: any): Promise<boolean> {
+  const db = await initCatalogDb();
+  const jsonStr = JSON.stringify(data || {});
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO digiflazz_visuals_config (id, data_json, updated_at)
+       VALUES ('visuals_data', ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(id) DO UPDATE SET data_json = excluded.data_json, updated_at = CURRENT_TIMESTAMP`,
+      [jsonStr],
+      (err) => {
+        if (err) return reject(err);
+        resolve(true);
+      }
+    );
+  });
+}
+
+import {
+  MarkupRule,
+  DigiFlazzMarkupConfig,
+  DEFAULT_MARKUP_CONFIG,
+  calculateMarkupPrice,
+} from "@/lib/markup-calc";
+
+export type { MarkupRule, DigiFlazzMarkupConfig };
+export { DEFAULT_MARKUP_CONFIG, calculateMarkupPrice };
+
+export async function getDigiFlazzMarkupData(): Promise<DigiFlazzMarkupConfig> {
+  const db = await initCatalogDb();
+  return new Promise((resolve) => {
+    db.get(
+      `SELECT data_json FROM digiflazz_markup_config WHERE id = 'markup_data'`,
+      (err, row: any) => {
+        if (err || !row || !row.data_json) {
+          resolve(DEFAULT_MARKUP_CONFIG);
+        } else {
+          try {
+            const parsed = JSON.parse(row.data_json);
+            resolve({
+              ...DEFAULT_MARKUP_CONFIG,
+              ...parsed,
+              global: parsed.global || DEFAULT_MARKUP_CONFIG.global,
+              categories: parsed.categories || {},
+              brands: parsed.brands || {},
+              products: parsed.products || {},
+            });
+          } catch {
+            resolve(DEFAULT_MARKUP_CONFIG);
+          }
+        }
+      }
+    );
+  });
+}
+
+export async function saveDigiFlazzMarkupData(data: DigiFlazzMarkupConfig): Promise<boolean> {
+  const db = await initCatalogDb();
+  const jsonStr = JSON.stringify(data || DEFAULT_MARKUP_CONFIG);
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO digiflazz_markup_config (id, data_json, updated_at)
+       VALUES ('markup_data', ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(id) DO UPDATE SET data_json = excluded.data_json, updated_at = CURRENT_TIMESTAMP`,
+      [jsonStr],
+      (err) => {
+        if (err) return reject(err);
+        resolve(true);
       }
     );
   });

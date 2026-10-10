@@ -3,10 +3,14 @@
 import * as React from "react";
 import {
   ChevronDown,
+  ChevronsUpDown,
   PanelLeft,
   User as UserIcon,
   LogOut,
-  Settings
+  Settings,
+  Store,
+  Check,
+  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +27,9 @@ import { doc } from "firebase/firestore";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useMerchantShop } from "@/context/merchant-context";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export function MerchantHeader() {
   const { user } = useUser();
@@ -30,6 +37,15 @@ export function MerchantHeader() {
   const db = useFirestore();
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
+  const { toast } = useToast();
+  const {
+    shop,
+    shopId,
+    isStaff,
+    staffRoleLabel,
+    availableShops,
+    switchShop
+  } = useMerchantShop();
 
   const userDocRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -78,6 +94,8 @@ export function MerchantHeader() {
         return { title: "Manajemen Voucher" };
       case "/my-shop/flash-sale":
         return { title: "Manajemen Flash Sale" };
+      case "/my-shop/staff":
+        return { title: "Kelola Staff Toko" };
       default:
         return { title: "Seller Center" };
     }
@@ -105,6 +123,94 @@ export function MerchantHeader() {
       </div>
 
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
+        {/* Toko Switcher Dropdown */}
+        {availableShops.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 border border-border bg-muted/20 hover:bg-muted/50 px-2.5 py-1.5 rounded-xl transition-all outline-none group cursor-pointer max-w-[210px] shadow-2xs">
+                <div className="h-6 w-6 rounded-md bg-[#00AA5B] text-white flex items-center justify-center text-[10px] font-bold overflow-hidden shrink-0 border border-border">
+                  {shop?.logoUrl ? (
+                    <img src={shop.logoUrl} alt={shop.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <span>{shop?.name?.substring(0, 1) || "T"}</span>
+                  )}
+                </div>
+                <div className="hidden sm:flex flex-col items-start leading-none min-w-0 pr-0.5">
+                  <span className="text-[11px] font-bold text-foreground truncate max-w-[105px]">
+                    {shop?.name || "Toko"}
+                  </span>
+                  <span className="text-[9px] font-medium text-muted-foreground mt-0.5">
+                    {isStaff ? (staffRoleLabel || "Staf") : "Pemilik"}
+                  </span>
+                </div>
+                <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground/70 group-hover:text-foreground shrink-0" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 rounded-2xl border-border p-2 shadow-xl">
+              <div className="px-2 py-1.5">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                  Pilih Toko ({availableShops.length})
+                </p>
+                <p className="text-[10px] text-muted-foreground">Beralih ke toko yang Anda kelola</p>
+              </div>
+              <DropdownMenuSeparator />
+              <div className="space-y-1 max-h-60 overflow-y-auto no-scrollbar py-1">
+                {availableShops.map((s) => {
+                  const isCurrent = s.shopId === shopId;
+                  return (
+                    <button
+                      key={s.shopId}
+                      onClick={() => {
+                        if (!isCurrent) {
+                          switchShop(s.shopId);
+                          toast({
+                            title: "Beralih Toko",
+                            description: `Sekarang beralih ke toko ${s.name} (${s.roleLabel}).`,
+                          });
+                        }
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-2.5 p-2 rounded-xl text-left transition-all cursor-pointer group",
+                        isCurrent ? "bg-[#00AA5B]/10 border border-[#00AA5B]/30" : "hover:bg-muted/60 border border-transparent"
+                      )}
+                    >
+                      <div className="h-8 w-8 rounded-lg bg-[#00AA5B] text-white flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 border border-border">
+                        {s.logoUrl ? (
+                          <img src={s.logoUrl} alt={s.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <span>{s.name.substring(0, 1)}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-bold text-foreground truncate">{s.name}</p>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground font-medium">
+                          {s.roleLabel} • @{s.slug}
+                        </p>
+                      </div>
+                      {isCurrent && <Check className="w-4 h-4 text-[#00AA5B] shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {!availableShops.some((s) => s.isOwner) && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="rounded-xl py-2 cursor-pointer focus:bg-[#00AA5B]/10">
+                    <Link href="/my-shop/setup" className="flex items-center gap-2 text-xs font-bold text-[#00AA5B]">
+                      <Plus className="w-3.5 h-3.5" />
+                      Buka Toko Sendiri
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 outline-none group hover:bg-muted/30 p-1 rounded-lg transition-all">
@@ -116,7 +222,9 @@ export function MerchantHeader() {
               </Avatar>
               <div className="hidden lg:flex flex-col items-start leading-none pr-1">
                 <span className="text-[11px] font-bold truncate max-w-[90px]">{user?.displayName || "Seller"}</span>
-                <span className="text-[10px] text-muted-foreground font-medium mt-0.5">Pemilik Toko</span>
+                <span className="text-[10px] text-muted-foreground font-medium mt-0.5">
+                  {isStaff ? (staffRoleLabel || "Staf Toko") : "Pemilik Toko"}
+                </span>
               </div>
               <ChevronDown className="w-3 h-3 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity" />
             </button>

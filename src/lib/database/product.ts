@@ -108,13 +108,17 @@ const DEFAULT_CATEGORIES: ProductCategory[] = [
 export async function getCategories(): Promise<ProductCategory[]> {
   try {
     await ensureSchema();
-    const res = await query("SELECT id, name, slug, icon, description FROM categories ORDER BY name ASC");
+    const res = await query(
+      "SELECT id, name, slug, icon, description FROM categories ORDER BY CASE WHEN LOWER(name) = 'lainnya' OR slug = 'lainnya' THEN 1 ELSE 0 END ASC, id ASC"
+    );
     return res.rows.length > 0 ? res.rows : DEFAULT_CATEGORIES;
   } catch (err: any) {
     if (err?.code === "42P01") {
       try {
         await initDatabaseSchema(true);
-        const res = await query("SELECT id, name, slug, icon, description FROM categories ORDER BY name ASC");
+        const res = await query(
+          "SELECT id, name, slug, icon, description FROM categories ORDER BY CASE WHEN LOWER(name) = 'lainnya' OR slug = 'lainnya' THEN 1 ELSE 0 END ASC, id ASC"
+        );
         return res.rows.length > 0 ? res.rows : DEFAULT_CATEGORIES;
       } catch (retryErr) {
         console.warn("⚠️ PostgreSQL belum terhubung. Menggunakan daftar kategori default.");
@@ -537,7 +541,7 @@ export async function getAllActiveProducts(categoryId?: number, limit = 60): Pro
       let sql = `
         SELECT 
           p.id, p.shop_id as "shopId",
-          p.category_id as "categoryId", c.name as "categoryName",
+          p.category_id as "categoryId", c.name as "categoryName", c.slug as "categorySlug",
           p.title, p.slug, p.short_description as "shortDescription", p.description,
           p.price, p.discount_price as "discountPrice", p.stock_type as "stockType",
           p.stock_count as "stockCount", p.demo_url as "demoUrl", p.status,

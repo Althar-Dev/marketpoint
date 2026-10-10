@@ -2,18 +2,16 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Fungsi pembantu untuk memeriksa apakah pengguna adalah admin
     function isAdmin() {
       return request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
     }
 
-    // Konfigurasi Sistem (Settings)
     match /settings/{settingId} {
-      allow read, write: if isAdmin();
+      allow read: if true;
+      allow write: if isAdmin();
     }
-
-    // Dokumen Pengguna dan sub-koleksinya
+    
     match /users/{userId} {
       allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
       
@@ -21,11 +19,28 @@ service cloud.firestore {
         allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
       }
     }
-
-    // Toko Merchant
+    
     match /shops/{shopId} {
       allow read: if true;
       allow write: if (request.auth != null && request.auth.uid == shopId) || isAdmin();
+
+      match /vouchers/{voucherId} {
+        allow read: if true;
+        allow write: if request.auth != null || isAdmin();
+      }
+
+      match /{allPaths=**} {
+        allow read: if true;
+        allow write: if (request.auth != null && request.auth.uid == shopId) || isAdmin();
+      }
+    }
+    
+    match /chats/{chatId} {
+      allow read, write: if request.auth != null;
+      
+      match /{allPaths=**} {
+        allow read, write: if request.auth != null;
+      }
     }
   }
 }

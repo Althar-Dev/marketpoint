@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Autoplay from "embla-carousel-autoplay";
+import { HomeTopUpWidget } from "@/components/home-topup-widget";
 import {
   Star,
   LayoutGrid,
@@ -47,7 +48,9 @@ import {
   Droplets,
   Tv,
   Film,
-  Ticket
+  Ticket,
+  Flame,
+  Clock
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MarketHeader } from "@/components/market-header";
@@ -57,6 +60,8 @@ import { useFirestore } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import Image from "next/image";
 import Link from "next/link";
+import { getProductActiveFlashSale, formatCountdown } from "@/lib/flash-sale";
+import { PromoPriceBadge } from "@/components/promo-price-badge";
 
 const BANNERS = [
   { id: "banner-main", imageUrl: "/assets/banner/banner.png", title: "Main Promo" },
@@ -66,38 +71,32 @@ const BANNERS = [
 ];
 
 const QUICK_CHIPS = [
-  { label: "Kategori", icon: "/assets/icons/more.png" },
-  { label: "Pulsa & Paket Data", icon: "/assets/icons/pulsadata.png" },
-  { label: "Game", icon: "/assets/icons/game.png" },
-  { label: "Voucher", icon: "/assets/icons/voucher.png" },
-  { label: "E-Wallet", icon: "/assets/icons/ewallet.png" },
-  { label: "Listrik", icon: "/assets/icons/listrik.png" },
-  { label: "Air PDAM", icon: "/assets/icons/pdam.png" },
-  { label: "TV Kabel", icon: "/assets/icons/tv.png" },
-  { label: "Streaming", icon: "/assets/icons/stream.png" },
+  { label: "Semua", icon: "/assets/icons/more.png", href: "/topup" },
+  { label: "Pulsa & Paket Data", icon: "/assets/icons/pulsadata.png", href: "/topup?cat=pulsa" },
+  { label: "Game", icon: "/assets/icons/game.png", href: "/topup?cat=game" },
+  { label: "Voucher", icon: "/assets/icons/voucher.png", href: "/topup?cat=voucher" },
+  { label: "E-Wallet", icon: "/assets/icons/ewallet.png", href: "/topup?cat=ewallet" },
+  { label: "Listrik", icon: "/assets/icons/listrik.png", href: "/topup?cat=pln" },
+  { label: "Air PDAM", icon: "/assets/icons/pdam.png", href: "/topup?cat=pdam" },
+  { label: "TV Kabel", icon: "/assets/icons/tv.png", href: "/topup?q=TV" },
+  { label: "Streaming", icon: "/assets/icons/stream.png", href: "/topup?q=Streaming" },
 ];
 
 const MOBILE_MENU_ITEMS = [
-  { label: "Pulsa & Data", icon: "/assets/icons/pulsadata.png" },
-  { label: "Game", icon: "/assets/icons/game.png" },
-  { label: "Voucher", icon: "/assets/icons/voucher.png" },
-  { label: "E-Wallet", icon: "/assets/icons/ewallet.png" },
-  { label: "Listrik", icon: "/assets/icons/listrik.png" },
-  { label: "Air PDAM", icon: "/assets/icons/pdam.png" },
-  { label: "TV Kabel", icon: "/assets/icons/tv.png" },
-  { label: "Streaming", icon: "/assets/icons/stream.png" },
+  { label: "Pulsa & Data", icon: "/assets/icons/pulsadata.png", href: "/topup?cat=pulsa" },
+  { label: "Game", icon: "/assets/icons/game.png", href: "/topup?cat=game" },
+  { label: "Voucher", icon: "/assets/icons/voucher.png", href: "/topup?cat=voucher" },
+  { label: "E-Wallet", icon: "/assets/icons/ewallet.png", href: "/topup?cat=ewallet" },
+  { label: "Listrik", icon: "/assets/icons/listrik.png", href: "/topup?cat=pln" },
+  { label: "Air PDAM", icon: "/assets/icons/pdam.png", href: "/topup?cat=pdam" },
+  { label: "TV Kabel", icon: "/assets/icons/tv.png", href: "/topup?q=TV" },
+  { label: "Streaming", icon: "/assets/icons/stream.png", href: "/topup?q=Streaming" },
 ];
 
-const MARKET_TABS = [
+const BASE_TABS = [
   { id: "foryou", label: "For You" },
-  { id: "weekend", label: "" },
-  { id: "mall", label: "Mall" },
-  { id: "digital", label: "Digital" },
-  { id: "elektronik", label: "Elektronik" },
-  { id: "gadget", label: "Handphone & Gadget" },
-  { id: "fashion", label: "Fashion" },
-  { id: "otomotif", label: "Otomotif" },
-  { id: "harian", label: "Kebutuhan Harian" },
+  { id: "deals", label: "" },
+  { id: "official", label: "Official" },
 ];
 
 export default function MarketPage() {
@@ -123,6 +122,23 @@ export default function MarketPage() {
     mobileMenuRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
   };
 
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollTabsLeft, setCanScrollTabsLeft] = useState(false);
+  const [canScrollTabsRight, setCanScrollTabsRight] = useState(false);
+
+  const checkTabsScroll = useCallback(() => {
+    if (!tabsContainerRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = tabsContainerRef.current;
+    setCanScrollTabsLeft(scrollLeft > 6);
+    setCanScrollTabsRight(scrollLeft + clientWidth < scrollWidth - 6);
+  }, []);
+
+  const scrollTabs = (direction: "left" | "right") => {
+    if (!tabsContainerRef.current) return;
+    const scrollAmount = direction === "left" ? -240 : 240;
+    tabsContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+  };
+
   useEffect(() => {
     checkMobileMenuScroll();
     window.addEventListener("resize", checkMobileMenuScroll);
@@ -131,12 +147,32 @@ export default function MarketPage() {
 
   const db = useFirestore();
   const [products, setProducts] = useState<any[]>([]);
+  const [dbCategories, setDbCategories] = useState<{ id: number; name: string; slug: string }[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [nowTime, setNowTime] = useState<number>(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNowTime(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
     fetchProducts();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/products?categories=true");
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.categories)) {
+        setDbCategories(data.categories);
+      }
+    } catch (err) {
+      console.warn("Gagal mengambil kategori PostgreSQL:", err);
+    }
+  };
 
   const fetchProducts = async () => {
     setIsLoadingProducts(true);
@@ -184,6 +220,7 @@ export default function MarketPage() {
                 shopIsVerified: shop?.isVerified ?? shop?.verified ?? shop?.is_verified ?? p.shopIsVerified ?? false,
                 shopIsOfficial: shop?.isOfficial ?? shop?.official ?? shop?.is_official ?? p.shopIsOfficial ?? false,
                 shopCity: rawCity,
+                shopFlashSales: Array.isArray(shop?.flashSales) ? shop.flashSales : [],
               };
             });
           }
@@ -199,6 +236,68 @@ export default function MarketPage() {
       setIsLoadingProducts(false);
     }
   };
+
+  const activeFlashSales = useMemo(() => {
+    return products
+      .map((p: any) => {
+        const fs = getProductActiveFlashSale(p.id, p.shopFlashSales, nowTime);
+        return fs ? { product: p, flashSale: fs } : null;
+      })
+      .filter((item): item is { product: any; flashSale: any } => item !== null);
+  }, [products, nowTime]);
+
+  const soonestFlashSaleEnd = useMemo(() => {
+    if (activeFlashSales.length === 0) return null;
+    return Math.min(...activeFlashSales.map((x: any) => x.flashSale.endTimeMs));
+  }, [activeFlashSales]);
+
+  const marketTabs = useMemo(() => {
+    const dynamicTabs = dbCategories
+      .filter((cat) => cat.slug?.toLowerCase() !== "lainnya" && cat.name?.toLowerCase() !== "lainnya")
+      .map((cat) => ({
+        id: `cat-${cat.id}`,
+        categoryId: cat.id,
+        categorySlug: cat.slug,
+        label: cat.name,
+      }));
+    return [...BASE_TABS, ...dynamicTabs];
+  }, [dbCategories]);
+
+  useEffect(() => {
+    checkTabsScroll();
+    const el = tabsContainerRef.current;
+    if (el) {
+      el.addEventListener("scroll", checkTabsScroll);
+    }
+    window.addEventListener("resize", checkTabsScroll);
+    return () => {
+      if (el) el.removeEventListener("scroll", checkTabsScroll);
+      window.removeEventListener("resize", checkTabsScroll);
+    };
+  }, [checkTabsScroll, marketTabs]);
+
+  const filteredProducts = useMemo(() => {
+    if (activeTab === "deals") {
+      if (activeFlashSales.length > 0) {
+        return activeFlashSales.map((x: any) => x.product);
+      }
+      return products.filter((p: any) => p.discountPrice && Number(p.discountPrice) > Number(p.price));
+    }
+    if (activeTab === "official") {
+      return products.filter((p: any) => Boolean(p.shopIsOfficial));
+    }
+    if (activeTab.startsWith("cat-")) {
+      const catId = Number(activeTab.replace("cat-", ""));
+      const selectedCat = dbCategories.find((c) => c.id === catId);
+      return products.filter((p: any) => {
+        if (p.categoryId && Number(p.categoryId) === catId) return true;
+        if (selectedCat && p.categoryName && p.categoryName.toLowerCase() === selectedCat.name.toLowerCase()) return true;
+        if (selectedCat && p.categorySlug && p.categorySlug.toLowerCase() === selectedCat.slug.toLowerCase()) return true;
+        return false;
+      });
+    }
+    return products;
+  }, [products, activeTab, activeFlashSales, dbCategories]);
 
   useEffect(() => {
     if (!api) return;
@@ -285,7 +384,7 @@ export default function MarketPage() {
             {MOBILE_MENU_ITEMS.map((item, idx) => (
               <Link
                 key={idx}
-                href="/topup"
+                href={item.href || "/topup"}
                 className="flex flex-col items-center gap-1.5 group/item transition-transform active:scale-95 py-1 shrink-0 w-[68px]"
               >
                 <div className="w-11 h-11 relative flex items-center justify-center bg-muted/20 rounded-xl p-1.5 border border-border/40 shadow-2xs group-hover/item:bg-[#00AA5B]/10 transition-colors">
@@ -355,57 +454,7 @@ export default function MarketPage() {
                   </Link>
                 </div>
 
-                <Card className="rounded-2xl border border-border overflow-hidden bg-card shadow-sm flex-1">
-                  <Tabs defaultValue="pulsa" className="w-full h-full flex flex-col">
-                    <div className="w-full overflow-x-auto no-scrollbar border-b border-border bg-white px-2">
-                      <TabsList className="bg-transparent h-12 w-full p-0 justify-between items-center rounded-none border-none">
-                        <div className="flex">
-                          <TabsTrigger value="pulsa" className="px-5 rounded-none border-b-2 border-transparent data-[state=active]:border-[#00AA5B] data-[state=active]:text-[#00AA5B] data-[state=active]:bg-transparent font-bold text-xs">Pulsa</TabsTrigger>
-                          <TabsTrigger value="paket-data" className="px-5 rounded-none border-b-2 border-transparent data-[state=active]:border-[#00AA5B] data-[state=active]:text-[#00AA5B] data-[state=active]:bg-transparent font-bold text-xs">Paket Data</TabsTrigger>
-                          <TabsTrigger value="listrik" className="px-5 rounded-none border-b-2 border-transparent data-[state=active]:border-[#00AA5B] data-[state=active]:text-[#00AA5B] data-[state=active]:bg-transparent font-bold text-xs">Listrik PLN</TabsTrigger>
-                          <TabsTrigger value="roaming" className="px-5 rounded-none border-b-2 border-transparent data-[state=active]:border-[#00AA5B] data-[state=active]:text-[#00AA5B] data-[state=active]:bg-transparent font-bold text-xs">Roaming</TabsTrigger>
-                        </div>
-                        <button className="p-2 hover:bg-muted rounded-full transition-colors mr-2">
-                          <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                        </button>
-                      </TabsList>
-                    </div>
-
-                    <TabsContent value="pulsa" className="p-6 mt-0 flex-1 flex flex-col justify-center">
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                        <div className="md:col-span-5 space-y-2">
-                          <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Nomor Telepon</Label>
-                          <div className="relative">
-                            <Input placeholder="088976577650" className="h-11 rounded-xl bg-muted/20 border-border text-sm font-bold pr-14" />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                              <span className="text-[8px] font-bold text-muted-foreground uppercase opacity-40">STS NODE</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="md:col-span-5 space-y-2">
-                          <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Nominal</Label>
-                          <Select defaultValue="pilih">
-                            <SelectTrigger className="h-11 rounded-xl bg-muted/20 border-border font-bold text-sm">
-                              <SelectValue placeholder="Pilih" />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-2xl">
-                              <SelectItem value="pilih" className="text-xs">Pilih Nominal...</SelectItem>
-                              <SelectItem value="50" className="text-xs">50rb - Transaksi Instan</SelectItem>
-                              <SelectItem value="100" className="text-xs">100rb - Transaksi Instan</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="md:col-span-2">
-                          <Button className="w-full h-11 rounded-xl bg-[#E5E7E9] text-muted-foreground hover:bg-[#E5E7E9] font-bold text-xs shadow-none cursor-not-allowed">
-                            Beli
-                          </Button>
-                        </div>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </Card>
+                <HomeTopUpWidget />
               </div>
             </div>
 
@@ -413,7 +462,7 @@ export default function MarketPage() {
               {QUICK_CHIPS.map((chip, idx) => (
                 <Link
                   key={idx}
-                  href={chip.label === "Kategori" ? "/topup" : `/search?q=${encodeURIComponent(chip.label)}`}
+                  href={chip.href || "/topup"}
                   className="flex items-center gap-2.5 px-3.5 h-11 rounded-xl border border-border bg-white hover:border-[#00AA5B]/30 hover:bg-[#00AA5B]/5 transition-all shrink-0 group shadow-2xs"
                 >
                   <Image
@@ -432,37 +481,62 @@ export default function MarketPage() {
 
         {/* Section: Trending Products */}
         <section className="px-4 md:px-12 lg:px-20 max-w-screen-2xl mx-auto w-full">
-          <div className="flex items-center justify-between border-b border-border bg-white sticky top-[64px] z-30">
-            <div className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-6 md:gap-8">
-              {MARKET_TABS.map((tab) => {
+          <div className="relative flex items-center bg-white sticky top-[64px] z-30">
+            {canScrollTabsLeft && (
+              <div className="absolute left-0 top-0 bottom-0 z-10 flex items-center pr-2 bg-gradient-to-r from-white via-white/95 to-transparent">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => scrollTabs("left")}
+                  className="w-8 h-8 rounded-full border border-border bg-white shadow-sm hover:bg-muted"
+                >
+                  <ChevronLeft className="w-4 h-4 text-foreground" />
+                </Button>
+              </div>
+            )}
+
+            <div
+              ref={tabsContainerRef}
+              onScroll={checkTabsScroll}
+              className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-6 md:gap-8 scroll-smooth"
+            >
+              {marketTabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "py-4 text-sm font-bold transition-all border-b-[3px] whitespace-nowrap flex items-center gap-2 relative",
+                      "py-4 text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 relative border-b-[3px]",
                       isActive
-                        ? "text-[#00AA5B] border-[#00AA5B]"
+                        ? (tab.id === 'deals' ? "text-red-600 border-red-500" : "text-[#00AA5B] border-[#00AA5B]")
                         : "text-muted-foreground border-transparent hover:text-foreground"
                     )}
                   >
-                    {tab.id === 'mall' && (
-                      <div className="w-3.5 h-3.5 bg-[#8B5CF6] rounded-full flex items-center justify-center shrink-0">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                      </div>
+                    {tab.id === 'official' && (
+                      <img
+                        src="/assets/badge/officials.png"
+                        alt="Official"
+                        className="w-6 h-6 object-contain shrink-0"
+                      />
                     )}
-                    {tab.id === 'weekend' && (
+                    {tab.id === 'deals' && (
                       <div className={cn(
-                        "flex items-center gap-1 shrink-0 px-1 rounded transition-colors",
-                        isActive ? "bg-[#00AA5B]/10" : "bg-muted/40"
+                        "flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full transition-all",
+                        isActive
+                          ? "bg-gradient-to-r from-red-600 via-red-500 to-amber-500 text-white font-black shadow-xs shadow-red-500/25 scale-105"
+                          : "bg-red-50 hover:bg-red-100/80 text-red-600 font-bold border border-red-200"
                       )}>
-                        <span className={cn(
-                          "text-[10px] italic font-black uppercase text-left leading-[1] transition-colors",
-                          isActive ? "text-[#00AA5B]" : "text-foreground/40"
-                        )}>
-                          INSTAN<br />WEEKEND
-                        </span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="/assets/icon/bolt.gif"
+                          alt="Flash Sale"
+                          className="w-4 h-4 object-contain shrink-0"
+                        />
+                        <div className="flex flex-col text-[9.5px] italic font-black uppercase leading-[0.85] tracking-tight text-left">
+                          <span>FLASH</span>
+                          <span className="pl-2">SALE</span>
+                        </div>
                       </div>
                     )}
                     {tab.label}
@@ -470,12 +544,60 @@ export default function MarketPage() {
                 );
               })}
             </div>
-            <div className="pl-4 shrink-0 h-14 flex items-center">
-              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full border border-border bg-white shadow-sm hover:bg-muted">
-                <ChevronRight className="w-4 h-4 text-foreground" />
-              </Button>
-            </div>
+
+            {canScrollTabsRight && (
+              <div className="pl-3 shrink-0 flex items-center z-10">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => scrollTabs("right")}
+                  className="w-8 h-8 rounded-full border border-border bg-white shadow-sm hover:bg-muted"
+                >
+                  <ChevronRight className="w-4 h-4 text-foreground" />
+                </Button>
+              </div>
+            )}
           </div>
+
+          {/* Flash Sale Banner in Deals Tab */}
+          {activeTab === "deals" && (
+            <div className="mt-4 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-[#FF3B30] via-[#FF5E3A] to-[#FF9500] text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1 z-10">
+                <div className="flex items-center gap-2">
+                  <span className="bg-white/20 backdrop-blur-xs text-white text-[10px] font-black tracking-wider uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/assets/icon/fire.gif"
+                      alt="Flash Sale"
+                      className="w-4 h-4 object-contain shrink-0"
+                    />
+                    FLASH SALE HARI INI
+                  </span>
+                  <span className="text-white/80 text-xs font-semibold hidden sm:inline">•</span>
+                  <span className="text-white/90 text-xs font-medium hidden sm:inline">Diskon Spesial Terbatas</span>
+                </div>
+                <h3 className="text-lg md:text-xl font-extrabold tracking-tight">
+                  Serbu Produk Digital Pilihan
+                </h3>
+                <p className="text-xs text-white/90 max-w-md">
+                  Harga promo eksklusif dengan kuota terbatas dari merchant resmi MarketPoint.
+                </p>
+              </div>
+
+              {soonestFlashSaleEnd && (
+                <div className="flex items-center gap-2 bg-black/35 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10 shrink-0 z-10">
+                  <Clock className="w-4 h-4 text-amber-300" />
+                  <div className="text-xs font-bold text-white/90">
+                    Berakhir: <span className="font-black text-amber-300 font-mono text-sm ml-1">{formatCountdown(Math.max(0, Math.floor((soonestFlashSaleEnd - nowTime) / 1000)))}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Decorative Background Accents */}
+              <div className="absolute right-[-20px] top-[-30px] w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute left-[-20px] bottom-[-20px] w-36 h-36 bg-black/10 rounded-full blur-xl pointer-events-none" />
+            </div>
+          )}
 
           {/* Product Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4 pt-4 pb-16">
@@ -492,13 +614,19 @@ export default function MarketPage() {
                   </CardContent>
                 </Card>
               ))
-            ) : products.length === 0 ? (
+            ) : filteredProducts.length === 0 ? (
               <div className="col-span-full py-12 flex flex-col items-center justify-center text-center space-y-3 bg-muted/10 rounded-2xl border border-dashed border-border p-8">
                 <ShoppingBag className="w-10 h-10 text-muted-foreground/50" />
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-foreground">Belum Ada Produk Ditampilkan</h3>
                   <p className="text-xs text-muted-foreground max-w-sm">
-                    Produk digital yang ditambahkan oleh penjual akan otomatis muncul di sini secara realtime.
+                    {activeTab === "deals"
+                      ? "Saat ini belum ada sesi Flash Sale aktif. Nantikan penawaran spesial berikutnya!"
+                      : activeTab === "official"
+                        ? "Belum ada produk dari Official Store saat ini."
+                        : activeTab.startsWith("cat-")
+                          ? `Belum ada produk untuk kategori ${dbCategories.find((c) => `cat-${c.id}` === activeTab)?.name || "ini"}.`
+                          : "Produk digital yang ditambahkan oleh penjual akan otomatis muncul di sini secara realtime."}
                   </p>
                 </div>
                 <Link href="/my-shop/products">
@@ -508,13 +636,17 @@ export default function MarketPage() {
                 </Link>
               </div>
             ) : (
-              products.map((product) => {
+              filteredProducts.map((product: any) => {
+                const flashSaleInfo = getProductActiveFlashSale(product.id, product.shopFlashSales, nowTime);
+                const isFlashSale = !!flashSaleInfo;
                 const imageUrl = product.images && product.images.length > 0 ? product.images[0].imageUrl : "https://cdn.marketpoint.id/marketpoint.png";
-                const price = Number(product.price || 0);
-                const discountPrice = product.discountPrice ? Number(product.discountPrice) : null;
-                const discountPercent = discountPrice && discountPrice > price
-                  ? `${Math.round(((discountPrice - price) / discountPrice) * 100)}%`
-                  : null;
+                const price = isFlashSale ? flashSaleInfo.discountPrice : Number(product.price || 0);
+                const originalPrice = isFlashSale ? flashSaleInfo.originalPrice : (product.discountPrice ? Number(product.discountPrice) : null);
+                const discountPercent = isFlashSale
+                  ? `${flashSaleInfo.discountPercentage}%`
+                  : (originalPrice && originalPrice > price
+                    ? `${Math.round(((originalPrice - price) / originalPrice) * 100)}%`
+                    : null);
                 const rating = Number(product.ratingAvg || 5.0).toFixed(1);
                 const soldText = product.salesCount ? `${product.salesCount} terjual` : "0 terjual";
                 const shopName = typeof product.shopName === "string"
@@ -538,11 +670,21 @@ export default function MarketPage() {
                             fill
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
                           />
-                          {discountPercent && (
-                            <div className="absolute top-1.5 left-1.5 bg-[#FF5E5E] text-white text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-xs shadow-xs">
+                          {isFlashSale ? (
+                            <div className="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-br-lg shadow-xs flex items-center gap-0.5 z-10">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src="/assets/icon/bolt.gif"
+                                alt="Flash Sale"
+                                className="w-3.5 h-3.5 object-contain shrink-0"
+                              />
+                              {flashSaleInfo.discountPercentage}%
+                            </div>
+                          ) : discountPercent ? (
+                            <div className="absolute top-0 left-0 bg-[#FF5E5E] text-white text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-br-lg shadow-xs z-10">
                               {discountPercent}
                             </div>
-                          )}
+                          ) : null}
                         </div>
 
                         <div className="p-2 sm:p-2.5 md:p-3 space-y-1.5 flex-1 flex flex-col justify-between">
@@ -552,19 +694,23 @@ export default function MarketPage() {
                             </h4>
                             <div className="flex flex-col gap-0.5">
                               <div className="flex items-center gap-1">
-                                <span className="text-[#000000] text-xs sm:text-sm font-bold">
-                                  Rp {price.toLocaleString('id-ID')}
-                                </span>
+                                {isFlashSale ? (
+                                  <PromoPriceBadge price={price} />
+                                ) : (
+                                  <span className="text-xs sm:text-sm font-bold text-[#000000]">
+                                    Rp {price.toLocaleString('id-ID')}
+                                  </span>
+                                )}
                               </div>
-                              {discountPrice && discountPrice > price && (
+                              {!isFlashSale && originalPrice && originalPrice > price && (
                                 <p className="text-[9px] sm:text-[10px] text-muted-foreground line-through opacity-60">
-                                  Rp {discountPrice.toLocaleString('id-ID')}
+                                  Rp {originalPrice.toLocaleString('id-ID')}
                                 </p>
                               )}
                             </div>
                           </div>
 
-                          <div className="space-y-1">
+                          <div className="space-y-1 pt-1">
                             <div className="flex items-center gap-1">
                               <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#FFC400] fill-[#FFC400]" />
                               <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground">

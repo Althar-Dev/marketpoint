@@ -1,21 +1,24 @@
-"use client";
+import type { Metadata } from 'next';
+import { TopUpClientWrapper } from './topup-client-wrapper';
 
-import React from "react";
-import { MarketHeader } from "@/components/market-header";
-import { MarketFooter } from "@/components/market-footer";
+export const metadata: Metadata = {
+  title: 'Top Up & Tagihan',
+  description: 'Layanan top up game murah, pulsa all operator, token listrik PLN, e-wallet, dan pembayaran tagihan digital instan di MarketPoint.',
+  alternates: {
+    canonical: '/topup',
+  },
+  openGraph: {
+    title: 'Top Up & Tagihan | MarketPoint',
+    description: 'Top up game, pulsa, dan tagihan digital termurah dengan proses otomatis 24 jam.',
+    url: '/topup',
+    type: 'website',
+  },
+};
 
 export default function TopUpLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-body text-[#212121]">
-      <MarketHeader />
-      <div className="flex-1">
-        {children}
-      </div>
-      <MarketFooter />
-    </div>
-  );
+  return <TopUpClientWrapper>{children}</TopUpClientWrapper>;
 }

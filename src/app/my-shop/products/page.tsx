@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { useMerchantShop } from "@/context/merchant-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -149,12 +150,23 @@ export default function MerchantProductsPage() {
     setFormVariants((prev) => prev.filter((_, idx) => idx !== index));
   };
 
-  const shopRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(db, "shops", user.uid);
-  }, [db, user]);
+  const {
+    shopId,
+    shop,
+    loading: shopLoading,
+    isOwner,
+    isStaff,
+    staffRole,
+    staffPermissions,
+  } = useMerchantShop();
+  const activeShopId = shopId || user?.uid;
 
-  const { data: shop, loading: shopLoading } = useDoc(shopRef);
+  const canManageProducts = isOwner || staffRole === "CO_OWNER" || !!staffPermissions?.products;
+
+  const shopRef = useMemoFirebase(() => {
+    if (!activeShopId) return null;
+    return doc(db, "shops", activeShopId);
+  }, [db, activeShopId]);
 
   useEffect(() => {
     setMounted(true);
@@ -165,21 +177,26 @@ export default function MerchantProductsPage() {
     fetchCategories();
   }, []);
 
-  // Fetch Products when user is available
+  // Fetch Products when activeShopId is available
   useEffect(() => {
-    if (user?.uid) {
-      fetchProducts(user.uid);
+    if (activeShopId) {
+      fetchProducts(activeShopId);
     }
-  }, [user]);
+  }, [activeShopId]);
 
   const fetchCategories = async () => {
     try {
       const res = await fetch("/api/products?categories=true");
       const data = await res.json();
       if (res.ok && data.categories) {
-        setCategories(data.categories);
-        if (data.categories.length > 0) {
-          setFormCategoryId(String(data.categories[0].id));
+        const sorted = [...data.categories].sort((a: any, b: any) => {
+          if (a.name?.toLowerCase() === "lainnya" || a.slug === "lainnya") return 1;
+          if (b.name?.toLowerCase() === "lainnya" || b.slug === "lainnya") return -1;
+          return (a.id || 0) - (b.id || 0);
+        });
+        setCategories(sorted);
+        if (sorted.length > 0) {
+          setFormCategoryId(String(sorted[0].id));
         }
       }
     } catch (err) {
@@ -460,7 +477,7 @@ export default function MerchantProductsPage() {
         .map((v) => ({ fileName: `${v.name}.zip`, fileUrl: v.fileUrl }));
 
       const payload: any = {
-        shopId: user.uid,
+        shopId: activeShopId,
         categoryId: Number(formCategoryId),
         title: formTitle.trim(),
         price: validVariants[0]?.price || 0,
@@ -501,7 +518,7 @@ export default function MerchantProductsPage() {
 
       setShowAddDialog(false);
       resetForm();
-      fetchProducts(user.uid);
+      if (activeShopId) fetchProducts(activeShopId);
     } catch (err: any) {
       toast({ variant: "destructive", title: isEditMode ? "Gagal Update Produk" : "Gagal Membuat Produk", description: err.message });
     } finally {
@@ -520,14 +537,14 @@ export default function MerchantProductsPage() {
     if (!user || !productToDelete) return;
     setIsDeletingProduct(true);
     try {
-      const res = await fetch(`/api/products?id=${productToDelete.id}&shopId=${user.uid}`, {
+      const res = await fetch(`/api/products?id=${productToDelete.id}&shopId=${activeShopId}`, {
         method: "DELETE",
       });
 
       if (res.ok) {
         toast({ title: "Produk Berhasil Dihapus", description: `Produk "${productToDelete.title}" telah berhasil dihapus permanen.` });
         setProductToDelete(null);
-        fetchProducts(user.uid);
+        if (activeShopId) fetchProducts(activeShopId);
       } else {
         const data = await res.json();
         throw new Error(data.error || "Gagal menghapus produk.");
@@ -596,12 +613,18 @@ export default function MerchantProductsPage() {
             <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">Kelola inventaris, harga, dan ketersediaan produk digital Anda.</p>
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={() => setShowAddDialog(true)}
-              className="h-10 px-5 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2 shadow-md shadow-[#00AA5B]/10 active:scale-[0.98] transition-all"
-            >
-              <Plus className="w-4 h-4" /> Tambah Produk
-            </Button>
+            {canManageProducts ? (
+              <Button
+                onClick={() => setShowAddDialog(true)}
+                className="h-10 px-5 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2 shadow-md shadow-[#00AA5B]/10 active:scale-[0.98] transition-all"
+              >
+                <Plus className="w-4 h-4" /> Tambah Produk
+              </Button>
+            ) : (
+              <Badge variant="outline" className="h-9 px-3 text-[11px] font-semibold text-muted-foreground bg-muted/30 border-dashed">
+                Mode Hanya Lihat (Read-Only)
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -739,39 +762,43 @@ export default function MerchantProductsPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right px-6">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-36 rounded-xl border-border p-1">
-                            <DropdownMenuItem
-                              onSelect={(e) => {
-                                e.preventDefault();
-                                handleEditProduct(product);
-                              }}
-                              className="text-xs font-bold gap-2 cursor-pointer py-2 focus:bg-muted"
-                            >
-                              <Pencil className="w-3.5 h-3.5 text-blue-600" />
-                              Edit Produk
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onSelect={(e) => {
-                                e.preventDefault();
-                                handleOpenDeleteDialog(product);
-                              }}
-                              className="text-xs font-bold gap-2 cursor-pointer py-2 focus:bg-red-50 text-red-600 focus:text-red-600"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              Hapus Produk
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        {canManageProducts ? (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-36 rounded-xl border-border p-1">
+                              <DropdownMenuItem
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  handleEditProduct(product);
+                                }}
+                                className="text-xs font-bold gap-2 cursor-pointer py-2 focus:bg-muted"
+                              >
+                                <Pencil className="w-3.5 h-3.5 text-blue-600" />
+                                Edit Produk
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  handleOpenDeleteDialog(product);
+                                }}
+                                className="text-xs font-bold gap-2 cursor-pointer py-2 focus:bg-red-50 text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Hapus Produk
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground/60 italic font-medium">Hanya Lihat</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   );

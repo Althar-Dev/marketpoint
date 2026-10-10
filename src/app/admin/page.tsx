@@ -32,7 +32,6 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     setMounted(true);
-    // Fetch products
     fetch("/api/products")
       .then((res) => res.json())
       .then((data) => {
@@ -40,16 +39,15 @@ export default function AdminDashboard() {
           setRealProducts(data.products);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
-    // Fetch shops
     if (db) {
       getDocs(collection(db, "shops"))
         .then((snap) => {
           const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
           setRealShops(docs);
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [db]);
 
@@ -94,7 +92,6 @@ export default function AdminDashboard() {
     },
   ];
 
-  // Category Distribution Analytics Data
   const categories = [
     { name: "Pulsa & Paket Data", percent: 38, count: "4,742 tx", color: "bg-[#00AA5B]" },
     { name: "Game & Voucher", percent: 27, count: "3,369 tx", color: "bg-blue-500" },
@@ -103,7 +100,6 @@ export default function AdminDashboard() {
     { name: "TV & Streaming", percent: 6, count: "751 tx", color: "bg-slate-400" },
   ];
 
-  // Best Selling Products List
   const topProducts = realProducts.length > 0 ? realProducts.slice(0, 4) : [
     { id: "1", title: "Mobile Legends 86 Diamonds Instant", category: "Game", salesCount: 1240, price: 21500, ratingAvg: 4.9, image: "/assets/icons/game.png" },
     { id: "2", title: "Pulsa Telkomsel 50.000 Reguler", category: "Pulsa & Data", salesCount: 980, price: 50250, ratingAvg: 5.0, image: "/assets/icons/pulsadata.png" },
@@ -111,7 +107,6 @@ export default function AdminDashboard() {
     { id: "4", title: "Token Listrik PLN 50.000 PRABAYAR", category: "Listrik", salesCount: 650, price: 50200, ratingAvg: 4.9, image: "/assets/icons/listrik.png" },
   ];
 
-  // Top Merchant List
   const topShops = realShops.length > 0 ? realShops.slice(0, 4) : [
     { name: "MarketPoint Official", slug: "marketpoint", sales: "3,420 tx", rating: 5.0, isVerified: true, isOfficial: true, logoUrl: "/assets/img/logo.png" },
     { name: "DevX Studio Store", slug: "devx-studio", sales: "1,850 tx", rating: 4.9, isVerified: true, isOfficial: false, logoUrl: "" },
@@ -234,8 +229,8 @@ export default function AdminDashboard() {
                     const sales = prod.salesCount || (1240 - idx * 220);
                     const prodImage = prod.image || (prod.images && prod.images.length > 0 ? prod.images[0].imageUrl : "");
                     const rankBadgeColor = idx === 0 ? "bg-amber-100 text-amber-700 border-amber-300" :
-                                          idx === 1 ? "bg-slate-200 text-slate-700 border-slate-300" :
-                                          idx === 2 ? "bg-orange-100 text-orange-700 border-orange-300" : "bg-slate-100 text-slate-600 border-slate-200";
+                      idx === 1 ? "bg-slate-200 text-slate-700 border-slate-300" :
+                        idx === 2 ? "bg-orange-100 text-orange-700 border-orange-300" : "bg-slate-100 text-slate-600 border-slate-200";
 
                     return (
                       <div key={prod.id || idx} className="flex items-center justify-between p-3 md:p-3.5 hover:bg-slate-50/50 transition-colors">
@@ -289,8 +284,8 @@ export default function AdminDashboard() {
                     const isOfficial = Boolean(shop.isOfficial ?? shop.official ?? shop.is_official ?? shop.isOfficialStore ?? (shop.slug === "marketpoint" || shop.id === "marketpoint" || true));
 
                     const rankBadgeColor = idx === 0 ? "bg-amber-100 text-amber-700 border-amber-300" :
-                                          idx === 1 ? "bg-slate-200 text-slate-700 border-slate-300" :
-                                          idx === 2 ? "bg-orange-100 text-orange-700 border-orange-300" : "bg-slate-100 text-slate-600 border-slate-200";
+                      idx === 1 ? "bg-slate-200 text-slate-700 border-slate-300" :
+                        idx === 2 ? "bg-orange-100 text-orange-700 border-orange-300" : "bg-slate-100 text-slate-600 border-slate-200";
 
                     return (
                       <div key={shop.id || idx} className="flex items-center justify-between p-3 md:p-3.5 hover:bg-slate-50/50 transition-colors">
