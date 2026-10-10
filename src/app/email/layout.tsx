@@ -5,6 +5,8 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { doc } from "firebase/firestore";
 import { Loader2, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function EmailAppLayout({
   children,
@@ -36,7 +38,7 @@ export default function EmailAppLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center font-body">
+      <div className="h-screen bg-white flex flex-col items-center justify-center font-body">
         <div className="relative flex flex-col items-center">
           <div className="mb-4">
              <img src="/assets/img/logo.png" alt="MarketPoint" className="h-10 w-auto object-contain animate-pulse" />
@@ -53,7 +55,7 @@ export default function EmailAppLayout({
   if (!user || userData?.admin !== true) return null;
 
   return (
-    <div className="min-h-screen w-full bg-white flex flex-col overflow-hidden selection:bg-[#00AA5B]/10 selection:text-[#00AA5B]">
+    <div className="h-screen w-full bg-white flex flex-col overflow-hidden selection:bg-[#00AA5B]/10 selection:text-[#00AA5B]">
       {/* Global Email App Header */}
       <header className="h-14 border-b border-border bg-white px-4 flex items-center justify-between shrink-0 z-50">
         <div className="flex items-center gap-4">
@@ -81,6 +83,3 @@ export default function EmailAppLayout({
     </div>
   );
 }
-
-import Link from "next/link";
-import { Button } from "@/components/ui/button";

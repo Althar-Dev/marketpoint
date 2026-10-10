@@ -65,8 +65,8 @@ export default function EmailManagementPage() {
 
   return (
     <div className="flex flex-1 overflow-hidden h-full bg-white">
-      {/* 1. Sidebar: Folder & Account Management */}
-      <aside className="w-64 border-r border-border bg-slate-50/50 flex flex-col shrink-0">
+      {/* 1. Sidebar: Fixed Navigations */}
+      <aside className="w-64 border-r border-border bg-slate-50/50 flex flex-col shrink-0 h-full">
         <div className="p-4 space-y-4">
           <Button 
             className="w-full bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold rounded-xl h-10 gap-2 shadow-sm"
@@ -153,8 +153,8 @@ export default function EmailManagementPage() {
         </div>
       </aside>
 
-      {/* 2. Main Content Area: Responsive between List and Detail */}
-      <section className="flex-1 flex flex-col min-w-0 bg-white">
+      {/* 2. Main Content Area: Master-Detail Single Pane Layout */}
+      <section className="flex-1 flex flex-col min-w-0 bg-white h-full overflow-hidden">
         {viewMode === "accounts" ? (
           /* Tampilan Manajemen Akun */
           <div className="flex flex-col h-full animate-in fade-in duration-300">
@@ -165,7 +165,7 @@ export default function EmailManagementPage() {
                </Button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {ACCOUNTS.map((acc) => (
                   <div key={acc.email} className="p-4 rounded-2xl border border-border/80 bg-white flex items-center justify-between group hover:border-[#00AA5B]/40 hover:shadow-sm transition-all cursor-pointer">
                     <div className="flex items-center gap-4">
@@ -184,73 +184,72 @@ export default function EmailManagementPage() {
             </div>
           </div>
         ) : selectedEmail ? (
-          /* Tampilan Detail Email (Layar Penuh) */
-          <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
-            {/* Header Action Bar with Back Button */}
+          /* Tampilan Detail Email (Single Pane) */
+          <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300 bg-white">
             <div className="h-14 px-4 sm:px-6 border-b border-border flex items-center justify-between bg-white shrink-0 shadow-2xs">
               <div className="flex items-center gap-2">
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setSelectedEmail(null)}
-                  className="h-8.5 rounded-xl text-slate-700 hover:bg-slate-100 font-bold text-xs gap-1"
+                  className="h-9 rounded-xl text-slate-700 hover:bg-slate-100 font-bold text-xs gap-1"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span className="hidden sm:inline">Kembali</span>
+                  Kembali
                 </Button>
                 <div className="h-4 w-px bg-border mx-1" />
-                <Button variant="ghost" size="icon" className="h-8.5 w-8.5 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8.5 w-8.5 rounded-xl text-muted-foreground hover:bg-muted">
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:bg-muted">
                   <Star className={cn("w-4 h-4", selectedEmail.isStarred ? "text-amber-400 fill-amber-400" : "")} />
                 </Button>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="h-8.5 px-5 rounded-xl text-xs font-black gap-2 border-border bg-white shadow-sm hover:bg-slate-50">
+                <Button variant="outline" size="sm" className="h-9 px-5 rounded-xl text-xs font-black gap-2 border-border bg-white shadow-sm">
                   Reply
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8.5 w-8.5 rounded-xl text-muted-foreground">
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground">
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-white no-scrollbar">
-              <div className="max-w-4xl mx-auto space-y-6">
-                <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">
+            <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-white no-scrollbar">
+              <div className="max-w-4xl mx-auto space-y-8">
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight tracking-tight">
                   {selectedEmail.subject}
                 </h2>
                 
-                <div className="flex items-center justify-between bg-slate-50/50 p-3 rounded-2xl border border-border/40">
-                  <div className="flex items-center gap-3.5">
-                    <div className="h-11 w-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-slate-900/20">
+                <div className="flex items-center justify-between bg-slate-50/50 p-4 rounded-2xl border border-border/40">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-slate-900/10">
                       {selectedEmail.from.substring(0, 1).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-xs font-black text-slate-950">{selectedEmail.from}</p>
+                      <p className="text-[13px] font-black text-slate-950">{selectedEmail.from}</p>
                       <p className="text-[11px] text-muted-foreground font-medium">ke <span className="font-bold text-[#00AA5B]">{selectedEmail.to}</span></p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] text-muted-foreground font-bold flex items-center justify-end gap-1.5">
-                      <Clock className="w-3 h-3" />
+                    <span className="text-[11px] text-muted-foreground font-bold flex items-center justify-end gap-1.5">
+                      <Clock className="w-3.5 h-3.5 opacity-60" />
                       {selectedEmail.date}, 10 Okt 2026
                     </span>
                   </div>
                 </div>
 
-                <div className="prose prose-slate max-w-none text-sm leading-relaxed text-slate-700 font-medium space-y-5">
-                  <p className="whitespace-pre-line">{selectedEmail.content}</p>
+                <div className="prose prose-slate max-w-none text-sm sm:text-base leading-relaxed text-slate-700 font-medium space-y-6">
+                  <p className="whitespace-pre-line leading-relaxed">{selectedEmail.content}</p>
                   
-                  <div className="p-4 rounded-2xl border border-border bg-slate-50 flex items-center justify-between group hover:border-[#00AA5B]/40 hover:bg-white transition-all cursor-pointer">
+                  <div className="p-5 rounded-2xl border border-border bg-slate-50 flex items-center justify-between group hover:border-[#00AA5B]/40 hover:bg-white transition-all cursor-pointer">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-xl bg-white border border-border flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
                         <FileText className="w-6 h-6 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-[12px] font-black text-slate-900">attachment_document.pdf</p>
-                        <p className="text-[10px] text-muted-foreground font-bold">2.4 MB • PDF Document</p>
+                        <p className="text-[13px] font-black text-slate-900">attachment_document.pdf</p>
+                        <p className="text-[11px] text-muted-foreground font-bold">2.4 MB • PDF Document</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-[#00AA5B] hover:bg-[#00AA5B]/10">
@@ -258,13 +257,16 @@ export default function EmailManagementPage() {
                     </Button>
                   </div>
 
-                  <p className="pt-4 border-t border-border/40">Terima kasih,<br/><span className="font-black text-slate-900 uppercase tracking-wide">System Team</span></p>
+                  <p className="pt-8 border-t border-border/40 text-xs text-muted-foreground">
+                    Terima kasih,<br/>
+                    <span className="font-black text-slate-900 uppercase tracking-widest mt-1 block">MarketPoint Mail System</span>
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          /* Tampilan Daftar Email (Layar Penuh) */
+          /* Tampilan Daftar Email (Full Pane) */
           <div className="flex flex-col h-full animate-in fade-in duration-300">
             <div className="h-14 px-4 border-b border-border flex items-center justify-between shrink-0 bg-white">
               <div className="relative flex-1 max-w-md">
@@ -273,37 +275,36 @@ export default function EmailManagementPage() {
                   placeholder="Cari dalam kotak masuk..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8.5 pl-9 rounded-xl bg-slate-50 border-border text-[11px] font-medium focus:bg-white transition-all" 
+                  className="h-9 pl-9 rounded-xl bg-slate-50 border-border text-[11px] font-medium focus:bg-white transition-all" 
                 />
               </div>
               <div className="flex items-center gap-1.5 ml-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/50">
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:bg-muted/50">
                   <RefreshCw className="w-3.5 h-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/50">
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:bg-muted/50">
                   <LayoutGrid className="w-3.5 h-3.5" />
                 </Button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-border/40">
+            <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-border/40 bg-white">
               {MOCK_EMAILS.filter(e => e.subject.toLowerCase().includes(searchQuery.toLowerCase())).map((email) => (
                 <div 
                   key={email.id}
                   onClick={() => setSelectedEmail(email)}
                   className={cn(
-                    "p-5 cursor-pointer transition-all hover:bg-slate-50 relative group",
-                    email.isUnread && "bg-emerald-50/20"
+                    "px-6 py-5 cursor-pointer transition-all hover:bg-slate-50 relative group border-l-4 border-transparent",
+                    email.isUnread ? "bg-emerald-50/20 border-l-[#00AA5B]" : ""
                   )}
                 >
                   <div className="flex justify-between items-start gap-2 mb-1.5">
                     <div className="flex items-center gap-2 min-w-0">
-                       <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", email.isUnread ? "bg-[#00AA5B]" : "bg-transparent")} />
                        <span className={cn("text-xs truncate font-bold uppercase tracking-wide", email.isUnread ? "text-slate-950" : "text-slate-500")}>
                          {email.from}
                        </span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground shrink-0 font-bold">{email.date}</span>
+                    <span className="text-[10px] text-muted-foreground shrink-0 font-black">{email.date}</span>
                   </div>
                   <h4 className={cn(
                     "text-sm mb-1 line-clamp-1 leading-snug",
@@ -311,20 +312,23 @@ export default function EmailManagementPage() {
                   )}>
                     {email.subject}
                   </h4>
-                  <p className="text-xs text-muted-foreground/80 line-clamp-1 font-medium">{email.preview}</p>
+                  <p className="text-[12px] text-muted-foreground/80 line-clamp-1 font-medium">{email.preview}</p>
                   
-                  <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-3">
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-4">
                     {email.isStarred && <Star className="w-4 h-4 text-amber-400 fill-amber-400" />}
                     <ChevronRight className="w-4 h-4 text-[#00AA5B]" />
                   </div>
                 </div>
               ))}
               {MOCK_EMAILS.filter(e => e.subject.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-                <div className="py-20 text-center space-y-3">
-                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300 border border-border">
-                     <Mail className="w-8 h-8" />
+                <div className="py-24 text-center space-y-4">
+                   <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto text-slate-300 border border-border/60">
+                     <Mail className="w-10 h-10" />
                    </div>
-                   <p className="text-xs font-bold text-slate-500">Tidak ada pesan yang ditemukan</p>
+                   <div className="space-y-1">
+                     <p className="text-sm font-bold text-slate-900">Tidak ada pesan ditemukan</p>
+                     <p className="text-xs text-muted-foreground">Coba ubah kata kunci pencarian Anda.</p>
+                   </div>
                 </div>
               )}
             </div>
