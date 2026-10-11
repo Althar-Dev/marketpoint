@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -69,7 +70,15 @@ import {
   Reply,
   Forward,
   Headphones,
-  Bell
+  Bell,
+  Archive,
+  AlertOctagon,
+  FolderInput,
+  MoreVertical,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  Smile
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -162,96 +171,80 @@ const EMAIL_TEMPLATES = [
   }
 ];
 
-function getEmailAvatar(emailStr: string = ""): { src?: string; initial: string; bgClass: string } {
-  const clean = emailStr.toLowerCase();
-  const initial = (emailStr.replace(/<[^>]+>/g, "").trim().substring(0, 1) || "M").toUpperCase();
-
-  if (clean.includes("support@marketpoint.id") || clean.includes("support@")) {
-    return {
-      src: "/assets/img/support.png",
-      initial: "S",
-      bgClass: "bg-blue-50 border-blue-200",
-    };
+// Helper avatar brand MarketPoint vs pengirim eksternal
+function getBrandAvatar(emailOrFrom: string): { type: "image" | "initials"; src?: string; initial: string; bg: string } {
+  const lower = (emailOrFrom || "").toLowerCase();
+  if (lower.includes("support@marketpoint.id")) {
+    return { type: "image", src: "/assets/img/support.png", initial: "S", bg: "bg-blue-600" };
   }
-  if (clean.includes("delivery@marketpoint.id") || clean.includes("delivery@")) {
-    return {
-      src: "/assets/img/delivery.png",
-      initial: "D",
-      bgClass: "bg-amber-50 border-amber-200",
-    };
+  if (lower.includes("delivery@marketpoint.id")) {
+    return { type: "image", src: "/assets/img/delivery.png", initial: "D", bg: "bg-[#00AA5B]" };
   }
-  if (clean.includes("admin@marketpoint.id")) {
-    return {
-      src: "/assets/img/favicon.png",
-      initial: "A",
-      bgClass: "bg-emerald-50 border-emerald-200",
-    };
+  if (lower.includes("admin@marketpoint.id") || lower.includes("noreply@marketpoint.id") || lower.includes("@marketpoint.id")) {
+    return { type: "image", src: "/assets/img/favicon.png", initial: "M", bg: "bg-slate-900" };
   }
-  if (clean.includes("@marketpoint.id")) {
-    return {
-      src: "/assets/img/favicon.png",
-      initial,
-      bgClass: "bg-emerald-50 border-emerald-200",
-    };
+  if (lower.includes("althar")) {
+    return { type: "image", src: "/assets/img/althardev.png", initial: "A", bg: "bg-slate-900" };
   }
-
-  return {
-    initial,
-    bgClass: "bg-gradient-to-tr from-slate-700 to-slate-900 text-white",
-  };
+  if (lower.includes("starvale")) {
+    return { type: "image", src: "/assets/img/starvale.png", initial: "S", bg: "bg-blue-600" };
+  }
+  const name = emailOrFrom.includes("<")
+    ? emailOrFrom.split("<")[0].trim().replace(/^["']|["']$/g, "")
+    : emailOrFrom.split("@")[0] || "U";
+  const initial = (name[0] || "U").toUpperCase();
+  const colors = [
+    "bg-red-500", "bg-purple-600", "bg-indigo-600", "bg-blue-600",
+    "bg-amber-600", "bg-teal-600", "bg-rose-500", "bg-cyan-600", "bg-slate-800"
+  ];
+  let hash = 0;
+  for (let i = 0; i < emailOrFrom.length; i++) {
+    hash = emailOrFrom.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const bg = colors[Math.abs(hash) % colors.length];
+  return { type: "initials", initial, bg };
 }
 
 function EmailAvatar({
   email,
   name,
-  className,
-  size = "md",
+  size = "md"
 }: {
   email: string;
   name?: string;
-  className?: string;
   size?: "sm" | "md" | "lg";
 }) {
-  const avatar = getEmailAvatar(email);
-  const sizeClasses =
-    size === "sm"
-      ? "h-7.5 w-7.5 text-[11px]"
-      : size === "lg"
-      ? "h-11 w-11 sm:h-12 sm:w-12 text-base"
-      : "h-10 w-10 sm:h-11 sm:w-11 text-sm sm:text-base";
+  const brand = getBrandAvatar(email);
+  const sizeClasses = {
+    sm: "h-7 w-7 text-xs",
+    md: "h-10 w-10 text-sm",
+    lg: "h-11 w-11 text-base",
+  }[size];
 
-  if (avatar.src) {
+  if (brand.type === "image" && brand.src) {
     return (
-      <div
-        className={cn(
-          sizeClasses,
-          "rounded-full overflow-hidden shrink-0 border border-slate-200/90 shadow-2xs bg-white flex items-center justify-center p-0.5",
-          className
-        )}
-      >
-        <img
-          src={avatar.src}
+      <div className={cn("relative shrink-0 rounded-full overflow-hidden border border-slate-200/80 bg-white shadow-2xs flex items-center justify-center", sizeClasses)}>
+        <Image
+          src={brand.src}
           alt={name || email}
-          className="h-full w-full object-contain rounded-full"
+          width={size === "lg" ? 44 : size === "md" ? 40 : 28}
+          height={size === "lg" ? 44 : size === "md" ? 40 : 28}
+          className="h-full w-full object-cover"
+          unoptimized
         />
       </div>
     );
   }
 
-  const initial = name
-    ? name.substring(0, 1).toUpperCase()
-    : avatar.initial;
-
   return (
     <div
       className={cn(
-        sizeClasses,
-        "rounded-full flex items-center justify-center font-black shrink-0 shadow-2xs text-white",
-        avatar.bgClass,
-        className
+        "rounded-full shrink-0 flex items-center justify-center font-bold text-white shadow-2xs select-none",
+        brand.bg,
+        sizeClasses
       )}
     >
-      {initial}
+      {brand.initial}
     </div>
   );
 }
@@ -983,11 +976,11 @@ export default function EmailManagementPage() {
         await fetch("/api/mail", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            action: "update_folder", 
-            id: email.id, 
-            folder: "trash", 
-            previousFolder: prevFolder 
+          body: JSON.stringify({
+            action: "update_folder",
+            id: email.id,
+            folder: "trash",
+            previousFolder: prevFolder
           }),
         });
       } catch (err) {
@@ -1009,10 +1002,10 @@ export default function EmailManagementPage() {
       await fetch("/api/mail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          action: "update_folder", 
-          id: email.id, 
-          folder: targetFolder 
+        body: JSON.stringify({
+          action: "update_folder",
+          id: email.id,
+          folder: targetFolder
         }),
       });
     } catch (err) {
@@ -2168,7 +2161,7 @@ export default function EmailManagementPage() {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-3 min-w-0">
-                            <EmailAvatar email={acc.email} name={acc.name} size="md" className="rounded-xl" />
+                            <EmailAvatar email={acc.email} name={acc.name} size="md" />
                             <div className="min-w-0">
                               <p className="text-xs font-black text-slate-900 truncate">{acc.email}</p>
                               <p className="text-[10px] text-muted-foreground font-bold truncate">{acc.name} • {acc.role}</p>
@@ -2586,110 +2579,159 @@ export default function EmailManagementPage() {
             /* VIEW MODE 3: DETAIL EMAIL TERPILIH */
           ) : selectedEmail ? (
             <div className="flex flex-col h-full animate-in fade-in duration-200 bg-white">
-              {/* Detail Header Action Bar */}
-              <div className="h-14 px-3 sm:px-6 border-b border-border flex items-center justify-between bg-white shrink-0">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+              {/* Detail Header Action Bar ala Real Gmail */}
+              <div className="h-12 px-2 sm:px-4 border-b border-slate-200/80 flex items-center justify-between bg-white shrink-0">
+                <div className="flex items-center gap-0.5 sm:gap-1 text-slate-600">
+                  <button
+                    type="button"
                     onClick={() => setSelectedEmail(null)}
-                    className="h-9 px-2.5 sm:px-3 rounded-xl text-slate-700 hover:bg-slate-100 font-bold text-xs gap-1 cursor-pointer"
+                    title="Kembali ke kotak masuk"
+                    className="p-2 rounded-full hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
                   >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Kembali</span>
-                  </Button>
-                  <div className="h-4 w-px bg-border mx-1" />
-
-                  {/* Tombol Hapus / Pindah ke Sampah */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toast({ title: "Arsip", description: "Email berhasil diarsipkan." });
+                    }}
+                    title="Arsipkan"
+                    className="p-2 rounded-full hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                  >
+                    <Archive className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toast({ title: "Laporkan Spam", description: "Pesan dilaporkan sebagai spam." });
+                    }}
+                    title="Laporkan spam"
+                    className="p-2 rounded-full hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                  >
+                    <AlertOctagon className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => handleDeleteEmail(selectedEmail)}
-                    title={selectedEmail.folder === "trash" ? "Hapus Permanen" : "Pindahkan ke Sampah"}
-                    className="h-9 w-9 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                    title={selectedEmail.folder === "trash" ? "Hapus Permanen" : "Hapus"}
+                    className="p-2 rounded-full hover:bg-slate-100 hover:text-rose-600 transition-colors cursor-pointer"
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                    <Trash2 className="w-5 h-5" />
+                  </button>
 
-                  {/* Tombol Pulihkan jika sedang di folder Trash */}
-                  {selectedEmail.folder === "trash" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRestoreEmail(selectedEmail)}
-                      title="Pulihkan Email"
-                      className="h-8 px-2.5 rounded-lg text-emerald-600 hover:bg-emerald-50 font-bold text-xs gap-1"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Pulihkan</span>
-                    </Button>
-                  )}
+                  <div className="h-4.5 w-px bg-slate-300 mx-1.5" />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleToggleSelectMail(selectedEmail.id);
+                      handleBulkMarkUnread();
+                    }}
+                    title="Tandai belum dibaca"
+                    className="p-2 rounded-full hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                  >
+                    <Mail className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Pindahkan ke"
+                    className="p-2 rounded-full hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                  >
+                    <FolderInput className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Lainnya"
+                    className="p-2 rounded-full hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                  >
+                    <MoreVertical className="w-5 h-5" />
+                  </button>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrintEmail}
-                    className="h-9 px-3 rounded-xl text-xs font-bold gap-1.5 border-border bg-white shadow-2xs hover:border-slate-400 hover:text-slate-900 cursor-pointer"
-                    title="Cetak Email atau Simpan sebagai PDF"
-                  >
-                    <Printer className="w-3.5 h-3.5 text-slate-600" />
-                    <span className="hidden sm:inline">Cetak / PDF</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setIsInlineReplying(true);
-                      setTimeout(() => {
-                        const replyBox = document.getElementById("inline-reply-container");
-                        if (replyBox) replyBox.scrollIntoView({ behavior: "smooth" });
-                      }, 100);
-                    }}
-                    className="h-9 px-4 rounded-xl text-xs font-black gap-1.5 border-border bg-white shadow-2xs hover:border-[#00AA5B] hover:text-[#00AA5B] cursor-pointer"
-                  >
-                    <SendHorizontal className="w-3.5 h-3.5" /> Balas
-                  </Button>
+                {/* Right Pagination ala Gmail: 1 dari N < > */}
+                <div className="flex items-center gap-2 text-xs text-slate-500 font-normal">
+                  <span className="hidden sm:inline">
+                    {Math.max(1, filteredEmails.findIndex(e => e.id === selectedEmail.id) + 1)} dari {filteredEmails.length || 1}
+                  </span>
+                  <div className="flex items-center gap-0.5">
+                    <button
+                      type="button"
+                      disabled={filteredEmails.findIndex(e => e.id === selectedEmail.id) <= 0}
+                      onClick={() => {
+                        const idx = filteredEmails.findIndex(e => e.id === selectedEmail.id);
+                        if (idx > 0) setSelectedEmail(filteredEmails[idx - 1]);
+                      }}
+                      title="Lebih lama"
+                      className="p-1 rounded-full hover:bg-slate-100 disabled:opacity-30 text-slate-600 cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={filteredEmails.findIndex(e => e.id === selectedEmail.id) >= filteredEmails.length - 1}
+                      onClick={() => {
+                        const idx = filteredEmails.findIndex(e => e.id === selectedEmail.id);
+                        if (idx < filteredEmails.length - 1) setSelectedEmail(filteredEmails[idx + 1]);
+                      }}
+                      title="Lebih baru"
+                      className="p-1 rounded-full hover:bg-slate-100 disabled:opacity-30 text-slate-600 cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Detail Message Body - Gmail Grade Threading & Responsive */}
-              <div className="flex-1 overflow-y-auto px-4 sm:px-8 lg:px-12 py-6 sm:py-8 bg-slate-50/40">
-                <div className="max-w-5xl xl:max-w-6xl w-full mx-auto space-y-6">
-                  {/* Thread Subject & Counter Badge */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 bg-transparent">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+              {/* Detail Message Body - Authentic Gmail Canvas (Full-width, Crisp, Clean) */}
+              <div className="flex-1 overflow-y-auto px-4 sm:px-8 lg:px-12 py-4 sm:py-5 bg-white">
+                <div className="w-full">
+                  {/* Subject Row ala Gmail */}
+                  <div className="pb-3 mb-4 flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <h1 className="text-xl sm:text-2xl font-normal text-slate-900 tracking-tight leading-snug">
                         {normalizeEmailSubject(selectedEmail.subject) || "(Tanpa Subjek)"}
                       </h1>
                       <div className="flex items-center gap-1.5">
-                        <Badge
-                          variant="secondary"
-                          className="bg-slate-100 text-slate-700 border border-slate-200/80 text-xs font-bold px-2.5 py-0.5 rounded-md"
-                        >
+                        <span className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded font-normal inline-flex items-center gap-1.5 transition-colors">
                           {selectedEmail.folder === "inbox"
                             ? "Kotak Masuk"
                             : selectedEmail.folder === "sent"
-                            ? "Terkirim"
-                            : selectedEmail.folder === "trash"
-                            ? "Sampah"
-                            : "Draft"}
-                        </Badge>
+                              ? "Terkirim"
+                              : selectedEmail.folder === "trash"
+                                ? "Sampah"
+                                : "Draft"}
+                          <X className="w-3 h-3 hover:text-slate-900 cursor-pointer" />
+                        </span>
                         {activeThreadMessages.length > 1 && (
-                          <Badge
-                            variant="outline"
-                            className="bg-white text-[#00AA5B] border-[#00AA5B]/40 text-xs font-black px-2.5 py-0.5 rounded-md shadow-2xs"
-                          >
-                            {activeThreadMessages.length} Pesan dalam Thread
-                          </Badge>
+                          <span className="text-xs text-slate-500 font-normal">
+                            ({activeThreadMessages.length})
+                          </span>
                         )}
                       </div>
                     </div>
+
+                    <div className="flex items-center gap-1 text-slate-500 shrink-0">
+                      <button
+                        type="button"
+                        onClick={handlePrintEmail}
+                        title="Cetak semua"
+                        className="p-1.5 rounded-full hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                      >
+                        <Printer className="w-4.5 h-4.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => window.open(window.location.href, "_blank")}
+                        title="Di jendela baru"
+                        className="p-1.5 rounded-full hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                      >
+                        <ExternalLink className="w-4.5 h-4.5" />
+                      </button>
+                    </div>
                   </div>
 
-                  {/* DAFTAR SELURUH PESAN DALAM THREAD (CHRONOLOGICAL STACK ALA GMAIL) */}
-                  <div className="space-y-4">
+                  {/* DAFTAR SELURUH PESAN DALAM THREAD (CHRONOLOGICAL ALA GMAIL) */}
+                  <div className="divide-y divide-slate-100">
                     {activeThreadMessages.map((msg, idx) => {
                       const isLastMessage = idx === activeThreadMessages.length - 1;
                       const sanitizedContent = cleanDisplayEmailContent(msg.content);
@@ -2719,89 +2761,26 @@ export default function EmailManagementPage() {
                         ? msg.from.match(/<([^>]+)>/)?.[1] || msg.from
                         : msg.from;
 
-                      const isExpanded =
-                        collapsedMessageIds[msg.id] !== undefined
-                          ? !collapsedMessageIds[msg.id]
-                          : isLastMessage || activeThreadMessages.length === 1;
-
-                      // Tampilan Ringkas / Terlipat ala Gmail jika pesan lama
-                      if (!isExpanded) {
-                        return (
-                          <div
-                            key={msg.id}
-                            onClick={() =>
-                              setCollapsedMessageIds((prev) => ({ ...prev, [msg.id]: false }))
-                            }
-                            className="px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50/80 transition-all cursor-pointer flex items-center justify-between gap-3 shadow-2xs group"
-                          >
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <EmailAvatar email={msg.from} name={senderDisplayName} size="sm" />
-                              <span className="text-xs font-extrabold text-slate-900 shrink-0 truncate max-w-[140px] sm:max-w-[200px]">
-                                {senderDisplayName}
-                              </span>
-                              {msg.folder === "sent" && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[9px] font-bold text-slate-500 bg-slate-50 border-slate-200 py-0 shrink-0"
-                                >
-                                  Terkirim
-                                </Badge>
-                              )}
-                              <p className="text-xs text-slate-500 font-medium truncate flex-1">
-                                {msg.preview || sanitizedContent.replace(/<[^>]+>/g, " ").substring(0, 90)}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-[11px] text-muted-foreground font-semibold">
-                                {msg.date}
-                              </span>
-                              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 transition-colors" />
-                            </div>
-                          </div>
-                        );
-                      }
+                      // Format quote blocks if exists
+                      const quoteIndex = sanitizedContent.search(/(Pada [^\n]+ menulis:|On [^\n]+ wrote:)/i);
+                      const mainText = quoteIndex !== -1 ? sanitizedContent.slice(0, quoteIndex).trim() : sanitizedContent;
+                      const quoteText = quoteIndex !== -1 ? sanitizedContent.slice(quoteIndex).trim() : null;
 
                       return (
-                        <div
-                          key={msg.id}
-                          className={cn(
-                            "rounded-2xl border transition-all bg-white overflow-hidden shadow-2xs",
-                            isLastMessage
-                              ? "border-slate-300 ring-1 ring-slate-200/60"
-                              : "border-slate-200/90"
-                          )}
-                        >
-                          {/* Sender & Header Info Card */}
-                          <div
-                            onClick={() => {
-                              if (!isLastMessage) {
-                                setCollapsedMessageIds((prev) => ({ ...prev, [msg.id]: true }));
-                              }
-                            }}
-                            className={cn(
-                              "p-4 sm:p-5 border-b border-slate-100 flex items-start justify-between gap-3 bg-white",
-                              !isLastMessage && "cursor-pointer hover:bg-slate-50/60 transition-colors"
-                            )}
-                          >
+                        <div key={msg.id} className="py-4 first:pt-0">
+                          {/* Sender & Header Info Row */}
+                          <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-3.5 min-w-0">
                               <EmailAvatar email={msg.from} name={senderDisplayName} size="md" />
 
                               <div className="min-w-0">
                                 <div className="flex items-baseline gap-2 flex-wrap">
-                                  <span className="text-sm sm:text-base font-extrabold text-slate-900 leading-tight">
+                                  <span className="text-sm font-semibold text-slate-900 leading-tight">
                                     {senderDisplayName}
                                   </span>
-                                  <span className="text-xs text-slate-500 font-medium">
+                                  <span className="text-xs text-slate-500 font-normal">
                                     &lt;{senderEmailAddr}&gt;
                                   </span>
-                                  {msg.folder === "sent" && (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-[10px] font-bold text-slate-600 bg-slate-50 border-slate-200 py-0"
-                                    >
-                                      Terkirim
-                                    </Badge>
-                                  )}
                                 </div>
 
                                 <div className="flex items-center gap-1.5 mt-0.5">
@@ -2810,11 +2789,11 @@ export default function EmailManagementPage() {
                                     onClick={() =>
                                       setExpandedTechId(expandedTechId === msg.id ? null : msg.id)
                                     }
-                                    className="text-[11px] text-slate-500 hover:text-slate-900 font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                                    className="text-xs text-slate-500 hover:text-slate-900 font-medium flex items-center gap-1 cursor-pointer transition-colors"
                                   >
                                     <span>
                                       kepada{" "}
-                                      <span className="font-bold text-slate-700">
+                                      <span className="text-slate-700 font-medium">
                                         {msg.to === "support@marketpoint.id" ? "saya" : msg.to}
                                       </span>
                                     </span>
@@ -2828,18 +2807,53 @@ export default function EmailManagementPage() {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-[11px] sm:text-xs text-muted-foreground font-semibold flex items-center gap-1">
-                                <Clock className="w-3.5 h-3.5 opacity-60" />
-                                {msg.date}
+                            {/* Right Message Actions: Date + relative time, Star, Smile, Reply, More */}
+                            <div className="flex items-center gap-1.5 shrink-0 text-slate-500">
+                              <span className="text-xs text-slate-500 font-normal mr-1">
+                                {msg.date} (0 menit yang lalu)
                               </span>
+                              <button
+                                type="button"
+                                className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-amber-500 transition-colors cursor-pointer"
+                                title="Bintang"
+                              >
+                                <Star className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                className="p-1 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                                title="Tambahkan reaksi"
+                              >
+                                <Smile className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsInlineReplying(true);
+                                  setTimeout(() => {
+                                    const replyBox = document.getElementById("inline-reply-container");
+                                    if (replyBox) replyBox.scrollIntoView({ behavior: "smooth" });
+                                  }, 50);
+                                }}
+                                className="p-1 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                                title="Balas"
+                              >
+                                <Reply className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                className="p-1 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                                title="Lainnya"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
                             </div>
                           </div>
 
-                          {/* Detail Enkripsi & Header TLS (Collapsible) */}
+                          {/* Detail Enkripsi & Header TLS (Collapsible ala Gmail) */}
                           {expandedTechId === msg.id && (
-                            <div className="px-5 py-3 bg-slate-50 border-b border-slate-100 text-xs text-slate-600 space-y-1.5 shadow-2xs animate-in fade-in duration-150">
-                              <div className="grid grid-cols-[70px_1fr] gap-y-1 gap-x-2">
+                            <div className="mt-2 ml-13 sm:ml-13.5 max-w-lg p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1.5 shadow-2xs animate-in fade-in duration-150">
+                              <div className="grid grid-cols-[65px_1fr] gap-y-1 gap-x-2 text-xs">
                                 <span className="font-semibold text-slate-500">dari:</span>
                                 <span className="font-mono text-slate-800 text-[11px] break-all">{msg.from}</span>
                                 <span className="font-semibold text-slate-500">kepada:</span>
@@ -2847,19 +2861,19 @@ export default function EmailManagementPage() {
                                 <span className="font-semibold text-slate-500">tanggal:</span>
                                 <span className="text-slate-800">{msg.date}</span>
                                 <span className="font-semibold text-slate-500">subjek:</span>
-                                <span className="text-slate-800 font-bold">{msg.subject}</span>
+                                <span className="text-slate-800 font-semibold">{msg.subject}</span>
                                 <span className="font-semibold text-slate-500">keamanan:</span>
-                                <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                                <span className="text-emerald-700 font-medium flex items-center gap-1">
                                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Enkripsi Standar (TLS) • SPF Valid
                                 </span>
                               </div>
                             </div>
                           )}
 
-                          {/* Message Body Content */}
-                          <div className="p-5 sm:p-7 space-y-4">
+                          {/* Message Body Content - Aligned cleanly with sender text (ml-13 sm:ml-13.5) with text-sm */}
+                          <div className="mt-4 ml-13 sm:ml-13.5 space-y-3">
                             {htmlToRender ? (
-                              <div className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+                              <div className="w-full rounded-xl overflow-hidden border border-slate-200 shadow-2xs bg-white">
                                 <iframe
                                   ref={isLastMessage ? emailIframeRef : undefined}
                                   srcDoc={htmlToRender}
@@ -2871,30 +2885,35 @@ export default function EmailManagementPage() {
                               </div>
                             ) : cleanHtmlContent ? (
                               <div
-                                className="text-slate-800 text-sm sm:text-base leading-relaxed break-words font-normal [&_p]:my-2 [&_div]:my-1 [&_a]:text-[#00AA5B] [&_a]:underline"
+                                className="text-slate-800 text-sm leading-relaxed break-words font-normal [&_p]:my-2 [&_div]:my-1 [&_a]:text-[#00AA5B] [&_a]:underline"
                                 dangerouslySetInnerHTML={{ __html: cleanHtmlContent }}
                               />
                             ) : (
-                              <div className="text-slate-800 text-sm sm:text-base leading-relaxed whitespace-pre-wrap font-normal break-words">
-                                {sanitizedContent}
+                              <div className="text-slate-800 text-sm leading-relaxed font-normal break-words space-y-3">
+                                <div className="whitespace-pre-wrap">{mainText}</div>
+                                {quoteText && (
+                                  <div className="border-l-2 border-slate-300 pl-3 py-0.5 text-slate-600 text-xs sm:text-sm whitespace-pre-wrap">
+                                    {quoteText}
+                                  </div>
+                                )}
                               </div>
                             )}
 
                             {/* Attachment preview if exists */}
                             {msg.attachment && (
-                              <div className="p-4 rounded-2xl border border-border bg-slate-50 flex items-center justify-between group hover:border-[#00AA5B]/40 hover:bg-white transition-all">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-10 w-10 rounded-xl bg-white border border-border flex items-center justify-center shadow-xs">
-                                    <FileText className="w-5 h-5 text-blue-600" />
+                              <div className="max-w-md p-3 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center justify-between group hover:border-[#00AA5B]/50 hover:bg-white transition-all">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                                    <FileText className="w-4 h-4 text-blue-600" />
                                   </div>
-                                  <div>
-                                    <p className="text-xs font-bold text-slate-900">{msg.attachment.name}</p>
-                                    <p className="text-[10px] text-muted-foreground font-semibold">
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-semibold text-slate-900 truncate">{msg.attachment.name}</p>
+                                    <p className="text-[10px] text-slate-500 font-normal">
                                       {msg.attachment.size} • Dokumen Lampiran
                                     </p>
                                   </div>
                                 </div>
-                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-[#00AA5B] hover:bg-[#00AA5B]/10">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-[#00AA5B] hover:bg-[#00AA5B]/10 shrink-0">
                                   <Download className="w-4 h-4" />
                                 </Button>
                               </div>
@@ -2902,7 +2921,7 @@ export default function EmailManagementPage() {
 
                             {/* Internal Mail Signature */}
                             {isMarketpointSender && (
-                              <div className="pt-3 text-[10px] text-muted-foreground border-t border-slate-100 flex items-center gap-1.5">
+                              <div className="pt-2 text-[11px] text-slate-400 flex items-center gap-1.5">
                                 <Zap className="w-3 h-3 text-[#00AA5B]" />
                                 <span>MarketPoint Mail Engine • Pesan Resmi Terverifikasi</span>
                               </div>
@@ -2913,68 +2932,64 @@ export default function EmailManagementPage() {
                     })}
                   </div>
 
-                  {/* KOTAK BALAS LANGSUNG ALA GMAIL (INLINE REPLY BOX) */}
-                  <div id="inline-reply-container" className="pt-2">
+                  {/* AKSI BALAS & TERUSKAN ALA GMAIL ASLI (PILL BUTTONS) */}
+                  <div id="inline-reply-container" className="pt-4">
                     {!isInlineReplying ? (
-                      <div
-                        onClick={() => setIsInlineReplying(true)}
-                        className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white hover:border-[#00AA5B]/60 hover:shadow-sm transition-all cursor-pointer flex items-center justify-between gap-3 group"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="h-9 w-9 rounded-full bg-slate-100 text-slate-600 group-hover:bg-[#00AA5B]/10 group-hover:text-[#00AA5B] flex items-center justify-center transition-colors shrink-0">
-                            <Reply className="w-4 h-4" />
-                          </div>
-                          <p className="text-xs sm:text-sm text-slate-500 group-hover:text-slate-800 transition-colors font-medium truncate">
-                            Balas ke <span className="font-bold text-slate-700">{targetReplyEmail || "pengirim"}</span>...
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIsInlineReplying(true);
-                            }}
-                            className="h-8.5 px-3 rounded-xl text-xs font-bold gap-1.5 border-slate-200 bg-white hover:border-[#00AA5B] hover:text-[#00AA5B] cursor-pointer"
-                          >
-                            <Reply className="w-3.5 h-3.5 text-slate-500" /> Balas
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setComposeTo("");
-                              setComposeSubject(`Fwd: ${selectedEmail.subject}`);
-                              setComposeMessage(
-                                `\n\n---------- Pesan Diteruskan ----------\nDari: ${selectedEmail.from}\nTanggal: ${selectedEmail.date}\nSubjek: ${selectedEmail.subject}\nKepada: ${selectedEmail.to}\n\n${selectedEmail.content}`
-                              );
-                              setIsComposeOpen(true);
-                            }}
-                            className="h-8.5 px-3 rounded-xl text-xs font-bold gap-1.5 border-slate-200 bg-white hover:border-slate-400 text-slate-700 cursor-pointer"
-                          >
-                            <Forward className="w-3.5 h-3.5 text-slate-500" /> Teruskan
-                          </Button>
-                        </div>
+                      <div className="ml-13 sm:ml-13.5 flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsInlineReplying(true);
+                            setTimeout(() => {
+                              const replyBox = document.getElementById("inline-reply-container");
+                              if (replyBox) replyBox.scrollIntoView({ behavior: "smooth" });
+                            }, 50);
+                          }}
+                          className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-slate-300 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors cursor-pointer shadow-2xs"
+                        >
+                          <Reply className="w-4 h-4 text-slate-500" />
+                          Balas
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setComposeTo("");
+                            setComposeSubject(`Fwd: ${selectedEmail.subject}`);
+                            setComposeMessage(
+                              `\n\n---------- Pesan Diteruskan ----------\nDari: ${selectedEmail.from}\nTanggal: ${selectedEmail.date}\nSubjek: ${selectedEmail.subject}\nKepada: ${selectedEmail.to}\n\n${selectedEmail.content}`
+                            );
+                            setIsComposeOpen(true);
+                          }}
+                          className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-slate-300 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors cursor-pointer shadow-2xs"
+                        >
+                          <Forward className="w-4 h-4 text-slate-500" />
+                          Teruskan
+                        </button>
+                        <button
+                          type="button"
+                          className="p-2 rounded-full border border-slate-300 hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer shadow-2xs"
+                          title="Tambahkan reaksi"
+                        >
+                          <Smile className="w-4 h-4 text-slate-500" />
+                        </button>
                       </div>
                     ) : (
-                      <div className="rounded-2xl border-2 border-[#00AA5B]/40 bg-white shadow-md overflow-hidden animate-in fade-in duration-200">
+                      <div className="ml-13 sm:ml-13.5 border border-slate-300 rounded-2xl bg-white shadow-xs overflow-hidden animate-in fade-in duration-200">
                         {/* Inline Reply Header */}
-                        <div className="px-4 sm:px-5 py-3 bg-slate-50/80 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div className="px-4 py-2.5 bg-slate-50/80 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div className="flex items-center gap-2 text-xs">
-                            <Reply className="w-4 h-4 text-[#00AA5B]" />
-                            <span className="font-semibold text-slate-500">Membalas ke:</span>
-                            <span className="font-extrabold text-slate-900 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200">
+                            <Reply className="w-3.5 h-3.5 text-[#00AA5B]" />
+                            <span className="font-medium text-slate-500">Membalas ke:</span>
+                            <span className="font-semibold text-slate-800">
                               {targetReplyEmail || selectedEmail.from}
                             </span>
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="text-[11px] text-slate-500 font-semibold">Dari:</span>
+                            <span className="text-xs text-slate-500 font-medium">Dari:</span>
                             {accounts.length > 0 ? (
                               <Select value={composeFrom} onValueChange={setComposeFrom}>
-                                <SelectTrigger className="h-7.5 text-xs font-bold bg-white border-slate-200 rounded-lg w-48 sm:w-56">
+                                <SelectTrigger className="h-7.5 text-xs font-medium bg-white border-slate-200 rounded-lg w-48 sm:w-56">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -2986,19 +3001,19 @@ export default function EmailManagementPage() {
                                 </SelectContent>
                               </Select>
                             ) : (
-                              <span className="text-xs font-bold text-slate-800">support@marketpoint.id</span>
+                              <span className="text-xs font-semibold text-slate-800">support@marketpoint.id</span>
                             )}
                           </div>
                         </div>
 
                         {/* Inline Reply Textarea */}
-                        <div className="p-4 sm:p-5 space-y-4">
+                        <div className="p-4 space-y-3">
                           <Textarea
                             value={inlineReplyText}
                             onChange={(e) => setInlineReplyText(e.target.value)}
                             placeholder={`Tulis balasan untuk ${targetReplyEmail || "pengirim"}...`}
                             autoFocus
-                            rows={6}
+                            rows={5}
                             className="w-full border-0 focus-visible:ring-0 p-0 text-sm leading-relaxed resize-y placeholder:text-slate-400 font-normal focus:outline-none"
                           />
 
@@ -3009,7 +3024,7 @@ export default function EmailManagementPage() {
                                 type="button"
                                 onClick={handleSendInlineReply}
                                 disabled={isSendingInlineReply || !inlineReplyText.trim()}
-                                className="bg-[#00AA5B] hover:bg-[#00924c] text-white font-black text-xs h-9 px-5 rounded-xl gap-1.5 shadow-sm cursor-pointer"
+                                className="bg-[#00AA5B] hover:bg-[#00924c] text-white font-bold text-xs h-8.5 px-5 rounded-full gap-1.5 shadow-2xs cursor-pointer"
                               >
                                 {isSendingInlineReply ? (
                                   <>
@@ -3017,7 +3032,7 @@ export default function EmailManagementPage() {
                                   </>
                                 ) : (
                                   <>
-                                    <SendHorizontal className="w-3.5 h-3.5" /> Kirim Balasan
+                                    <SendHorizontal className="w-3.5 h-3.5" /> Kirim
                                   </>
                                 )}
                               </Button>
@@ -3030,7 +3045,7 @@ export default function EmailManagementPage() {
                                   setInlineReplyText("");
                                   setIsInlineReplying(false);
                                 }}
-                                className="h-9 px-3 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                                className="h-8.5 px-3 rounded-full text-xs font-medium text-slate-500 hover:text-slate-900 cursor-pointer"
                               >
                                 Batal
                               </Button>
@@ -3048,7 +3063,7 @@ export default function EmailManagementPage() {
                                 setIsComposeOpen(true);
                               }}
                               title="Buka di jendela penuh"
-                              className="h-8 px-2.5 text-[11px] font-semibold text-slate-500 hover:text-slate-900 rounded-lg gap-1.5 cursor-pointer"
+                              className="h-8 px-2.5 text-xs font-medium text-slate-500 hover:text-slate-900 rounded-lg gap-1.5 cursor-pointer"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                               <span className="hidden sm:inline">Jendela Penuh</span>
@@ -3450,16 +3465,16 @@ export default function EmailManagementPage() {
                       key={email.id}
                       onClick={() => handleSelectEmail(email)}
                       className={cn(
-                        "px-3 sm:px-5 py-3.5 cursor-pointer transition-all hover:bg-slate-50 relative group border-l-4 border-transparent flex items-start gap-2.5 sm:gap-3",
-                        email.isUnread ? "bg-emerald-50/25 border-l-[#00AA5B]" : "",
-                        isSelected ? "bg-emerald-50/60 border-l-[#00AA5B]" : ""
+                        "h-10 px-3 sm:px-4 cursor-pointer transition-colors flex items-center gap-3 border-b border-slate-100 hover:bg-slate-100/70 hover:shadow-2xs group text-xs select-none",
+                        email.isUnread ? "bg-white font-bold" : "bg-slate-50/40 text-slate-600 font-normal",
+                        isSelected ? "bg-emerald-50/70" : ""
                       )}
                     >
                       {/* Individual Checkbox */}
                       <button
                         type="button"
                         onClick={(e) => handleToggleSelectMail(email.id, e)}
-                        className="mt-0.5 p-1 rounded-md text-slate-400 hover:text-slate-800 hover:bg-slate-200/60 transition-colors shrink-0 cursor-pointer"
+                        className="p-1 rounded text-slate-400 hover:text-slate-800 transition-colors shrink-0 cursor-pointer"
                         title={isSelected ? "Batalkan pilihan" : "Pilih email ini"}
                       >
                         {isSelected ? (
@@ -3469,40 +3484,48 @@ export default function EmailManagementPage() {
                         )}
                       </button>
 
-                      <EmailAvatar
-                        email={email.folder === "sent" ? email.to : email.from}
-                        size="sm"
-                        className="mt-0.5 shrink-0 hidden sm:flex"
-                      />
+                      {/* Star Icon ala Gmail */}
+                      <button
+                        type="button"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-0.5 rounded text-slate-300 hover:text-amber-500 transition-colors shrink-0 cursor-pointer"
+                        title="Bintang"
+                      >
+                        <Star className="w-4 h-4" />
+                      </button>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-baseline gap-2 mb-1">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className={cn(
-                              "text-xs truncate font-bold",
-                              email.isUnread ? "text-slate-950 font-black" : "text-slate-600"
-                            )}>
-                              {email.folder === "sent" ? `Ke: ${email.to}` : email.from}
-                            </span>
-                            {email.threadCount && email.threadCount > 1 && (
-                              <span className="text-[10px] font-black text-slate-600 bg-slate-200/80 px-1.5 py-0.2 rounded-full shrink-0">
-                                {email.threadCount}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] text-muted-foreground shrink-0 font-bold">{email.date}</span>
-                        </div>
-
-                        <h4 className={cn(
-                          "text-xs sm:text-sm mb-1 line-clamp-1 leading-snug",
-                          email.isUnread ? "font-black text-slate-900" : "font-semibold text-slate-700"
+                      {/* Sender Display Name */}
+                      <div className="w-36 sm:w-48 lg:w-56 shrink-0 truncate flex items-center gap-1.5">
+                        <span className={cn(
+                          "truncate text-xs sm:text-sm",
+                          email.isUnread ? "font-bold text-slate-900" : "font-normal text-slate-700"
                         )}>
-                          {email.subject}
-                        </h4>
+                          {email.folder === "sent"
+                            ? `Ke: ${email.to}`
+                            : email.from.split("<")[0].trim().replace(/^["']|["']$/g, "") || email.from}
+                        </span>
+                        {email.threadCount && email.threadCount > 1 && (
+                          <span className="text-[11px] text-slate-500 font-normal shrink-0">
+                            {email.threadCount}
+                          </span>
+                        )}
+                      </div>
 
-                        <p className="text-[11px] text-muted-foreground line-clamp-1 font-medium">
-                          {email.preview}
-                        </p>
+                      {/* Subject + Snippet on a single line ala Gmail */}
+                      <div className="flex-1 min-w-0 truncate text-xs sm:text-sm">
+                        <span className={cn(
+                          email.isUnread ? "font-bold text-slate-900" : "font-semibold text-slate-800"
+                        )}>
+                          {normalizeEmailSubject(email.subject) || "(Tanpa Subjek)"}
+                        </span>
+                        <span className="text-slate-500 font-normal ml-1.5">
+                          - {email.preview || cleanDisplayEmailContent(email.content).replace(/<[^>]+>/g, " ").slice(0, 100)}
+                        </span>
+                      </div>
+
+                      {/* Date on far right */}
+                      <div className="shrink-0 text-right text-xs text-slate-500 font-normal min-w-[65px]">
+                        {email.date}
                       </div>
                     </div>
                   );
