@@ -562,9 +562,6 @@ export default function TransactionDetailPage() {
                           className="bg-white border border-emerald-200/90 rounded-xl p-3 flex items-center justify-between gap-2.5 shadow-2xs"
                         >
                           <div className="min-w-0 flex-1">
-                            <span className="text-[10px] font-bold text-emerald-700 block tracking-wide">
-                              Kunci Lisensi {transaction.licenseKeys && transaction.licenseKeys.length > 1 ? `#${idx + 1}` : ""}
-                            </span>
                             <p className="font-mono text-xs sm:text-sm font-bold text-slate-900 tracking-wider break-all select-all">
                               {key}
                             </p>
@@ -678,29 +675,6 @@ export default function TransactionDetailPage() {
                       {transaction.buyerEmail || "-"}
                     </p>
                   </div>
-
-                  {transaction.licenseKey && (
-                    <div className="bg-emerald-50/70 rounded-2xl p-3.5 sm:p-4 border border-emerald-200/80 space-y-1 sm:col-span-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-emerald-800 font-bold flex items-center gap-1.5">
-                          <KeyRound className="w-3.5 h-3.5 text-emerald-600" /> Data Lisensi / Akun Digital
-                        </span>
-                        <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px] font-bold shadow-none">
-                          Siap Digunakan
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between gap-2 pt-0.5">
-                        <p className="font-mono font-bold text-slate-900 text-sm sm:text-base break-all">
-                          {transaction.licenseKey}
-                        </p>
-                        <CopyButton
-                          text={transaction.licenseKey}
-                          label="Lisensi"
-                          className="bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-100 shrink-0 text-xs px-2.5 py-1"
-                        />
-                      </div>
-                    </div>
-                  )}
 
                   {transaction.buyerPhone && (
                     <div className="bg-slate-50/70 rounded-2xl p-3.5 sm:p-4 border border-slate-100 space-y-1">
