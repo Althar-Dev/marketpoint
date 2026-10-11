@@ -577,7 +577,8 @@ export async function getAllActiveProducts(categoryId?: number, limit = 60): Pro
         ...p,
         price: Number(p.price),
         discountPrice: p.discountPrice ? Number(p.discountPrice) : null,
-        ratingAvg: Number(p.ratingAvg || 5.0),
+        ratingAvg: Number(p.ratingAvg || 0),
+        ratingCount: Number(p.ratingCount || 0),
         images: imgRes.rows.filter((img) => img.productId === p.id),
         files: [],
       }));

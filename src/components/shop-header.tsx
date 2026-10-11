@@ -117,7 +117,7 @@ export function ShopHeader() {
             logo: data.logoUrl || data.photoURL || data.logo,
             isVerified: Boolean(data.isVerified ?? data.verified ?? data.is_verified ?? true),
             isOfficial: Boolean(data.isOfficial ?? data.official ?? data.is_official ?? data.isOfficialStore ?? (data.slug === "marketpoint" || doc.id === "marketpoint" || true)),
-            ratingAvg: data.ratingAvg || data.rating || 5.0,
+            ratingAvg: data.ratingAvg || data.rating || 0,
           };
         });
         setRealShops(docs);
@@ -352,10 +352,19 @@ export function ShopHeader() {
                               <div className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-muted-foreground">
                                 <span>Toko</span>
                                 <span className="opacity-40">•</span>
-                                <div className="flex items-center gap-0.5 text-[#FFC400]">
-                                  <Star className="w-3 h-3 fill-[#FFC400]" />
+                                <div className="flex items-center gap-0.5">
+                                  <Star
+                                    className={cn(
+                                      "w-3 h-3",
+                                      Number(item.ratingAvg || item.rating || 0) > 0
+                                        ? "text-[#FFC400] fill-[#FFC400]"
+                                        : "text-slate-300 fill-slate-200"
+                                    )}
+                                  />
                                   <span className="text-foreground font-bold text-[10px] sm:text-xs">
-                                    {Number(item.ratingAvg || item.rating || 5.0).toFixed(1)}
+                                    {Number(item.ratingAvg || item.rating || 0) > 0
+                                      ? Number(item.ratingAvg || item.rating).toFixed(1)
+                                      : "0.0"}
                                   </span>
                                 </div>
                               </div>
@@ -401,7 +410,7 @@ export function ShopHeader() {
                       const discountPercent = discountPrice && discountPrice > price
                         ? `${Math.round(((discountPrice - price) / discountPrice) * 100)}%`
                         : null;
-                      const rating = Number(product.ratingAvg || 5.0).toFixed(1);
+                      const rating = Number(product.ratingAvg || 0) > 0 ? Number(product.ratingAvg).toFixed(1) : "0.0";
                       const soldText = product.salesCount ? `${product.salesCount} terjual` : "0 terjual";
 
                       const shopName = typeof product.shopName === "string"
@@ -457,7 +466,7 @@ export function ShopHeader() {
 
                                 <div className="space-y-1">
                                   <div className="flex items-center gap-1">
-                                    <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#FFC400] fill-[#FFC400]" />
+                                    <Star className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3", Number(rating) > 0 ? "text-[#FFC400] fill-[#FFC400]" : "text-slate-300 fill-slate-200")} />
                                     <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground">
                                       {rating} <span className="opacity-40">|</span> {soldText}
                                     </span>
@@ -562,12 +571,12 @@ export function ShopHeader() {
                               )}
                             </div>
                             <div className="flex items-center gap-1 mt-0.5">
-                              <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400] shrink-0" />
+                              <Star className={cn("w-3 h-3 shrink-0", Number(shop.ratingAvg || shop.rating || 0) > 0 ? "text-[#FFC400] fill-[#FFC400]" : "text-slate-300 fill-slate-200")} />
                               <span className="text-[10px] font-bold text-foreground">
-                                {Number(shop.ratingAvg || shop.rating || 5.0).toFixed(1)}
+                                {Number(shop.ratingAvg || shop.rating || 0) > 0 ? Number(shop.ratingAvg || shop.rating).toFixed(1) : "0.0"}
                               </span>
                               <span className="text-[9px] font-medium text-muted-foreground/70">
-                                ({shop.totalReviews || shop.reviewsCount || "2.5rb"} ulasan)
+                                ({shop.totalReviews || shop.reviewsCount || 0} ulasan)
                               </span>
                             </div>
                           </div>

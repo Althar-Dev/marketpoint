@@ -17,14 +17,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Search, 
-  ReceiptText, 
-  ChevronRight, 
-  ShoppingBag, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  Search,
+  ReceiptText,
+  ChevronRight,
+  ShoppingBag,
+  Clock,
+  CheckCircle2,
+  XCircle,
   Filter,
   ChevronLeft,
   Loader2,
@@ -53,7 +53,7 @@ function TransactionsContent() {
   const initialStatus = searchParams.get("status") || "all";
   const [activeTab, setActiveTab] = useState(initialStatus);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // PostgreSQL State
   const [transactions, setTransactions] = useState<any[]>([]);
   const [transLoading, setTransLoading] = useState(true);
@@ -87,7 +87,7 @@ function TransactionsContent() {
         setTransactions(data.transactions || []);
       }
     } catch (err) {
-      console.error("Gagal mengambil transaksi dari PostgreSQL:", err);
+      console.error("Gagal mengambil transaksi:", err);
     } finally {
       setTransLoading(false);
     }
@@ -192,7 +192,7 @@ function TransactionsContent() {
                       Riwayat Pembelian
                     </h2>
                     <p className="text-[11px] text-muted-foreground font-medium">
-                      Pantau status pesanan dan ambil lisensi produk digitalmu (PostgreSQL Database).
+                      Pantau status pesanan dan ambil lisensi produk digitalmu.
                     </p>
                   </div>
 
@@ -280,13 +280,13 @@ function TransactionsContent() {
                           </div>
 
                           <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t sm:border-0 border-border/40">
-                             <div className="sm:hidden">
-                               <p className="text-[10px] text-muted-foreground">Total Bayar</p>
-                               <p className="text-xs font-black">Rp {(Number(t.totalAmount) || 0).toLocaleString('id-ID')}</p>
-                             </div>
-                             <Button variant="ghost" size="sm" className="h-8 px-3 rounded-lg text-[10px] font-bold text-[#00AA5B] hover:bg-emerald-50 gap-1">
-                               Detail <ChevronRight className="w-3 h-3" />
-                             </Button>
+                            <div className="sm:hidden">
+                              <p className="text-[10px] text-muted-foreground">Total Bayar</p>
+                              <p className="text-xs font-black">Rp {(Number(t.totalAmount) || 0).toLocaleString('id-ID')}</p>
+                            </div>
+                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-lg text-[10px] font-bold text-[#00AA5B] hover:bg-emerald-50 gap-1">
+                              Detail <ChevronRight className="w-3 h-3" />
+                            </Button>
                           </div>
                         </div>
                       </Link>

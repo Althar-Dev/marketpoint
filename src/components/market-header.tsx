@@ -107,7 +107,7 @@ export function MarketHeader() {
               logo: data.logoUrl || data.photoURL || data.logo,
               isVerified: Boolean(data.isVerified ?? data.verified ?? data.is_verified ?? true),
               isOfficial: Boolean(data.isOfficial ?? data.official ?? data.is_official ?? data.isOfficialStore ?? (data.slug === "marketpoint" || docSnap.id === "marketpoint" || true)),
-              ratingAvg: data.ratingAvg || data.rating || 5.0,
+              ratingAvg: data.ratingAvg || data.rating || 0,
             };
           });
           setRealShops(docs);
@@ -273,9 +273,9 @@ export function MarketHeader() {
                               <span>Toko</span>
                               <span className="opacity-40">•</span>
                               <div className="flex items-center gap-0.5 text-[#FFC400]">
-                                <Star className="w-3 h-3 fill-[#FFC400]" />
+                                <Star className={cn("w-3 h-3", Number(item.ratingAvg || item.rating || 0) > 0 ? "fill-[#FFC400]" : "text-slate-300 fill-slate-200")} />
                                 <span className="text-foreground font-bold text-[10px]">
-                                  {Number(item.ratingAvg || item.rating || 5.0).toFixed(1)}
+                                  {Number(item.ratingAvg || item.rating || 0) > 0 ? Number(item.ratingAvg || item.rating).toFixed(1) : "0.0"}
                                 </span>
                               </div>
                             </div>
@@ -402,9 +402,9 @@ export function MarketHeader() {
                               <span>Toko</span>
                               <span className="opacity-40">•</span>
                               <div className="flex items-center gap-0.5 text-[#FFC400]">
-                                <Star className="w-3 h-3 fill-[#FFC400]" />
+                                <Star className={cn("w-3 h-3", Number(item.ratingAvg || item.rating || 0) > 0 ? "fill-[#FFC400]" : "text-slate-300 fill-slate-200")} />
                                 <span className="text-foreground font-bold text-[10px]">
-                                  {Number(item.ratingAvg || item.rating || 5.0).toFixed(1)}
+                                  {Number(item.ratingAvg || item.rating || 0) > 0 ? Number(item.ratingAvg || item.rating).toFixed(1) : "0.0"}
                                 </span>
                               </div>
                             </div>

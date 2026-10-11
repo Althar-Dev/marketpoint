@@ -40,6 +40,19 @@ interface CustomerItem {
   joinDate?: string;
 }
 
+function formatDate(dateStr?: string | Date): string {
+  if (!dateStr) return "-";
+  try {
+    return new Date(dateStr).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "-";
+  }
+}
+
 export default function MerchantCustomersPage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();

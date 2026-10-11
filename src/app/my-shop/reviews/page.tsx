@@ -298,8 +298,8 @@ export default function MerchantReviewsPage() {
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 rounded-xl border border-border shadow-sm">
-                        {review.userAvatar ? (
-                          <AvatarImage src={review.userAvatar} />
+                        {review.userAvatar && !review.userAvatar.includes("duck") ? (
+                          <AvatarImage src={review.userAvatar} referrerPolicy="no-referrer" />
                         ) : null}
                         <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-black">
                           {review.userName ? review.userName.substring(0, 1).toUpperCase() : "U"}

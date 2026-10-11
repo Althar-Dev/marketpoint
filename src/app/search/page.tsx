@@ -91,7 +91,7 @@ function SearchContent() {
                 logo: shopData.logoUrl || shopData.photoURL || shopData.logo,
                 isVerified: Boolean(shopData.isVerified ?? shopData.verified ?? shopData.is_verified ?? true),
                 isOfficial: Boolean(shopData.isOfficial ?? shopData.official ?? shopData.is_official ?? shopData.isOfficialStore ?? (shopData.slug === "marketpoint" || docSnap.id === "marketpoint" || true)),
-                ratingAvg: shopData.ratingAvg || shopData.rating || 5.0,
+                ratingAvg: shopData.ratingAvg || shopData.rating || 0,
               });
             });
 
@@ -372,7 +372,7 @@ function SearchContent() {
                   const discountPercent = discountPrice && discountPrice > price
                     ? `${Math.round(((discountPrice - price) / discountPrice) * 100)}%`
                     : null;
-                  const rating = Number(product.ratingAvg || 5.0).toFixed(1);
+                  const rating = Number(product.ratingAvg || 0) > 0 ? Number(product.ratingAvg).toFixed(1) : "0.0";
                   const soldText = product.salesCount ? `${product.salesCount} terjual` : "0 terjual";
 
                   const shopName = typeof product.shopName === "string"
@@ -424,7 +424,7 @@ function SearchContent() {
 
                             <div className="space-y-1">
                               <div className="flex items-center gap-1">
-                                <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#FFC400] fill-[#FFC400]" />
+                                <Star className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3", Number(rating) > 0 ? "text-[#FFC400] fill-[#FFC400]" : "text-slate-300 fill-slate-200")} />
                                 <span className="text-[9px] sm:text-[11px] font-medium text-muted-foreground">
                                   {rating} <span className="opacity-40">|</span> {soldText}
                                 </span>
@@ -552,12 +552,21 @@ function SearchContent() {
                               )}
                             </div>
                             <div className="flex items-center gap-1 mt-0.5">
-                              <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400] shrink-0" />
+                              <Star
+                                className={cn(
+                                  "w-3 h-3 shrink-0",
+                                  Number(shop.ratingAvg || shop.rating || 0) > 0
+                                    ? "text-[#FFC400] fill-[#FFC400]"
+                                    : "text-slate-300 fill-slate-200"
+                                )}
+                              />
                               <span className="text-[10px] sm:text-xs font-bold text-foreground">
-                                {Number(shop.ratingAvg || shop.rating || 5.0).toFixed(1)}
+                                {Number(shop.ratingAvg || shop.rating || 0) > 0
+                                  ? Number(shop.ratingAvg || shop.rating).toFixed(1)
+                                  : "0.0"}
                               </span>
                               <span className="text-[10px] sm:text-xs font-medium text-muted-foreground/70">
-                                ({shop.totalReviews || shop.reviewsCount || "2.5rb"} ulasan)
+                                ({shop.totalReviews || shop.reviewsCount || 0} ulasan)
                               </span>
                             </div>
                           </div>
@@ -714,10 +723,19 @@ function SearchContent() {
                           <div className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-muted-foreground">
                             <span>Toko</span>
                             <span className="opacity-40">•</span>
-                            <div className="flex items-center gap-0.5 text-[#FFC400]">
-                              <Star className="w-3 h-3 fill-[#FFC400]" />
+                            <div className="flex items-center gap-0.5">
+                              <Star
+                                className={cn(
+                                  "w-3 h-3",
+                                  Number(item.ratingAvg || item.rating || 0) > 0
+                                    ? "text-[#FFC400] fill-[#FFC400]"
+                                    : "text-slate-300 fill-slate-200"
+                                )}
+                              />
                               <span className="text-foreground font-bold text-[10px] sm:text-xs">
-                                {Number(item.ratingAvg || item.rating || 5.0).toFixed(1)}
+                                {Number(item.ratingAvg || item.rating || 0) > 0
+                                  ? Number(item.ratingAvg || item.rating).toFixed(1)
+                                  : "0.0"}
                               </span>
                             </div>
                           </div>

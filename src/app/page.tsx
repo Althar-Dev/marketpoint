@@ -647,7 +647,7 @@ export default function MarketPage() {
                   : (originalPrice && originalPrice > price
                     ? `${Math.round(((originalPrice - price) / originalPrice) * 100)}%`
                     : null);
-                const rating = Number(product.ratingAvg || 5.0).toFixed(1);
+                const rating = Number(product.ratingAvg || 0) > 0 ? Number(product.ratingAvg).toFixed(1) : "0.0";
                 const soldText = product.salesCount ? `${product.salesCount} terjual` : "0 terjual";
                 const shopName = typeof product.shopName === "string"
                   ? product.shopName
@@ -712,7 +712,7 @@ export default function MarketPage() {
 
                           <div className="space-y-1 pt-1">
                             <div className="flex items-center gap-1">
-                              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#FFC400] fill-[#FFC400]" />
+                              <Star className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3", Number(rating) > 0 ? "text-[#FFC400] fill-[#FFC400]" : "text-slate-300 fill-slate-200")} />
                               <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground">
                                 {rating} <span className="opacity-40">|</span> {soldText}
                               </span>

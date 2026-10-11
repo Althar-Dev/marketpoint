@@ -298,6 +298,31 @@ export async function initDatabaseSchema(force = false) {
         CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
         CREATE INDEX IF NOT EXISTS idx_transactions_pr ON transactions(pr_id);
         CREATE INDEX IF NOT EXISTS idx_transactions_invoice ON transactions(invoice_number);
+
+        -- 12. Create reviews table
+        CREATE TABLE IF NOT EXISTS reviews (
+          id VARCHAR(64) PRIMARY KEY,
+          transaction_id VARCHAR(150) NOT NULL UNIQUE,
+          invoice_number VARCHAR(150),
+          product_id VARCHAR(64) NOT NULL,
+          product_name VARCHAR(255),
+          shop_id VARCHAR(128),
+          user_id VARCHAR(128) NOT NULL,
+          user_name VARCHAR(150) NOT NULL,
+          user_avatar TEXT,
+          rating SMALLINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+          comment TEXT,
+          is_anonymous BOOLEAN DEFAULT FALSE,
+          seller_reply TEXT,
+          seller_replied_at TIMESTAMPTZ,
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
+        CREATE INDEX IF NOT EXISTS idx_reviews_shop ON reviews(shop_id);
+        CREATE INDEX IF NOT EXISTS idx_reviews_transaction ON reviews(transaction_id);
+        CREATE INDEX IF NOT EXISTS idx_reviews_user ON reviews(user_id);
       `;
 
       await query(initSql);

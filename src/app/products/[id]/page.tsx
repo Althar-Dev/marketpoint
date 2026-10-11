@@ -60,6 +60,19 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 
+function formatDate(dateStr: string | Date | undefined): string {
+  if (!dateStr) return "-";
+  try {
+    return new Date(dateStr).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "-";
+  }
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const id = ((params?.productSlug as string) || (params?.id as string)) || "";
@@ -67,6 +80,10 @@ export default function ProductDetailPage() {
   const db = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
+
+  // Current user's Firestore profile
+  const userDocRef = useMemoFirebase(() => (!user ? null : doc(db, "users", user.uid)), [db, user]);
+  const { data: userData } = useDoc(userDocRef);
 
   const [mounted, setMounted] = useState(false);
   const [product, setProduct] = useState<any>(null);
@@ -76,13 +93,86 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [shopProductsCount, setShopProductsCount] = useState<number | null>(null);
-  const [reviewSort, setReviewSort] = useState("helpful");
+  const [reviewSort, setReviewSort] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
-  const [showReplyMap, setShowReplyMap] = useState<Record<string, boolean>>({
-    "rev-1": true,
-  });
+  const [showReplyMap, setShowReplyMap] = useState<Record<string, boolean>>({});
   const [showMobileSheet, setShowMobileSheet] = useState(false);
   const [otherShopProducts, setOtherShopProducts] = useState<any[]>([]);
+
+  // Real PostgreSQL Reviews & Rating stats
+  const [realReviews, setRealReviews] = useState<any[]>([]);
+  const [reviewStats, setReviewStats] = useState<{
+    ratingAvg: number;
+    totalReviews: number;
+    starCounts: { 5: number; 4: number; 3: number; 2: number; 1: number };
+  }>({
+    ratingAvg: 5.0,
+    totalReviews: 0,
+    starCounts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+  });
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [starFilter, setStarFilter] = useState<number | "all">("all");
+
+  const fetchRealReviews = async () => {
+    if (!product?.id) return;
+    try {
+      setLoadingReviews(true);
+      const sortBy = reviewSort === "lowest" ? "lowest" : reviewSort === "highest" ? "highest" : "newest";
+      let url = `/api/reviews?productId=${encodeURIComponent(product.id)}&sortBy=${sortBy}`;
+      if (typeof starFilter === "number") {
+        url += `&star=${starFilter}`;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        setRealReviews(data.reviews || []);
+        if (data.stats) {
+          setReviewStats(data.stats);
+        }
+      }
+    } catch (err) {
+      console.warn("Gagal memuat ulasan produk:", err);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  useEffect(() => {
+    if (product?.id) {
+      fetchRealReviews();
+    }
+  }, [product?.id, reviewSort, starFilter]);
+
+  // Auto-sync real photoURL from Firestore into reviews in PostgreSQL if duck was previously stored
+  useEffect(() => {
+    if (!user || !userData?.photoURL || userData.photoURL.includes("duck") || realReviews.length === 0) return;
+    const userReview = realReviews.find(
+      (r) =>
+        !r.isAnonymous &&
+        (r.userId === user.uid || r.userId === user.email || r.userName === userData.displayName) &&
+        (!r.userAvatar || r.userAvatar.includes("duck") || r.userAvatar !== userData.photoURL)
+    );
+    if (userReview) {
+      fetch("/api/reviews", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transactionId: userReview.transactionId || userReview.invoiceNumber || userReview.id,
+          userAvatar: userData.photoURL,
+          userName: userData.displayName || undefined,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setRealReviews((prev) =>
+              prev.map((r) => (r.id === userReview.id ? { ...r, userAvatar: userData.photoURL } : r))
+            );
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user, userData?.photoURL, userData?.displayName, realReviews]);
 
   // Real-time tick for Flash Sale countdown
   const [nowTime, setNowTime] = useState<number>(Date.now());
@@ -205,7 +295,7 @@ export default function ProductDetailPage() {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       toast({
-        title: "Link Produk Disalin! 📋",
+        title: "Link Produk Disalin",
         description: "Alamat URL produk telah disalin ke clipboard.",
       });
       setTimeout(() => setCopied(false), 2000);
@@ -278,7 +368,7 @@ export default function ProductDetailPage() {
           price: Number(product.price || 0),
           discountPrice: product.discountPrice ? Number(product.discountPrice) : null,
           images: product.images || (images && images.length > 0 ? [{ imageUrl: images[0].imageUrl }] : []),
-          ratingAvg: Number(product.ratingAvg || 5.0),
+          ratingAvg: Number(product.ratingAvg || 0),
           salesCount: product.salesCount ? `${product.salesCount} terjual` : "0 terjual",
           shopName: typeof product.shopName === "string" ? product.shopName : (shop?.name || "MarketPointID"),
           shopSlug: shop?.slug || "marketpoint",
@@ -289,7 +379,7 @@ export default function ProductDetailPage() {
         });
         setIsWishlisted(true);
         toast({
-          title: "Ditambahkan ke Wishlist! ❤️",
+          title: "Ditambahkan ke Wishlist",
           description: `"${product.title}" berhasil disimpan ke wishlist Anda.`,
         });
       }
@@ -440,8 +530,8 @@ export default function ProductDetailPage() {
 
   const currentPrice = activeFlashSale
     ? (selectedVariant
-        ? Math.max(100, Math.round(basePrice * (1 - (activeFlashSale.discountPercentage / 100))))
-        : activeFlashSale.discountPrice)
+      ? Math.max(100, Math.round(basePrice * (1 - (activeFlashSale.discountPercentage / 100))))
+      : activeFlashSale.discountPrice)
     : basePrice;
 
   const hasDiscount = Boolean(activeFlashSale) || originalPrice > currentPrice;
@@ -596,7 +686,7 @@ export default function ProductDetailPage() {
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mt-0.5">
                     <span className="flex items-center gap-0.5 text-amber-500 font-bold">
                       <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      {Number(shop?.ratingAvg || shop?.rating || product?.ratingAvg || 5.0).toFixed(1)}
+                      {Number(shop?.ratingAvg || shop?.rating || 0) > 0 ? Number(shop?.ratingAvg || shop?.rating).toFixed(1) : "0.0"}
                     </span>
                     <span className="text-muted-foreground/30">•</span>
                     <span className="flex items-center gap-1 text-muted-foreground font-semibold">
@@ -635,9 +725,15 @@ export default function ProductDetailPage() {
 
             <div className="flex items-center gap-2.5 text-xs">
               <div className="flex items-center gap-1">
-                <Star className="w-3.5 h-3.5 text-[#FFC400] fill-[#FFC400]" />
-                <span className="font-bold text-[#2E3137]">{Number(product.ratingAvg || 5.0).toFixed(1)}</span>
-                <span className="text-muted-foreground text-[10px] font-medium">(254 ulasan)</span>
+                <Star className={cn("w-3.5 h-3.5", reviewStats.totalReviews > 0 || Number(product.ratingAvg || 0) > 0 ? "text-[#FFC400] fill-[#FFC400]" : "text-slate-300 fill-slate-200")} />
+                <span className="font-bold text-[#2E3137]">
+                  {reviewStats.totalReviews > 0
+                    ? reviewStats.ratingAvg.toFixed(1)
+                    : (Number(product.ratingAvg || 0) > 0 ? Number(product.ratingAvg).toFixed(1) : "0.0")}
+                </span>
+                <span className="text-muted-foreground text-[10px] font-medium">
+                  ({reviewStats.totalReviews} ulasan)
+                </span>
               </div>
               <span className="text-muted-foreground/30">|</span>
               <span className="font-bold text-[#2E3137] text-[11px]">{product.salesCount || 0} Terjual</span>
@@ -677,7 +773,7 @@ export default function ProductDetailPage() {
                   />
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-white/95 font-semibold">
-                  <span>{activeFlashSale.remainingQuota <= 5 ? `🔥 Segera Habis! Sisa ${activeFlashSale.remainingQuota} kuota` : `Sisa Kuota: ${activeFlashSale.remainingQuota}`}</span>
+                  <span>{activeFlashSale.remainingQuota <= 5 ? `Segera Habis! Sisa ${activeFlashSale.remainingQuota} kuota` : `Sisa Kuota: ${activeFlashSale.remainingQuota}`}</span>
                   <span>Terjual {activeFlashSale.sold} / {activeFlashSale.quota}</span>
                 </div>
               </div>
@@ -795,7 +891,7 @@ export default function ProductDetailPage() {
                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mt-0.5">
                         <span className="flex items-center gap-0.5 text-amber-500 font-bold">
                           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                          {Number(shop?.ratingAvg || shop?.rating || product?.ratingAvg || 5.0).toFixed(1)}
+                          {Number(shop?.ratingAvg || shop?.rating || 0) > 0 ? Number(shop?.ratingAvg || shop?.rating).toFixed(1) : "0.0"}
                         </span>
                         <span className="text-muted-foreground/30">•</span>
                         <span className="flex items-center gap-1 text-muted-foreground font-semibold">
@@ -815,7 +911,7 @@ export default function ProductDetailPage() {
               </Card>
 
               <h3 className="text-xs font-bold text-[#212121] tracking-wider">
-                Ulasan Pembeli ({product.ratingCount || 1809})
+                Ulasan Pembeli ({reviewStats.totalReviews})
               </h3>
 
               {/* Rating Summary Breakdown Card */}
@@ -824,17 +920,23 @@ export default function ProductDetailPage() {
                   {/* Left Column: Big Rating & Satisfaction */}
                   <div className="space-y-1 shrink-0">
                     <div className="flex items-baseline gap-1.5">
-                      <Star className="w-6 h-6 text-[#FFC400] fill-[#FFC400] self-center shrink-0" />
+                      <Star className={cn("w-6 h-6 self-center shrink-0", reviewStats.totalReviews > 0 ? "text-[#FFC400] fill-[#FFC400]" : "text-slate-300 fill-slate-200")} />
                       <span className="text-3xl font-black text-[#212121] tracking-tight">
-                        {Number(product?.ratingAvg || 4.9).toFixed(1)}
+                        {reviewStats.totalReviews > 0
+                          ? reviewStats.ratingAvg.toFixed(1)
+                          : (Number(product?.ratingAvg || 0) > 0 ? Number(product.ratingAvg).toFixed(1) : "0.0")}
                       </span>
                       <span className="text-xs font-bold text-muted-foreground">/ 5.0</span>
                     </div>
                     <p className="text-xs font-bold text-[#212121]">
-                      97% pembeli merasa puas
+                      {reviewStats.totalReviews > 0
+                        ? `${Math.round(((reviewStats.starCounts[5] + reviewStats.starCounts[4]) / reviewStats.totalReviews) * 100)}% pembeli merasa puas`
+                        : "Belum Ada Rating"}
                     </p>
                     <p className="text-[11px] text-muted-foreground font-medium">
-                      5.819 rating • 1.809 ulasan
+                      {reviewStats.totalReviews > 0
+                        ? `${reviewStats.totalReviews} ulasan terverifikasi`
+                        : "Belum ada ulasan untuk produk ini"}
                     </p>
                   </div>
 
@@ -847,21 +949,16 @@ export default function ProductDetailPage() {
                         <span>5</span>
                       </div>
                       <div className="flex-1 h-2 bg-muted/60 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#00AA5B] rounded-full w-[88%]" />
+                        <div
+                          className="h-full bg-[#00AA5B] rounded-full transition-all duration-500"
+                          style={{
+                            width: `${reviewStats.totalReviews > 0 ? (reviewStats.starCounts[5] / reviewStats.totalReviews) * 100 : 0}%`,
+                          }}
+                        />
                       </div>
-                      <span className="text-[10px] text-muted-foreground font-semibold w-12 text-right">(5.452)</span>
-                    </div>
-
-                    {/* Star 2 */}
-                    <div className="flex items-center gap-2 text-xs">
-                      <div className="flex items-center gap-1 w-6 shrink-0 text-muted-foreground font-bold text-[11px]">
-                        <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
-                        <span>2</span>
-                      </div>
-                      <div className="flex-1 h-2 bg-muted/60 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#00AA5B] rounded-full w-[15%]" />
-                      </div>
-                      <span className="text-[10px] text-muted-foreground font-semibold w-12 text-right">(26)</span>
+                      <span className="text-[10px] text-muted-foreground font-semibold w-12 text-right">
+                        ({reviewStats.starCounts[5]})
+                      </span>
                     </div>
 
                     {/* Star 4 */}
@@ -871,21 +968,16 @@ export default function ProductDetailPage() {
                         <span>4</span>
                       </div>
                       <div className="flex-1 h-2 bg-muted/60 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#00AA5B] rounded-full w-[35%]" />
+                        <div
+                          className="h-full bg-[#00AA5B] rounded-full transition-all duration-500"
+                          style={{
+                            width: `${reviewStats.totalReviews > 0 ? (reviewStats.starCounts[4] / reviewStats.totalReviews) * 100 : 0}%`,
+                          }}
+                        />
                       </div>
-                      <span className="text-[10px] text-muted-foreground font-semibold w-12 text-right">(238)</span>
-                    </div>
-
-                    {/* Star 1 */}
-                    <div className="flex items-center gap-2 text-xs">
-                      <div className="flex items-center gap-1 w-6 shrink-0 text-muted-foreground font-bold text-[11px]">
-                        <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
-                        <span>1</span>
-                      </div>
-                      <div className="flex-1 h-2 bg-muted/60 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#00AA5B] rounded-full w-[10%]" />
-                      </div>
-                      <span className="text-[10px] text-muted-foreground font-semibold w-12 text-right">(42)</span>
+                      <span className="text-[10px] text-muted-foreground font-semibold w-12 text-right">
+                        ({reviewStats.starCounts[4]})
+                      </span>
                     </div>
 
                     {/* Star 3 */}
@@ -895,9 +987,54 @@ export default function ProductDetailPage() {
                         <span>3</span>
                       </div>
                       <div className="flex-1 h-2 bg-muted/60 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#00AA5B] rounded-full w-[20%]" />
+                        <div
+                          className="h-full bg-[#00AA5B] rounded-full transition-all duration-500"
+                          style={{
+                            width: `${reviewStats.totalReviews > 0 ? (reviewStats.starCounts[3] / reviewStats.totalReviews) * 100 : 0}%`,
+                          }}
+                        />
                       </div>
-                      <span className="text-[10px] text-muted-foreground font-semibold w-12 text-right">(54)</span>
+                      <span className="text-[10px] text-muted-foreground font-semibold w-12 text-right">
+                        ({reviewStats.starCounts[3]})
+                      </span>
+                    </div>
+
+                    {/* Star 2 */}
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="flex items-center gap-1 w-6 shrink-0 text-muted-foreground font-bold text-[11px]">
+                        <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
+                        <span>2</span>
+                      </div>
+                      <div className="flex-1 h-2 bg-muted/60 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#00AA5B] rounded-full transition-all duration-500"
+                          style={{
+                            width: `${reviewStats.totalReviews > 0 ? (reviewStats.starCounts[2] / reviewStats.totalReviews) * 100 : 0}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground font-semibold w-12 text-right">
+                        ({reviewStats.starCounts[2]})
+                      </span>
+                    </div>
+
+                    {/* Star 1 */}
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="flex items-center gap-1 w-6 shrink-0 text-muted-foreground font-bold text-[11px]">
+                        <Star className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
+                        <span>1</span>
+                      </div>
+                      <div className="flex-1 h-2 bg-muted/60 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#00AA5B] rounded-full transition-all duration-500"
+                          style={{
+                            width: `${reviewStats.totalReviews > 0 ? (reviewStats.starCounts[1] / reviewStats.totalReviews) * 100 : 0}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground font-semibold w-12 text-right">
+                        ({reviewStats.starCounts[1]})
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -906,7 +1043,7 @@ export default function ProductDetailPage() {
                 <div className="pt-3 border-t border-border/50 flex items-center justify-center gap-2 text-[10px] text-muted-foreground font-medium">
                   <span className="h-px bg-border/60 flex-1" />
                   <span className="flex items-center gap-1 font-semibold text-muted-foreground">
-                    <CheckCircle2 className="w-3 h-3 text-[#00AA5B]" /> Rating & Ulasan Terverifikasi Pembeli MarketPointID
+                    <CheckCircle2 className="w-3 h-3 text-[#00AA5B]" /> Rating & Ulasan Terverifikasi Pembeli
                   </span>
                   <span className="h-px bg-border/60 flex-1" />
                 </div>
@@ -915,21 +1052,48 @@ export default function ProductDetailPage() {
               {/* Buyer Reviews List Header */}
               <div className="space-y-4 pt-2">
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-1 border-b border-border/40">
-                  <div className="space-y-0.5">
-                    <h4 className="text-xs font-black text-[#212121] uppercase tracking-wider">ULASAN PILIHAN</h4>
-                    <p className="text-[11px] text-muted-foreground font-medium">
-                      Menampilkan 10 dari {product.ratingCount || 1809} ulasan
-                    </p>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-black text-[#212121] uppercase tracking-wider">ULASAN PEMBELI</h4>
+                    {/* Star Filter Badges */}
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      <Button
+                        type="button"
+                        variant={starFilter === "all" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setStarFilter("all")}
+                        className={cn(
+                          "h-7 text-[10px] font-bold rounded-lg px-2.5",
+                          starFilter === "all" ? "bg-[#00AA5B] hover:bg-[#00924e] text-white" : "border-border text-slate-700"
+                        )}
+                      >
+                        Semua ({reviewStats.totalReviews})
+                      </Button>
+                      {[5, 4, 3, 2, 1].map((s) => (
+                        <Button
+                          key={s}
+                          type="button"
+                          variant={starFilter === s ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setStarFilter(s)}
+                          className={cn(
+                            "h-7 text-[10px] font-bold rounded-lg px-2.5 gap-1.5 transition-colors",
+                            starFilter === s ? "bg-[#00AA5B] hover:bg-[#00924e] text-white" : "border-border text-slate-700 bg-white hover:bg-slate-50"
+                          )}
+                        >
+                          <Star className={cn("w-3 h-3 shrink-0", starFilter === s ? "text-white fill-white" : "text-[#FFC400] fill-[#FFC400]")} />
+                          <span>{s} ({reviewStats.starCounts[s as 1 | 2 | 3 | 4 | 5]})</span>
+                        </Button>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
                     <span className="text-xs font-bold text-[#212121]">Urutkan</span>
-                    <Select value={reviewSort} onValueChange={setReviewSort}>
-                      <SelectTrigger className="h-8.5 w-40 sm:w-44 rounded-xl border-border/80 text-xs font-medium bg-white">
+                    <Select value={reviewSort} onValueChange={(val) => setReviewSort(val)}>
+                      <SelectTrigger className="h-8.5 w-36 sm:w-40 rounded-xl border-border/80 text-xs font-medium bg-white">
                         <SelectValue placeholder="Urutkan ulasan" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-border text-xs font-medium bg-white">
-                        <SelectItem value="helpful">Paling Membantu</SelectItem>
                         <SelectItem value="newest">Terbaru</SelectItem>
                         <SelectItem value="highest">Rating Tertinggi</SelectItem>
                         <SelectItem value="lowest">Rating Terendah</SelectItem>
@@ -939,183 +1103,190 @@ export default function ProductDetailPage() {
                 </div>
 
                 <div className="space-y-3.5">
-                  {[
-                    {
-                      id: "rev-1",
-                      name: "Budi Santoso",
-                      avatar: "B",
-                      rating: 5,
-                      variant: "Default",
-                      date: "2 hari yang lalu",
-                      comment: "Sangat puas belanja di sini! Pengiriman lisensi instan langsung aktif. Seller juga ramah dan merespons pertanyaan dengan sangat cepat.",
-                      likes: 14,
-                      sellerReply: {
-                        shopName: shop?.name || "Toko Penjual",
-                        date: "1 hari yang lalu",
-                        comment: "Terima kasih banyak kak Budi atas ulasan positif dan kepercayaannya! Semoga lisensi dan produknya bermanfaat untuk project Anda. Jika ada kendala, tim kami siap membantu kapan saja! 🙏✨",
-                      },
-                    },
-                    {
-                      id: "rev-2",
-                      name: "Rian Pratama",
-                      avatar: "R",
-                      rating: 5,
-                      variant: "1 Bulan License",
-                      date: "1 minggu yang lalu",
-                      comment: "Script & asset berfungsi 100% tanpa kendala. Dokumentasi lengkap dan pengerjaannya sangat rapi. Recommended seller!",
-                      likes: 8,
-                      sellerReply: {
-                        shopName: shop?.name || "Toko Penjual",
-                        date: "6 hari yang lalu",
-                        comment: "Terima kasih mas Rian atas apresiasinya! Sukses selalu untuk project-nya! 🔥",
-                      },
-                    },
-                    {
-                      id: "rev-3",
-                      name: "Dian Permata",
-                      avatar: "D",
-                      rating: 5,
-                      variant: "Default",
-                      date: "2 minggu yang lalu",
-                      comment: "Pelayanan top! Langsung bisa dipakai dan garansi terjamin. Pasti bakal order lagi untuk kebutuhan produk digital berikutnya.",
-                      likes: 5,
-                    },
-                  ].map((review) => (
-                    <div key={review.id} className="p-4 rounded-2xl bg-white border border-border/70 space-y-3 shadow-2xs">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar className="h-8 w-8 rounded-full border border-border/80">
-                            <AvatarFallback className="bg-[#00AA5B]/10 text-[#00AA5B] text-xs font-bold">
-                              {review.avatar}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-[#212121]">{review.name}</span>
-                              <Badge variant="outline" className="text-[8px] font-bold bg-emerald-50 text-emerald-700 border-emerald-200 px-1.5 py-0">
-                                Pembeli Terverifikasi
-                              </Badge>
+                  {loadingReviews ? (
+                    <div className="text-center py-10 space-y-2">
+                      <Loader2 className="w-5 h-5 animate-spin text-[#00AA5B] mx-auto" />
+                      <p className="text-xs font-medium text-muted-foreground">Memuat ulasan...</p>
+                    </div>
+                  ) : realReviews.length === 0 ? (
+                    <div className="text-center py-10 px-4 rounded-2xl bg-white border border-border/70 space-y-2 shadow-2xs">
+                      <div className="w-12 h-12 rounded-full bg-emerald-50 text-[#00AA5B] flex items-center justify-center mx-auto">
+                        <Star className="w-6 h-6 fill-emerald-100" />
+                      </div>
+                      <p className="text-sm font-bold text-slate-800">Belum Ada Ulasan</p>
+                      <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                        Produk ini belum memiliki ulasan pembeli. Ulasan akan otomatis muncul di sini setelah pembeli menyelesaikan pesanan dan memberi rating di halaman invoice.
+                      </p>
+                    </div>
+                  ) : (
+                    realReviews.map((review) => (
+                      <div key={review.id} className="p-4 rounded-2xl bg-white border border-border/70 space-y-3 shadow-2xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <Avatar className="h-8 w-8 rounded-full border border-border/80">
+                              {(() => {
+                                const isCurrentUser =
+                                  user &&
+                                  (review.userId === user.uid ||
+                                    review.userId === user.email ||
+                                    review.userName === userData?.displayName);
+                                const resolvedAvatar =
+                                  isCurrentUser && userData?.photoURL && !userData.photoURL.includes("duck")
+                                    ? userData.photoURL
+                                    : review.userAvatar && !review.userAvatar.includes("duck")
+                                    ? review.userAvatar
+                                    : null;
+
+                                if (resolvedAvatar) {
+                                  return (
+                                    <img
+                                      src={resolvedAvatar}
+                                      alt={review.userName}
+                                      className="w-full h-full object-cover"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  );
+                                }
+                                return (
+                                  <AvatarFallback className="bg-[#00AA5B]/10 text-[#00AA5B] text-xs font-bold">
+                                    {review.userName ? review.userName.charAt(0).toUpperCase() : "U"}
+                                  </AvatarFallback>
+                                );
+                              })()}
+                            </Avatar>
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-[#212121]">
+                                  {review.userName || "Pembeli MarketPointID"}
+                                </span>
+                                <Badge variant="outline" className="text-[8px] font-bold bg-emerald-50 text-emerald-700 border-emerald-200 px-1.5 py-0">
+                                  Pembeli Terverifikasi
+                                </Badge>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground font-medium">
+                                {formatDate(review.createdAt)}
+                              </p>
                             </div>
-                            <p className="text-[10px] text-muted-foreground font-medium">
-                              Varian: <span className="text-[#212121] font-semibold">{review.variant}</span> • {review.date}
-                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={cn(
+                                  "w-3.5 h-3.5",
+                                  i < Number(review.rating)
+                                    ? "text-[#FFC400] fill-[#FFC400]"
+                                    : "text-slate-200 fill-slate-100"
+                                )}
+                              />
+                            ))}
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} className="w-3 h-3 text-[#FFC400] fill-[#FFC400]" />
-                          ))}
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-[#2E3137] font-medium leading-relaxed">
-                        {review.comment}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-1">
-                        <button
-                          type="button"
-                          className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground hover:text-[#00AA5B] transition-colors cursor-pointer"
-                        >
-                          <ThumbsUp className="w-3 h-3" />
-                          <span>Membantu ({review.likes})</span>
-                        </button>
+                        {review.comment ? (
+                          <p className="text-xs text-[#2E3137] font-medium leading-relaxed">
+                            {review.comment}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground italic">
+                            Memberikan nilai {review.rating} bintang tanpa ulasan teks.
+                          </p>
+                        )}
 
                         {review.sellerReply && (
-                          <button
-                            type="button"
-                            onClick={() => toggleReply(review.id)}
-                            className="flex items-center gap-1 text-[10px] font-bold text-[#00AA5B] hover:underline transition-all cursor-pointer"
-                          >
-                            <MessageCircle className="w-3 h-3" />
-                            <span>{showReplyMap[review.id] ? "Sembunyikan Balasan" : "Lihat Balasan (1)"}</span>
-                          </button>
+                          <div className="mt-2.5 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100 space-y-1.5 text-xs">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
+                                <CornerDownRight className="w-3.5 h-3.5 text-[#00AA5B] shrink-0" />
+                                <span className="font-bold text-[#212121]">Balasan Penjual</span>
+                              </div>
+                              {review.sellerRepliedAt && (
+                                <span className="text-[10px] text-muted-foreground font-medium">
+                                  {formatDate(review.sellerRepliedAt)}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-[#2E3137] font-medium leading-relaxed pl-5">
+                              {review.sellerReply}
+                            </p>
+                          </div>
                         )}
                       </div>
+                    ))
+                  )}
+                </div>
 
-                      {/* Seller Reply Box */}
-                      {review.sellerReply && showReplyMap[review.id] && (
-                        <div className="mt-2.5 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100 space-y-1.5 text-xs">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                              <CornerDownRight className="w-3.5 h-3.5 text-[#00AA5B] shrink-0" />
-                              <span className="font-bold text-[#212121]">Balasan Penjual</span>
-                              <Badge variant="outline" className="text-[8px] font-bold bg-[#00AA5B]/10 text-[#00AA5B] border-[#00AA5B]/20 px-1 py-0">
-                                {review.sellerReply.shopName}
-                              </Badge>
-                            </div>
-                            <span className="text-[10px] text-muted-foreground font-medium">{review.sellerReply.date}</span>
-                          </div>
-                          <p className="text-[11px] text-[#2E3137] font-medium leading-relaxed pl-5">
-                            {review.sellerReply.comment}
-                          </p>
-                        </div>
-                      )}
+                {/* Review Pagination Bar — dynamic, hides when only 1 page */}
+                {(() => {
+                  const REVIEWS_PER_PAGE = 10;
+                  const totalPages = Math.max(1, Math.ceil(reviewStats.totalReviews / REVIEWS_PER_PAGE));
+                  if (totalPages <= 1) return null;
+
+                  // Build page number list with ellipsis
+                  const getPages = () => {
+                    const pages: (number | "...")[] = [];
+                    if (totalPages <= 7) {
+                      for (let i = 1; i <= totalPages; i++) pages.push(i);
+                    } else {
+                      pages.push(1);
+                      if (currentPage > 4) pages.push("...");
+                      const start = Math.max(2, currentPage - 1);
+                      const end = Math.min(totalPages - 1, currentPage + 1);
+                      for (let i = start; i <= end; i++) pages.push(i);
+                      if (currentPage < totalPages - 3) pages.push("...");
+                      pages.push(totalPages);
+                    }
+                    return pages;
+                  };
+
+                  return (
+                    <div className="flex items-center justify-center pt-4 border-t border-border/40 text-xs">
+                      <div className="flex items-center justify-center gap-1 sm:gap-2 text-muted-foreground font-semibold flex-wrap">
+                        <button
+                          type="button"
+                          disabled={currentPage === 1}
+                          onClick={() => { setCurrentPage((p) => Math.max(1, p - 1)); }}
+                          className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition-colors"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+
+                        {getPages().map((page, idx) =>
+                          page === "..." ? (
+                            <span key={`ellipsis-${idx}`} className="px-1 text-muted-foreground/60 font-bold">...</span>
+                          ) : (
+                            <button
+                              key={page}
+                              type="button"
+                              onClick={() => setCurrentPage(page as number)}
+                              className={cn(
+                                "w-7 h-7 flex items-center justify-center text-xs font-bold transition-all relative cursor-pointer",
+                                currentPage === page
+                                  ? "text-[#00AA5B]"
+                                  : "text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              {page}
+                              {currentPage === page && (
+                                <span className="absolute bottom-0 left-1.5 right-1.5 h-0.5 bg-[#00AA5B] rounded-full" />
+                              )}
+                            </button>
+                          )
+                        )}
+
+                        <button
+                          type="button"
+                          disabled={currentPage === totalPages}
+                          onClick={() => { setCurrentPage((p) => Math.min(totalPages, p + 1)); }}
+                          className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition-colors"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                  ))}
-                </div>
-
-                {/* Review Pagination Bar */}
-                <div className="flex items-center justify-center pt-4 border-t border-border/40 text-xs">
-                  {/* Page Numbers */}
-                  <div className="flex items-center justify-center gap-1 sm:gap-2 text-muted-foreground font-semibold flex-wrap">
-                    <button
-                      type="button"
-                      disabled={currentPage === 1}
-                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                      className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition-colors"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-
-                    {[1, 2, 3, 4, 5, 6, 7].map((page) => (
-                      <button
-                        key={page}
-                        type="button"
-                        onClick={() => setCurrentPage(page)}
-                        className={cn(
-                          "w-7 h-7 flex items-center justify-center text-xs font-bold transition-all relative cursor-pointer",
-                          currentPage === page
-                            ? "text-[#00AA5B]"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        {page}
-                        {currentPage === page && (
-                          <span className="absolute bottom-0 left-1.5 right-1.5 h-0.5 bg-[#00AA5B] rounded-full" />
-                        )}
-                      </button>
-                    ))}
-
-                    <span className="px-1 text-muted-foreground/60 font-bold">...</span>
-
-                    <button
-                      type="button"
-                      onClick={() => setCurrentPage(50)}
-                      className={cn(
-                        "w-7 h-7 flex items-center justify-center text-xs font-bold transition-all relative cursor-pointer",
-                        currentPage === 50
-                          ? "text-[#00AA5B]"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      50
-                      {currentPage === 50 && (
-                        <span className="absolute bottom-0 left-1.5 right-1.5 h-0.5 bg-[#00AA5B] rounded-full" />
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={currentPage === 50}
-                      onClick={() => setCurrentPage((prev) => Math.min(50, prev + 1))}
-                      className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition-colors"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -1266,7 +1437,8 @@ export default function ProductDetailPage() {
               const itemOriginalPrice = item.discountPrice ? Number(item.discountPrice) : itemPrice;
               const itemHasDiscount = itemOriginalPrice > itemPrice;
               const itemDiscountPercent = itemHasDiscount ? Math.round(((itemOriginalPrice - itemPrice) / itemOriginalPrice) * 100) : null;
-              const itemRating = Number(item.ratingAvg || 5.0).toFixed(1);
+              const hasItemRating = Number(item.ratingAvg || 0) > 0;
+              const itemRating = hasItemRating ? Number(item.ratingAvg).toFixed(1) : "0.0";
               const itemSoldText = item.salesCount ? `${item.salesCount} terjual` : "0 terjual";
               const shopNameStr = shop?.name || shop?.shopName || product?.shopName || "Toko Seller";
               const shopLogo = shop?.logoUrl || shop?.avatar || product?.shopLogoUrl || "";
@@ -1312,7 +1484,12 @@ export default function ProductDetailPage() {
 
                         <div className="space-y-1 pt-1">
                           <div className="flex items-center gap-1">
-                            <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#FFC400] fill-[#FFC400]" />
+                            <Star
+                              className={cn(
+                                "w-2.5 h-2.5 sm:w-3 sm:h-3",
+                                hasItemRating ? "text-[#FFC400] fill-[#FFC400]" : "text-slate-300 fill-slate-200"
+                              )}
+                            />
                             <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground">
                               {itemRating} <span className="opacity-40">|</span> {itemSoldText}
                             </span>
@@ -1539,7 +1716,7 @@ export default function ProductDetailPage() {
             logoUrl: shop.logoUrl || shop.logo,
             isVerified: isVerified,
             isOfficial: isOfficial,
-            ratingAvg: Number(shop.ratingAvg || shop.rating || 5.0),
+            ratingAvg: Number(shop.ratingAvg || shop.rating || 0),
           }}
           product={{
             id: product.id,

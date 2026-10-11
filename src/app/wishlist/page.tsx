@@ -284,7 +284,7 @@ export default function WishlistPage() {
                           product.imageUrl ||
                           (product.images && product.images.length > 0 ? product.images[0].imageUrl : "https://cdn.marketpoint.id/marketpoint.png");
                         const price = Number(product.price || 0);
-                        const rating = Number(product.ratingAvg || 5.0).toFixed(1);
+                        const rating = Number(product.ratingAvg || 0) > 0 ? Number(product.ratingAvg).toFixed(1) : "0.0";
                         const soldText = product.salesCount ? (typeof product.salesCount === "string" ? product.salesCount : `${product.salesCount} terjual`) : "0 terjual";
                         const shopName = typeof product.shopName === "string" ? product.shopName : "MarketPointID";
                         const shopLogoUrl = typeof product.shopLogoUrl === "string" ? product.shopLogoUrl : "";
