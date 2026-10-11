@@ -219,8 +219,8 @@ RINCIAN PESANAN
 KODE LISENSI / SERIAL KEY RESMI
 ============================================================
 ${allocatedKeys
-  .map((k, idx) => (allocatedKeys.length > 1 ? `[Unit ${idx + 1}] ${k}` : k))
-  .join("\n")}
+      .map((k, idx) => (allocatedKeys.length > 1 ? `[Unit ${idx + 1}] ${k}` : k))
+      .join("\n")}
 
 Harap simpan kode lisensi ini di tempat yang aman. Kode ini merupakan bukti kepemilikan lisensi digital Anda.
 `;
@@ -233,11 +233,11 @@ BERKAS UNDUHAN PRODUK DIGITAL
 ============================================================
 Silakan unduh berkas produk Anda melalui tautan resmi di bawah ini:
 ${downloadFiles
-  .map(
-    (f, idx) =>
-      `${idx + 1}. ${f.fileName} ${f.version ? `(${f.version})` : ""}\n   Unduh: ${f.fileUrl}`
-  )
-  .join("\n\n")}
+        .map(
+          (f, idx) =>
+            `${idx + 1}. ${f.fileName} ${f.version ? `(${f.version})` : ""}\n   Unduh: ${f.fileUrl}`
+        )
+        .join("\n\n")}
 `;
   }
 

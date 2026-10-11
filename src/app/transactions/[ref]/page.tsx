@@ -539,7 +539,7 @@ export default function TransactionDetailPage() {
                     <div className="flex items-center gap-2">
                       <KeyRound className="w-4 h-4 text-[#00AA5B]" />
                       <h2 className="text-xs sm:text-sm font-bold text-slate-800">
-                        Data Lisensi & Serial Key Produk
+                        Data Produk
                       </h2>
                     </div>
                     <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px] font-bold shadow-none">
