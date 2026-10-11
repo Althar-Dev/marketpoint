@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { query, initDatabaseSchema } from "@/lib/database/db";
+import { extractCleanEmailSnippet } from "@/lib/database/mail-db";
 
 /**
  * Inbound Email Webhook
@@ -95,8 +96,7 @@ export async function POST(req: Request) {
     if (!to) to = "support@marketpoint.id";
     if (!subject) subject = "(Tanpa Subjek)";
 
-    const cleanText = content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-    preview = cleanText.substring(0, 70) + (cleanText.length > 70 ? "..." : "");
+    preview = extractCleanEmailSnippet("", content, 90);
 
     const mailId = `inbound-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 

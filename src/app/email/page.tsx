@@ -1471,6 +1471,68 @@ export default function EmailManagementPage() {
     return decodeQuotedPrintable(extracted);
   };
 
+  // Helper membuat cuplikan teks (snippet/preview) yang bersih, bebas dari CSS, tag HTML, dan MIME artifacts
+  const getCleanEmailSnippet = (previewText: string = "", contentText: string = "", maxLen: number = 100) => {
+    let raw = previewText || "";
+    const hasArtifacts =
+      !raw ||
+      raw.includes("{color:") ||
+      raw.includes(".mobile_only") ||
+      raw.includes("=E2=") ||
+      raw.includes(".awl") ||
+      raw.includes("{display:") ||
+      raw.includes(".abml") ||
+      raw.includes("a {") ||
+      raw.includes("text-decoration:") ||
+      raw.includes("Received:") ||
+      raw.includes("ARC-Seal:") ||
+      raw.includes("Content-Type:");
+
+    if (hasArtifacts && contentText) {
+      raw = cleanDisplayEmailContent(contentText);
+    }
+    if (!raw) return "";
+
+    let cleaned = raw
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+      .replace(/<head\b[^>]*>[\s\S]*?<\/head>/gi, " ")
+      .replace(/<xml\b[^>]*>[\s\S]*?<\/xml>/gi, " ")
+      .replace(/<!--[\s\S]*?-->/g, " ")
+      .replace(/=\s*\r?\n/g, "")
+      .replace(/=([A-Fa-f0-9]{2})/g, (m, hex) => {
+        try {
+          return String.fromCharCode(parseInt(hex, 16));
+        } catch {
+          return m;
+        }
+      });
+
+    try {
+      cleaned = decodeURIComponent(escape(cleaned));
+    } catch {}
+
+    cleaned = cleaned
+      .replace(/@media[^{]*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/gi, " ")
+      .replace(/[.#][a-zA-Z0-9_-]+\s*\{[^}]*\}/g, " ")
+      .replace(/[.#][a-zA-Z0-9_-]+\s+[a-zA-Z0-9_#.-]+\s*\{[^}]*\}/g, " ")
+      .replace(/\{[^}]*\}/g, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      .replace(/&#39;/gi, "'")
+      .replace(/&quot;/gi, '"')
+      .replace(/&[a-z0-9#]+;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/^[.\s,;:-]+/, "")
+      .trim();
+
+    return cleaned.slice(0, maxLen);
+  };
+
   // Kumpulan seluruh pesan dalam satu utas percakapan (Conversation Thread ala Gmail)
   const activeThreadMessages = useMemo(() => {
     if (!selectedEmail) return [];
@@ -3451,9 +3513,7 @@ export default function EmailManagementPage() {
                     : email.folder === "sent"
                       ? `Ke: ${email.to}`
                       : decodeMimeHeader(email.from.split("<")[0].trim().replace(/^["']|["']$/g, "") || email.from);
-                  const snippetText =
-                    email.preview ||
-                    cleanDisplayEmailContent(email.content).replace(/<[^>]+>/g, " ").slice(0, 100);
+                  const snippetText = getCleanEmailSnippet(email.preview, email.content, 95);
 
                   return (
                     <div

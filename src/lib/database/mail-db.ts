@@ -126,11 +126,7 @@ export async function getDbMailMessages(): Promise<MailMessageRow[]> {
 
   return res.rows.map((row) => {
     const cleanContent = sanitizeRawMimeContent(row.content);
-    let cleanPreview = row.preview || "";
-    if (cleanPreview.includes("Received:") || cleanPreview.includes("ARC-Seal:") || !cleanPreview) {
-      const textOnly = cleanContent.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-      cleanPreview = textOnly.substring(0, 70) + (textOnly.length > 70 ? "..." : "");
-    }
+    const cleanPreview = extractCleanEmailSnippet(row.preview, row.content, 90);
 
     return {
       id: row.id,
@@ -462,7 +458,69 @@ export function sanitizeRawMimeContent(raw: string): string {
       if (rest) return rest;
     }
   }
-
   return raw;
+}
+
+export function extractCleanEmailSnippet(rawPreview: string = "", rawContent: string = "", maxLen: number = 100): string {
+  const bodyContent = sanitizeRawMimeContent(rawContent || "");
+  let text = rawPreview || "";
+
+  const hasArtifacts =
+    !text ||
+    text.includes("{color:") ||
+    text.includes(".mobile_only") ||
+    text.includes("=E2=") ||
+    text.includes(".awl") ||
+    text.includes("{display:") ||
+    text.includes(".abml") ||
+    text.includes("a {") ||
+    text.includes("text-decoration:") ||
+    text.includes("Received:") ||
+    text.includes("ARC-Seal:") ||
+    text.includes("Content-Type:");
+
+  if (hasArtifacts && bodyContent) {
+    text = bodyContent;
+  }
+  if (!text) return "";
+
+  let cleaned = text
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<head\b[^>]*>[\s\S]*?<\/head>/gi, " ")
+    .replace(/<xml\b[^>]*>[\s\S]*?<\/xml>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/=\s*\r?\n/g, "")
+    .replace(/=([A-Fa-f0-9]{2})/g, (m, hex) => {
+      try {
+        return String.fromCharCode(parseInt(hex, 16));
+      } catch {
+        return m;
+      }
+    });
+
+  try {
+    cleaned = decodeURIComponent(escape(cleaned));
+  } catch {}
+
+  cleaned = cleaned
+    .replace(/@media[^{]*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/gi, " ")
+    .replace(/[.#][a-zA-Z0-9_-]+\s*\{[^}]*\}/g, " ")
+    .replace(/[.#][a-zA-Z0-9_-]+\s+[a-zA-Z0-9_#.-]+\s*\{[^}]*\}/g, " ")
+    .replace(/\{[^}]*\}/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#39;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/&[a-z0-9#]+;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^[.\s,;:-]+/, "")
+    .trim();
+
+  return cleaned.substring(0, maxLen);
 }
 
