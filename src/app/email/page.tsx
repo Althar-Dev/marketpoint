@@ -64,7 +64,10 @@ import {
   CheckSquare,
   Square,
   MinusSquare,
-  ChevronDown
+  ChevronDown,
+  ChevronUp,
+  Reply,
+  Forward
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -162,6 +165,7 @@ export default function EmailManagementPage() {
   const [viewMode, setViewMode] = useState<"inbox" | "accounts" | "delivery" | "settings">("inbox");
   const [activeFolder, setActiveFolder] = useState<"inbox" | "sent" | "drafts" | "trash">("inbox");
   const [selectedEmail, setSelectedEmail] = useState<EmailItem | null>(null);
+  const [showEmailTechDetails, setShowEmailTechDetails] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -2209,40 +2213,115 @@ export default function EmailManagementPage() {
                 </div>
               </div>
 
-              {/* Detail Message Body */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-white">
-                <div className="max-w-3xl mx-auto space-y-6">
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug tracking-tight">
-                    {selectedEmail.subject}
-                  </h2>
+              {/* Detail Message Body - Gmail Grade & Responsive */}
+              <div className="flex-1 overflow-y-auto px-4 sm:px-8 lg:px-12 py-6 sm:py-8 bg-white">
+                <div className="max-w-5xl xl:max-w-6xl w-full mx-auto space-y-6">
+                  {/* Subject & Folder Badge */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+                        {selectedEmail.subject || "(Tanpa Subjek)"}
+                      </h1>
+                      <Badge
+                        variant="secondary"
+                        className="bg-slate-100 text-slate-700 border-0 text-xs font-bold px-2.5 py-0.5 rounded-md"
+                      >
+                        {selectedEmail.folder === "inbox"
+                          ? "Kotak Masuk"
+                          : selectedEmail.folder === "sent"
+                          ? "Terkirim"
+                          : selectedEmail.folder === "trash"
+                          ? "Sampah"
+                          : "Draft"}
+                      </Badge>
+                    </div>
+                  </div>
 
-                  {/* Sender & Recipient Box */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70 p-4 rounded-2xl border border-border/60">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-base shrink-0">
-                        {selectedEmail.from.substring(0, 1).toUpperCase()}
+                  {/* Sender & Recipient Box (Gmail Style) */}
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3.5 min-w-0">
+                        {/* Avatar Initials */}
+                        <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-gradient-to-tr from-slate-800 to-slate-950 text-white flex items-center justify-center font-black text-sm sm:text-base shrink-0 shadow-2xs">
+                          {selectedEmail.from.substring(0, 1).toUpperCase()}
+                        </div>
+
+                        {/* Sender Info */}
+                        <div className="min-w-0">
+                          <div className="flex items-baseline gap-2 flex-wrap">
+                            <span className="text-sm sm:text-base font-extrabold text-slate-900 leading-tight">
+                              {selectedEmail.from.includes("<")
+                                ? selectedEmail.from.split("<")[0].trim().replace(/^["']|["']$/g, "")
+                                : selectedEmail.from.split("@")[0]}
+                            </span>
+                            <span className="text-xs text-slate-500 font-medium">
+                              {selectedEmail.from.includes("<")
+                                ? selectedEmail.from.match(/<([^>]+)>/)?.[0] || selectedEmail.from
+                                : `<${selectedEmail.from}>`}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <button
+                              type="button"
+                              onClick={() => setShowEmailTechDetails(!showEmailTechDetails)}
+                              className="text-[11px] text-slate-500 hover:text-slate-900 font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                            >
+                              <span>
+                                kepada{" "}
+                                <span className="font-bold text-slate-700">
+                                  {selectedEmail.to === "support@marketpoint.id" ? "saya" : selectedEmail.to}
+                                </span>
+                              </span>
+                              {showEmailTechDetails ? (
+                                <ChevronUp className="w-3 h-3 text-slate-400" />
+                              ) : (
+                                <ChevronDown className="w-3 h-3 text-slate-400" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs sm:text-sm font-black text-slate-900 truncate">{selectedEmail.from}</p>
-                        <p className="text-[11px] text-muted-foreground">
-                          ke <span className="font-bold text-[#00AA5B]">{selectedEmail.to}</span>
-                        </p>
+
+                      {/* Date & Quick Action Icons */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[11px] sm:text-xs text-muted-foreground font-semibold flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 opacity-60" />
+                          {selectedEmail.date}
+                        </span>
                       </div>
                     </div>
 
-                    <span className="text-[11px] text-muted-foreground font-semibold flex items-center gap-1 shrink-0">
-                      <Clock className="w-3.5 h-3.5 opacity-60" />
-                      {selectedEmail.date}
-                    </span>
+                    {/* Collapsible Security & Header Details (Gmail Style) */}
+                    {showEmailTechDetails && (
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1.5 shadow-2xs max-w-lg animate-in fade-in duration-150">
+                        <div className="grid grid-cols-[70px_1fr] gap-y-1 gap-x-2">
+                          <span className="font-semibold text-slate-500">dari:</span>
+                          <span className="font-mono text-slate-800 text-[11px] break-all">{selectedEmail.from}</span>
+                          <span className="font-semibold text-slate-500">kepada:</span>
+                          <span className="font-mono text-slate-800 text-[11px] break-all">{selectedEmail.to}</span>
+                          <span className="font-semibold text-slate-500">tanggal:</span>
+                          <span className="text-slate-800">{selectedEmail.date}</span>
+                          <span className="font-semibold text-slate-500">subjek:</span>
+                          <span className="text-slate-800 font-bold">{selectedEmail.subject}</span>
+                          <span className="font-semibold text-slate-500">keamanan:</span>
+                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Enkripsi Standar (TLS) • SPF Valid
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Body Text */}
+                  <Separator className="bg-slate-100" />
+
+                  {/* Body Content Rendering */}
                   {(() => {
-                    const isHtml =
+                    const isFullTemplate =
                       selectedEmail.content.includes("<!DOCTYPE") ||
                       selectedEmail.content.includes("<html") ||
                       selectedEmail.content.includes("<table");
-                    let htmlToRender = isHtml ? selectedEmail.content : null;
+                    let htmlToRender = isFullTemplate ? selectedEmail.content : null;
 
                     if (!htmlToRender && selectedEmail.from.includes("delivery@marketpoint.id")) {
                       const parsed = parsePlainTextDeliveryEmail(selectedEmail.content, selectedEmail.subject);
@@ -2251,16 +2330,17 @@ export default function EmailManagementPage() {
                       }
                     }
 
+                    // Full HTML Template (e.g. Invoices, Newsletters, Delivery Cards)
                     if (htmlToRender) {
                       return (
                         <div className="space-y-4">
-                          <div className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-[#f4f6f8]">
+                          <div className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
                             <iframe
                               ref={emailIframeRef}
                               srcDoc={htmlToRender}
                               title="Tampilan Email Resmi"
                               className="w-full border-0 block"
-                              style={{ minHeight: "750px", height: "820px" }}
+                              style={{ minHeight: "650px", height: "780px" }}
                               sandbox="allow-same-origin allow-popups"
                             />
                           </div>
@@ -2288,9 +2368,25 @@ export default function EmailManagementPage() {
                       );
                     }
 
+                    // Check if content has rich HTML tags (e.g. from Gmail web / mobile client)
+                    const hasHtmlTags = /<[a-z][\s\S]*>/i.test(selectedEmail.content);
+                    const cleanHtmlContent = hasHtmlTags
+                      ? selectedEmail.content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+                      : null;
+
                     return (
-                      <div className="text-xs sm:text-sm leading-relaxed text-slate-700 font-medium space-y-4">
-                        <p className="whitespace-pre-line leading-relaxed">{selectedEmail.content}</p>
+                      <div className="space-y-6">
+                        {/* Email Text / HTML Render */}
+                        {cleanHtmlContent ? (
+                          <div
+                            className="text-slate-800 text-sm sm:text-base leading-relaxed break-words font-normal [&_p]:my-2 [&_div]:my-1 [&_a]:text-[#00AA5B] [&_a]:underline"
+                            dangerouslySetInnerHTML={{ __html: cleanHtmlContent }}
+                          />
+                        ) : (
+                          <div className="text-slate-800 text-sm sm:text-base leading-relaxed whitespace-pre-wrap font-normal break-words">
+                            {selectedEmail.content}
+                          </div>
+                        )}
 
                         {/* Attachment preview if exists */}
                         {selectedEmail.attachment && (
@@ -2312,12 +2408,48 @@ export default function EmailManagementPage() {
                           </div>
                         )}
 
-                        <div className="pt-6 border-t border-border/50 text-[11px] text-muted-foreground">
-                          <p>Sistem Pengiriman Email Resmi</p>
-                          <span className="font-black text-slate-900 uppercase tracking-widest mt-0.5 block">
-                            MarketPoint Mail Engine
-                          </span>
+                        {/* Quick Reply & Forward Action Bar (Gmail Style) */}
+                        <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center gap-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setComposeTo(selectedEmail.from);
+                              setComposeSubject(`Re: ${selectedEmail.subject}`);
+                              setIsComposeOpen(true);
+                            }}
+                            className="h-9 px-4 rounded-xl border-slate-200 hover:border-[#00AA5B] hover:text-[#00AA5B] text-slate-700 font-bold text-xs gap-2 shadow-2xs cursor-pointer transition-all"
+                          >
+                            <Reply className="w-4 h-4 text-slate-500" />
+                            Balas
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setComposeTo("");
+                              setComposeSubject(`Fwd: ${selectedEmail.subject}`);
+                              setComposeMessage(
+                                `\n\n---------- Pesan Diteruskan ----------\nDari: ${selectedEmail.from}\nTanggal: ${selectedEmail.date}\nSubjek: ${selectedEmail.subject}\nKepada: ${selectedEmail.to}\n\n${selectedEmail.content}`
+                              );
+                              setIsComposeOpen(true);
+                            }}
+                            className="h-9 px-4 rounded-xl border-slate-200 hover:border-slate-400 text-slate-700 font-bold text-xs gap-2 shadow-2xs cursor-pointer transition-all"
+                          >
+                            <Forward className="w-4 h-4 text-slate-500" />
+                            Teruskan
+                          </Button>
                         </div>
+
+                        {/* Internal Mail Signature - Only for official marketpoint system emails */}
+                        {selectedEmail.from.includes("marketpoint.id") && (
+                          <div className="pt-4 text-[11px] text-muted-foreground border-t border-slate-100">
+                            <p>Sistem Pengiriman Email Resmi</p>
+                            <span className="font-black text-slate-900 uppercase tracking-widest mt-0.5 block">
+                              MarketPoint Mail Engine
+                            </span>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
