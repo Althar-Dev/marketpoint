@@ -171,6 +171,7 @@ export default function EmailManagementPage() {
   const [selectedEmail, setSelectedEmail] = useState<EmailItem | null>(null);
   const [showEmailTechDetails, setShowEmailTechDetails] = useState(false);
   const [expandedTechId, setExpandedTechId] = useState<string | null>(null);
+  const [collapsedMessageIds, setCollapsedMessageIds] = useState<Record<string, boolean>>({});
   const [isInlineReplying, setIsInlineReplying] = useState(false);
   const [inlineReplyText, setInlineReplyText] = useState("");
   const [isSendingInlineReply, setIsSendingInlineReply] = useState(false);
@@ -2626,6 +2627,57 @@ export default function EmailManagementPage() {
                         ? msg.from.match(/<([^>]+)>/)?.[1] || msg.from
                         : msg.from;
 
+                      const isExpanded =
+                        collapsedMessageIds[msg.id] !== undefined
+                          ? !collapsedMessageIds[msg.id]
+                          : isLastMessage || activeThreadMessages.length === 1;
+
+                      // Tampilan Ringkas / Terlipat ala Gmail jika pesan lama
+                      if (!isExpanded) {
+                        return (
+                          <div
+                            key={msg.id}
+                            onClick={() =>
+                              setCollapsedMessageIds((prev) => ({ ...prev, [msg.id]: false }))
+                            }
+                            className="px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50/80 transition-all cursor-pointer flex items-center justify-between gap-3 shadow-2xs group"
+                          >
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div
+                                className={cn(
+                                  "h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 text-white shadow-2xs",
+                                  isMarketpointSender
+                                    ? "bg-[#00AA5B]"
+                                    : "bg-slate-700"
+                                )}
+                              >
+                                {senderDisplayName.substring(0, 1).toUpperCase()}
+                              </div>
+                              <span className="text-xs font-extrabold text-slate-900 shrink-0 truncate max-w-[140px] sm:max-w-[200px]">
+                                {senderDisplayName}
+                              </span>
+                              {msg.folder === "sent" && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[9px] font-bold text-slate-500 bg-slate-50 border-slate-200 py-0 shrink-0"
+                                >
+                                  Terkirim
+                                </Badge>
+                              )}
+                              <p className="text-xs text-slate-500 font-medium truncate flex-1">
+                                {msg.preview || sanitizedContent.replace(/<[^>]+>/g, " ").substring(0, 90)}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-[11px] text-muted-foreground font-semibold">
+                                {msg.date}
+                              </span>
+                              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 transition-colors" />
+                            </div>
+                          </div>
+                        );
+                      }
+
                       return (
                         <div
                           key={msg.id}
@@ -2637,7 +2689,17 @@ export default function EmailManagementPage() {
                           )}
                         >
                           {/* Sender & Header Info Card */}
-                          <div className="p-4 sm:p-5 border-b border-slate-100 flex items-start justify-between gap-3 bg-white">
+                          <div
+                            onClick={() => {
+                              if (!isLastMessage) {
+                                setCollapsedMessageIds((prev) => ({ ...prev, [msg.id]: true }));
+                              }
+                            }}
+                            className={cn(
+                              "p-4 sm:p-5 border-b border-slate-100 flex items-start justify-between gap-3 bg-white",
+                              !isLastMessage && "cursor-pointer hover:bg-slate-50/60 transition-colors"
+                            )}
+                          >
                             <div className="flex items-start gap-3.5 min-w-0">
                               <div
                                 className={cn(
