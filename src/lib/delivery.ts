@@ -300,7 +300,8 @@ delivery@marketpoint.id | www.marketpoint.id`;
     from: "delivery@marketpoint.id",
     to: recipientEmail.trim(),
     subject: emailSubject,
-    content: emailContent,
+    content: emailHtml,
+    preview: `Lisensi pesanan #${orderId} untuk ${resolvedTitle}`,
   });
 
   // 7. Simpan log pengiriman ke PostgreSQL mail_delivery_logs

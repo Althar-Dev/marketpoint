@@ -13,6 +13,8 @@ export interface TransactionInvoiceData {
   totalAmount: number;
   paymentMethod: string;
   paymentMethodName?: string | null;
+  paymentCategory?: string | null;
+  channelCode?: string | null;
   status: string;
   buyerName?: string | null;
   buyerEmail?: string | null;
@@ -151,12 +153,12 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
     : rawLicense ? rawLicense.split("\n").filter(Boolean) : [];
   const primaryKey = keysList[0] || tx.licenseKey || "Terkirim ke Email";
 
-  // 4. Section: Informasi Pembeli & Lisensi Digital
+  // 4. Section: Informasi Pembeli & Pembayaran
   y = 47;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(...darkColor);
-  doc.text("Informasi Pembeli & Lisensi Digital", 15, y);
+  doc.text("Informasi Pembeli & Pembayaran", 15, y);
 
   const cardY = y + 2.5;
   const cardHeight = 26;
@@ -204,41 +206,48 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setTextColor(5, 150, 105);
   doc.text("Otomatis via Email (Instan)", 36, cardY + 22.2);
 
-  // --- Sub-Card 2: Lisensi & Data Akun (Kanan) ---
+  // --- Sub-Card 2: Detail Pembayaran & Transaksi (Kanan) ---
   const rightCardX = 107;
-  doc.setFillColor(240, 253, 244); // Emerald 50
-  doc.setDrawColor(187, 247, 208); // Emerald 200
+  doc.setFillColor(...lightBg);
+  doc.setDrawColor(...borderLight);
   doc.roundedRect(rightCardX, cardY, cardWidth, cardHeight, 2, 2, "FD");
 
   // Header Bar Kanan
-  doc.setFillColor(220, 252, 231); // Emerald 100
+  doc.setFillColor(241, 245, 249); // Slate 100
   doc.roundedRect(rightCardX, cardY, cardWidth, 6, 2, 2, "F");
   doc.rect(rightCardX, cardY + 3.5, cardWidth, 2.5, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
-  doc.setTextColor(22, 101, 52);
-  doc.text("Lisensi / Data Akun Produk", rightCardX + 4, cardY + 4.2);
+  doc.setTextColor(71, 85, 105);
+  doc.text("Rincian Pembayaran", rightCardX + 4, cardY + 4.2);
 
-  // Content Kanan: License / Account Key Box
+  // Content Kanan
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(21, 128, 61);
-  doc.text("Serial / Kunci / Akun:", rightCardX + 4, cardY + 10.5);
-
-  // White Pill Box for Key
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(187, 247, 208);
-  doc.roundedRect(rightCardX + 4, cardY + 12, cardWidth - 8, 7, 1.5, 1.5, "FD");
-
-  doc.setFont("courier", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(...darkColor);
-  doc.text(primaryKey.slice(0, 32), rightCardX + 7, cardY + 16.8);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
+  doc.setFontSize(7.5);
   doc.setTextColor(...grayColor);
-  doc.text(`Status: Terverifikasi Aktif • ${tx.deliveredBy || "delivery@marketpoint.id"}`, rightCardX + 4, cardY + 23.2);
+  doc.text("Metode:", rightCardX + 4, cardY + 11.2);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...darkColor);
+  doc.text(tx.paymentMethodName || tx.paymentCategory || "QRIS", rightCardX + 22, cardY + 11.2);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...grayColor);
+  doc.text("Saluran:", rightCardX + 4, cardY + 16.8);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...darkColor);
+  doc.text(tx.channelCode || tx.paymentMethod || "QRIS", rightCardX + 22, cardY + 16.8);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...grayColor);
+  doc.text("Status:", rightCardX + 4, cardY + 22.2);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(5, 150, 105);
+  doc.text("Lunas (Terverifikasi Escrow)", rightCardX + 22, cardY + 22.2);
 
   // 5. Section: Data Lisensi & Akses Produk (Dynamic Y)
   y = cardY + cardHeight + 6;

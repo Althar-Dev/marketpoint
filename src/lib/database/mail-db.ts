@@ -149,11 +149,17 @@ export async function sendDbMailMessage(params: {
   to: string;
   subject: string;
   content: string;
+  preview?: string;
 }): Promise<MailMessageRow> {
   await initDatabaseSchema();
   const sentId = `mail-${Date.now()}-sent`;
   const inboxId = `mail-${Date.now()}-inbox`;
-  const preview = params.content.substring(0, 60) + "...";
+  
+  let preview = params.preview;
+  if (!preview) {
+    const cleanText = params.content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    preview = cleanText.substring(0, 70) + "...";
+  }
 
   // Simpan ke folder 'sent' milik pengirim
   await query(
@@ -203,10 +209,53 @@ export async function updateDbMailFolder(
   );
 }
 
-// 6. Hapus Email Permanen
+// 6. Tandai Email Sudah Dibaca
+export async function markDbMailAsRead(id: string) {
+  await initDatabaseSchema();
+  await query(`UPDATE mail_messages SET is_unread = FALSE WHERE id = $1`, [id]);
+}
+
+// 6b. Tandai Semua Email di Folder Sudah Dibaca
+export async function markAllDbMailAsRead(folder: string = "inbox") {
+  await initDatabaseSchema();
+  await query(`UPDATE mail_messages SET is_unread = FALSE WHERE folder = $1`, [folder]);
+}
+
+// 6c. Tandai Beberapa Email Sudah Dibaca (Bulk)
+export async function markMultipleDbMailAsRead(ids: string[]) {
+  if (!ids || ids.length === 0) return;
+  await initDatabaseSchema();
+  await query(`UPDATE mail_messages SET is_unread = FALSE WHERE id = ANY($1)`, [ids]);
+}
+
+// 6d. Tandai Beberapa Email Belum Dibaca (Bulk)
+export async function markMultipleDbMailAsUnread(ids: string[]) {
+  if (!ids || ids.length === 0) return;
+  await initDatabaseSchema();
+  await query(`UPDATE mail_messages SET is_unread = TRUE WHERE id = ANY($1)`, [ids]);
+}
+
+// 6e. Pindahkan Beberapa Email ke Folder Tertentu (Bulk)
+export async function updateMultipleDbMailFolder(
+  ids: string[],
+  targetFolder: "inbox" | "sent" | "drafts" | "trash"
+) {
+  if (!ids || ids.length === 0) return;
+  await initDatabaseSchema();
+  await query(`UPDATE mail_messages SET folder = $1 WHERE id = ANY($2)`, [targetFolder, ids]);
+}
+
+// 7. Hapus Email Permanen
 export async function deleteDbMailPermanently(id: string) {
   await initDatabaseSchema();
   await query(`DELETE FROM mail_messages WHERE id = $1`, [id]);
+}
+
+// 7b. Hapus Beberapa Email Permanen (Bulk)
+export async function deleteMultipleDbMailPermanently(ids: string[]) {
+  if (!ids || ids.length === 0) return;
+  await initDatabaseSchema();
+  await query(`DELETE FROM mail_messages WHERE id = ANY($1)`, [ids]);
 }
 
 // 7. Ambil Log Auto-Delivery
@@ -287,6 +336,30 @@ export async function createDbDeliveryLog(params: {
     ]
   );
   return id;
+}
+
+// 8b. Update Penerima Delivery & Sinkronkan ke Transaksi
+export async function updateDbDeliveryRecipient(params: {
+  orderId: string;
+  newRecipient: string;
+  updateTransaction?: boolean;
+}) {
+  await initDatabaseSchema();
+  await query(
+    `UPDATE mail_delivery_logs SET recipient = $1 WHERE order_id = $2`,
+    [params.newRecipient, params.orderId]
+  );
+
+  if (params.updateTransaction !== false) {
+    try {
+      await query(
+        `UPDATE transactions SET buyer_email = $1 WHERE invoice_number = $2 OR id = $2`,
+        [params.newRecipient, params.orderId]
+      );
+    } catch (txErr) {
+      console.warn("[UPDATE TX BUYER EMAIL WARN]", txErr);
+    }
+  }
 }
 
 // 9. Pastikan Akun delivery@marketpoint.id Tersedia dan Aktif

@@ -7,19 +7,28 @@ import {
   getDbMailMessages,
   sendDbMailMessage,
   updateDbMailFolder,
+  markDbMailAsRead,
+  markAllDbMailAsRead,
   deleteDbMailPermanently,
   getDbDeliveryLogs,
   clearAllDbMailData,
+  updateDbDeliveryRecipient,
+  markMultipleDbMailAsRead,
+  markMultipleDbMailAsUnread,
+  updateMultipleDbMailFolder,
+  deleteMultipleDbMailPermanently,
 } from "@/lib/database/mail-db";
 import { deliverProductLicense } from "@/lib/delivery";
-import { sendOutgoingEmail } from "@/lib/mailer";
+import { sendOutgoingEmail, testMailConnection } from "@/lib/mailer";
+import { getSmtpSettings, updateSmtpSettings } from "@/lib/database/settings";
 
 export async function GET() {
   try {
-    const [accounts, messages, deliveryLogs] = await Promise.all([
+    const [accounts, messages, deliveryLogs, smtpSettings] = await Promise.all([
       getDbMailAccounts(),
       getDbMailMessages(),
       getDbDeliveryLogs(),
+      getSmtpSettings(),
     ]);
 
     return NextResponse.json({
@@ -28,6 +37,7 @@ export async function GET() {
         accounts,
         messages,
         deliveryLogs,
+        smtpSettings,
       },
     });
   } catch (error: any) {
@@ -106,6 +116,21 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true });
       }
 
+      case "mark_read": {
+        const { id } = body;
+        if (!id) {
+          return NextResponse.json({ success: false, error: "ID pesan wajib disertakan" }, { status: 400 });
+        }
+        await markDbMailAsRead(id);
+        return NextResponse.json({ success: true });
+      }
+
+      case "mark_all_read": {
+        const { folder = "inbox" } = body;
+        await markAllDbMailAsRead(folder);
+        return NextResponse.json({ success: true });
+      }
+
       case "delete": {
         const { id } = body;
         if (!id) {
@@ -113,6 +138,42 @@ export async function POST(req: Request) {
         }
         await deleteDbMailPermanently(id);
         return NextResponse.json({ success: true });
+      }
+
+      case "bulk_mark_read": {
+        const { ids } = body;
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+          return NextResponse.json({ success: false, error: "Daftar ID pesan wajib disertakan" }, { status: 400 });
+        }
+        await markMultipleDbMailAsRead(ids);
+        return NextResponse.json({ success: true, count: ids.length });
+      }
+
+      case "bulk_mark_unread": {
+        const { ids } = body;
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+          return NextResponse.json({ success: false, error: "Daftar ID pesan wajib disertakan" }, { status: 400 });
+        }
+        await markMultipleDbMailAsUnread(ids);
+        return NextResponse.json({ success: true, count: ids.length });
+      }
+
+      case "bulk_update_folder": {
+        const { ids, folder } = body;
+        if (!ids || !Array.isArray(ids) || ids.length === 0 || !folder) {
+          return NextResponse.json({ success: false, error: "Daftar ID dan folder tujuan wajib disertakan" }, { status: 400 });
+        }
+        await updateMultipleDbMailFolder(ids, folder);
+        return NextResponse.json({ success: true, count: ids.length });
+      }
+
+      case "bulk_delete": {
+        const { ids } = body;
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+          return NextResponse.json({ success: false, error: "Daftar ID pesan wajib disertakan" }, { status: 400 });
+        }
+        await deleteMultipleDbMailPermanently(ids);
+        return NextResponse.json({ success: true, count: ids.length });
       }
 
       case "resend_delivery": {
@@ -134,6 +195,57 @@ export async function POST(req: Request) {
           message: `Lisensi pesanan ${orderId} berhasil dikirim ulang ke ${recipient}.`,
           data: deliveryRes
         });
+      }
+
+      case "update_delivery_recipient": {
+        const { orderId, newRecipient, updateTransaction = true, resendNow = false, productTitle, productId } = body;
+        if (!orderId || !newRecipient) {
+          return NextResponse.json(
+            { success: false, error: "Nomor pesanan (orderId) dan email baru (newRecipient) wajib diisi" },
+            { status: 400 }
+          );
+        }
+
+        await updateDbDeliveryRecipient({
+          orderId,
+          newRecipient: newRecipient.trim(),
+          updateTransaction,
+        });
+
+        let deliveryRes = null;
+        if (resendNow) {
+          deliveryRes = await deliverProductLicense({
+            orderId,
+            recipientEmail: newRecipient.trim(),
+            productTitle: productTitle || undefined,
+            productId: productId || undefined,
+            forceResend: true,
+          });
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: resendNow
+            ? `Email berhasil diperbarui ke ${newRecipient} dan lisensi telah dikirim ulang.`
+            : `Email penerima pesanan ${orderId} berhasil diperbarui menjadi ${newRecipient}.`,
+          data: deliveryRes,
+        });
+      }
+
+      case "save_smtp_settings": {
+        const { settings } = body;
+        if (!settings) {
+          return NextResponse.json({ success: false, error: "Data pengaturan wajib disertakan" }, { status: 400 });
+        }
+        await updateSmtpSettings(settings);
+        const updated = await getSmtpSettings();
+        return NextResponse.json({ success: true, message: "Pengaturan SMTP berhasil disimpan.", data: updated });
+      }
+
+      case "test_connection": {
+        const { targetEmail, config } = body;
+        const testRes = await testMailConnection(targetEmail ? targetEmail.trim() : "", config);
+        return NextResponse.json({ success: true, data: testRes });
       }
 
       case "clear_mock": {

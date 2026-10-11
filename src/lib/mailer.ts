@@ -27,9 +27,8 @@ export interface SendEmailResult {
   response?: string;
 }
 
-/**
- * Mendapatkan konfigurasi DKIM jika ada di environment variable
- */
+import { getSmtpSettings, SmtpSettings } from "./database/settings";
+
 function getDkimConfig() {
   const privateKey = process.env.DKIM_PRIVATE_KEY;
   const keySelector = process.env.DKIM_SELECTOR || "default";
@@ -45,13 +44,28 @@ function getDkimConfig() {
   return undefined;
 }
 
+export interface TestConnectionResult {
+  success: boolean;
+  step: string;
+  latencyMs: number;
+  mode: "direct_mx" | "custom_smtp";
+  hostUsed?: string;
+  response?: string;
+  error?: string;
+}
+
 /**
  * Mengirim email langsung ke server mail penerima (Direct MX) atau via SMTP terkonfigurasi.
- * 100% Gratis tanpa biaya pihak ketiga.
  */
 export async function sendOutgoingEmail(options: SendEmailOptions): Promise<SendEmailResult> {
+  const settings = await getSmtpSettings();
+
+  const defaultFrom = settings.fromEmail
+    ? `"${settings.fromName || "MarketPoint Delivery"}" <${settings.fromEmail}>`
+    : "MarketPoint Delivery <delivery@marketpoint.id>";
+
   const {
-    from = "MarketPoint Delivery <delivery@marketpoint.id>",
+    from = defaultFrom,
     to,
     subject,
     text,
@@ -64,23 +78,31 @@ export async function sendOutgoingEmail(options: SendEmailOptions): Promise<Send
   }
 
   const dkim = getDkimConfig();
-  const heloDomain = process.env.MAIL_HELO_DOMAIN || "marketpoint.id";
+  const heloDomain = settings.heloDomain || process.env.MAIL_HELO_DOMAIN || "marketpoint.id";
 
-  // 1. Jika pengguna secara manual mengatur SMTP_HOST di .env, gunakan custom SMTP relay
-  if (process.env.SMTP_HOST) {
+  // 1. Jika mode CUSTOM SMTP diaktifkan (via DB atau ENV)
+  const isCustomSmtp = settings.mode === "custom_smtp" || (!settings.mode && !!process.env.SMTP_HOST);
+  const smtpHost = settings.host || process.env.SMTP_HOST;
+
+  if (isCustomSmtp && smtpHost) {
     try {
+      const port = Number(settings.port || process.env.SMTP_PORT || 587);
+      const secure = settings.secure ?? (process.env.SMTP_SECURE === "true" || port === 465);
+      const user = settings.user || process.env.SMTP_USER || "";
+      const pass = settings.pass || process.env.SMTP_PASS || "";
+
       const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465",
-        auth: {
-          user: process.env.SMTP_USER || "delivery@marketpoint.id",
-          pass: process.env.SMTP_PASS || "",
-        },
+        host: smtpHost,
+        port,
+        secure,
+        auth: user ? { user, pass } : undefined,
         name: heloDomain,
         tls: {
           rejectUnauthorized: false,
         },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
         dkim,
       });
 
@@ -97,6 +119,7 @@ export async function sendOutgoingEmail(options: SendEmailOptions): Promise<Send
         success: true,
         messageId: info.messageId,
         mode: "custom_smtp",
+        targetMxHost: smtpHost,
         response: info.response,
       };
     } catch (smtpErr: any) {
@@ -109,7 +132,7 @@ export async function sendOutgoingEmail(options: SendEmailOptions): Promise<Send
     }
   }
 
-  // 2. DIRECT MX SENDING: Mengirim langsung ke MX Server domain penerima (misal: gmail-smtp-in.l.google.com)
+  // 2. DIRECT MX SENDING: Mengirim langsung ke MX Server domain penerima (port 25)
   const recipientDomain = to.split("@")[1]?.trim();
   if (!recipientDomain) {
     throw new Error(`Alamat email tidak valid: ${to}`);
@@ -191,206 +214,147 @@ export async function sendOutgoingEmail(options: SendEmailOptions): Promise<Send
 }
 
 /**
- * Render template email HTML pengiriman lisensi produk resmi MarketPoint yang responsif dan elegan
+ * Melakukan diagnostik live test koneksi mail (Direct MX atau Custom SMTP).
+ * Mengukur latency ms, handshake, dan mengirim 1 email tes jika diminta.
  */
-export function renderDeliveryEmailHtml(params: {
-  orderId: string;
-  recipientName: string;
-  productTitle: string;
-  variant?: string | null;
-  quantity: number;
-  licenseKeys: string[];
-  downloadFiles?: Array<{ fileName: string; fileUrl: string; fileSize?: number; version?: string }>;
-  demoUrl?: string;
-  formattedDate?: string;
-}): string {
-  const {
-    orderId,
-    recipientName,
-    productTitle,
-    variant,
-    quantity,
-    licenseKeys,
-    downloadFiles = [],
-    demoUrl,
-    formattedDate = new Date().toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }),
-  } = params;
+export async function testMailConnection(
+  targetEmail: string,
+  customConfig?: Partial<SmtpSettings>
+): Promise<TestConnectionResult> {
+  const startTime = Date.now();
+  const currentSettings = await getSmtpSettings();
+  const settings: SmtpSettings = {
+    ...currentSettings,
+    ...(customConfig || {}),
+  };
 
-  const licenseListHtml = licenseKeys
-    .map((k, idx) => {
-      const label = licenseKeys.length > 1 ? `Unit ${idx + 1}` : "Serial Key";
-      return `
-        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px;">
-          <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">${label}</div>
-          <div style="font-family: 'Courier New', Courier, monospace; font-size: 14px; font-weight: 700; color: #0f172a; word-break: break-all; letter-spacing: 0.03em;">${k}</div>
-        </div>
-      `;
-    })
-    .join("");
+  const isCustom = settings.mode === "custom_smtp" || (!settings.mode && !!settings.host);
 
-  const downloadFilesHtml =
-    downloadFiles.length > 0
-      ? `
-        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px dashed #e2e8f0;">
-          <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em;">
-            Berkas Unduhan Produk
-          </h3>
-          ${downloadFiles
-            .map(
-              (f, i) => `
-              <div style="background-color: #f1f5f9; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                  <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${i + 1}. ${f.fileName} ${f.version ? `(${f.version})` : ""}</div>
-                  ${f.fileSize ? `<div style="font-size: 11px; color: #64748b;">${(f.fileSize / (1024 * 1024)).toFixed(2)} MB</div>` : ""}
-                </div>
-                <div style="margin-top: 8px;">
-                  <a href="${f.fileUrl}" style="display: inline-block; background-color: #00AA5B; color: #ffffff; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;">Unduh Berkas</a>
-                </div>
-              </div>
-            `
-            )
-            .join("")}
-        </div>
-      `
-      : "";
+  if (isCustom) {
+    if (!settings.host) {
+      return {
+        success: false,
+        step: "Validasi Pengaturan",
+        latencyMs: Date.now() - startTime,
+        mode: "custom_smtp",
+        error: "SMTP Host belum diisi.",
+      };
+    }
 
-  const demoUrlHtml = demoUrl
-    ? `
-      <div style="margin-top: 16px;">
-        <span style="font-size: 12px; color: #64748b;">Tautan Demo / Dokumentasi: </span>
-        <a href="${demoUrl}" style="font-size: 12px; color: #0284c7; text-decoration: underline; font-weight: 600;">${demoUrl}</a>
-      </div>
-    `
-    : "";
+    try {
+      const port = Number(settings.port || 587);
+      const secure = settings.secure ?? (port === 465);
+      const transporter = nodemailer.createTransport({
+        host: settings.host,
+        port,
+        secure,
+        auth: settings.user ? { user: settings.user, pass: settings.pass } : undefined,
+        name: settings.heloDomain || "marketpoint.id",
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+      });
 
-  return `
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pengiriman Pesanan #${orderId} - MarketPoint</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #334155; line-height: 1.5;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f6f8; padding: 32px 16px;">
-    <tr>
-      <td align="center">
-        <!-- Container Utama -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);">
-          
-          <!-- Header Banner -->
-          <tr>
-            <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 28px 32px; text-align: left;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td>
-                    <div style="display: inline-block; font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em;">
-                      Market<span style="color: #00AA5B;">Point</span>
-                    </div>
-                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px; font-weight: 500;">
-                      Official Automated Delivery Service
-                    </div>
-                  </td>
-                  <td align="right">
-                    <span style="background-color: rgba(0, 170, 91, 0.2); border: 1px solid #00AA5B; color: #4ade80; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
-                      Lunas & Terkirim
-                    </span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+      // Verifikasi handshake SMTP
+      await transporter.verify();
 
-          <!-- Isi Email -->
-          <tr>
-            <td style="padding: 32px;">
-              <h1 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700; color: #0f172a;">
-                Halo, ${recipientName}!
-              </h1>
-              <p style="margin: 0 0 24px 0; font-size: 14px; color: #475569;">
-                Terima kasih atas pesanan Anda di <strong>MarketPoint</strong>. Pembayaran Anda telah terverifikasi penuh dan lisensi produk digital Anda otomatis diterbitkan di bawah ini.
-              </p>
+      // Kirim email tes jika targetEmail diisi
+      let response = "Handshake SMTP Terverifikasi.";
+      if (targetEmail) {
+        const info = await transporter.sendMail({
+          from: `"${settings.fromName || "MarketPoint Mail Engine"}" <${settings.fromEmail || "delivery@marketpoint.id"}>`,
+          to: targetEmail,
+          subject: "[Diagnostik] Uji Koneksi SMTP MarketPoint Berhasil",
+          text: `Halo!\n\nEmail ini adalah bukti bahwa konfigurasi SMTP (${settings.host}:${port}) di MarketPoint berfungsi dengan baik.\n\nWaktu Tes: ${new Date().toLocaleString("id-ID")}\nMode: Custom SMTP Relay\nLatensi: ${Date.now() - startTime} ms\n\nSalam,\nTim Teknis MarketPoint`,
+        });
+        response = info.response || `Email tes terkirim. ID: ${info.messageId}`;
+      }
 
-              <!-- Kartu Rincian Pesanan -->
-              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin-bottom: 24px;">
-                <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 13px;">
-                  <tr>
-                    <td style="padding: 4px 0; color: #64748b; width: 130px;">Nomor Invoice</td>
-                    <td style="padding: 4px 0; font-weight: 700; color: #0f172a; font-family: monospace;">#${orderId}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 4px 0; color: #64748b;">Tanggal Pesanan</td>
-                    <td style="padding: 4px 0; font-weight: 600; color: #0f172a;">${formattedDate}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 4px 0; color: #64748b;">Produk</td>
-                    <td style="padding: 4px 0; font-weight: 600; color: #0f172a;">${productTitle}</td>
-                  </tr>
-                  ${variant ? `<tr><td style="padding: 4px 0; color: #64748b;">Varian</td><td style="padding: 4px 0; font-weight: 600; color: #0f172a;">${variant}</td></tr>` : ""}
-                  ${quantity > 1 ? `<tr><td style="padding: 4px 0; color: #64748b;">Jumlah</td><td style="padding: 4px 0; font-weight: 600; color: #0f172a;">${quantity} unit</td></tr>` : ""}
-                </table>
-              </div>
+      return {
+        success: true,
+        step: targetEmail ? "Kirim Email Tes Sukses" : "Handshake SMTP Sukses",
+        latencyMs: Date.now() - startTime,
+        mode: "custom_smtp",
+        hostUsed: `${settings.host}:${port}`,
+        response,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        step: "Koneksi SMTP Relay Gagal",
+        latencyMs: Date.now() - startTime,
+        mode: "custom_smtp",
+        hostUsed: `${settings.host}:${settings.port}`,
+        error: err?.message || "Gagal menghubungi SMTP Server.",
+      };
+    }
+  }
 
-              <!-- Lisensi / Serial Key -->
-              <div style="margin-bottom: 24px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                  <h2 style="margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.05em;">
-                    Kunci Lisensi / Akses Resmi
-                  </h2>
-                </div>
-                ${licenseListHtml}
-                <div style="font-size: 11px; color: #64748b; margin-top: 6px;">
-                  *Simpan serial key di atas dengan aman sebagai bukti lisensi resmi kepemilikan Anda.
-                </div>
-              </div>
+  // DIRECT MX TEST
+  const recipientDomain = (targetEmail ? targetEmail.split("@")[1] : "gmail.com")?.trim() || "gmail.com";
+  try {
+    const mxRecords = await resolveMx(recipientDomain);
+    if (!mxRecords || mxRecords.length === 0) {
+      return {
+        success: false,
+        step: "Pencarian DNS MX",
+        latencyMs: Date.now() - startTime,
+        mode: "direct_mx",
+        error: `DNS MX record untuk domain ${recipientDomain} tidak ditemukan.`,
+      };
+    }
+    mxRecords.sort((a, b) => a.priority - b.priority);
+    const primaryMx = mxRecords[0].exchange;
 
-              <!-- Berkas Unduhan & Demo -->
-              ${downloadFilesHtml}
-              ${demoUrlHtml}
+    const transporter = nodemailer.createTransport({
+      host: primaryMx,
+      port: 25,
+      secure: false,
+      ignoreTLS: false,
+      requireTLS: false,
+      name: settings.heloDomain || "marketpoint.id",
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+    });
 
-              <!-- Panduan Aktivasi Singkat -->
-              <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px; margin-top: 24px;">
-                <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; color: #065f46;">
-                  Panduan Aktivasi Cepat:
-                </h4>
-                <ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #047857; line-height: 1.6;">
-                  <li>Salin kode serial key / lisensi yang tertera di atas.</li>
-                  <li>Unduh atau buka aplikasi/platform produk yang bersangkutan.</li>
-                  <li>Masukkan serial key pada kolom aktivasi lisensi atau ikuti instruksi di berkas panduan.</li>
-                </ol>
-              </div>
-
-              <!-- Tombol Cek Detail Transaksi di Web -->
-              <div style="text-align: center; margin-top: 32px;">
-                <a href="https://marketpoint.id/transactions/${encodeURIComponent(orderId)}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                  Lihat Detail Transaksi & Unduh Faktur PDF
-                </a>
-              </div>
-
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px 32px; text-align: center; font-size: 11px; color: #94a3b8;">
-              <p style="margin: 0 0 6px 0;">
-                Email ini dikirim otomatis oleh sistem pengiriman MarketPoint dari <strong>delivery@marketpoint.id</strong>.
-              </p>
-              <p style="margin: 0;">
-                Semua transaksi dilindungi sistem keamanan escrow MarketPoint. Butuh bantuan? Kunjungi <a href="https://marketpoint.id" style="color: #00AA5B; text-decoration: underline;">marketpoint.id</a>.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `;
+    if (targetEmail) {
+      const info = await transporter.sendMail({
+        from: `"${settings.fromName || "MarketPoint Delivery"}" <${settings.fromEmail || "delivery@marketpoint.id"}>`,
+        to: targetEmail,
+        subject: "[Diagnostik] Uji Direct MX Port 25 Berhasil",
+        text: `Halo!\n\nEmail ini adalah tes Direct MX pengiriman langsung port 25 ke ${primaryMx}.\nWaktu Tes: ${new Date().toLocaleString("id-ID")}\nLatensi: ${Date.now() - startTime} ms.`,
+      });
+      return {
+        success: true,
+        step: "Direct MX Sukses Terkirim",
+        latencyMs: Date.now() - startTime,
+        mode: "direct_mx",
+        hostUsed: primaryMx,
+        response: info.response,
+      };
+    } else {
+      await transporter.verify();
+      return {
+        success: true,
+        step: "Direct MX Port 25 Terhubung",
+        latencyMs: Date.now() - startTime,
+        mode: "direct_mx",
+        hostUsed: primaryMx,
+        response: `Berhasil terhubung ke ${primaryMx} port 25.`,
+      };
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      step: "Koneksi Direct MX Gagal (Port 25)",
+      latencyMs: Date.now() - startTime,
+      mode: "direct_mx",
+      error: `${err?.message || "Port 25 diblokir atau MX menolak koneksi."} (Tips: ISP atau provider cloud sering memblokir Port 25 keluar. Gunakan Custom SMTP dengan port 587 atau 465 untuk reliabilitas 100%).`,
+    };
+  }
 }
+
+export { renderDeliveryEmailHtml } from "./email-template";
