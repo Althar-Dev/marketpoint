@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from "@/firebase";
@@ -40,7 +40,7 @@ const STATUS_TABS = [
   { id: "failed", label: "Gagal/Batal", icon: XCircle },
 ];
 
-export default function TransactionsPage() {
+function TransactionsContent() {
   const { user, loading: authLoading } = useUser();
   const auth = useAuth();
   const db = useFirestore();
@@ -315,3 +315,21 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
+export default function TransactionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
+          <Loader2 className="w-8 h-8 text-[#00AA5B] animate-spin mb-3" />
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+            Memuat Transaksi...
+          </p>
+        </div>
+      }
+    >
+      <TransactionsContent />
+    </Suspense>
+  );
+}
+

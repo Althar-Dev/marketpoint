@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -47,7 +47,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ChatEmojiPicker } from "@/components/chat-emoji-picker";
 
-export default function ShopChatPage() {
+function ShopChatContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -1024,3 +1024,18 @@ export default function ShopChatPage() {
     </main>
   );
 }
+
+export default function ShopChatPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="w-7 h-7 border-2 border-[#00AA5B] border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <ShopChatContent />
+    </Suspense>
+  );
+}
+

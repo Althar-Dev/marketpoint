@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'MarketPoint - Marketplace Produk Digital',
+    default: 'MarketPoint',
     template: '%s | MarketPoint',
   },
   description: 'Platform marketplace produk digital terpercaya di Indonesia. Beli software original, lisensi lifetime, source code aplikasi, hosting VPS, dan voucher digital dengan transaksi instan dan aman.',
@@ -34,7 +34,14 @@ export const metadata: Metadata = {
     'hosting vps indonesia',
     'aset desain grafis',
     'voucher game murah',
+    'topup',
+    'top up',
+    'top up game',
+    'top up game termurah',
+    'promo',
     'marketpoint',
+    'marketpointid',
+    'mpoint',
     'starvale technology solution',
     'althardev'
   ],
@@ -58,7 +65,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/assets/img/og-image.png',
+        url: '/assets/img/favicon.png',
         width: 1200,
         height: 630,
         alt: 'MarketPoint Digital Marketplace',
@@ -69,7 +76,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'MarketPoint - Marketplace Produk Digital Terpercaya',
     description: 'Jual beli produk digital, lisensi resmi, source code, dan hosting aman terpercaya di Indonesia.',
-    images: ['/assets/banner/banner.png'],
+    images: ['/assets/img/favicon.png'],
   },
   robots: {
     index: true,
