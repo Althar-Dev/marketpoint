@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { doc, collection, query, orderBy, limit } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
@@ -84,8 +84,28 @@ export default function MerchantWalletPage() {
     );
   }, [db, activeTargetId]);
 
+  const ordersQuery = useMemoFirebase(() => {
+    if (!activeTargetId || !db) return null;
+    return query(collection(db, "shops", activeTargetId, "orders"));
+  }, [db, activeTargetId]);
+
   const { data: wallet, loading: walletLoading } = useDoc(walletRef);
   const { data: transactions, loading: transLoading } = useCollection(transactionQuery);
+  const { data: rawOrders } = useCollection(ordersQuery);
+
+  const pendingBalance = useMemo(() => {
+    if (!rawOrders) return 0;
+    return rawOrders
+      .filter((o: any) => o.status === "PENDING" || o.status === "PROCESSING")
+      .reduce((acc: number, o: any) => acc + (Number(o.totalAmount || o.amount || o.itemsSubtotal) || 0), 0);
+  }, [rawOrders]);
+
+  const totalWithdrawn = useMemo(() => {
+    if (!transactions) return 0;
+    return transactions
+      .filter((t: any) => t.type === "WITHDRAWAL" && t.status === "SUCCESS")
+      .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
+  }, [transactions]);
 
   const canAccessFinance = isOwner || staffRole === "CO_OWNER" || !!staffPermissions?.finance;
 
@@ -212,7 +232,7 @@ export default function MerchantWalletPage() {
                 <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Saldo Tertahan</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-xs font-medium text-[#2E3137]">Rp</span>
-                  <p className="text-2xl font-black tracking-tighter text-[#2E3137]">0</p>
+                  <p className="text-2xl font-black tracking-tighter text-[#2E3137]">{pendingBalance.toLocaleString('id-ID')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 mt-2">
@@ -228,7 +248,7 @@ export default function MerchantWalletPage() {
                 <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Total Penarikan</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-xs font-medium text-[#2E3137]">Rp</span>
-                  <p className="text-2xl font-black tracking-tighter text-[#2E3137]">0</p>
+                  <p className="text-2xl font-black tracking-tighter text-[#2E3137]">{totalWithdrawn.toLocaleString('id-ID')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 mt-2 text-[#00AA5B]">

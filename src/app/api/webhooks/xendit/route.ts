@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyXenditCallbackToken } from "@/lib/xendit";
+import { deliverProductLicense } from "@/lib/delivery";
 
 export async function POST(req: Request) {
   try {
@@ -13,11 +14,28 @@ export async function POST(req: Request) {
     const payload = await req.json();
     console.log("[XENDIT WEBHOOK RECEIVED]", payload);
 
-    // Event handling (e.g. PAID invoice)
-    const { status, external_id, id } = payload;
-    if (status === "PAID" || status === "SETTLED") {
+    // Event handling (e.g. PAID invoice or SUCCEEDED payment request)
+    const { status, external_id, id, payer_email, customer, items, description } = payload;
+    const isPaid = status === "PAID" || status === "SETTLED" || status === "SUCCEEDED";
+
+    if (isPaid && external_id) {
       console.log(`[XENDIT PAYMENT PAID] Invoice ID: ${id}, External ID: ${external_id}`);
-      // Here you can process subscription status upgrade or order payment status update
+      
+      const recipientEmail = payer_email || customer?.email || payload.email;
+      if (recipientEmail) {
+        try {
+          const itemTitle = items?.[0]?.name || description || "Produk Digital MarketPoint";
+          await deliverProductLicense({
+            orderId: external_id,
+            recipientEmail,
+            recipientName: customer?.given_names || "Pelanggan MarketPoint",
+            productTitle: itemTitle,
+          });
+          console.log(`[XENDIT WEBHOOK AUTO-DELIVERY SUCCESS] Order ${external_id} delivered to ${recipientEmail}`);
+        } catch (delivErr) {
+          console.warn("[XENDIT WEBHOOK AUTO-DELIVERY WARN]", delivErr);
+        }
+      }
     }
 
     return NextResponse.json({ status: "OK" });

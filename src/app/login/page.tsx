@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, updateProfile } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-export default function SignInPage() {
+function SignInContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,6 +28,8 @@ export default function SignInPage() {
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get("redirect") || "/";
   const { toast } = useToast();
 
   const handleGoogleResponse = async (response: any) => {
@@ -78,7 +80,7 @@ export default function SignInPage() {
         description: `Selamat datang kembali, ${finalDisplayName}!`,
       });
 
-      router.push("/");
+      router.push(redirectTarget);
     } catch (error: any) {
       console.error("Gagal login Google:", error);
       const errorMsg =
@@ -195,7 +197,7 @@ export default function SignInPage() {
         description: "Anda telah masuk ke dashboard MarketPoint.",
       });
 
-      router.push("/");
+      router.push(redirectTarget);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -318,7 +320,10 @@ export default function SignInPage() {
           <div className="pt-5 flex justify-center">
             <p className="text-xs text-muted-foreground font-medium">
               Baru di MarketPoint?{" "}
-              <Link href="/register" className="font-bold text-[#00AA5B] hover:underline">
+              <Link
+                href={redirectTarget !== "/" ? `/register?redirect=${encodeURIComponent(redirectTarget)}` : "/register"}
+                className="font-bold text-[#00AA5B] hover:underline"
+              >
                 Daftar Akun
               </Link>
             </p>
@@ -326,5 +331,19 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-white">
+          <div className="h-8 w-8 rounded-full border-2 border-[#00AA5B] border-t-transparent animate-spin" />
+        </div>
+      }
+    >
+      <SignInContent />
+    </Suspense>
   );
 }

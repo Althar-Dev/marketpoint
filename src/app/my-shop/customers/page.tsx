@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
+import { doc, collection, query, where } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,57 +27,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const MOCK_CUSTOMERS = [
-  {
-    id: "CUST-001",
-    name: "Rian Hidayat",
-    email: "rian.h@example.com",
-    avatar: "",
-    totalOrders: 12,
-    totalSpent: 1250000,
-    lastOrder: "2 jam lalu",
-    status: "LOYAL",
-    joinDate: "12 Jan 2024"
-  },
-  {
-    id: "CUST-002",
-    name: "Dewi Lestari",
-    email: "dewi.l@example.com",
-    avatar: "",
-    totalOrders: 5,
-    totalSpent: 450000,
-    lastOrder: "Kemarin",
-    status: "ACTIVE",
-    joinDate: "05 Feb 2024"
-  },
-  {
-    id: "CUST-003",
-    name: "Andrianto",
-    email: "andri@dev.id",
-    avatar: "",
-    totalOrders: 28,
-    totalSpent: 4850000,
-    lastOrder: "3 hari lalu",
-    status: "VIP",
-    joinDate: "20 Nov 2023"
-  },
-  {
-    id: "CUST-004",
-    name: "Siska Putri",
-    email: "siska.p@gmail.com",
-    avatar: "",
-    totalOrders: 1,
-    totalSpent: 25000,
-    lastOrder: "1 minggu lalu",
-    status: "NEW",
-    joinDate: "15 Mei 2024"
-  }
-];
+interface CustomerItem {
+  id: string;
+  name?: string;
+  email?: string;
+  avatar?: string;
+  totalOrders?: number;
+  totalSpent?: number;
+  lastOrder?: string;
+  status?: "VIP" | "LOYAL" | "ACTIVE" | "NEW";
+  joinDate?: string;
+}
 
 export default function MerchantCustomersPage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "loyal" | "new">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "spending" | "orders">("newest");
 
   useEffect(() => {
     setMounted(true);
@@ -90,7 +58,35 @@ export default function MerchantCustomersPage() {
 
   const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
-  if (!mounted || authLoading || shopLoading) {
+  const customersQuery = useMemoFirebase(() => {
+    if (!user || !db) return null;
+    return query(collection(db, "shops", user.uid, "customers"));
+  }, [db, user]);
+
+  const { data: rawCustomers, loading: customersLoading } = useCollection<any>(customersQuery);
+  const customers: CustomerItem[] = (rawCustomers || []) as CustomerItem[];
+
+  const loyalCount = customers.filter(c => c.status === "LOYAL" || c.status === "VIP").length;
+  const newCount = customers.filter(c => c.status === "NEW").length;
+  const totalRevenue = customers.reduce((acc, c) => acc + (Number(c.totalSpent) || 0), 0);
+
+  const filteredCustomers = customers.filter((item) => {
+    if (activeTab === "loyal" && item.status !== "LOYAL" && item.status !== "VIP") return false;
+    if (activeTab === "new" && item.status !== "NEW") return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchName = item.name?.toLowerCase().includes(q);
+      const matchEmail = item.email?.toLowerCase().includes(q);
+      if (!matchName && !matchEmail) return false;
+    }
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === "spending") return (Number(b.totalSpent) || 0) - (Number(a.totalSpent) || 0);
+    if (sortBy === "orders") return (Number(b.totalOrders) || 0) - (Number(a.totalOrders) || 0);
+    return 0;
+  });
+
+  if (!mounted || authLoading || shopLoading || customersLoading) {
     return (
       <div className="p-4 md:p-6 lg:p-8 space-y-6">
         <div className="flex justify-between items-center">
@@ -98,9 +94,11 @@ export default function MerchantCustomersPage() {
           <Skeleton className="h-9 w-32" />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)}
         </div>
-        <Skeleton className="h-[400px] w-full rounded-2xl" />
+        <div className="space-y-4">
+          <Skeleton className="h-64 w-full rounded-2xl" />
+        </div>
       </div>
     );
   }
@@ -111,26 +109,23 @@ export default function MerchantCustomersPage() {
 
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="hidden sm:flex flex-col">
-            <h2 className="text-xl font-bold tracking-tight text-[#212121]">Manajemen Pelanggan</h2>
-            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">Lihat profil pembeli dan analisis riwayat belanja mereka.</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="h-9 px-4 rounded-xl font-bold text-[11px] gap-2 border-border bg-white shadow-sm">
-              <Icon icon="ph:export-bold" className="w-3.5 h-3.5" /> Ekspor Data
-            </Button>
+          <div className="flex flex-col">
+            <h2 className="text-xl font-bold tracking-tight text-[#212121]">Daftar Pelanggan</h2>
+            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
+              Analisis riwayat pembeli dan bangun hubungan jangka panjang.
+            </p>
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* Metric Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Pelanggan", value: "1.240", icon: "ph:users-four", color: "text-[#2E3137]", bg: "bg-gray-50" },
-            { label: "Pelanggan Aktif", value: "856", icon: "ph:user-circle-check", color: "text-[#00AA5B]", bg: "bg-green-50" },
-            { label: "Pelanggan Baru", value: "124", icon: "ph:user-plus", color: "text-[#8B5CF6]", bg: "bg-purple-50" },
-            { label: "Tingkat Retensi", value: "68%", icon: "ph:arrows-counter-clockwise", color: "text-[#FFC400]", bg: "bg-yellow-50" },
+            { label: "Total Pelanggan", value: customers.length, icon: "ph:users-bold", color: "text-[#00AA5B]", bg: "bg-emerald-50" },
+            { label: "Pelanggan Baru", value: newCount, icon: "ph:user-plus-bold", color: "text-blue-600", bg: "bg-blue-50" },
+            { label: "Pelanggan Loyal", value: loyalCount, icon: "ph:heart-straight-bold", color: "text-rose-600", bg: "bg-rose-50" },
+            { label: "Total Pembelian", value: `Rp ${totalRevenue.toLocaleString('id-ID')}`, icon: "ph:wallet-bold", color: "text-amber-600", bg: "bg-amber-50" },
           ].map((stat, idx) => (
-            <Card key={idx} className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden group">
+            <Card key={idx} className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
               <CardContent className="p-4 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
                   <div className={cn("p-1.5 rounded-lg", stat.bg)}>
@@ -146,94 +141,129 @@ export default function MerchantCustomersPage() {
           ))}
         </div>
 
-        {/* Search & Filter Bar */}
+        {/* Filter Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-border shadow-sm">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <Button variant="secondary" className="h-8 rounded-lg text-[10px] font-bold bg-[#00AA5B]/10 text-[#00AA5B]">Semua Pelanggan</Button>
-            <Button variant="ghost" className="h-8 rounded-lg text-[10px] font-bold text-muted-foreground">VIP / Top Spender</Button>
-            <Button variant="ghost" className="h-8 rounded-lg text-[10px] font-bold text-muted-foreground">Pelanggan Baru</Button>
+            <Button
+              variant={activeTab === "all" ? "secondary" : "ghost"}
+              onClick={() => setActiveTab("all")}
+              className={cn(
+                "h-8 rounded-lg text-[10px] font-bold cursor-pointer",
+                activeTab === "all" ? "bg-[#00AA5B]/10 text-[#00AA5B]" : "text-muted-foreground"
+              )}
+            >
+              Semua ({customers.length})
+            </Button>
+            <Button
+              variant={activeTab === "loyal" ? "secondary" : "ghost"}
+              onClick={() => setActiveTab("loyal")}
+              className={cn(
+                "h-8 rounded-lg text-[10px] font-bold cursor-pointer",
+                activeTab === "loyal" ? "bg-[#00AA5B]/10 text-[#00AA5B]" : "text-muted-foreground"
+              )}
+            >
+              Loyal / VIP ({loyalCount})
+            </Button>
+            <Button
+              variant={activeTab === "new" ? "secondary" : "ghost"}
+              onClick={() => setActiveTab("new")}
+              className={cn(
+                "h-8 rounded-lg text-[10px] font-bold cursor-pointer",
+                activeTab === "new" ? "bg-[#00AA5B]/10 text-[#00AA5B]" : "text-muted-foreground"
+              )}
+            >
+              Baru ({newCount})
+            </Button>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative md:w-56">
               <Icon icon="ph:magnifying-glass" className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-              <Input placeholder="Cari nama atau email..." className="h-8 pl-8 rounded-lg border-border text-[10px] bg-muted/20" />
+              <Input
+                placeholder="Cari nama atau email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 pl-8 rounded-lg border-border text-[10px] bg-muted/20"
+              />
             </div>
-            <Select defaultValue="spent">
+            <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
               <SelectTrigger className="h-8 w-32 rounded-lg border-border text-[10px] font-bold bg-white">
                 <SelectValue placeholder="Urutkan" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-border">
-                <SelectItem value="spent" className="text-[10px] font-bold">Total Belanja</SelectItem>
-                <SelectItem value="orders" className="text-[10px] font-bold">Jumlah Order</SelectItem>
-                <SelectItem value="newest" className="text-[10px] font-bold">Terbaru Daftar</SelectItem>
+                <SelectItem value="newest" className="text-[10px] font-bold">Terbaru</SelectItem>
+                <SelectItem value="spending" className="text-[10px] font-bold">Total Belanja</SelectItem>
+                <SelectItem value="orders" className="text-[10px] font-bold">Total Order</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        {/* Customer Table */}
+        {/* Customers Table / Clean Empty State */}
         <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
-          <Table>
-            <TableHeader className="bg-[#F8FAFC]">
-              <TableRow className="border-b border-border hover:bg-transparent">
-                <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 px-6">Pelanggan</TableHead>
-                <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Status</TableHead>
-                <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Total Belanja</TableHead>
-                <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Order</TableHead>
-                <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 text-right px-6">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {MOCK_CUSTOMERS.map((customer) => (
-                <TableRow key={customer.id} className="border-b border-border/50 hover:bg-[#F8FAFC]/50 transition-colors">
-                  <TableCell className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8 rounded-lg border border-border shadow-sm">
-                        <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-[10px] font-black">
-                          {customer.name.substring(0, 1)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[12px] font-black text-[#2E3137]">{customer.name}</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">{customer.email}</span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={cn(
-                      "text-[8px] font-black px-2 py-0.5 rounded-md border-none",
-                      customer.status === 'VIP' ? "bg-[#FFC400] text-black" :
-                        customer.status === 'LOYAL' ? "bg-[#8B5CF6] text-white" :
-                          customer.status === 'ACTIVE' ? "bg-[#00AA5B] text-white" : "bg-gray-400 text-white"
-                    )}>
-                      {customer.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-[11px] font-black text-[#2E3137]">Rp {customer.totalSpent.toLocaleString('id-ID')}</span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-black text-[#2E3137]">{customer.totalOrders}x</span>
-                      <span className="text-[9px] text-muted-foreground font-medium">Terakhir: {customer.lastOrder}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right px-6">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-[#00AA5B]/10 hover:text-[#00AA5B]">
-                      <Icon icon="ph:caret-right-bold" className="w-4 h-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <div className="p-4 border-t border-border/50 flex justify-between items-center bg-[#F8FAFC]/30">
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest px-2">Menampilkan 4 dari 1.240 Pelanggan</p>
-            <div className="flex gap-2">
-              <Button variant="outline" className="h-7 w-7 p-0 rounded-lg border-border bg-white"><Icon icon="ph:caret-left-bold" className="w-3 h-3" /></Button>
-              <Button variant="outline" className="h-7 w-7 p-0 rounded-lg border-border bg-white"><Icon icon="ph:caret-right-bold" className="w-3 h-3" /></Button>
+          {filteredCustomers.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mx-auto border border-border/80 mb-3">
+                <Icon icon="ph:users-three" className="w-8 h-8" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">Belum Ada Data Pelanggan</h3>
+              <p className="text-[11px] text-muted-foreground max-w-sm mx-auto mt-1 leading-relaxed">
+                {customers.length === 0
+                  ? "Daftar pembeli akan otomatis tersimpan di sini begitu pelanggan melakukan transaksi pada produk toko Anda."
+                  : "Tidak ada pelanggan yang sesuai dengan kriteria pencarian."}
+              </p>
             </div>
-          </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-slate-50/80">
+                  <TableRow>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Pelanggan</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Total Pesanan</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Total Belanja</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Transaksi Terakhir</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCustomers.map((cust) => (
+                    <TableRow key={cust.id} className="hover:bg-slate-50/50">
+                      <TableCell className="py-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8 rounded-xl border border-border shadow-2xs">
+                            {cust.avatar && <AvatarImage src={cust.avatar} />}
+                            <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-[10px] font-black">
+                              {cust.name ? cust.name.substring(0, 1).toUpperCase() : "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-xs font-black text-slate-900">{cust.name || "Pelanggan"}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono">{cust.email || "-"}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={cn(
+                          "text-[9px] font-black px-2 py-0.5 rounded-md border-none",
+                          cust.status === "VIP" ? "bg-purple-600 text-white" :
+                            cust.status === "LOYAL" ? "bg-[#00AA5B] text-white" :
+                              cust.status === "ACTIVE" ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-700"
+                        )}>
+                          {cust.status || "ACTIVE"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-bold text-xs">{cust.totalOrders || 0} Order</TableCell>
+                      <TableCell className="font-bold text-xs text-slate-900">
+                        Rp {(cust.totalSpent || 0).toLocaleString('id-ID')}
+                      </TableCell>
+                      <TableCell className="text-[11px] text-muted-foreground font-medium">
+                        {cust.lastOrder || "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </Card>
 
       </div>

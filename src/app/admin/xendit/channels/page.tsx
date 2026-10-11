@@ -68,7 +68,7 @@ export const DEFAULT_CHANNELS: PaymentChannel[] = [
     standardFee: "0.7%",
     feeType: "percentage",
     customFee: 0.7,
-    minAmount: 1000,
+    minAmount: 1,
     maxAmount: 10000000,
     description: "Scan QR fleksibel via semua m-banking & e-wallet berstandar QRIS",
   },

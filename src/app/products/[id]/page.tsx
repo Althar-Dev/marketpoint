@@ -449,6 +449,15 @@ export default function ProductDetailPage() {
     ? activeFlashSale.discountPercentage
     : (hasDiscount && originalPrice > 0 ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0);
   const stockCount = Number(product.stockCount || 0);
+  const isOutOfStock = product.stockType !== "REUSABLE" && stockCount <= 0;
+  const isOwnProduct = Boolean(
+    user?.uid && (
+      user.uid === product.sellerId ||
+      user.uid === product.shopId ||
+      user.uid === shop?.ownerId ||
+      user.uid === shop?.id
+    )
+  );
 
   return (
     <main className="max-w-screen-xl mx-auto px-3 sm:px-4 pt-14 md:pt-16 pb-24 md:pb-28">
@@ -1170,21 +1179,21 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Purchase Action Buttons */}
-            <div className="space-y-2 pt-2">
-              <Button
-                onClick={handleAddToCart}
-                className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs gap-2 shadow-md shadow-[#00AA5B]/10 transition-transform active:scale-[0.98]"
-              >
-                + Keranjang
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={handleBuyNow}
-                className="w-full h-10 rounded-xl border-[#00AA5B] text-[#00AA5B] hover:bg-[#00AA5B]/5 font-bold text-xs gap-2 transition-transform active:scale-[0.98]"
-              >
-                Beli Langsung
-              </Button>
+            <div className="pt-2">
+              {isOwnProduct ? (
+                <div className="flex items-center justify-center p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-semibold">
+                  <Store className="w-4 h-4 mr-1.5 shrink-0" />
+                  Produk Milik Sendiri
+                </div>
+              ) : (
+                <Button
+                  onClick={handleBuyNow}
+                  disabled={isOutOfStock}
+                  className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-sm gap-2 shadow-md shadow-[#00AA5B]/10 transition-transform active:scale-[0.98]"
+                >
+                  {isOutOfStock ? "Stok Habis" : "Beli Langsung"}
+                </Button>
+              )}
             </div>
 
             {/* Chat | Wishlist | Share Bar */}
@@ -1368,20 +1377,31 @@ export default function ProductDetailPage() {
             <MessageCircle className="w-4 h-4 text-foreground" />
           </Button>
 
-          <Button
-            variant="outline"
-            onClick={() => setShowMobileSheet(true)}
-            className="flex-1 h-10 rounded-xl border-[#00AA5B] text-[#00AA5B] hover:bg-[#00AA5B]/5 font-bold text-xs"
-          >
-            + Keranjang
-          </Button>
+          {isOwnProduct ? (
+            <div className="flex-1 flex items-center justify-center p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-semibold">
+              <Store className="w-4 h-4 mr-1.5 shrink-0" />
+              Produk Milik Sendiri
+            </div>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setShowMobileSheet(true)}
+                disabled={isOutOfStock}
+                className="flex-1 h-10 rounded-xl border-[#00AA5B] text-[#00AA5B] hover:bg-[#00AA5B]/5 font-bold text-xs"
+              >
+                + Keranjang
+              </Button>
 
-          <Button
-            onClick={() => setShowMobileSheet(true)}
-            className="flex-1 h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs shadow-sm"
-          >
-            Beli Langsung
-          </Button>
+              <Button
+                onClick={() => setShowMobileSheet(true)}
+                disabled={isOutOfStock}
+                className="flex-1 h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs shadow-sm"
+              >
+                {isOutOfStock ? "Stok Habis" : "Beli Langsung"}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -1438,7 +1458,7 @@ export default function ProductDetailPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={quantity <= 1}
+                  disabled={quantity <= 1 || isOutOfStock}
                   className="h-7 w-7 rounded-lg hover:bg-white text-foreground disabled:opacity-30"
                 >
                   <Minus className="w-3.5 h-3.5" />
@@ -1448,7 +1468,8 @@ export default function ProductDetailPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setQuantity(quantity + 1)}
-                  className="h-7 w-7 rounded-lg hover:bg-white text-foreground"
+                  disabled={isOutOfStock || (product.stockType !== "REUSABLE" && quantity >= stockCount)}
+                  className="h-7 w-7 rounded-lg hover:bg-white text-foreground disabled:opacity-30"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </Button>
@@ -1483,6 +1504,7 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-2 gap-2 pt-2">
             <Button
               variant="outline"
+              disabled={isOutOfStock || isOwnProduct}
               onClick={() => {
                 handleAddToCart();
                 setShowMobileSheet(false);
@@ -1493,13 +1515,14 @@ export default function ProductDetailPage() {
             </Button>
 
             <Button
+              disabled={isOutOfStock || isOwnProduct}
               onClick={() => {
                 setShowMobileSheet(false);
                 handleBuyNow();
               }}
               className="h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs shadow-sm"
             >
-              Beli Langsung
+              {isOutOfStock ? "Stok Habis" : "Beli Langsung"}
             </Button>
           </div>
         </SheetContent>

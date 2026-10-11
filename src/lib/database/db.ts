@@ -193,6 +193,97 @@ export async function initDatabaseSchema(force = false) {
         ('digiflazz_api_key', '', 'DigiFlazz Production/Development API Key'),
         ('digiflazz_webhook_secret', '', 'DigiFlazz Webhook Secret')
         ON CONFLICT (key_name) DO NOTHING;
+
+        -- 8. Create mail_accounts table
+        CREATE TABLE IF NOT EXISTS mail_accounts (
+          email VARCHAR(255) PRIMARY KEY,
+          name VARCHAR(150) NOT NULL,
+          role VARCHAR(100) NOT NULL DEFAULT 'Customer Support',
+          usage VARCHAR(50) NOT NULL DEFAULT '0.0 GB',
+          quota VARCHAR(50) NOT NULL DEFAULT '5 GB',
+          status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- 9. Create mail_messages table
+        CREATE TABLE IF NOT EXISTS mail_messages (
+          id VARCHAR(64) PRIMARY KEY,
+          from_email VARCHAR(255) NOT NULL,
+          to_email VARCHAR(255) NOT NULL,
+          subject VARCHAR(255) NOT NULL,
+          preview TEXT,
+          content TEXT NOT NULL,
+          folder VARCHAR(30) NOT NULL DEFAULT 'inbox',
+          previous_folder VARCHAR(30),
+          is_unread BOOLEAN NOT NULL DEFAULT TRUE,
+          attachment_name VARCHAR(255),
+          attachment_size VARCHAR(50),
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- 10. Create mail_delivery_logs table
+        CREATE TABLE IF NOT EXISTS mail_delivery_logs (
+          id VARCHAR(64) PRIMARY KEY,
+          order_id VARCHAR(100) NOT NULL,
+          product_title VARCHAR(255) NOT NULL,
+          recipient VARCHAR(255) NOT NULL,
+          status VARCHAR(30) NOT NULL DEFAULT 'DELIVERED',
+          serial_key TEXT NOT NULL,
+          product_id VARCHAR(64),
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Add column product_id if table already exists without it
+        ALTER TABLE mail_delivery_logs ADD COLUMN IF NOT EXISTS product_id VARCHAR(64);
+
+        -- Seed default system accounts including delivery@marketpoint.id
+        INSERT INTO mail_accounts (email, name, role, usage, quota, status) VALUES
+        ('delivery@marketpoint.id', 'MarketPoint Delivery Service', 'Automated Fulfillment', '0.0 GB', '10 GB', 'ACTIVE'),
+        ('support@marketpoint.id', 'Customer Support', 'Bantuan & Tiket Pelanggan', '0.0 GB', '5 GB', 'ACTIVE'),
+        ('admin@marketpoint.id', 'MarketPoint Administrator', 'Sistem & Operasional', '0.0 GB', '5 GB', 'ACTIVE')
+        ON CONFLICT (email) DO NOTHING;
+
+        -- 11. Create transactions table
+        CREATE TABLE IF NOT EXISTS transactions (
+          id VARCHAR(64) PRIMARY KEY,
+          invoice_number VARCHAR(64) UNIQUE NOT NULL,
+          user_id VARCHAR(128) NOT NULL,
+          shop_id VARCHAR(128),
+          product_id VARCHAR(64),
+          product_title VARCHAR(255) NOT NULL,
+          product_image TEXT,
+          variant VARCHAR(100),
+          unit_price NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+          quantity INT NOT NULL DEFAULT 1,
+          items_subtotal NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+          payment_fee NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+          discount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+          voucher_code VARCHAR(50),
+          total_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+          payment_method VARCHAR(50) NOT NULL DEFAULT 'qris',
+          payment_method_name VARCHAR(100) NOT NULL DEFAULT 'QRIS',
+          payment_category VARCHAR(50) NOT NULL DEFAULT 'QRIS',
+          channel_code VARCHAR(50) NOT NULL DEFAULT 'QRIS',
+          payment_code TEXT,
+          qr_string TEXT,
+          pr_id VARCHAR(128),
+          status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+          buyer_name VARCHAR(150),
+          buyer_email VARCHAR(255),
+          buyer_phone VARCHAR(50),
+          notes TEXT,
+          payment_info JSONB DEFAULT '{}'::jsonb,
+          delivered_by VARCHAR(255),
+          delivered_at TIMESTAMPTZ,
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id);
+        CREATE INDEX IF NOT EXISTS idx_transactions_shop ON transactions(shop_id);
+        CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
+        CREATE INDEX IF NOT EXISTS idx_transactions_pr ON transactions(pr_id);
+        CREATE INDEX IF NOT EXISTS idx_transactions_invoice ON transactions(invoice_number);
       `;
 
       await query(initSql);

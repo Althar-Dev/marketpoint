@@ -33,7 +33,11 @@ import {
   Loader2,
   Landmark,
   Zap,
-  Flame
+  Flame,
+  Download,
+  RefreshCw,
+  Smartphone,
+  LogIn
 } from "lucide-react";
 import { getProductActiveFlashSale, sanitizeForFirestore } from "@/lib/flash-sale";
 import { Button } from "@/components/ui/button";
@@ -51,7 +55,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc, collection, addDoc, updateDoc, getDoc, getDocs, query, where, limit, serverTimestamp } from "firebase/firestore";
+import { doc, collection, addDoc, updateDoc, setDoc, getDoc, getDocs, query, where, limit, serverTimestamp, increment } from "firebase/firestore";
 import { PaymentChannel as AdminPaymentChannel, DEFAULT_CHANNELS } from "@/app/admin/xendit/channels/page";
 import { CheckoutLoadingSkeleton } from "./loading";
 
@@ -273,8 +277,15 @@ function CheckoutContent() {
         return saved ? { ...def, ...saved } : def;
       });
     }
-    // HANYA METODE YANG AKTIF DARI ADMIN!
-    return list.filter((ch) => ch.isActive === true);
+    // HANYA METODE YANG AKTIF DARI ADMIN! QRIS minimal 1 rupiah.
+    return list
+      .map((ch) => {
+        if (ch.id === "qris" || ch.category === "QRIS" || ch.channelCode === "QRIS") {
+          return { ...ch, minAmount: 1 };
+        }
+        return ch;
+      })
+      .filter((ch) => ch.isActive === true);
   }, [xenditData]);
 
   // Selected Payment Method
@@ -315,6 +326,8 @@ function CheckoutContent() {
   const [invoiceData, setInvoiceData] = useState<any>(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
 
   // Countdown timer in modal (24 hours)
   const [timeLeft, setTimeLeft] = useState(86399);
@@ -612,8 +625,228 @@ function CheckoutContent() {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  // Submit Order & Show Payment Invoice
+  // Helper to map category to Xendit payment type
+  const getMethodType = (category?: string) => {
+    switch (category) {
+      case "QRIS":
+        return "qris";
+      case "VIRTUAL_ACCOUNT":
+        return "va";
+      case "EWALLET":
+        return "ewallet";
+      case "RETAIL_OUTLET":
+        return "retail";
+      case "PAYLATER":
+        return "paylater";
+      default:
+        return "qris";
+    }
+  };
+
+  // Download QRIS as image
+  const handleDownloadQR = async () => {
+    const qrStr = invoiceData?.qr_string || invoiceData?.paymentCode;
+    if (!qrStr) return;
+    const url = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrStr)}`;
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `QRIS-${(invoiceData?.invoiceNumber || "MarketPoint").replace(/[\/\s]/g, "-")}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+      toast({ title: "QRIS Berhasil Diunduh", description: "Buka aplikasi perbankan/e-wallet untuk scan QR." });
+    } catch (error) {
+      window.open(url, "_blank");
+    }
+  };
+
+  // Cek status pembayaran ke Xendit
+  const handleCheckPaymentStatus = async (silent = false) => {
+    const prId = invoiceData?.pr_id || invoiceData?.payment_info?.pr_id;
+    if (!prId) return;
+
+    if (!silent) setIsCheckingStatus(true);
+    try {
+      const res = await fetch("/api/payments/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pr_id: prId,
+          secret_key: xenditData?.secretKey || undefined,
+          orderId: invoiceData?.invoiceNumber,
+          recipientEmail: invoiceData?.buyerEmail || buyerEmail.trim(),
+          recipientName: invoiceData?.buyerName || buyerName.trim(),
+          productId: invoiceData?.productId || product?.id,
+          productTitle: invoiceData?.productTitle || product?.title,
+          variant: invoiceData?.variant || selectedVariant,
+          quantity: invoiceData?.quantity || quantity,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.isPaid) {
+        setInvoiceData((prev: any) => ({ ...prev, status: "PAID" }));
+
+        // Pastikan lisensi dan data produk terkirim oleh delivery@marketpoint.id
+        const targetEmail = invoiceData?.buyerEmail || buyerEmail.trim();
+        if (targetEmail) {
+          fetch("/api/payments/deliver", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderId: invoiceData?.invoiceNumber,
+              recipientEmail: targetEmail,
+              recipientName: invoiceData?.buyerName || buyerName.trim(),
+              productId: invoiceData?.productId || product?.id,
+              productTitle: invoiceData?.productTitle || product?.title,
+              variant: invoiceData?.variant || selectedVariant,
+              quantity: invoiceData?.quantity || quantity,
+            }),
+          }).catch((err) => console.warn("[CHECKOUT AUTO-DELIVERY CALL WARN]", err));
+        }
+
+        // Sinkronisasi status di Firestore
+        if (db) {
+          const updates = { status: "PAID", deliveredBy: "delivery@marketpoint.id", updatedAt: serverTimestamp() };
+          const invNum = invoiceData?.invoiceNumber;
+          if (invNum) {
+            setDoc(doc(db, "transactions", invNum), updates, { merge: true }).catch(() => {});
+          }
+          if (user?.uid && invoiceData?.userOrderId) {
+            updateDoc(doc(db, "users", user.uid, "transactions", invoiceData.userOrderId), updates).catch(() => {});
+          }
+          const sId = product?.shopId || product?.shop_id;
+          if (sId) {
+            if (invoiceData?.shopOrderId) {
+              updateDoc(doc(db, "shops", sId, "orders", invoiceData.shopOrderId), updates).catch(() => {});
+            }
+
+            // Kreditkan saldo hasil penjualan ke dompet akun toko
+            const salesAmount = Number(
+              invoiceData?.itemsSubtotal ||
+              (Number(invoiceData?.unitPrice || product?.price || 0) * Number(invoiceData?.quantity || quantity || 1)) ||
+              invoiceData?.totalAmount ||
+              0
+            );
+
+            if (salesAmount > 0) {
+              const sellerWalletRef = doc(db, "users", sId, "wallet", "info");
+              setDoc(
+                sellerWalletRef,
+                {
+                  balance: increment(salesAmount),
+                  totalRevenue: increment(salesAmount),
+                  currency: "IDR",
+                  userId: sId,
+                  updatedAt: serverTimestamp(),
+                },
+                { merge: true }
+              ).catch((wErr) => console.warn("[SELLER WALLET UPDATE WARN]", wErr));
+
+              // Catat riwayat mutasi masuk (SALES) untuk toko penjual
+              addDoc(collection(db, "users", sId, "transactions"), {
+                type: "SALES",
+                amount: salesAmount,
+                description: `Hasil Penjualan #${invNum || "INV"} - ${invoiceData?.productTitle || product?.title || "Produk Digital"}`,
+                status: "SUCCESS",
+                invoiceNumber: invNum,
+                orderId: invoiceData?.shopOrderId || null,
+                buyerName: invoiceData?.buyerName || buyerName.trim(),
+                timestamp: serverTimestamp(),
+                createdAt: serverTimestamp(),
+              }).catch((tErr) => console.warn("[SELLER TRANSACTION LOG WARN]", tErr));
+            }
+          }
+        }
+
+        toast({
+          title: "Pembayaran Sukses & Lisensi Terkirim! 🎉",
+          description: targetEmail
+            ? `Lisensi dan data produk telah dikirimkan ke email Anda (${targetEmail}) oleh delivery@marketpoint.id.`
+            : "Pesanan Anda telah lunas dan sedang diproses.",
+        });
+
+        setTimeout(() => {
+          setShowInvoiceModal(false);
+          router.push(`/transactions/${encodeURIComponent(invoiceData?.invoiceNumber || "")}`);
+        }, 2200);
+      } else if (!silent) {
+        toast({
+          title: "Belum Terdeteksi",
+          description: "Pembayaran belum terdeteksi di Xendit. Mohon selesaikan pembayaran lalu periksa kembali.",
+        });
+      }
+    } catch (err: any) {
+      if (!silent) {
+        toast({
+          variant: "destructive",
+          title: "Gagal Sinkronisasi",
+          description: err.message || "Gagal memeriksa status ke Xendit.",
+        });
+      }
+    } finally {
+      if (!silent) setIsCheckingStatus(false);
+    }
+  };
+
+  // Auto polling status pembayaran setiap 8 detik jika modal terbuka
+  useEffect(() => {
+    const prId = invoiceData?.pr_id || invoiceData?.payment_info?.pr_id;
+    if (!showInvoiceModal || !prId || invoiceData?.status === "PAID") return;
+    const interval = setInterval(() => {
+      handleCheckPaymentStatus(true);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [showInvoiceModal, invoiceData?.pr_id, invoiceData?.status]);
+
+  // Batalkan transaksi di Xendit
+  const handleCancelPayment = async () => {
+    const prId = invoiceData?.pr_id || invoiceData?.payment_info?.pr_id;
+    setIsCanceling(true);
+    try {
+      if (prId) {
+        await fetch("/api/payments/cancel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pr_id: prId,
+            secret_key: xenditData?.secretKey || undefined,
+          }),
+        });
+      }
+      if (db && invoiceData?.invoiceNumber) {
+        await setDoc(doc(db, "transactions", invoiceData.invoiceNumber), { status: "CANCELLED", updatedAt: serverTimestamp() }, { merge: true });
+      }
+      setShowInvoiceModal(false);
+      toast({
+        title: "Tagihan Dibatalkan",
+        description: "Transaksi pembayaran telah dibatalkan.",
+      });
+    } catch {
+      setShowInvoiceModal(false);
+    } finally {
+      setIsCanceling(false);
+    }
+  };
+
+  // Submit Order & Show Real Payment Invoice
   const handlePayNow = async () => {
+    // 1. Verifikasi Status Login Pembeli
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Wajib Masuk Terlebih Dahulu 🔒",
+        description: "Silakan masuk ke akun MarketPoint Anda untuk dapat melanjutkan pembayaran pesanan ini.",
+      });
+      const currentUrl = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/checkout";
+      router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+      return;
+    }
+
     if (!buyerName.trim()) {
       toast({
         variant: "destructive",
@@ -631,15 +864,66 @@ function CheckoutContent() {
       return;
     }
 
+    if (selectedMethod?.channelCode?.includes("OVO") && !buyerPhone.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Nomor WhatsApp/HP Wajib Diisi",
+        description: "Metode OVO memerlukan nomor HP aktif untuk push notifikasi pembayaran."
+      });
+      return;
+    }
+
+    const isQris = selectedMethod?.id === "qris" || selectedMethod?.category === "QRIS" || selectedMethod?.channelCode === "QRIS";
+    const minAmount = isQris
+      ? 1
+      : Number(selectedMethod?.minAmount || (selectedMethod?.category === "VIRTUAL_ACCOUNT" || selectedMethod?.category === "RETAIL_OUTLET" ? 10000 : 1000));
+
+    if (grandTotal < minAmount) {
+      toast({
+        variant: "destructive",
+        title: "Minimal Nominal Tidak Terpenuhi",
+        description: `Minimal pembayaran untuk ${selectedMethod?.name || "metode ini"} adalah Rp ${minAmount.toLocaleString("id-ID")}.${!isQris ? " Silakan pilih metode QRIS (mulai Rp 1)." : ""}`
+      });
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
-      const invoiceNumber = `INV/${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}${String(new Date().getDate()).padStart(2, "0")}/MP/${Math.floor(100000 + Math.random() * 900000)}`;
+      const invoiceNumber = `INV-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}${String(new Date().getDate()).padStart(2, "0")}-MP-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      const meta = ADMIN_CHANNEL_METADATA[selectedMethod?.id || ""];
-      const generatedCode = meta?.vaPrefix
-        ? meta.vaPrefix + Math.floor(10000000 + Math.random() * 90000000)
-        : "00020101021226680016ID.CO.MARKETPOINT01189360091800000000005204581253033605802ID5911MarketPoint6007Jakarta6304ABCD";
+      const methodType = getMethodType(selectedMethod?.category);
+
+      // Panggil API pembuatan Payment Request Xendit yang sebenarnya!
+      const res = await fetch("/api/payments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          external_id: invoiceNumber,
+          amount: grandTotal,
+          type: methodType,
+          channel_code: selectedMethod?.channelCode || selectedMethod?.id,
+          name: buyerName.trim(),
+          payer_email: buyerEmail.trim(),
+          mobile_number: buyerPhone.trim(),
+          description: `Pembayaran ${product?.title || "Produk"} di MarketPoint (${invoiceNumber})`,
+          secret_key: xenditData?.secretKey || undefined,
+        }),
+      });
+
+      const payResult = await res.json();
+      if (!payResult.success) {
+        throw new Error(payResult.message || "Gagal membuat tagihan pembayaran di Xendit.");
+      }
+
+      const generatedCode =
+        payResult.account_number ||
+        payResult.payment_code ||
+        payResult.qr_string ||
+        "";
+
+      let userOrderId = "";
+      let shopOrderId = "";
 
       const orderPayload = {
         invoiceNumber,
@@ -661,7 +945,10 @@ function CheckoutContent() {
         paymentMethod: selectedMethod?.id || "qris",
         paymentMethodName: selectedMethod?.name || "QRIS",
         paymentCategory: selectedMethod?.category || "QRIS",
+        channelCode: selectedMethod?.channelCode || "QRIS",
         paymentCode: generatedCode,
+        pr_id: payResult.pr_id || null,
+        payment_info: payResult,
         status: "PENDING",
         buyerName: buyerName.trim(),
         buyerEmail: buyerEmail.trim(),
@@ -671,17 +958,45 @@ function CheckoutContent() {
         createdAt: serverTimestamp(),
       };
 
-      // Save order record to Firestore if user is logged in
+      // Simpan riwayat transaksi pembeli di Firestore jika login
       if (db && user?.uid) {
         try {
-          await addDoc(collection(db, "users", user.uid, "transactions"), orderPayload);
+          const userOrderRef = await addDoc(collection(db, "users", user.uid, "transactions"), orderPayload);
+          userOrderId = userOrderRef.id;
         } catch (e) {
-          console.warn("Could not write user transaction log, continuing invoice preview:", e);
+          console.warn("Could not write user transaction log:", e);
         }
       }
 
-      // Increment Flash Sale sold count if bought during active Flash Sale
+      // Simpan riwayat pesanan ke toko penjual agar tampil di /my-shop/orders
       const sId = product?.shopId || product?.shop_id;
+      if (db && sId) {
+        try {
+          const shopOrderRef = await addDoc(collection(db, "shops", sId, "orders"), {
+            ...orderPayload,
+            buyer: buyerName.trim(),
+            amount: grandTotal,
+          });
+          shopOrderId = shopOrderRef.id;
+        } catch (e) {
+          console.warn("Could not write shop order:", e);
+        }
+      }
+
+      // Simpan catatan transaksi global
+      if (db) {
+        try {
+          await setDoc(doc(db, "transactions", invoiceNumber), {
+            ...orderPayload,
+            userOrderId,
+            shopOrderId,
+          }, { merge: true });
+        } catch (e) {
+          console.warn("Could not write global transaction ledger:", e);
+        }
+      }
+
+      // Update flash sale jika berlaku
       if (db && sId && activeFlashSale) {
         try {
           const shopRef = doc(db, "shops", sId);
@@ -707,8 +1022,9 @@ function CheckoutContent() {
           console.warn("Could not increment flash sale sold count in shop doc:", fsErr);
         }
       }
+
+      // Update kuota voucher jika dipakai
       if (db && sId && appliedVoucher) {
-        // Try incrementing in shop doc vouchers array
         try {
           const shopRef = doc(db, "shops", sId);
           const sSnap = await getDoc(shopRef);
@@ -725,7 +1041,6 @@ function CheckoutContent() {
           console.warn("Could not increment voucher in shop doc:", vErr);
         }
 
-        // Try subcollection increment if document exists
         if (appliedVoucher.id) {
           try {
             const vDocRef = doc(db, "shops", sId, "vouchers", appliedVoucher.id);
@@ -739,11 +1054,21 @@ function CheckoutContent() {
         }
       }
 
-      setInvoiceData(orderPayload);
+      setInvoiceData({
+        ...orderPayload,
+        userOrderId,
+        shopOrderId,
+        pr_id: payResult.pr_id,
+        qr_string: payResult.qr_string,
+        account_number: payResult.account_number,
+        payment_code: payResult.payment_code,
+        checkout_url: payResult.checkout_url,
+        is_push_payment: payResult.is_push_payment,
+      });
       setShowInvoiceModal(true);
 
       toast({
-        title: "Pesanan Siap Dibayar!",
+        title: "Tagihan Pembayaran Berhasil Dibuat! 💳",
         description: `Silakan selesaikan pembayaran sebelum batas waktu berakhir.`
       });
     } catch (err: any) {
@@ -821,12 +1146,6 @@ function CheckoutContent() {
               <CardContent className="p-4 sm:p-6 space-y-6">
                 {/* Rincian Toko & Produk */}
                 <div className="space-y-3 pb-5 border-b border-border/60">
-                  <div className="flex items-center gap-2">
-                    <Store className="w-4 h-4 text-[#00AA5B]" />
-                    <span className="text-xs font-bold text-[#212121]">{product?.shopName || "Toko Penjual"}</span>
-                    <img src="/assets/badge/verified.png" alt="Verified" className="h-4 w-auto object-contain" />
-                  </div>
-
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     {/* Thumbnail & Info Produk */}
                     <div className="flex items-start gap-3.5 flex-1 min-w-0">
@@ -899,6 +1218,51 @@ function CheckoutContent() {
                   </div>
                 </div>
 
+                {/* Status Login Pengguna */}
+                {!user ? (
+                  <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="h-9 w-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 text-amber-700 shadow-2xs">
+                        <Lock className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-amber-950">Wajib Masuk Sebelum Melanjutkan</p>
+                        <p className="text-[11px] text-amber-800 leading-snug">
+                          Masuk ke akun MarketPoint Anda agar transaksi tercatat aman dan lisensi produk dapat langsung diklaim.
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => {
+                        const currentUrl = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/checkout";
+                        router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+                      }}
+                      className="h-8 px-3.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs gap-1.5 shrink-0 shadow-xs cursor-pointer"
+                    >
+                      <LogIn className="w-3.5 h-3.5" /> Masuk Sekarang
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/60 flex items-center justify-between gap-2 text-emerald-900 text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="h-7 w-7 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-700">
+                        <CheckCircle2 className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 truncate">
+                        <p className="text-[11px] font-bold text-emerald-950 truncate">
+                          Masuk sebagai: <span className="font-black text-[#00AA5B]">{user.displayName || user.email}</span>
+                        </p>
+                        <p className="text-[10px] text-emerald-700 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] font-bold text-emerald-700 bg-emerald-100/60 border-emerald-300 shrink-0">
+                      Terverifikasi
+                    </Badge>
+                  </div>
+                )}
+
                 {/* Form Kontak & Data Pembeli */}
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -935,7 +1299,7 @@ function CheckoutContent() {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#212121] flex items-center gap-1">
-                      Alamat Email (Pengiriman Lisensi / Struk)
+                      Alamat Email (Pengiriman Lisensi / Data Produk)
                     </label>
                     <div className="relative">
                       <Input
@@ -950,19 +1314,6 @@ function CheckoutContent() {
                     <p className="text-[10px] text-muted-foreground">
                       Bukti transaksi, kode lisensi atau invoice otomatis dikirimkan ke email ini.
                     </p>
-                  </div>
-
-                  <div className="space-y-1.5 pt-1">
-                    <label className="text-xs font-bold text-[#212121] flex items-center gap-1">
-                      Catatan Pesanan (Opsional)
-                    </label>
-                    <Textarea
-                      placeholder="Contoh: Mohon kirimkan dokumentasi API dan file ke email alternatif..."
-                      value={orderNotes}
-                      onChange={(e) => setOrderNotes(e.target.value)}
-                      rows={2}
-                      className="text-xs rounded-xl bg-slate-50/50 focus:bg-white resize-none"
-                    />
                   </div>
                 </div>
               </CardContent>
@@ -1189,15 +1540,24 @@ function CheckoutContent() {
                 <Button
                   onClick={handlePayNow}
                   disabled={isProcessing}
-                  className="w-full h-12 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-extrabold text-sm gap-2 shadow-lg shadow-[#00AA5B]/20 transition-transform active:scale-[0.98] mt-2"
+                  className={cn(
+                    "w-full h-12 rounded-xl text-white font-extrabold text-sm gap-2 shadow-lg transition-transform active:scale-[0.98] mt-2 cursor-pointer",
+                    !user
+                      ? "bg-slate-900 hover:bg-slate-800 shadow-slate-900/20"
+                      : "bg-[#00AA5B] hover:bg-[#00AA5B]/90 shadow-[#00AA5B]/20"
+                  )}
                 >
                   {isProcessing ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" /> Memproses...
                     </>
+                  ) : !user ? (
+                    <>
+                      <LogIn className="w-4 h-4" /> Masuk untuk Bayar
+                    </>
                   ) : (
                     <>
-                      <Lock className="w-4 h-4" /> Bayar Sekarang (Rp {grandTotal.toLocaleString("id-ID")})
+                      <Lock className="w-4 h-4" /> Bayar Sekarang
                     </>
                   )}
                 </Button>
@@ -1220,7 +1580,14 @@ function CheckoutContent() {
 
       {/* POPUP / MODAL INVOICE PEMBAYARAN */}
       <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
-        <DialogContent className="max-w-lg rounded-3xl p-0 overflow-hidden border-border">
+        <DialogContent
+          className="max-w-lg rounded-3xl p-0 overflow-hidden border-border [&>button]:text-white [&>button]:hover:text-white [&>button]:bg-white/20 [&>button]:hover:bg-white/30 [&>button]:p-1.5 [&>button]:rounded-full [&>button]:top-5 [&>button]:right-5"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
+          {/* DialogTitle tersembunyi untuk aksesibilitas screen reader */}
+          <DialogTitle className="sr-only">Invoice Pembayaran</DialogTitle>
           {/* Header Modal */}
           <div className="bg-gradient-to-r from-emerald-600 to-[#00AA5B] p-6 text-white text-center relative">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-[11px] font-bold mb-2 backdrop-blur-xs">
@@ -1259,11 +1626,10 @@ function CheckoutContent() {
 
                 {/* QR Code Container */}
                 <div className="p-3 bg-white border-2 border-slate-200 rounded-2xl shadow-sm">
-                  {/* Generated clean dynamic SVG QRIS placeholder */}
                   <div className="relative w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center bg-slate-50 rounded-xl overflow-hidden">
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
-                        invoiceData?.paymentCode || "https://marketpoint.id/pay/" + invoiceData?.invoiceNumber
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
+                        invoiceData?.qr_string || invoiceData?.paymentCode || "https://marketpoint.id"
                       )}`}
                       alt="QRIS MarketPoint"
                       className="w-full h-full object-contain p-2"
@@ -1272,6 +1638,17 @@ function CheckoutContent() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadQR}
+                    className="h-8 rounded-xl text-xs font-bold gap-1.5 border-border hover:border-[#00AA5B] hover:text-[#00AA5B]"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Unduh QRIS
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/assets/payments/qris.png" alt="QRIS" className="h-5 w-auto object-contain" />
                   <span className="text-[11px] text-muted-foreground font-medium">
@@ -1281,30 +1658,151 @@ function CheckoutContent() {
               </div>
             )}
 
-            {/* If Virtual Account or Retail Outlet or PayLater */}
-            {(selectedMethod?.category === "VIRTUAL_ACCOUNT" || selectedMethod?.category === "RETAIL_OUTLET" || selectedMethod?.category === "PAYLATER") && (
+            {/* If Virtual Account */}
+            {selectedMethod?.category === "VIRTUAL_ACCOUNT" && (
               <div className="space-y-3 p-4 rounded-2xl bg-white border border-border/80">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-muted-foreground">
-                    {selectedMethod?.category === "VIRTUAL_ACCOUNT" ? "Nomor Virtual Account:" : "Kode Pembayaran:"}
+                    Nomor Virtual Account:
                   </span>
-                  <img src={ADMIN_CHANNEL_METADATA[selectedMethod?.id || ""]?.logoUrl || "/assets/payments/qris.png"} alt={selectedMethod?.name} className="h-5 w-auto object-contain" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={ADMIN_CHANNEL_METADATA[selectedMethod?.id || ""]?.logoUrl || "/assets/payments/qris.png"}
+                    alt={selectedMethod?.name}
+                    className="h-5 w-auto object-contain"
+                  />
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                   <span className="text-lg font-black tracking-wider text-[#212121]">
-                    {invoiceData?.paymentCode || "880192837461"}
+                    {invoiceData?.account_number || invoiceData?.paymentCode || "Membuat VA..."}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleCopy(invoiceData?.paymentCode || "", "va")}
+                    onClick={() => handleCopy(invoiceData?.account_number || invoiceData?.paymentCode || "", "va")}
                     className="h-8 text-xs font-bold gap-1 text-[#00AA5B] hover:text-[#00AA5B]/80 hover:bg-emerald-50"
                   >
                     {copiedField === "va" ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     Salin Nomor
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {/* If Retail Outlet */}
+            {selectedMethod?.category === "RETAIL_OUTLET" && (
+              <div className="space-y-3 p-4 rounded-2xl bg-white border border-border/80">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-muted-foreground">
+                    Kode Pembayaran di Kasir:
+                  </span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={ADMIN_CHANNEL_METADATA[selectedMethod?.id || ""]?.logoUrl || "/assets/payments/alfamart.png"}
+                    alt={selectedMethod?.name}
+                    className="h-5 w-auto object-contain"
+                  />
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                  <span className="text-lg font-black tracking-wider text-[#212121]">
+                    {invoiceData?.payment_code || invoiceData?.paymentCode || "Membuat Kode..."}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleCopy(invoiceData?.payment_code || invoiceData?.paymentCode || "", "retail")}
+                    className="h-8 text-xs font-bold gap-1 text-[#00AA5B] hover:text-[#00AA5B]/80 hover:bg-emerald-50"
+                  >
+                    {copiedField === "retail" ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    Salin Kode
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* If E-Wallet */}
+            {selectedMethod?.category === "EWALLET" && (
+              <div className="space-y-3 p-4 rounded-2xl bg-white border border-border/80">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-muted-foreground">
+                    Pembayaran E-Wallet: {selectedMethod?.name}
+                  </span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={ADMIN_CHANNEL_METADATA[selectedMethod?.id || ""]?.logoUrl || "/assets/payments/ovo.png"}
+                    alt={selectedMethod?.name}
+                    className="h-5 w-auto object-contain"
+                  />
+                </div>
+
+                {invoiceData?.is_push_payment ? (
+                  <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 space-y-1.5">
+                    <p className="text-xs font-bold flex items-center gap-1.5 text-amber-800">
+                      <Smartphone className="w-4 h-4 text-amber-600 animate-bounce" />
+                      Cek Aplikasi OVO di Ponsel Anda
+                    </p>
+                    <p className="text-[11px] text-amber-700 leading-relaxed">
+                      Notifikasi pembayaran telah dikirim ke nomor <strong>{invoiceData?.buyerPhone || buyerPhone}</strong>. Silakan buka notifikasi di aplikasi OVO dan setujui pembayaran dalam 60 detik.
+                    </p>
+                  </div>
+                ) : invoiceData?.checkout_url ? (
+                  <div className="space-y-2 pt-1">
+                    <Button
+                      asChild
+                      className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs gap-2 shadow-sm"
+                    >
+                      <a href={invoiceData.checkout_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="w-4 h-4" /> Buka Aplikasi {selectedMethod?.name}
+                      </a>
+                    </Button>
+                    <p className="text-[10px] text-center text-muted-foreground">
+                      Klik tombol di atas untuk melanjutkan ke aplikasi {selectedMethod?.name}.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-slate-50 border text-center text-xs text-muted-foreground">
+                    Menghubungkan ke layanan {selectedMethod?.name}...
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* If PayLater */}
+            {selectedMethod?.category === "PAYLATER" && (
+              <div className="space-y-3 p-4 rounded-2xl bg-white border border-border/80">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-muted-foreground">
+                    Cicilan PayLater: {selectedMethod?.name}
+                  </span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={ADMIN_CHANNEL_METADATA[selectedMethod?.id || ""]?.logoUrl || "/assets/payments/akulaku.png"}
+                    alt={selectedMethod?.name}
+                    className="h-5 w-auto object-contain"
+                  />
+                </div>
+
+                {invoiceData?.checkout_url ? (
+                  <div className="space-y-2 pt-1">
+                    <Button
+                      asChild
+                      className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs gap-2 shadow-sm"
+                    >
+                      <a href={invoiceData.checkout_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="w-4 h-4" /> Lanjutkan ke {selectedMethod?.name}
+                      </a>
+                    </Button>
+                    <p className="text-[10px] text-center text-muted-foreground">
+                      Anda akan diarahkan ke halaman login dan konfirmasi cicilan Akulaku.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-slate-50 border text-center text-xs text-muted-foreground">
+                    Menyiapkan sesi transaksi cicilan...
+                  </div>
+                )}
               </div>
             )}
 
@@ -1328,26 +1826,42 @@ function CheckoutContent() {
             {/* Action Buttons */}
             <div className="pt-2 space-y-2">
               <Button
-                onClick={() => {
-                  toast({
-                    title: "Pembayaran Berhasil Dikonfirmasi!",
-                    description: "Terima kasih! Pesanan Anda segera diproses."
-                  });
-                  setShowInvoiceModal(false);
-                  router.push(`/transactions`);
-                }}
-                className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs gap-2 shadow-md"
+                onClick={() => handleCheckPaymentStatus(false)}
+                disabled={isCheckingStatus}
+                className="w-full h-11 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs gap-2 shadow-md cursor-pointer"
               >
-                <CheckCircle2 className="w-4 h-4" /> Saya Sudah Bayar
+                {isCheckingStatus ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Memeriksa Status Pembayaran...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4" /> Cek Status Pembayaran
+                  </>
+                )}
               </Button>
 
-              <Button
-                variant="outline"
-                onClick={() => setShowInvoiceModal(false)}
-                className="w-full h-10 rounded-xl border-border text-slate-700 text-xs font-bold"
-              >
-                Tutup & Bayar Nanti
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowInvoiceModal(false);
+                    router.push("/wallet");
+                  }}
+                  className="h-10 rounded-xl border-border text-slate-700 text-xs font-bold cursor-pointer"
+                >
+                  Bayar Nanti
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  onClick={handleCancelPayment}
+                  disabled={isCanceling}
+                  className="h-10 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-xs font-bold cursor-pointer"
+                >
+                  {isCanceling ? "Membatalkan..." : "Batalkan Pesanan"}
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
