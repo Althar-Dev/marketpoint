@@ -13,6 +13,8 @@ import {
   getDbDeliveryLogs,
   clearAllDbMailData,
   updateDbDeliveryRecipient,
+  clearDbDeliveryLogs,
+  deleteDbDeliveryLog,
   markMultipleDbMailAsRead,
   markMultipleDbMailAsUnread,
   updateMultipleDbMailFolder,
@@ -246,6 +248,26 @@ export async function POST(req: Request) {
         const { targetEmail, config } = body;
         const testRes = await testMailConnection(targetEmail ? targetEmail.trim() : "", config);
         return NextResponse.json({ success: true, data: testRes });
+      }
+
+      case "clear_delivery_logs": {
+        await clearDbDeliveryLogs();
+        return NextResponse.json({
+          success: true,
+          message: "Semua riwayat log delivery berhasil dibersihkan dari database.",
+        });
+      }
+
+      case "delete_delivery_log": {
+        const { id } = body;
+        if (!id) {
+          return NextResponse.json({ success: false, error: "ID log delivery wajib disertakan" }, { status: 400 });
+        }
+        await deleteDbDeliveryLog(id);
+        return NextResponse.json({
+          success: true,
+          message: "Log delivery berhasil dihapus.",
+        });
       }
 
       case "clear_mock": {

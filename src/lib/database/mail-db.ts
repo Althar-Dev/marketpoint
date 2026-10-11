@@ -362,6 +362,18 @@ export async function updateDbDeliveryRecipient(params: {
   }
 }
 
+// 8c. Bersihkan Semua Log Auto-Delivery
+export async function clearDbDeliveryLogs() {
+  await initDatabaseSchema();
+  await query(`DELETE FROM mail_delivery_logs`);
+}
+
+// 8d. Hapus Log Auto-Delivery Tertentu
+export async function deleteDbDeliveryLog(id: string) {
+  await initDatabaseSchema();
+  await query(`DELETE FROM mail_delivery_logs WHERE id = $1`, [id]);
+}
+
 // 9. Pastikan Akun delivery@marketpoint.id Tersedia dan Aktif
 export async function ensureDeliveryAccountExists() {
   await initDatabaseSchema();

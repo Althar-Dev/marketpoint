@@ -235,9 +235,12 @@ export default function EmailManagementPage() {
   const [isBulkSelectDropdownOpen, setIsBulkSelectDropdownOpen] = useState(false);
   const [isProcessingBulk, setIsProcessingBulk] = useState(false);
 
-  // Delivery Actions State
+  // Delivery Actions State & Clear Logs
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [isClearLogsDialogOpen, setIsClearLogsDialogOpen] = useState(false);
+  const [isClearingLogs, setIsClearingLogs] = useState(false);
+  const [deletingLogId, setDeletingLogId] = useState<string | null>(null);
 
   // Compose Modal States
   const [isComposeOpen, setIsComposeOpen] = useState(false);
@@ -779,6 +782,75 @@ export default function EmailManagementPage() {
       });
     } finally {
       setResendingId(null);
+    }
+  };
+
+  // Bersihkan Semua Log Delivery dari Database
+  const handleClearAllDeliveryLogs = async () => {
+    setIsClearingLogs(true);
+    try {
+      const res = await fetch("/api/mail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "clear_delivery_logs" }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setDeliveryLogs([]);
+        setIsClearLogsDialogOpen(false);
+        toast({
+          title: "Log Berhasil Dibersihkan! 🧹",
+          description: "Semua riwayat pengiriman lisensi telah dibersihkan dari database.",
+        });
+      } else {
+        toast({
+          title: "Gagal Membersihkan Log",
+          description: json.error || "Terjadi kesalahan.",
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({
+        title: "Gagal Membersihkan Log",
+        description: "Terjadi gangguan koneksi.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsClearingLogs(false);
+    }
+  };
+
+  // Hapus Satu Baris Log Delivery
+  const handleDeleteSingleDeliveryLog = async (id: string, orderId: string) => {
+    setDeletingLogId(id);
+    try {
+      const res = await fetch("/api/mail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete_delivery_log", id }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setDeliveryLogs((prev) => prev.filter((l) => l.id !== id));
+        toast({
+          title: "Log Dihapus",
+          description: `Riwayat pesanan ${orderId} telah dihapus.`,
+        });
+      } else {
+        toast({
+          title: "Gagal Menghapus Log",
+          description: json.error || "Terjadi kesalahan.",
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({
+        title: "Gagal Menghapus Log",
+        description: "Terjadi gangguan koneksi.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingLogId(null);
     }
   };
 
@@ -1498,10 +1570,24 @@ export default function EmailManagementPage() {
                   </p>
                 </div>
 
-                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold text-[9px] sm:text-[10px] gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 shrink-0">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="hidden sm:inline">SMTP Delivery</span> Engine Aktif
-                </Badge>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={deliveryLogs.length === 0 || isClearingLogs}
+                    onClick={() => setIsClearLogsDialogOpen(true)}
+                    className="h-8 px-2.5 sm:px-3 rounded-xl text-rose-600 border-rose-200 hover:bg-rose-50 hover:border-rose-300 font-bold text-[10px] sm:text-xs gap-1.5 cursor-pointer shadow-2xs disabled:opacity-40"
+                    title="Bersihkan Semua Riwayat Log Delivery"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                    <span className="hidden sm:inline">Bersihkan Log</span>
+                  </Button>
+
+                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold text-[9px] sm:text-[10px] gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 shrink-0">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="hidden sm:inline">SMTP Delivery</span> Engine Aktif
+                  </Badge>
+                </div>
               </div>
 
               {/* Scrollable Container dengan padding proporsional */}
@@ -1625,6 +1711,20 @@ export default function EmailManagementPage() {
                                   <RefreshCw className={cn("w-3 h-3", resendingId === log.id && "animate-spin text-[#00AA5B]")} />
                                   <span>{resendingId === log.id ? "Mengirim..." : "Kirim Ulang"}</span>
                                 </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  disabled={deletingLogId === log.id}
+                                  onClick={() => handleDeleteSingleDeliveryLog(log.id, log.orderId)}
+                                  title="Hapus baris log ini"
+                                  className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                                >
+                                  {deletingLogId === log.id ? (
+                                    <Loader2 className="w-3 h-3 animate-spin text-rose-600" />
+                                  ) : (
+                                    <Trash2 className="w-3 h-3" />
+                                  )}
+                                </Button>
                               </div>
                             </td>
                           </tr>
@@ -1713,6 +1813,21 @@ export default function EmailManagementPage() {
                             >
                               <RefreshCw className={cn("w-2.5 h-2.5 mr-0.5", resendingId === log.id && "animate-spin")} />
                               Kirim
+                            </Button>
+
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={deletingLogId === log.id}
+                              onClick={() => handleDeleteSingleDeliveryLog(log.id, log.orderId)}
+                              className="h-6 w-6 text-muted-foreground hover:text-rose-600 rounded"
+                              title="Hapus log"
+                            >
+                              {deletingLogId === log.id ? (
+                                <Loader2 className="w-2.5 h-2.5 animate-spin text-rose-600" />
+                              ) : (
+                                <Trash2 className="w-2.5 h-2.5" />
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -3524,6 +3639,56 @@ export default function EmailManagementPage() {
               </DialogFooter>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ======================================================== */}
+      {/* 6. MODAL DIALOG: KONFIRMASI BERSIHKAN SEMUA LOG DELIVERY */}
+      {/* ======================================================== */}
+      <Dialog open={isClearLogsDialogOpen} onOpenChange={setIsClearLogsDialogOpen}>
+        <DialogContent className="sm:max-w-md p-6 rounded-2xl bg-white border-border shadow-xl">
+          <DialogHeader className="space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shadow-2xs">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <DialogTitle className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+              Bersihkan Semua Log Pengiriman?
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Tindakan ini akan menghapus seluruh riwayat pengiriman lisensi digital ({deliveryLogs.length} entri pesanan) dari database PostgreSQL.
+              Data yang telah dibersihkan tidak dapat dipulihkan.
+            </p>
+          </DialogHeader>
+
+          <DialogFooter className="pt-4 flex flex-row items-center justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isClearingLogs}
+              onClick={() => setIsClearLogsDialogOpen(false)}
+              className="h-9 px-4 rounded-xl text-xs font-bold border-border hover:bg-slate-100 text-slate-700 cursor-pointer"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              disabled={isClearingLogs}
+              onClick={handleClearAllDeliveryLogs}
+              className="h-9 px-4 rounded-xl text-xs font-black bg-rose-600 hover:bg-rose-700 text-white gap-1.5 shadow-sm cursor-pointer"
+            >
+              {isClearingLogs ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
+                  Membersihkan...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Ya, Bersihkan Semua
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
