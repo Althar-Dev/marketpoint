@@ -186,6 +186,9 @@ function getBrandAvatar(emailOrFrom: string, explicitAvatar?: string): { type: "
   if (lower.includes("admin@marketpoint.id") || lower.includes("noreply@marketpoint.id") || lower.includes("@marketpoint.id")) {
     return { type: "image", src: "/assets/img/favicon.png", initial: "M", bg: "bg-slate-900" };
   }
+  if (lower.includes("google.com") || lower.includes("bounces.google.com") || lower.includes("idverification")) {
+    return { type: "initials", initial: "G", bg: "bg-[#4285F4]" };
+  }
 
   // Pengirim user: gunakan inisial huruf dengan palet warna ala Gmail (tanpa foto palsu)
   const name = emailOrFrom.includes("<")
@@ -1345,9 +1348,64 @@ export default function EmailManagementPage() {
     }
   };
 
+  // Helper decode RFC 2047 MIME encoded-words (misal =?UTF-8?Q?...?= atau =?UTF-8?B?...?=)
+  const decodeMimeHeader = (str: string = "") => {
+    if (!str || typeof str !== "string") return "";
+    return str.replace(/=\?([^?]+)\?([BQbq])\?([^?]+)\?=/g, (match, charset, enc, text) => {
+      try {
+        if (enc.toUpperCase() === "B") {
+          return Buffer.from(text, "base64").toString("utf-8");
+        }
+        if (enc.toUpperCase() === "Q") {
+          const bytes: number[] = [];
+          const clean = text.replace(/_/g, " ");
+          for (let i = 0; i < clean.length; i++) {
+            if (clean[i] === "=" && i + 2 < clean.length) {
+              bytes.push(parseInt(clean.substr(i + 1, 2), 16));
+              i += 2;
+            } else {
+              bytes.push(clean.charCodeAt(i));
+            }
+          }
+          return Buffer.from(bytes).toString("utf-8");
+        }
+      } catch {
+        return match;
+      }
+      return match;
+    });
+  };
+
+  // Helper decode Quoted-Printable (menghilangkan = break, =20, =3D, dll)
+  const decodeQuotedPrintable = (str: string = "") => {
+    if (!str || typeof str !== "string") return "";
+    if (!str.includes("=")) return str;
+
+    // 1. Bersihkan soft line-break Quoted-Printable ("=\r\n" atau "=\n" atau "= ")
+    let decoded = str.replace(/=\s*\r?\n/g, "").replace(/=\s+(?=[a-zA-Z0-9&])/g, "");
+
+    // 2. Decode hex-escapes (=20, =3D, dll)
+    try {
+      decoded = decoded.replace(/=([A-Fa-f0-9]{2})/g, (m, hex) => {
+        try {
+          return String.fromCharCode(parseInt(hex, 16));
+        } catch {
+          return m;
+        }
+      });
+      // Handle URI decoding jika multi-byte
+      decoded = decodeURIComponent(escape(decoded));
+    } catch {
+      // Fallback
+    }
+
+    return decoded;
+  };
+
   // Helper normalisasi subjek email untuk thread percakapan ala Gmail
   const normalizeEmailSubject = (sub: string = "") => {
-    return sub
+    const decoded = decodeMimeHeader(sub);
+    return decoded
       .replace(/^(\s*(re|fwd|fw|balas|teruskan)\s*:\s*)+/gi, "")
       .trim();
   };
@@ -1355,56 +1413,62 @@ export default function EmailManagementPage() {
   // Helper membersihkan header RFC mentah / MIME artifacts agar tampilan selalu rapi
   const cleanDisplayEmailContent = (content: string = "") => {
     if (!content || typeof content !== "string") return "";
+    let extracted = content;
+
+    // Ekstrak bagian pesan dari multipart boundary jika ada
     if (
-      !content.includes("Received:") &&
-      !content.includes("Content-Type:") &&
-      !content.includes("ARC-Seal:") &&
-      !content.includes("boundary=")
+      content.includes("Received:") ||
+      content.includes("Content-Type:") ||
+      content.includes("ARC-Seal:") ||
+      content.includes("boundary=")
     ) {
-      return content;
-    }
+      const boundaryMatch = content.match(/boundary="?([^"\r\n]+)"?/i);
+      if (boundaryMatch) {
+        const boundary = boundaryMatch[1];
+        const parts = content.split(new RegExp(`--${boundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
 
-    // Ekstrak bagian pesan dari multipart boundary
-    const boundaryMatch = content.match(/boundary="?([^"\r\n]+)"?/i);
-    if (boundaryMatch) {
-      const boundary = boundaryMatch[1];
-      const parts = content.split(new RegExp(`--${boundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
-
-      // Prioritas 1: text/html
-      for (const part of parts) {
-        if (part.includes("text/html")) {
-          const bodySplit = part.split(/\r?\n\r?\n/);
-          if (bodySplit.length > 1) {
-            const body = bodySplit.slice(1).join("\n\n").replace(/--\s*$/, "").trim();
-            if (body) return body;
+        // Prioritas 1: text/html
+        for (const part of parts) {
+          if (part.includes("text/html")) {
+            const bodySplit = part.split(/\r?\n\r?\n/);
+            if (bodySplit.length > 1) {
+              const body = bodySplit.slice(1).join("\n\n").replace(/--\s*$/, "").trim();
+              if (body) {
+                extracted = body;
+                break;
+              }
+            }
           }
         }
-      }
 
-      // Prioritas 2: text/plain
-      for (const part of parts) {
-        if (part.includes("text/plain")) {
-          const bodySplit = part.split(/\r?\n\r?\n/);
-          if (bodySplit.length > 1) {
-            const body = bodySplit.slice(1).join("\n\n").replace(/--\s*$/, "").trim();
-            if (body) return body;
+        // Prioritas 2: text/plain
+        if (extracted === content) {
+          for (const part of parts) {
+            if (part.includes("text/plain")) {
+              const bodySplit = part.split(/\r?\n\r?\n/);
+              if (bodySplit.length > 1) {
+                const body = bodySplit.slice(1).join("\n\n").replace(/--\s*$/, "").trim();
+                if (body) {
+                  extracted = body;
+                  break;
+                }
+              }
+            }
           }
+        }
+      } else if (content.includes("Received:") || content.includes("ARC-Seal:") || content.includes("MIME-Version:")) {
+        const doubleNewlineIdx = content.indexOf("\r\n\r\n");
+        const unixDoubleIdx = content.indexOf("\n\n");
+        const splitIdx = doubleNewlineIdx !== -1 ? doubleNewlineIdx + 4 : (unixDoubleIdx !== -1 ? unixDoubleIdx + 2 : -1);
+        if (splitIdx !== -1) {
+          const rest = content.substring(splitIdx).trim();
+          if (rest) extracted = rest;
         }
       }
     }
 
-    // Fallback pemotongan header blok RFC
-    if (content.includes("Received:") || content.includes("ARC-Seal:") || content.includes("MIME-Version:")) {
-      const doubleNewlineIdx = content.indexOf("\r\n\r\n");
-      const unixDoubleIdx = content.indexOf("\n\n");
-      const splitIdx = doubleNewlineIdx !== -1 ? doubleNewlineIdx + 4 : (unixDoubleIdx !== -1 ? unixDoubleIdx + 2 : -1);
-      if (splitIdx !== -1) {
-        const rest = content.substring(splitIdx).trim();
-        if (rest) return rest;
-      }
-    }
-
-    return content;
+    // Bersihkan quoted-printable di akhir agar bebas dari artifacts "= "
+    return decodeQuotedPrintable(extracted);
   };
 
   // Kumpulan seluruh pesan dalam satu utas percakapan (Conversation Thread ala Gmail)
@@ -2671,6 +2735,11 @@ export default function EmailManagementPage() {
                         sanitizedContent.includes("<html") ||
                         sanitizedContent.includes("<table");
                       let htmlToRender = isFullTemplate ? sanitizedContent : null;
+                      if (htmlToRender) {
+                        htmlToRender = htmlToRender.includes('<meta name="viewport"')
+                          ? htmlToRender
+                          : `<meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:12px;font-family:sans-serif;box-sizing:border-box;}img{max-width:100%!important;height:auto;}table{max-width:100%!important;width:100%!important;}</style>${htmlToRender}`;
+                      }
 
                       if (!htmlToRender && msg.from.includes("delivery@marketpoint.id")) {
                         const parsed = parsePlainTextDeliveryEmail(sanitizedContent, msg.subject);
@@ -2685,12 +2754,22 @@ export default function EmailManagementPage() {
                         : null;
 
                       const isMarketpointSender = msg.from.includes("marketpoint.id");
-                      const senderDisplayName = msg.from.includes("<")
-                        ? msg.from.split("<")[0].trim().replace(/^["']|["']$/g, "")
-                        : msg.from.split("@")[0];
-                      const senderEmailAddr = msg.from.includes("<")
-                        ? msg.from.match(/<([^>]+)>/)?.[1] || msg.from
-                        : msg.from;
+                      const isGoogleSender =
+                        msg.from.toLowerCase().includes("google.com") ||
+                        msg.from.toLowerCase().includes("bounces.google.com") ||
+                        msg.from.toLowerCase().includes("idverification");
+
+                      const senderDisplayName = isGoogleSender
+                        ? "Google"
+                        : msg.from.includes("<")
+                          ? decodeMimeHeader(msg.from.split("<")[0].trim().replace(/^["']|["']$/g, ""))
+                          : decodeMimeHeader(msg.from.split("@")[0]);
+
+                      const senderEmailAddr = isGoogleSender
+                        ? "no-reply@accounts.google.com"
+                        : msg.from.includes("<")
+                          ? msg.from.match(/<([^>]+)>/)?.[1] || msg.from
+                          : msg.from;
 
                       // Format quote blocks if exists
                       const quoteIndex = sanitizedContent.search(/(Pada [^\n]+ menulis:|On [^\n]+ wrote:)/i);
@@ -3363,10 +3442,15 @@ export default function EmailManagementPage() {
               <div className="flex-1 overflow-y-auto divide-y divide-border/40 bg-white">
                 {filteredEmails.map((email) => {
                   const isSelected = selectedMailIds.includes(email.id);
-                  const senderDisplayName =
-                    email.folder === "sent"
+                  const isGoogle =
+                    email.from.toLowerCase().includes("google.com") ||
+                    email.from.toLowerCase().includes("bounces.google.com") ||
+                    email.from.toLowerCase().includes("idverification");
+                  const senderDisplayName = isGoogle
+                    ? "Google"
+                    : email.folder === "sent"
                       ? `Ke: ${email.to}`
-                      : email.from.split("<")[0].trim().replace(/^["']|["']$/g, "") || email.from;
+                      : decodeMimeHeader(email.from.split("<")[0].trim().replace(/^["']|["']$/g, "") || email.from);
                   const snippetText =
                     email.preview ||
                     cleanDisplayEmailContent(email.content).replace(/<[^>]+>/g, " ").slice(0, 100);

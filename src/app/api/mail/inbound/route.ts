@@ -54,21 +54,28 @@ export async function POST(req: Request) {
       (rawInput.includes("Received:") ||
         rawInput.includes("Content-Type:") ||
         rawInput.includes("ARC-Seal:") ||
-        rawInput.includes("MIME-Version:"))
+        rawInput.includes("MIME-Version:") ||
+        rawInput.includes("From:"))
     ) {
       try {
         const { simpleParser } = await import("mailparser");
         const parsed = await simpleParser(rawInput);
 
-        if (!from && parsed.from?.value?.[0]?.address) {
-          from = parsed.from.value[0].address;
+        if (parsed.from?.text) {
+          from = parsed.from.text;
+        } else if (parsed.from?.value?.[0]?.address) {
+          from = parsed.from.value[0].name
+            ? `${parsed.from.value[0].name} <${parsed.from.value[0].address}>`
+            : parsed.from.value[0].address;
         }
-        if (!to && parsed.to) {
+
+        if (parsed.to) {
           const toArr = Array.isArray(parsed.to) ? parsed.to : [parsed.to];
-          to = toArr[0]?.value?.[0]?.address || "";
+          to = toArr[0]?.value?.[0]?.address || to;
         }
-        if (!subject || subject === "(Tanpa Subjek)") {
-          subject = parsed.subject || "(Tanpa Subjek)";
+
+        if (parsed.subject) {
+          subject = parsed.subject;
         }
 
         content = parsed.html || parsed.textAsHtml || parsed.text || rawInput;
@@ -78,6 +85,10 @@ export async function POST(req: Request) {
       }
     } else {
       content = rawInput;
+    }
+
+    if (from.toLowerCase().includes("bounces.google.com") || from.toLowerCase().includes("idverification")) {
+      from = "Google <no-reply@accounts.google.com>";
     }
 
     if (!from) from = "unknown@domain.com";
