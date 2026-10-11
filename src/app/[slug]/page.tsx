@@ -409,9 +409,9 @@ export default function ShopProfilePage() {
                                 />
                               </div>
                             </div>
-                            <DialogTitle className="text-center text-xl font-black font-headline">Toko Terverifikasi MarketPoint</DialogTitle>
+                            <DialogTitle className="text-center text-xl font-black font-headline">Toko Terverifikasi MarketPointID</DialogTitle>
                             <DialogDescription className="text-center pt-2 font-medium">
-                              Toko ini telah melalui proses verifikasi identitas dan legalitas seller oleh MarketPoint.
+                              Toko ini telah melalui proses verifikasi identitas dan legalitas seller oleh MarketPointID.
                             </DialogDescription>
                           </DialogHeader>
                           <div className="grid gap-4 mt-6">
@@ -421,7 +421,7 @@ export default function ShopProfilePage() {
                               </div>
                               <div>
                                 <p className="text-xs font-black">Identitas Terverifikasi</p>
-                                <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Penjual terverifikasi resmi oleh sistem MarketPoint.</p>
+                                <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Penjual terverifikasi resmi oleh sistem MarketPointID.</p>
                               </div>
                             </div>
                           </div>
@@ -457,9 +457,9 @@ export default function ShopProfilePage() {
                                 />
                               </div>
                             </div>
-                            <DialogTitle className="text-center text-xl font-black font-headline">Toko Resmi MarketPoint</DialogTitle>
+                            <DialogTitle className="text-center text-xl font-black font-headline">Toko Resmi MarketPointID</DialogTitle>
                             <DialogDescription className="text-center pt-2 font-medium">
-                              Toko ini telah diverifikasi oleh MarketPoint sebagai mitra resmi dengan standar pelayanan terbaik.
+                              Toko ini telah diverifikasi oleh MarketPointID sebagai mitra resmi dengan standar pelayanan terbaik.
                             </DialogDescription>
                           </DialogHeader>
                           <div className="grid gap-4 mt-6">

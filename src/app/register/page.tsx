@@ -73,7 +73,7 @@ export default function SignUpPage() {
 
       toast({
         title: "Berhasil Mendaftar / Masuk",
-        description: `Selamat datang di MarketPoint, ${finalDisplayName}!`,
+        description: `Selamat datang di MarketPointID, ${finalDisplayName}!`,
       });
       router.push("/");
     } catch (error: any) {
@@ -186,7 +186,7 @@ export default function SignUpPage() {
 
       toast({
         title: "Akun Berhasil Dibuat",
-        description: "Selamat bergabung di MarketPoint!",
+        description: "Selamat bergabung di MarketPointID!",
       });
       router.push("/");
     } catch (error: any) {
@@ -211,7 +211,7 @@ export default function SignUpPage() {
         <div className="relative w-full h-full max-w-lg transition-transform hover:scale-105 duration-700">
           <Image
             src="/assets/img/auth.png"
-            alt="MarketPoint Auth Illustration"
+            alt="MarketPointID Auth Illustration"
             fill
             className="object-contain"
             priority
@@ -219,7 +219,7 @@ export default function SignUpPage() {
           />
         </div>
         <div className="absolute bottom-32 left-12 right-12 xl:bottom-40 xl:left-20 xl:right-20 space-y-3 text-black">
-          <h2 className="text-3xl xl:text-4xl font-black font-headline tracking-tighter">MarketPoint</h2>
+          <h2 className="text-3xl xl:text-4xl font-black font-headline tracking-tighter">MarketPointID</h2>
           <p className="text-sm xl:text-base font-medium opacity-70 max-w-md leading-relaxed">
             Bangun solusi digital Anda dengan infrastruktur yang handal dan skalabel.
           </p>
@@ -230,12 +230,12 @@ export default function SignUpPage() {
         <div className="w-full max-w-[400px] space-y-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 mb-6">
-              <img src="/assets/img/logo.png" alt="MarketPoint Logo" className="h-8 w-auto" />
+              <img src="/assets/img/logo.png" alt="MarketPointID Logo" className="h-8 w-auto" />
               <div className="h-5 w-px bg-border mx-1" />
               <span className="text-[10px] font-black tracking-widest text-muted-foreground/50">DAFTAR</span>
             </div>
             <h1 className="text-2xl font-bold font-headline tracking-tight text-foreground">Mulai Perjalanan</h1>
-            <p className="text-muted-foreground text-xs font-medium">Buat akun MarketPoint sekarang secara gratis.</p>
+            <p className="text-muted-foreground text-xs font-medium">Buat akun MarketPointID sekarang secara gratis.</p>
           </div>
 
           <div className="space-y-5">

@@ -98,7 +98,7 @@ const STATUS_CONFIG: Record<
     badgeBg: "bg-emerald-100 text-emerald-800 border-emerald-200",
     glow: "shadow-emerald-100",
     icon: <CheckCircle2 className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-600" />,
-    desc: "Transaksi telah berhasil diselesaikan secara penuh di MarketPoint.",
+    desc: "Transaksi telah berhasil diselesaikan secara penuh di MarketPointID.",
   },
   PENDING: {
     label: "Menunggu Pembayaran",
@@ -259,8 +259,8 @@ export default function TransactionDetailPage() {
   const handleShare = () => {
     if (typeof navigator !== "undefined" && navigator.share && transaction) {
       navigator.share({
-        title: `Invoice #${transaction.invoiceNumber} - MarketPoint`,
-        text: `Detail Transaksi ${transaction.invoiceNumber} di MarketPoint`,
+        title: `Invoice #${transaction.invoiceNumber} - MarketPointID`,
+        text: `Detail Transaksi ${transaction.invoiceNumber} di MarketPointID`,
         url: window.location.href,
       }).catch(() => { });
     } else {
@@ -320,7 +320,7 @@ export default function TransactionDetailPage() {
               </Button>
               <Button asChild variant="outline" className="h-10 rounded-xl font-bold text-xs border-slate-200">
                 <Link href="/">
-                  <Home className="w-4 h-4 mr-2" /> Ke Beranda MarketPoint
+                  <Home className="w-4 h-4 mr-2" /> Ke Beranda MarketPointID
                 </Link>
               </Button>
             </div>
@@ -700,7 +700,7 @@ export default function TransactionDetailPage() {
                 </div>
               </Card>
 
-              {/* 5. Jaminan Keamanan Transaksi MarketPoint */}
+              {/* 5. Jaminan Keamanan Transaksi MarketPointID */}
               <div className="rounded-2xl border border-slate-200/70 bg-white p-3.5 sm:p-4 flex items-center gap-3 text-xs text-muted-foreground">
                 <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#00AA5B] flex items-center justify-center shrink-0">
                   <ShieldCheck className="w-5 h-5" />
@@ -708,7 +708,7 @@ export default function TransactionDetailPage() {
                 <div className="space-y-0.5">
                   <p className="font-bold text-slate-800">100% Transaksi Aman & Terlindungi</p>
                   <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Sistem otomatisasi MarketPoint menjamin pengiriman lisensi digital secara instan dan aman melalui enkripsi standar industri.
+                    Sistem otomatisasi MarketPointID menjamin pengiriman lisensi digital secara instan dan aman melalui enkripsi standar industri.
                   </p>
                 </div>
               </div>

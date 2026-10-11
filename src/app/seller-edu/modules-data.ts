@@ -30,11 +30,11 @@ export const SELLER_MODULES: DetailedModule[] = [
     readTime: "5 min baca",
     summary: "Langkah-langkah strategis mengaktifkan toko gratis, memilih nama brand yang menjual, dan melengkapi profil etalase agar langsung dipercaya calon pembeli.",
     updatedAt: "10 Oktober 2026",
-    author: "StarVale Technology Solution / MarketPoint Seller Academy",
+    author: "StarVale Technology Solution / MarketPointID Seller Academy",
     chapters: [
       {
         title: "1. Mengakses Pendaftaran Toko Mandiri",
-        description: "Buka menu akun Anda di pojok kanan atas, lalu pilih opsi 'Toko Saya' atau kunjungi langsung halaman pendaftaran toko. Di MarketPoint, aktivasi toko 100% gratis tanpa biaya pendaftaran awal, tanpa iuran langganan bulanan, dan langsung aktif seketika.",
+        description: "Buka menu akun Anda di pojok kanan atas, lalu pilih opsi 'Toko Saya' atau kunjungi langsung halaman pendaftaran toko. Di MarketPointID, aktivasi toko 100% gratis tanpa biaya pendaftaran awal, tanpa iuran langganan bulanan, dan langsung aktif seketika.",
         tips: "Gunakan email dan nomor WhatsApp yang aktif karena notifikasi pesanan masuk dan verifikasi pencairan saldo akan dikirimkan ke kontak tersebut."
       },
       {
@@ -49,12 +49,12 @@ export const SELLER_MODULES: DetailedModule[] = [
       },
       {
         title: "4. Menyetujui Ketentuan & Integritas Penjual",
-        description: "Setiap penjual di MarketPoint wajib menyetujui Pakta Integritas: hanya menjual produk yang memiliki hak lisensi sah, tidak menjual file berbahaya (malware/trojan), dan berkomitmen merespons kendala pembeli dalam waktu 1x24 jam.",
+        description: "Setiap penjual di MarketPointID wajib menyetujui Pakta Integritas: hanya menjual produk yang memiliki hak lisensi sah, tidak menjual file berbahaya (malware/trojan), dan berkomitmen merespons kendala pembeli dalam waktu 1x24 jam.",
         tips: "Toko yang menjaga reputasi baik akan mendapatkan badge 'Verified Seller' yang meningkatkan kepercayaan pembeli berkali-kali lipat."
       }
     ],
     keyTakeaways: [
-      "Buka toko di MarketPoint gratis tanpa biaya pendaftaran.",
+      "Buka toko di MarketPointID gratis tanpa biaya pendaftaran.",
       "Identitas visual (logo & banner) yang rapi meningkatkan kepercayaan pembeli.",
       "Deskripsi toko yang jelas mengurangi pertanyaan berulang di chat.",
       "Kepatuhan integritas adalah syarat mutlak menjaga toko tetap aktif."
@@ -62,11 +62,11 @@ export const SELLER_MODULES: DetailedModule[] = [
     faqs: [
       {
         q: "Berapa lama proses persetujuan buka toko?",
-        a: "Aktivasi toko di MarketPoint bersifat instan. Segera setelah formulir identitas toko Anda kirimkan, dashboard Toko Saya langsung siap digunakan."
+        a: "Aktivasi toko di MarketPointID bersifat instan. Segera setelah formulir identitas toko Anda kirimkan, dashboard Toko Saya langsung siap digunakan."
       },
       {
         q: "Apakah satu akun pembeli bisa memiliki toko?",
-        a: "Ya! Akun MarketPoint Anda berfungsi ganda: Anda bisa membeli produk digital sekaligus membuka toko untuk menjual karya Anda."
+        a: "Ya! Akun MarketPointID Anda berfungsi ganda: Anda bisa membeli produk digital sekaligus membuka toko untuk menjual karya Anda."
       }
     ],
     ctaText: "Buka Toko Sekarang",
@@ -80,11 +80,11 @@ export const SELLER_MODULES: DetailedModule[] = [
     readTime: "6 min baca",
     summary: "Cara mengunggah produk digital, membedakan tipe file vs serial key lisensi, dan mengaktifkan bot pengiriman otomatis 24 jam nonstop.",
     updatedAt: "10 Oktober 2026",
-    author: "StarVale Technology Solution / MarketPoint Seller Academy",
+    author: "StarVale Technology Solution / MarketPointID Seller Academy",
     chapters: [
       {
         title: "1. Memilih Jenis Produk: Lisensi Kode vs File Unduhan",
-        description: "MarketPoint mendukung dua jenis produk non-fisik utama: 1) Lisensi Kode Serial (seperti key aktivasi Windows, Office, antivirus, token voucher), dan 2) File Master Digital (source code ZIP, template Figma, preset, e-book). Pilihlah tipe produk yang sesuai agar sistem memproses pengiriman dengan tepat.",
+        description: "MarketPointID mendukung dua jenis produk non-fisik utama: 1) Lisensi Kode Serial (seperti key aktivasi Windows, Office, antivirus, token voucher), dan 2) File Master Digital (source code ZIP, template Figma, preset, e-book). Pilihlah tipe produk yang sesuai agar sistem memproses pengiriman dengan tepat.",
         tips: "Untuk produk source code, pastikan file ZIP telah dibersihkan dari folder 'node_modules', '.git', atau file credential rahasia (.env)."
       },
       {
@@ -94,7 +94,7 @@ export const SELLER_MODULES: DetailedModule[] = [
       },
       {
         title: "3. Mengisi Stok Lisensi Otomatis (Instant Auto-Delivery)",
-        description: "Fitur Auto-Delivery adalah keunggulan utama MarketPoint. Anda cukup memasukkan daftar serial key lisensi satu per satu ke kolom inventaris stok. Setiap kali ada pembeli yang transfernya terverifikasi, sistem bot akan mengambil satu serial key secara otomatis dan menampilkannya di layar pesanan pembeli tanpa campur tangan manual Anda.",
+        description: "Fitur Auto-Delivery adalah keunggulan utama MarketPointID. Anda cukup memasukkan daftar serial key lisensi satu per satu ke kolom inventaris stok. Setiap kali ada pembeli yang transfernya terverifikasi, sistem bot akan mengambil satu serial key secara otomatis dan menampilkannya di layar pesanan pembeli tanpa campur tangan manual Anda.",
         tips: "Stok akan berkurang otomatis seiring transaksi sukses. Pasang pengingat jika stok lisensi Anda tersisa kurang dari 5 buah."
       },
       {
@@ -112,7 +112,7 @@ export const SELLER_MODULES: DetailedModule[] = [
     faqs: [
       {
         q: "Apakah file source code aman dari unduhan tidak sah?",
-        a: "Sangat aman. Link unduhan di MarketPoint dienkripsi dan hanya dapat diakses oleh akun pembeli yang transaksi pembayarannya telah terverifikasi lunas."
+        a: "Sangat aman. Link unduhan di MarketPointID dienkripsi dan hanya dapat diakses oleh akun pembeli yang transaksi pembayarannya telah terverifikasi lunas."
       },
       {
         q: "Bagaimana jika stok kode lisensi saya habis?",
@@ -130,7 +130,7 @@ export const SELLER_MODULES: DetailedModule[] = [
     readTime: "5 min baca",
     summary: "Pelajari cara melipatgandakan omset toko dengan kupon diskon mandiri, penawaran bundel hemat, dan mendaftarkan produk ke sesi Flash Sale platform.",
     updatedAt: "08 Oktober 2026",
-    author: "StarVale Technology Solution / MarketPoint Seller Academy",
+    author: "StarVale Technology Solution / MarketPointID Seller Academy",
     chapters: [
       {
         title: "1. Membuat Kode Voucher Promo Toko",
@@ -144,7 +144,7 @@ export const SELLER_MODULES: DetailedModule[] = [
       },
       {
         title: "3. Mendaftarkan Produk ke Slot Flash Sale Platform",
-        description: "Flash Sale adalah etalase paling ramai di MarketPoint. Masuk ke menu 'Flash Sale' di dashboard toko Anda, pilih produk yang ingin diikutsertakan, tentukan persentase diskon promo, dan ajukan ke slot waktu yang tersedia.",
+        description: "Flash Sale adalah etalase paling ramai di MarketPointID. Masuk ke menu 'Flash Sale' di dashboard toko Anda, pilih produk yang ingin diikutsertakan, tentukan persentase diskon promo, dan ajukan ke slot waktu yang tersedia.",
         tips: "Pastikan stok lisensi atau file produk Anda mencukupi sebelum event Flash Sale dimulai."
       },
       {
@@ -180,17 +180,17 @@ export const SELLER_MODULES: DetailedModule[] = [
     readTime: "5 min baca",
     summary: "Memahami bagaimana dana penjualan diamankan, siklus pelepasan saldo escrow, dan panduan mencairkan uang ke rekening bank atau e-wallet Anda.",
     updatedAt: "08 Oktober 2026",
-    author: "StarVale Technology Solution / MarketPoint Seller Academy",
+    author: "StarVale Technology Solution / MarketPointID Seller Academy",
     chapters: [
       {
         title: "1. Mekanisme Rekening Bersama Melindungi Penjual",
-        description: "Banyak penjual khawatir bertransaksi online karena maraknya modus 'pembeli pura-pura transfer'. Di MarketPoint, sistem gerbang pembayaran kami memvalidasi transfer pembeli 100% di awal sebelum pesanan dibuat. Dana pembeli terkunci aman di rekening bersama sistem dan pasti cair ke saldo Anda.",
+        description: "Banyak penjual khawatir bertransaksi online karena maraknya modus 'pembeli pura-pura transfer'. Di MarketPointID, sistem gerbang pembayaran kami memvalidasi transfer pembeli 100% di awal sebelum pesanan dibuat. Dana pembeli terkunci aman di rekening bersama sistem dan pasti cair ke saldo Anda.",
         tips: "Jangan pernah menyetujui transaksi di luar platform untuk menghindari penipuan."
       },
       {
         title: "2. Periode Proteksi & Pelepasan Saldo",
         description: "Setelah produk digital terkirim, pembeli memiliki batas waktu proteksi hingga 48 jam untuk mencoba aktivasi. Begitu pembeli menekan 'Selesaikan Pesanan' atau setelah batas waktu proteksi habis tanpa sanggahan, saldo hasil penjualan langsung masuk secara otomatis ke 'Dompet Toko' Anda.",
-        tips: "Jika pembeli mengajukan komplain, sistem mediasi MarketPoint akan memeriksa bukti serial key / file yang dikirimkan."
+        tips: "Jika pembeli mengajukan komplain, sistem mediasi MarketPointID akan memeriksa bukti serial key / file yang dikirimkan."
       },
       {
         title: "3. Mengatur Rekening Bank dan E-Wallet Penarikan",
@@ -199,7 +199,7 @@ export const SELLER_MODULES: DetailedModule[] = [
       },
       {
         title: "4. Mengajukan Penarikan Dana (Payout Request)",
-        description: "Pilih menu 'Tarik Saldo', masukkan nominal pencairan (minimal Rp 20.000). Sistem pencairan MarketPoint memproses penarikan saldo dalam hitungan menit hingga maksimal 1x24 jam kerja langsung ke rekening tujuan Anda.",
+        description: "Pilih menu 'Tarik Saldo', masukkan nominal pencairan (minimal Rp 20.000). Sistem pencairan MarketPointID memproses penarikan saldo dalam hitungan menit hingga maksimal 1x24 jam kerja langsung ke rekening tujuan Anda.",
         tips: "Periksa riwayat mutasi dompet secara berkala untuk memantau rekapitulasi pembukuan toko Anda."
       }
     ],
@@ -228,13 +228,13 @@ export const SELLER_MODULES: DetailedModule[] = [
     levelBadgeColor: "bg-purple-50 text-purple-600 border-purple-200",
     title: "Etika Penjual, Larangan Produk Bajakan & Meraih Bintang 5",
     readTime: "6 min baca",
-    summary: "Standar mutu mutlak ekosistem MarketPoint: larangan barang crack/nulled, etika komunikasi chat, dan cara mempertahankan rating ulasan sempurna.",
+    summary: "Standar mutu mutlak ekosistem MarketPointID: larangan barang crack/nulled, etika komunikasi chat, dan cara mempertahankan rating ulasan sempurna.",
     updatedAt: "05 Oktober 2026",
-    author: "StarVale Technology Solution / MarketPoint Seller Academy",
+    author: "StarVale Technology Solution / MarketPointID Seller Academy",
     chapters: [
       {
         title: "1. Kebijakan Mutlak: Larangan Produk Bajakan & Nulled",
-        description: "MarketPoint dibangun atas dasar integritas karya teknologi. Penjualan script hasil decompile ilegal, lisensi hasil carding, file nulled bervirus, atau software bajakan dilarang keras. Akun yang terbukti melanggar akan langsung diblokir permanen dan sisa saldo ditahan untuk ganti rugi pembeli.",
+        description: "MarketPointID dibangun atas dasar integritas karya teknologi. Penjualan script hasil decompile ilegal, lisensi hasil carding, file nulled bervirus, atau software bajakan dilarang keras. Akun yang terbukti melanggar akan langsung diblokir permanen dan sisa saldo ditahan untuk ganti rugi pembeli.",
         tips: "Hanya jual produk yang merupakan kreasi mandiri Anda atau produk yang Anda miliki lisensi distribusi resminya."
       },
       {
@@ -244,7 +244,7 @@ export const SELLER_MODULES: DetailedModule[] = [
       },
       {
         title: "3. Membangun Reputasi Toko 'Fast Response'",
-        description: "Sistem MarketPoint menghitung rata-rata kecepatan respon chat toko Anda. Toko yang merespons dalam waktu kurang dari 15 menit mendapatkan penanda khusus yang memikat pembeli untuk langsung bertransaksi tanpa ragu.",
+        description: "Sistem MarketPointID menghitung rata-rata kecepatan respon chat toko Anda. Toko yang merespons dalam waktu kurang dari 15 menit mendapatkan penanda khusus yang memikat pembeli untuk langsung bertransaksi tanpa ragu.",
         tips: "Aktifkan notifikasi browser atau pantau dashboard pesan secara rutin setiap hari."
       },
       {
@@ -262,7 +262,7 @@ export const SELLER_MODULES: DetailedModule[] = [
     faqs: [
       {
         q: "Bagaimana jika pembeli memberikan rating buruk tanpa alasan jelas?",
-        a: "Anda dapat membalas ulasan tersebut secara publik dengan sopan untuk memberikan klarifikasi, atau mengajukan peninjauan ke tim MarketPoint Care jika terbukti ada pelanggaran etika."
+        a: "Anda dapat membalas ulasan tersebut secara publik dengan sopan untuk memberikan klarifikasi, atau mengajukan peninjauan ke tim MarketPointID Care jika terbukti ada pelanggaran etika."
       },
       {
         q: "Apakah penjual wajib memberikan remote support (AnyDesk/TeamViewer)?",
@@ -280,7 +280,7 @@ export const SELLER_MODULES: DetailedModule[] = [
     readTime: "5 min baca",
     summary: "Hindari perang harga murah yang merusak reputasi. Pelajari cara menghitung nilai penghematan waktu pelanggan dan monetisasi lisensi berjenjang.",
     updatedAt: "05 Oktober 2026",
-    author: "StarVale Technology Solution / MarketPoint Seller Academy",
+    author: "StarVale Technology Solution / MarketPointID Seller Academy",
     chapters: [
       {
         title: "1. Mengapa Perang Harga Murah Merugikan Penjual",

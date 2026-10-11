@@ -80,7 +80,7 @@ const FAQS = [
   {
     id: "faq-s-3",
     question: "Apa yang harus saya lakukan jika lisensi tidak dapat diaktivasi?",
-    answer: "Pertama, hubungi penjual melalui fitur Chat di halaman pesanan untuk meminta panduan atau lisensi pengganti (penjual memiliki waktu 1x24 jam). Jika penjual tidak merespons, Anda dapat mengajukan komplain atau menghubungi tim MarketPoint Care untuk proses pengembalian dana 100%."
+    answer: "Pertama, hubungi penjual melalui fitur Chat di halaman pesanan untuk meminta panduan atau lisensi pengganti (penjual memiliki waktu 1x24 jam). Jika penjual tidak merespons, Anda dapat mengajukan komplain atau menghubungi tim MarketPointID Care untuk proses pengembalian dana 100%."
   },
   {
     id: "faq-s-4",
@@ -89,8 +89,8 @@ const FAQS = [
   },
   {
     id: "faq-s-5",
-    question: "Apakah ada biaya langganan bulanan untuk membuka toko di MarketPoint?",
-    answer: "Tidak ada sama sekali! Buka toko di MarketPoint 100% gratis tanpa biaya pendaftaran maupun iuran bulanan. Sistem hanya memotong fee komisi kecil ketika produk Anda berhasil terjual."
+    question: "Apakah ada biaya langganan bulanan untuk membuka toko di MarketPointID?",
+    answer: "Tidak ada sama sekali! Buka toko di MarketPointID 100% gratis tanpa biaya pendaftaran maupun iuran bulanan. Sistem hanya memotong fee komisi kecil ketika produk Anda berhasil terjual."
   }
 ];
 
@@ -128,7 +128,7 @@ export default function SupportPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-body text-[#212121]">
       {/* HEADER DESKTOP KHUSUS LEGAL & SUPPORT */}
-      {!isMobile && <LegalHeader title="Pusat Bantuan" badge="MarketPoint Care" />}
+      {!isMobile && <LegalHeader title="Pusat Bantuan" badge="MarketPointID Care" />}
 
       {/* MOBILE APP BAR */}
       {isMobile && (
@@ -154,7 +154,7 @@ export default function SupportPage() {
           <div className="max-w-screen-lg mx-auto text-center space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#00AA5B]/10 border border-[#00AA5B]/20 text-[#00AA5B] text-xs font-bold">
               <Headphones className="w-3.5 h-3.5" />
-              <span>Layanan Pelanggan MarketPoint Care</span>
+              <span>Layanan Pelanggan MarketPointID Care</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground max-w-2xl mx-auto leading-tight">
@@ -328,7 +328,7 @@ export default function SupportPage() {
                   Formulir Kendala & Pertanyaan
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Isi formulir di bawah ini dan tim MarketPoint Care akan membalas ke email Anda secepatnya.
+                  Isi formulir di bawah ini dan tim MarketPointID Care akan membalas ke email Anda secepatnya.
                 </p>
               </div>
 

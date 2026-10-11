@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Promo & Voucher',
-  description: 'Pusat promo hemat, kupon diskon, voucher pengguna baru, dan penawaran spesial produk digital di MarketPoint.',
+  description: 'Pusat promo hemat, kupon diskon, voucher pengguna baru, dan penawaran spesial produk digital di MarketPointID.',
   alternates: {
     canonical: '/promo',
   },
   openGraph: {
-    title: 'Promo | MarketPoint',
-    description: 'Temukan kode voucher diskon dan penawaran hemat produk digital di MarketPoint.',
+    title: 'Promo | MarketPointID',
+    description: 'Temukan kode voucher diskon dan penawaran hemat produk digital di MarketPointID.',
     url: '/promo',
     type: 'website',
   },

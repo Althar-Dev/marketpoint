@@ -1,5 +1,5 @@
 /**
- * WA Bot Configuration for MarketPoint
+ * WA Bot Configuration for MarketPointID
  * Powered by @starvale-sdk/wa-socket & backed by database/config.json
  */
 
@@ -19,7 +19,7 @@ export interface WABotConfigJSON {
 const CONFIG_PATH = path.join(process.cwd(), "database", "config.json");
 
 const DEFAULT_CONFIG: WABotConfigJSON = {
-  botName: "MarketPoint",
+  botName: "MarketPointID",
   otpExpiryMinutes: 5,
   otpCooldownSeconds: 60,
   communityLink: "https://chat.whatsapp.com/DkdmJDYp3fr080QP3G4Xju",
@@ -94,7 +94,7 @@ export const WA_CONFIG = {
   },
   get BOT_NAME() {
     const cfg = getBotConfig();
-    return cfg.botName || "MarketPoint";
+    return cfg.botName || "MarketPointID";
   },
   get COMMUNITY_LINK() {
     const cfg = getBotConfig();

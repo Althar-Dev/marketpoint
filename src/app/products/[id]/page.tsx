@@ -185,8 +185,8 @@ export default function ProductDetailPage() {
   const handleShare = async () => {
     if (typeof window === "undefined") return;
     const shareData = {
-      title: product?.title || "Produk di MarketPoint",
-      text: `Lihat ${product?.title || "produk"} di MarketPoint!`,
+      title: product?.title || "Produk di MarketPointID",
+      text: `Lihat ${product?.title || "produk"} di MarketPointID!`,
       url: window.location.href,
     };
     if (navigator.share) {
@@ -280,7 +280,7 @@ export default function ProductDetailPage() {
           images: product.images || (images && images.length > 0 ? [{ imageUrl: images[0].imageUrl }] : []),
           ratingAvg: Number(product.ratingAvg || 5.0),
           salesCount: product.salesCount ? `${product.salesCount} terjual` : "0 terjual",
-          shopName: typeof product.shopName === "string" ? product.shopName : (shop?.name || "MarketPoint"),
+          shopName: typeof product.shopName === "string" ? product.shopName : (shop?.name || "MarketPointID"),
           shopSlug: shop?.slug || "marketpoint",
           shopLogoUrl: typeof shop?.logoUrl === "string" ? shop.logoUrl : "",
           shopIsOfficial: Boolean(isOfficial),
@@ -906,7 +906,7 @@ export default function ProductDetailPage() {
                 <div className="pt-3 border-t border-border/50 flex items-center justify-center gap-2 text-[10px] text-muted-foreground font-medium">
                   <span className="h-px bg-border/60 flex-1" />
                   <span className="flex items-center gap-1 font-semibold text-muted-foreground">
-                    <CheckCircle2 className="w-3 h-3 text-[#00AA5B]" /> Rating & Ulasan Terverifikasi Pembeli MarketPoint
+                    <CheckCircle2 className="w-3 h-3 text-[#00AA5B]" /> Rating & Ulasan Terverifikasi Pembeli MarketPointID
                   </span>
                   <span className="h-px bg-border/60 flex-1" />
                 </div>

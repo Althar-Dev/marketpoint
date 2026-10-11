@@ -201,7 +201,7 @@ export default function ReviewsPage() {
       await auth.signOut();
       toast({
         title: "Berhasil Keluar",
-        description: "Sampai jumpa kembali di MarketPoint!",
+        description: "Sampai jumpa kembali di MarketPointID!",
       });
       router.push("/login");
     } catch {

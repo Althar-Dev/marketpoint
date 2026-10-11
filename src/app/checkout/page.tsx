@@ -125,7 +125,7 @@ const ADMIN_CHANNEL_METADATA: Record<string, {
     vaPrefix: "89508",
     instructions: [
       "Buka Livin' by Mandiri, pilih menu 'Bayar'.",
-      "Cari penyedia jasa 'MarketPoint' atau masukkan kode bayar.",
+      "Cari penyedia jasa 'MarketPointID' atau masukkan kode bayar.",
       "Masukkan Nomor Virtual Account lalu tekan Lanjut.",
       "Konfirmasi pembayaran dengan PIN Livin' Anda."
     ]
@@ -151,7 +151,7 @@ const ADMIN_CHANNEL_METADATA: Record<string, {
     logoUrl: "/assets/payments/linkaja.png",
     instructions: [
       "Buka aplikasi LinkAja atau konfirmasi melalui notifikasi.",
-      "Periksa rincian tagihan pesanan MarketPoint.",
+      "Periksa rincian tagihan pesanan MarketPointID.",
       "Masukkan PIN LinkAja Anda untuk menyelesaikan transaksi."
     ]
   },
@@ -159,7 +159,7 @@ const ADMIN_CHANNEL_METADATA: Record<string, {
     logoUrl: "/assets/payments/ovo.png",
     instructions: [
       "Buka notifikasi di aplikasi OVO pada ponsel Anda.",
-      "Periksa jumlah pembayaran tagihan MarketPoint.",
+      "Periksa jumlah pembayaran tagihan MarketPointID.",
       "Pilih OVO Cash lalu tekan 'Bayar'."
     ]
   },
@@ -168,7 +168,7 @@ const ADMIN_CHANNEL_METADATA: Record<string, {
     vaPrefix: "ALFA",
     instructions: [
       "Kunjungi gerai Alfamart terdekat.",
-      "Sampaikan kepada kasir ingin membayar pesanan MarketPoint.",
+      "Sampaikan kepada kasir ingin membayar pesanan MarketPointID.",
       "Tunjukkan Kode Pembayaran dan simpan struk pembayaran."
     ]
   },
@@ -177,7 +177,7 @@ const ADMIN_CHANNEL_METADATA: Record<string, {
     vaPrefix: "IDM",
     instructions: [
       "Kunjungi gerai Indomaret terdekat.",
-      "Sampaikan kepada kasir ingin membayar transaksi MarketPoint.",
+      "Sampaikan kepada kasir ingin membayar transaksi MarketPointID.",
       "Tunjukkan Kode Pembayaran kepada kasir dan bayar sesuai tagihan."
     ]
   },
@@ -399,7 +399,7 @@ function CheckoutContent() {
             title: "Produk Pembelian Instan",
             price: 5000,
             originalPrice: 10000,
-            shopName: "MarketPoint Official",
+            shopName: "MarketPointID Official",
             images: [{ imageUrl: "/assets/img/logo.png" }]
           });
         }
@@ -683,7 +683,7 @@ function CheckoutContent() {
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = `QRIS-${(invoiceData?.invoiceNumber || "MarketPoint").replace(/[\/\s]/g, "-")}.png`;
+      link.download = `QRIS-${(invoiceData?.invoiceNumber || "MarketPointID").replace(/[\/\s]/g, "-")}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -942,7 +942,7 @@ function CheckoutContent() {
       toast({
         variant: "destructive",
         title: "Wajib Masuk Terlebih Dahulu 🔒",
-        description: "Silakan masuk ke akun MarketPoint Anda untuk dapat melanjutkan pembayaran pesanan ini.",
+        description: "Silakan masuk ke akun MarketPointID Anda untuk dapat melanjutkan pembayaran pesanan ini.",
       });
       const currentUrl = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/checkout";
       router.push(`/login?redirect=${encodeURIComponent(currentUrl)}`);
@@ -1008,7 +1008,7 @@ function CheckoutContent() {
           name: buyerName.trim(),
           payer_email: buyerEmail.trim(),
           mobile_number: buyerPhone.trim(),
-          description: `Pembayaran ${product?.title || "Produk"} di MarketPoint (${invoiceNumber})`,
+          description: `Pembayaran ${product?.title || "Produk"} di MarketPointID (${invoiceNumber})`,
           secret_key: xenditData?.secretKey || undefined,
         }),
       });
@@ -1258,7 +1258,7 @@ function CheckoutContent() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/assets/img/logo.png"
-                alt="MarketPoint"
+                alt="MarketPointID"
                 className="h-8 md:h-9 w-auto object-contain transition-transform group-hover:scale-105"
               />
             </Link>
@@ -1380,7 +1380,7 @@ function CheckoutContent() {
                       <div className="min-w-0">
                         <p className="text-xs font-black text-amber-950">Wajib Masuk Sebelum Melanjutkan</p>
                         <p className="text-[11px] text-amber-800 leading-snug">
-                          Masuk ke akun MarketPoint Anda agar transaksi tercatat aman dan lisensi produk dapat langsung diklaim.
+                          Masuk ke akun MarketPointID Anda agar transaksi tercatat aman dan lisensi produk dapat langsung diklaim.
                         </p>
                       </div>
                     </div>
@@ -1717,10 +1717,10 @@ function CheckoutContent() {
                 {/* Secure Notice */}
                 <div className="pt-3 border-t border-border/50 space-y-1.5 text-center">
                   <p className="text-[10px] text-muted-foreground font-medium flex items-center justify-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#00AA5B]" /> Pembayaran aman MarketPoint
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#00AA5B]" /> Pembayaran aman MarketPointID
                   </p>
                   <p className="text-[9px] text-muted-foreground/60">
-                    Dengan membayar, Anda menyetujui Syarat & Ketentuan transaksi MarketPoint.
+                    Dengan membayar, Anda menyetujui Syarat & Ketentuan transaksi MarketPointID.
                   </p>
                 </div>
               </CardContent>
@@ -1783,7 +1783,7 @@ function CheckoutContent() {
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
                         invoiceData?.qr_string || invoiceData?.paymentCode || "https://marketpoint.id"
                       )}`}
-                      alt="QRIS MarketPoint"
+                      alt="QRIS MarketPointID"
                       className="w-full h-full object-contain p-2"
                     />
                   </div>

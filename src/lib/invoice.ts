@@ -1,5 +1,5 @@
 /**
- * Helper untuk pembuatan ID Referensi / Nomor Invoice MarketPoint
+ * Helper untuk pembuatan ID Referensi / Nomor Invoice MarketPointID
  * Format yang diminta:
  * MPoint-[product_id]-[8-16 random alfanumerik jangan uppercase semua]
  * Contoh hasil: MPoint-product-test-1-k9Lx8Pm2Qz

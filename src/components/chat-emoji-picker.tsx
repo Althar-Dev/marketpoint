@@ -186,7 +186,7 @@ export function ChatEmojiPicker({
         {/* Footer tip */}
         <div className="px-3 py-1.5 border-t border-border/60 bg-[#FAFAFA] flex items-center justify-between text-[10px] text-muted-foreground">
           <span>Klik emoji untuk memasukkan ke chat</span>
-          <span className="font-medium text-[#00AA5B]">MarketPoint Chat</span>
+          <span className="font-medium text-[#00AA5B]">MarketPointID Chat</span>
         </div>
       </PopoverContent>
     </Popover>

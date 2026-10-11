@@ -80,7 +80,7 @@ export default function WishlistPage() {
       await auth.signOut();
       toast({
         title: "Berhasil Keluar",
-        description: "Sampai jumpa kembali di MarketPoint!",
+        description: "Sampai jumpa kembali di MarketPointID!",
       });
       router.push("/login");
     } catch {
@@ -95,8 +95,8 @@ export default function WishlistPage() {
   const handleShareWishlist = async () => {
     if (typeof window === "undefined") return;
     const shareData = {
-      title: "Wishlist Saya di MarketPoint",
-      text: "Lihat daftar wishlist produk impian saya di MarketPoint!",
+      title: "Wishlist Saya di MarketPointID",
+      text: "Lihat daftar wishlist produk impian saya di MarketPointID!",
       url: window.location.href,
     };
     if (navigator.share) {
@@ -286,7 +286,7 @@ export default function WishlistPage() {
                         const price = Number(product.price || 0);
                         const rating = Number(product.ratingAvg || 5.0).toFixed(1);
                         const soldText = product.salesCount ? (typeof product.salesCount === "string" ? product.salesCount : `${product.salesCount} terjual`) : "0 terjual";
-                        const shopName = typeof product.shopName === "string" ? product.shopName : "MarketPoint";
+                        const shopName = typeof product.shopName === "string" ? product.shopName : "MarketPointID";
                         const shopLogoUrl = typeof product.shopLogoUrl === "string" ? product.shopLogoUrl : "";
                         const isVerified = Boolean(product.shopIsVerified);
                         const isOfficial = Boolean(product.shopIsOfficial);

@@ -44,8 +44,8 @@ const TERMS_SECTIONS = [
     title: "1. Penerimaan & Ketentuan Penggunaan",
     icon: CheckCircle2,
     content: [
-      "Dengan mendaftar, mengakses, atau menggunakan seluruh layanan di MarketPoint (termasuk situs web, API, dan aplikasi terkait), Anda menyatakan bahwa Anda telah berusia minimal 18 tahun atau memiliki persetujuan wali hukum yang sah, serta setuju untuk terikat oleh seluruh Syarat & Ketentuan ini.",
-      "Jika Anda tidak menyetujui salah satu klausul dalam dokumen ini, Anda diwajibkan untuk segera menghentikan penggunaan platform MarketPoint."
+      "Dengan mendaftar, mengakses, atau menggunakan seluruh layanan di MarketPointID (termasuk situs web, API, dan aplikasi terkait), Anda menyatakan bahwa Anda telah berusia minimal 18 tahun atau memiliki persetujuan wali hukum yang sah, serta setuju untuk terikat oleh seluruh Syarat & Ketentuan ini.",
+      "Jika Anda tidak menyetujui salah satu klausul dalam dokumen ini, Anda diwajibkan untuk segera menghentikan penggunaan platform MarketPointID."
     ]
   },
   {
@@ -54,8 +54,8 @@ const TERMS_SECTIONS = [
     icon: Lock,
     content: [
       "Pengguna wajib memberikan data identitas yang valid, akurat, dan dapat dipertanggungjawabkan saat melakukan registrasi akun.",
-      "Anda bertanggung jawab penuh atas kerahasiaan kata sandi, kode OTP, dan seluruh aktivitas yang terjadi di bawah akun Anda. MarketPoint tidak bertanggung jawab atas kerugian finansial yang diakibatkan oleh kelalaian atau penyerahan kredensial kepada pihak ketiga.",
-      "Setiap indikasi akses tanpa izin atau penyusupan keamanan harus segera dilaporkan kepada tim MarketPoint Care."
+      "Anda bertanggung jawab penuh atas kerahasiaan kata sandi, kode OTP, dan seluruh aktivitas yang terjadi di bawah akun Anda. MarketPointID tidak bertanggung jawab atas kerugian finansial yang diakibatkan oleh kelalaian atau penyerahan kredensial kepada pihak ketiga.",
+      "Setiap indikasi akses tanpa izin atau penyusupan keamanan harus segera dilaporkan kepada tim MarketPointID Care."
     ]
   },
   {
@@ -65,7 +65,7 @@ const TERMS_SECTIONS = [
     content: [
       "Produk digital yang diperjualbelikan (lisensi software, serial key, source code aplikasi, file desain, voucher, dan akun layanan) bersifat non-fisik dan diserahterimakan secara instan melalui sistem otomatis atau dashboard akun.",
       "Pembelian produk digital memberikan hak penggunaan (Right to Use) sesuai jenis lisensi yang ditetapkan penjual (misalnya Single Domain, Commercial Use, atau Personal License). Pembeli dilarang mendistribusikan ulang, menjual kembali, atau membajak source code tanpa izin tertulis dari pemilik hak cipta.",
-      "MarketPoint bertindak sebagai penyedia platform pasar digital yang memfasilitasi transaksi aman antara pembeli dan merchant."
+      "MarketPointID bertindak sebagai penyedia platform pasar digital yang memfasilitasi transaksi aman antara pembeli dan merchant."
     ]
   },
   {
@@ -73,9 +73,9 @@ const TERMS_SECTIONS = [
     title: "4. Dompet Saldo, Pembayaran & Transaksi",
     icon: CreditCard,
     content: [
-      "Seluruh transaksi pembayaran diproses melalui gerbang pembayaran resmi MarketPoint (QRIS, Virtual Account bank, E-Wallet, dan transfer saldo) dengan verifikasi otomatis.",
-      "Saldo dompet akun MarketPoint dapat digunakan untuk pembelian produk, pembayaran tagihan PPOB, atau ditarik ke rekening bank terdaftar sesuai batas minimum penarikan yang berlaku.",
-      "MarketPoint berhak menahan sementara transaksi atau saldo yang terindikasi mencurigakan, pencucian uang, atau manipulasi sistem hingga proses investigasi selesai."
+      "Seluruh transaksi pembayaran diproses melalui gerbang pembayaran resmi MarketPointID (QRIS, Virtual Account bank, E-Wallet, dan transfer saldo) dengan verifikasi otomatis.",
+      "Saldo dompet akun MarketPointID dapat digunakan untuk pembelian produk, pembayaran tagihan PPOB, atau ditarik ke rekening bank terdaftar sesuai batas minimum penarikan yang berlaku.",
+      "MarketPointID berhak menahan sementara transaksi atau saldo yang terindikasi mencurigakan, pencucian uang, atau manipulasi sistem hingga proses investigasi selesai."
     ]
   },
   {
@@ -108,7 +108,7 @@ const TERMS_SECTIONS = [
     title: "7. Batasan Tanggung Jawab & Hukum yang Berlaku",
     icon: Scale,
     content: [
-      "MarketPoint tidak bertanggung jawab atas kerugian tidak langsung, kehilangan keuntungan bisnis, atau gangguan data yang disebabkan oleh penggunaan produk digital pihak ketiga.",
+      "MarketPointID tidak bertanggung jawab atas kerugian tidak langsung, kehilangan keuntungan bisnis, atau gangguan data yang disebabkan oleh penggunaan produk digital pihak ketiga.",
       "Syarat dan Ketentuan ini tunduk pada dan ditafsirkan berdasarkan hukum Republik Indonesia. Setiap perselisihan yang tidak dapat diselesaikan melalui musyawarah mufakat akan diselesaikan di yurisdiksi pengadilan yang berwenang di Indonesia."
     ]
   }
@@ -120,7 +120,7 @@ const TOS_SECTIONS = [
     title: "1. Ketentuan Pendaftaran Mitra Merchant / Seller",
     icon: Store,
     content: [
-      "Setiap pengguna yang ingin menjual produk digital wajib mengaktifkan Toko Saya dan melengkapi verifikasi identitas (KYC) toko yang disyaratkan oleh tim verifikasi MarketPoint.",
+      "Setiap pengguna yang ingin menjual produk digital wajib mengaktifkan Toko Saya dan melengkapi verifikasi identitas (KYC) toko yang disyaratkan oleh tim verifikasi MarketPointID.",
       "Merchant bertanggung jawab penuh atas keabsahan, keaslian, kepemilikan hak cipta, dan fungsionalitas produk digital yang diunggah ke etalase platform."
     ]
   },
@@ -139,7 +139,7 @@ const TOS_SECTIONS = [
     title: "3. Kebijakan Komisi Platform & Penarikan Dana (Payout)",
     icon: CreditCard,
     content: [
-      "MarketPoint membebankan biaya komisi layanan yang kompetitif (antara 1% hingga 5% tergantung kategori produk dan status merchant) pada setiap transaksi yang berhasil diselesaikan.",
+      "MarketPointID membebankan biaya komisi layanan yang kompetitif (antara 1% hingga 5% tergantung kategori produk dan status merchant) pada setiap transaksi yang berhasil diselesaikan.",
       "Dana hasil penjualan akan masuk ke Saldo Penghasilan Merchant setelah pesanan diselesaikan oleh pembeli atau otomatis selesai setelah periode proteksi garansi berakhir.",
       "Merchant dapat melakukan penarikan saldo (Payout) ke rekening bank atau e-wallet kapan saja dengan waktu proses pencairan instan hingga 1x24 jam kerja."
     ]
@@ -158,10 +158,10 @@ const TOS_SECTIONS = [
     title: "5. Penalti & Penangguhan Toko (Suspension)",
     icon: AlertCircle,
     content: [
-      "MarketPoint berhak menonaktifkan produk, menurunkan ranking pencarian, atau membekukan akun toko secara sepihak jika ditemukan:",
+      "MarketPointID berhak menonaktifkan produk, menurunkan ranking pencarian, atau membekukan akun toko secara sepihak jika ditemukan:",
       "a. Penjualan lisensi ilegal / revoke berulang kali.",
       "b. Praktik manipulasi ulasan atau transaksi palsu (fake order).",
-      "c. Pengalihan transaksi di luar sistem resmi MarketPoint (transaksi langsung via WhatsApp/kontak pribadi untuk menghindari proteksi escrow)."
+      "c. Pengalihan transaksi di luar sistem resmi MarketPointID (transaksi langsung via WhatsApp/kontak pribadi untuk menghindari proteksi escrow)."
     ]
   }
 ];
@@ -169,7 +169,7 @@ const TOS_SECTIONS = [
 const FAQ_ITEMS = [
   {
     id: "faq-1",
-    question: "Bagaimana cara membeli lisensi atau produk digital di MarketPoint?",
+    question: "Bagaimana cara membeli lisensi atau produk digital di MarketPointID?",
     answer: "Pilih produk digital yang Anda inginkan di katalog, klik tombol 'Beli Sekarang' atau '+ Keranjang', lalu pilih metode pembayaran yang tersedia (QRIS instan, Virtual Account bank, atau Saldo Akun). Setelah pembayaran terverifikasi otomatis, link download atau kode lisensi akan langsung muncul di halaman detail pesanan Anda."
   },
   {
@@ -179,18 +179,18 @@ const FAQ_ITEMS = [
   },
   {
     id: "faq-3",
-    question: "Apakah transaksi di MarketPoint bergaransi?",
+    question: "Apakah transaksi di MarketPointID bergaransi?",
     answer: "Ya, 100%! Seluruh transaksi dilindungi oleh sistem Rekening Bersama (Escrow System). Dana pembayaran tidak langsung diteruskan ke penjual sampai Anda memastikan lisensi atau produk digital tersebut berfungsi dengan baik sesuai deskripsi."
   },
   {
     id: "faq-4",
     question: "Bagaimana jika lisensi yang saya beli tidak dapat diaktivasi?",
-    answer: "Anda dapat langsung menghubungi penjual melalui fitur Chat Toko atau mengajukan komplain pesanan di riwayat pembelian Anda. Penjual memiliki waktu 1x24 jam untuk memberikan lisensi pengganti yang valid. Jika penjual tidak dapat menyelesaikan kendala, dana Anda akan dikembalikan 100% oleh sistem MarketPoint."
+    answer: "Anda dapat langsung menghubungi penjual melalui fitur Chat Toko atau mengajukan komplain pesanan di riwayat pembelian Anda. Penjual memiliki waktu 1x24 jam untuk memberikan lisensi pengganti yang valid. Jika penjual tidak dapat menyelesaikan kendala, dana Anda akan dikembalikan 100% oleh sistem MarketPointID."
   },
   {
     id: "faq-5",
-    question: "Metode pembayaran apa saja yang didukung oleh MarketPoint?",
-    answer: "Kami mendukung QRIS (BCA, Mandiri, BRI, BNI, GoPay, OVO, Dana, ShopeePay), Virtual Account semua bank utama nasional, gerai Indomaret/Alfamart, dan Saldo Dompet Akun MarketPoint."
+    question: "Metode pembayaran apa saja yang didukung oleh MarketPointID?",
+    answer: "Kami mendukung QRIS (BCA, Mandiri, BRI, BNI, GoPay, OVO, Dana, ShopeePay), Virtual Account semua bank utama nasional, gerai Indomaret/Alfamart, dan Saldo Dompet Akun MarketPointID."
   },
   {
     id: "faq-6",
@@ -205,7 +205,7 @@ const FAQ_ITEMS = [
   {
     id: "faq-8",
     question: "Apakah saya bisa menjual source code aplikasi buatan saya sendiri?",
-    answer: "Tentu saja! Kami sangat mendukung kreator dan pengembang software lokal untuk menjual source code aplikasi web, mobile (Flutter/React Native), script backend, dan UI Kit desain mereka kepada ribuan pembeli di MarketPoint."
+    answer: "Tentu saja! Kami sangat mendukung kreator dan pengembang software lokal untuk menjual source code aplikasi web, mobile (Flutter/React Native), script backend, dan UI Kit desain mereka kepada ribuan pembeli di MarketPointID."
   }
 ];
 
@@ -269,7 +269,7 @@ export default function TermsPage() {
           <div className="max-w-screen-lg mx-auto text-center space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#00AA5B]/10 border border-[#00AA5B]/20 text-[#00AA5B] text-xs font-bold">
               <Scale className="w-3.5 h-3.5" />
-              <span>Transparansi & Keamanan Ekosistem MarketPoint</span>
+              <span>Transparansi & Keamanan Ekosistem MarketPointID</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground max-w-2xl mx-auto leading-tight">
@@ -369,7 +369,7 @@ export default function TermsPage() {
                 <div className="text-xs text-foreground/90 space-y-0.5">
                   <p className="font-bold text-foreground">Syarat & Ketentuan Umum Pengguna</p>
                   <p className="text-muted-foreground leading-relaxed">
-                    Klausul di bawah ini mengatur hak, kewajiban, dan tata cara transaksi produk digital antara pembeli dan platform MarketPoint.
+                    Klausul di bawah ini mengatur hak, kewajiban, dan tata cara transaksi produk digital antara pembeli dan platform MarketPointID.
                   </p>
                 </div>
               </div>
@@ -505,7 +505,7 @@ export default function TermsPage() {
                 <div>
                   <h4 className="text-sm font-bold text-foreground">Memiliki Pertanyaan Lain?</h4>
                   <p className="text-xs text-muted-foreground">
-                    Tim Customer Support MarketPoint Care siap membantu kendala Anda 24/7.
+                    Tim Customer Support MarketPointID Care siap membantu kendala Anda 24/7.
                   </p>
                 </div>
               </div>

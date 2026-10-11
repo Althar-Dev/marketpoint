@@ -70,7 +70,7 @@ export function DesktopAccountSidebar({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="font-bold text-[12px] truncate">{displayName || user?.displayName || "Pengguna MarketPoint"}</p>
+            <p className="font-bold text-[12px] truncate">{displayName || user?.displayName || "Pengguna MarketPointID"}</p>
             <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
           </div>
         </div>

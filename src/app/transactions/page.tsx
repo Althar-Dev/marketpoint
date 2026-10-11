@@ -240,7 +240,7 @@ function TransactionsContent() {
                       </div>
                       <h3 className="text-sm font-bold text-slate-900">Tidak Ada Transaksi</h3>
                       <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                        {searchQuery ? "Hasil pencarian tidak ditemukan." : "Kamu belum pernah melakukan transaksi di MarketPoint."}
+                        {searchQuery ? "Hasil pencarian tidak ditemukan." : "Kamu belum pernah melakukan transaksi di MarketPointID."}
                       </p>
                       {!searchQuery && (
                         <Button asChild size="sm" className="bg-[#00AA5B] hover:bg-[#009650] text-white rounded-xl text-xs font-bold mt-2">
@@ -301,7 +301,7 @@ function TransactionsContent() {
                 <div className="space-y-1">
                   <h4 className="text-[11px] font-bold text-slate-900">Jaminan Keamanan Transaksi</h4>
                   <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
-                    Semua pembayaran diproteksi oleh sistem Rekening Bersama (Escrow) MarketPoint. Penjual hanya akan menerima dana setelah Anda mendapatkan produk digital yang valid.
+                    Semua pembayaran diproteksi oleh sistem Rekening Bersama (Escrow) MarketPointID. Penjual hanya akan menerima dana setelah Anda mendapatkan produk digital yang valid.
                   </p>
                 </div>
               </div>

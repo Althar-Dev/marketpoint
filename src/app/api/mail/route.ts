@@ -69,7 +69,7 @@ export async function POST(req: Request) {
         let liveResult = null;
         try {
           liveResult = await sendOutgoingEmail({
-            from: from ? `MarketPoint <${from}>` : "MarketPoint Delivery <delivery@marketpoint.id>",
+            from: from ? `MarketPointID <${from}>` : "MarketPointID Delivery <delivery@marketpoint.id>",
             to: to.trim(),
             subject,
             text: content,

@@ -206,7 +206,7 @@ const INITIAL_UPDATES: UpdateItem[] = [
     time: "2 hari yang lalu",
     isUnread: false,
     author: {
-      name: "MarketPoint Care",
+      name: "MarketPointID Care",
       avatar: "/assets/avatar/duck.png",
       isOfficial: true,
     },
@@ -281,7 +281,7 @@ export default function UpdatesPage() {
       await auth.signOut();
       toast({
         title: "Berhasil Keluar",
-        description: "Sampai jumpa kembali di MarketPoint!",
+        description: "Sampai jumpa kembali di MarketPointID!",
       });
       router.push("/login");
     } catch {

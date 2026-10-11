@@ -1,5 +1,5 @@
 /**
- * @fileOverview Inisialisasi Kredensial Xendit untuk MarketPoint.
+ * @fileOverview Inisialisasi Kredensial Xendit untuk MarketPointID.
  * File ini menyimpan konfigurasi dasar dan fungsi pembantu autentikasi.
  */
 

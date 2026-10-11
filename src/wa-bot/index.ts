@@ -1,5 +1,5 @@
 /**
- * MarketPoint WhatsApp Bot Entry Point
+ * MarketPointID WhatsApp Bot Entry Point
  * Folder: src/wa-bot
  */
 

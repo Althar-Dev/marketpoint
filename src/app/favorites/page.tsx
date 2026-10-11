@@ -83,7 +83,7 @@ export default function FavoritesPage() {
       await auth.signOut();
       toast({
         title: "Berhasil Keluar",
-        description: "Sampai jumpa kembali di MarketPoint!",
+        description: "Sampai jumpa kembali di MarketPointID!",
       });
       router.push("/login");
     } catch {
@@ -192,7 +192,7 @@ export default function FavoritesPage() {
                       </Badge>
                     </h1>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Daftar toko yang Anda ikuti secara langsung dari platform MarketPoint.
+                      Daftar toko yang Anda ikuti secara langsung dari platform MarketPointID.
                     </p>
                   </div>
 

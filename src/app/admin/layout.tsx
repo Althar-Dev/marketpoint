@@ -85,7 +85,7 @@ export default function AdminLayout({
           <div className="mb-4 animate-in fade-in zoom-in-95 duration-700">
              <img 
                src="/assets/img/logo.png" 
-               alt="MarketPoint" 
+               alt="MarketPointID" 
                className="h-9 md:h-11 w-auto object-contain"
              />
           </div>

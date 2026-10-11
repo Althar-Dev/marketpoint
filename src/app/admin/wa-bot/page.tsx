@@ -75,10 +75,10 @@ export default function AdminWABotPage() {
 
   // Bot Config State (backed by database/config.json)
   const [botConfig, setBotConfig] = useState({
-    botName: "MarketPoint",
+    botName: "MarketPointID",
     otpExpiryMinutes: 5,
     otpCooldownSeconds: 60,
-    communityLink: "https://chat.whatsapp.com/MarketPointCommunity",
+    communityLink: "https://chat.whatsapp.com/MarketPointIDCommunity",
     communityJid: "",
     checkCommunity: true,
     sessionDir: "bot-session",
@@ -795,7 +795,7 @@ export default function AdminWABotPage() {
                   <Input
                     value={botConfig.botName}
                     onChange={(e) => setBotConfig({ ...botConfig, botName: e.target.value })}
-                    placeholder="MarketPoint"
+                    placeholder="MarketPointID"
                     className="h-9 rounded-xl text-xs font-bold border-border bg-muted/20 focus:bg-white transition-all"
                   />
                 </div>

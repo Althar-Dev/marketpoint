@@ -108,7 +108,7 @@ export default function AdminDashboard() {
   ];
 
   const topShops = realShops.length > 0 ? realShops.slice(0, 4) : [
-    { name: "MarketPoint Official", slug: "marketpoint", sales: "3,420 tx", rating: 5.0, isVerified: true, isOfficial: true, logoUrl: "/assets/img/logo.png" },
+    { name: "MarketPointID Official", slug: "marketpoint", sales: "3,420 tx", rating: 5.0, isVerified: true, isOfficial: true, logoUrl: "/assets/img/logo.png" },
     { name: "DevX Studio Store", slug: "devx-studio", sales: "1,850 tx", rating: 4.9, isVerified: true, isOfficial: false, logoUrl: "" },
     { name: "Althar Soft Digital", slug: "althar-soft", sales: "1,240 tx", rating: 4.8, isVerified: true, isOfficial: false, logoUrl: "" },
     { name: "STS Global Hub", slug: "stslabs", sales: "920 tx", rating: 4.9, isVerified: false, isOfficial: false, logoUrl: "" },
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-base md:text-lg font-bold tracking-tight text-[#212121]">Dashboard Platform Admin</h2>
-          <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Ringkasan performa penjualan, kategori populer, dan pergerakan merchant MarketPoint.</p>
+          <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">Ringkasan performa penjualan, kategori populer, dan pergerakan merchant MarketPointID.</p>
         </div>
       </div>
 

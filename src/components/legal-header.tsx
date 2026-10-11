@@ -44,13 +44,20 @@ export function LegalHeader({ title, badge = "Legal & Policies" }: LegalHeaderPr
           <Link href="/" className="flex items-center gap-2 group">
             <img
               src="/assets/img/logo.png"
-              alt="MarketPoint Logo"
+              alt="MarketPointID Logo"
               className="h-8 md:h-9 w-auto object-contain transition-transform group-hover:scale-105"
             />
-            <div className="flex flex-col leading-none">
-              <span className="text-[7px] font-bold uppercase tracking-widest text-[#00AA5B]">Market</span>
-              <span className="font-headline font-bold text-base md:text-lg tracking-tighter text-foreground">
-                Point
+            <div className="flex items-center gap-1.5 select-none leading-none">
+              <div className="flex flex-col justify-center leading-none">
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70 leading-none mb-0.5">
+                  Market
+                </span>
+                <span className="font-headline font-bold text-base md:text-[17px] tracking-tight text-foreground leading-none">
+                  Point
+                </span>
+              </div>
+              <span className="font-headline font-black text-2xl md:text-3xl text-[#00AA5B] tracking-tight leading-none">
+                ID
               </span>
             </div>
           </Link>

@@ -199,22 +199,22 @@ export async function initWASocket(): Promise<any> {
 
           if (command === "!ping") {
             await socketInstance.sendMessage(from, {
-              text: "Pong! 🚀 Bot WhatsApp MarketPoint aktif & terhubung.",
+              text: "Pong! 🚀 Bot WhatsApp MarketPointID aktif & terhubung.",
             });
             appendBotLog(`Auto-reply !ping terkirim ke ${senderNum}`, "success");
           } else if (command === "!help" || command === "!menu") {
             const menuText =
-              `🤖 *MARKETPOINT BOT HELP*\n\n` +
+              `🤖 *MARKETPOINTID BOT HELP*\n\n` +
               `• *!ping* - Cek status keaktifan bot\n` +
-              `• *!info* - Informasi layanan MarketPoint\n` +
+              `• *!info* - Informasi layanan MarketPointID\n` +
               `• *!otp* - Bantuan verifikasi akun WhatsApp\n\n` +
-              `Untuk verifikasi nomor telepon, silakan masukkan nomor Anda di halaman website MarketPoint.`;
+              `Untuk verifikasi nomor telepon, silakan masukkan nomor Anda di halaman website MarketPointID.`;
 
             await socketInstance.sendMessage(from, { text: menuText });
             appendBotLog(`Auto-reply !help terkirim ke ${senderNum}`, "success");
           } else if (command === "!info" || command === "!otp") {
             await socketInstance.sendMessage(from, {
-              text: `ℹ️ Bot WhatsApp ini digunakan untuk mengirimkan kode verifikasi OTP dan notifikasi transaksi MarketPoint secara otomatis.`,
+              text: `ℹ️ Bot WhatsApp ini digunakan untuk mengirimkan kode verifikasi OTP dan notifikasi transaksi MarketPointID secara otomatis.`,
             });
             appendBotLog(`Auto-reply ${command} terkirim ke ${senderNum}`, "success");
           }
@@ -528,7 +528,7 @@ export async function sendOTPMessage(phone: string, otpCode: string): Promise<{ 
     const jid = `${formattedPhone}@s.whatsapp.net`;
 
     const messageText =
-      `🔒 *Kode Verifikasi MarketPoint*\n\n` +
+      `🔒 *Kode Verifikasi MarketPointID*\n\n` +
       `Kode OTP Anda adalah:\n` +
       `*${otpCode}*\n\n` +
       `Kode ini berlaku selama 5 menit. Jangan bagikan kode ini kepada siapa pun demi keamanan akun Anda.\n`;
@@ -543,7 +543,7 @@ export async function sendOTPMessage(phone: string, otpCode: string): Promise<{ 
               text: messageText,
             }),
             footer: proto.Message.InteractiveMessage.Footer.create({
-              text: "© MarketPoint Official",
+              text: "© MarketPointID Official",
             }),
             nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
               buttons: [
@@ -605,11 +605,11 @@ export async function sendCommunityInviteMessage(
     }
     const jid = `${formattedPhone}@s.whatsapp.net`;
     const messageText =
-      `⚠️ *Syarat Verifikasi Seller MarketPoint*\n\n` +
-      `Halo! Nomor WhatsApp Anda (*+${formattedPhone}*) belum terdaftar di Komunitas Resmi WhatsApp MarketPoint.\n\n` +
-      `Sebelum mendapatkan kode OTP verifikasi dan membuka toko, Anda diwajibkan bergabung ke komunitas resmi seller MarketPoint terlebih dahulu.\n\n` +
+      `⚠️ *Syarat Verifikasi Seller MarketPointID*\n\n` +
+      `Halo! Nomor WhatsApp Anda (*+${formattedPhone}*) belum terdaftar di Komunitas Resmi WhatsApp MarketPointID.\n\n` +
+      `Sebelum mendapatkan kode OTP verifikasi dan membuka toko, Anda diwajibkan bergabung ke komunitas resmi seller MarketPointID terlebih dahulu.\n\n` +
       `Silakan klik tombol *Gabung Komunitas WhatsApp* di bawah ini:\n\n` +
-      `Setelah bergabung, silakan klik tombol *"Saya Sudah Gabung"* di website MarketPoint. 🚀`;
+      `Setelah bergabung, silakan klik tombol *"Saya Sudah Gabung"* di website MarketPointID. 🚀`;
 
     try {
       const nativeBtnMsg = generateWAMessageFromContent(
@@ -620,7 +620,7 @@ export async function sendCommunityInviteMessage(
               text: messageText,
             }),
             footer: proto.Message.InteractiveMessage.Footer.create({
-              text: "© MarketPoint Official",
+              text: "© MarketPointID Official",
             }),
             nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
               buttons: [
@@ -702,10 +702,10 @@ export async function checkIsCommunityMember(phone: string): Promise<{ isMember:
     const sock = await ensureConnectedSocket();
     if (!sock || currentState.status !== "CONNECTED") {
       appendBotLog(`Gagal cek komunitas: Bot belum terhubung`, "warn");
-      throw new Error("Bot WhatsApp MarketPoint belum terhubung. Silakan aktifkan Bot terlebih dahulu di Panel Admin.");
+      throw new Error("Bot WhatsApp MarketPointID belum terhubung. Silakan aktifkan Bot terlebih dahulu di Panel Admin.");
     }
 
-    appendBotLog(`Memeriksa keanggotaan Komunitas MarketPoint untuk +${targetNum}...`, "info");
+    appendBotLog(`Memeriksa keanggotaan Komunitas MarketPointID untuk +${targetNum}...`, "info");
 
     let isMember = false;
     let memberGroupName = "";
@@ -729,7 +729,7 @@ export async function checkIsCommunityMember(phone: string): Promise<{ isMember:
         }
       }
 
-      // Filter groups to ONLY those belonging to MarketPoint Community / MarketPoint Groups
+      // Filter groups to ONLY those belonging to MarketPointID Community / MarketPointID Groups
       const marketPointGroupKeys = keys.filter((k) => {
         const grp = allGroups[k];
         if (!grp) return false;
@@ -744,7 +744,7 @@ export async function checkIsCommunityMember(phone: string): Promise<{ isMember:
         );
       });
 
-      // Fallback: If no group matched MarketPoint filters, check groups with "pengumuman" or "seller"
+      // Fallback: If no group matched MarketPointID filters, check groups with "pengumuman" or "seller"
       const candidateKeys = marketPointGroupKeys.length > 0 ? marketPointGroupKeys : keys.filter((k) => {
         const grp = allGroups[k];
         const subject = (grp?.subject || "").toLowerCase();
@@ -753,9 +753,9 @@ export async function checkIsCommunityMember(phone: string): Promise<{ isMember:
 
       const finalKeysToCheck = candidateKeys.length > 0 ? candidateKeys : keys;
 
-      appendBotLog(`Memeriksa keanggotaan pada ${finalKeysToCheck.length} grup MarketPoint: [${finalKeysToCheck.map(k => `"${allGroups[k]?.subject}"`).join(", ")}]`, "info");
+      appendBotLog(`Memeriksa keanggotaan pada ${finalKeysToCheck.length} grup MarketPointID: [${finalKeysToCheck.map(k => `"${allGroups[k]?.subject}"`).join(", ")}]`, "info");
 
-      // 1. Direct participant check across filtered MarketPoint groups
+      // 1. Direct participant check across filtered MarketPointID groups
       for (const k of finalKeysToCheck) {
         const grp = allGroups[k];
         if (!grp) continue;
@@ -764,13 +764,13 @@ export async function checkIsCommunityMember(phone: string): Promise<{ isMember:
 
         if (found) {
           isMember = true;
-          memberGroupName = grp.subject || "Komunitas MarketPoint";
-          appendBotLog(`User +${targetNum} terverifikasi anggota grup MarketPoint "${memberGroupName}" (${participants.length} peserta)`, "success");
+          memberGroupName = grp.subject || "Komunitas MarketPointID";
+          appendBotLog(`User +${targetNum} terverifikasi anggota grup MarketPointID "${memberGroupName}" (${participants.length} peserta)`, "success");
           break;
         }
       }
 
-      // 2. Fallback: groupMetadata check on filtered MarketPoint groups
+      // 2. Fallback: groupMetadata check on filtered MarketPointID groups
       if (!isMember && finalKeysToCheck.length > 0) {
         for (const k of finalKeysToCheck) {
           try {
@@ -778,7 +778,7 @@ export async function checkIsCommunityMember(phone: string): Promise<{ isMember:
             const participants = meta?.participants || [];
             if (participants.some((p: any) => checkParticipantMatch(p, targetNum))) {
               isMember = true;
-              memberGroupName = meta?.subject || "Komunitas MarketPoint";
+              memberGroupName = meta?.subject || "Komunitas MarketPointID";
               appendBotLog(`User +${targetNum} terverifikasi anggota via metadata di grup "${memberGroupName}"`, "success");
               break;
             }
@@ -790,9 +790,9 @@ export async function checkIsCommunityMember(phone: string): Promise<{ isMember:
     }
 
     if (isMember) {
-      appendBotLog(`User +${targetNum} TERVERIFIKASI anggota komunitas MarketPoint ("${memberGroupName}")`, "success");
+      appendBotLog(`User +${targetNum} TERVERIFIKASI anggota komunitas MarketPointID ("${memberGroupName}")`, "success");
     } else {
-      appendBotLog(`User +${targetNum} BELUM terdaftar di Komunitas WhatsApp MarketPoint.`, "warn");
+      appendBotLog(`User +${targetNum} BELUM terdaftar di Komunitas WhatsApp MarketPointID.`, "warn");
     }
 
     return {
@@ -832,7 +832,7 @@ export async function sendShopAnnouncementMessage(data: {
 
     const bannerImageUrl = "https://cdn.marketpoint.id/marketpoint.png";
 
-    // Determine target JID (Strictly SINGLE MarketPoint Community Announcement Group)
+    // Determine target JID (Strictly SINGLE MarketPointID Community Announcement Group)
     let targetJids: string[] = [];
     let communityParentId = WA_CONFIG.COMMUNITY_JID ? (WA_CONFIG.COMMUNITY_JID.includes("@") ? WA_CONFIG.COMMUNITY_JID : `${WA_CONFIG.COMMUNITY_JID}@g.us`) : "";
 
@@ -891,7 +891,7 @@ export async function sendShopAnnouncementMessage(data: {
           bestJid = communityParentId;
         }
 
-        // 2c. Keyword matching for MarketPoint / Pengumuman / Seller / Komunitas
+        // 2c. Keyword matching for MarketPointID / Pengumuman / Seller / Komunitas
         if (!bestJid) {
           for (const k of keys) {
             const grp = groups[k];
@@ -926,12 +926,12 @@ export async function sendShopAnnouncementMessage(data: {
 
     if (targetJids.length === 0) {
       appendBotLog(`Tidak ada grup/komunitas tujuan yang sesuai untuk pengumuman toko baru.`, "warn");
-      return { success: false, error: "Bot belum bergabung di grup/komunitas MarketPoint." };
+      return { success: false, error: "Bot belum bergabung di grup/komunitas MarketPointID." };
     }
 
     const captionText =
       `🎉 *Selamat Toko Baru Bergabung!*\n\n` +
-      `Mari sambut *${shopName}* yang baru saja resmi bergabung dan membuka toko di MarketPoint!\n\n` +
+      `Mari sambut *${shopName}* yang baru saja resmi bergabung dan membuka toko di MarketPointID!\n\n` +
       `📌 *DETAIL TOKO:* \n` +
       `• *Nama Toko:* ${shopName}\n` +
       `• *Lokasi:* ${locationText}\n` +

@@ -306,7 +306,7 @@ export default function MerchantReviewsPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-[12px] font-black">{review.userName || "Pembeli MarketPoint"}</p>
+                        <p className="text-[12px] font-black">{review.userName || "Pembeli MarketPointID"}</p>
                         <div className="flex items-center gap-1 mt-0.5">
                           {[...Array(5)].map((_, i) => (
                             <Icon

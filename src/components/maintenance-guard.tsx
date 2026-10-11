@@ -80,7 +80,7 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
             <div className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 mx-auto mb-1 drop-shadow-md">
               <Image
                 src="/assets/img/mt.png"
-                alt="MarketPoint Sedang Dalam Pemeliharaan"
+                alt="MarketPointID Sedang Dalam Pemeliharaan"
                 fill
                 priority
                 className="object-contain"
@@ -118,7 +118,7 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
 
             {/* Footer notice */}
             <p className="text-[10px] text-muted-foreground/60 pt-4">
-              &copy; {new Date().getFullYear()} MarketPoint. Terima kasih atas kesabaran Anda.
+              &copy; {new Date().getFullYear()} MarketPointID. Terima kasih atas kesabaran Anda.
             </p>
           </div>
         </div>

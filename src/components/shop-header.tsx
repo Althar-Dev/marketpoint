@@ -41,8 +41,8 @@ export function ShopHeader() {
   const handleShare = async () => {
     if (typeof window === "undefined") return;
     const shareData = {
-      title: document.title || "MarketPoint",
-      text: "Lihat halaman produk ini di MarketPoint!",
+      title: document.title || "MarketPointID",
+      text: "Lihat halaman produk ini di MarketPointID!",
       url: window.location.href,
     };
 

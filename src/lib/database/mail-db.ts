@@ -391,7 +391,7 @@ export async function ensureDeliveryAccountExists() {
   await query(
     `
     INSERT INTO mail_accounts (email, name, role, usage, quota, status)
-    VALUES ('delivery@marketpoint.id', 'MarketPoint Delivery Service', 'Automated Fulfillment', '0.0 GB', '10 GB', 'ACTIVE')
+    VALUES ('delivery@marketpoint.id', 'MarketPointID Delivery Service', 'Automated Fulfillment', '0.0 GB', '10 GB', 'ACTIVE')
     ON CONFLICT (email) DO UPDATE SET status = 'ACTIVE'
   `
   );

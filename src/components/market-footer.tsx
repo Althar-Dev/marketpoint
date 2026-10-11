@@ -10,14 +10,14 @@ export function MarketFooter() {
     beli: [
       { label: "Digital Produk", href: "/" },
       { label: "Top Up & Tagihan", href: "/topup" },
-      { label: "MarketPoint API", href: "/docs" },
+      { label: "MarketPointID API", href: "/docs" },
     ],
     jual: [
       { label: "Buka Toko", href: "/register" },
       { label: "Pusat Edukasi Seller", href: "/seller-edu" },
     ],
     bantuan: [
-      { label: "MarketPoint Care", href: "/support" },
+      { label: "MarketPointID Care", href: "/support" },
       { label: "Syarat & Ketentuan", href: "/terms" },
       { label: "Kebijakan Privasi", href: "/privacy" },
     ],
@@ -94,7 +94,7 @@ export function MarketFooter() {
 
           {/* Column 4: Market Info */}
           <div className="space-y-4">
-            <h4 className="font-bold text-sm text-foreground">MarketPoint</h4>
+            <h4 className="font-bold text-sm text-foreground">MarketPointID</h4>
             <ul className="space-y-2">
               {footerLinks.market.map((link) => (
                 <li key={link.label}>
@@ -174,11 +174,11 @@ export function MarketFooter() {
           <div className="flex items-center gap-3">
             <img
               src="/assets/img/logo.png"
-              alt="MarketPoint Logo"
+              alt="MarketPointID Logo"
               className="h-8 w-auto object-contain"
             />
             <div className="h-6 w-px bg-border hidden md:block" />
-            <p className="text-[10px] text-muted-foreground font-medium">© 2026 <strong>MarketPoint</strong>. All Rights Reserved.</p>
+            <p className="text-[10px] text-muted-foreground font-medium">© 2026 <strong>MarketPointID</strong>. All Rights Reserved.</p>
           </div>
           <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
             <Link href="/terms-of-service" className="hover:text-[#00AA5B]">Syarat & Ketentuan</Link>

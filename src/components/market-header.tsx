@@ -170,12 +170,21 @@ export function MarketHeader() {
         <Link href="/" className="flex items-center gap-2 group shrink-0">
           <img 
             src="/assets/img/logo.png" 
-            alt="MarketPoint Logo" 
+            alt="MarketPointID Logo" 
             className="h-8 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
           />
-          <div className="flex flex-col leading-none hidden sm:flex">
-            <span className="text-[8px] font-bold uppercase tracking-widest text-primary/40">Market</span>
-            <span className="font-headline font-bold text-base md:text-lg tracking-tighter">Point</span>
+          <div className="hidden sm:flex items-center gap-1.5 select-none leading-none">
+            <div className="flex flex-col justify-center leading-none">
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70 leading-none mb-0.5">
+                Market
+              </span>
+              <span className="font-headline font-bold text-base md:text-[17px] tracking-tight text-foreground leading-none">
+                Point
+              </span>
+            </div>
+            <span className="font-headline font-black text-2xl md:text-3xl text-[#00AA5B] tracking-tight leading-none">
+              ID
+            </span>
           </div>
         </Link>
 
@@ -482,7 +491,7 @@ export function MarketHeader() {
                 <DropdownMenuContent align="end" className="w-56 mt-2 rounded-xl border-border p-2">
                   <DropdownMenuLabel className="px-2 py-1.5">
                     <div className="flex flex-col space-y-0.5">
-                      <p className="text-xs font-bold text-foreground truncate">{user.displayName || "User MarketPoint"}</p>
+                      <p className="text-xs font-bold text-foreground truncate">{user.displayName || "User MarketPointID"}</p>
                       <p className="text-[10px] font-medium text-muted-foreground truncate">{user.email}</p>
                     </div>
                   </DropdownMenuLabel>

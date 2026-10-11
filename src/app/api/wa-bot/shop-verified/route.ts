@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
     const messageText =
       `🎉 *Selamat! Toko Anda Terverifikasi*\n\n` +
-      `Halo *${shopName}*, pendaftaran toko Anda di MarketPoint telah berhasil dan nomor WhatsApp Anda telah terverifikasi resmi.\n\n` +
+      `Halo *${shopName}*, pendaftaran toko Anda di MarketPointID telah berhasil dan nomor WhatsApp Anda telah terverifikasi resmi.\n\n` +
       `📋 *Detail Toko Terdaftar:*\n` +
       `• *Nama Toko:* ${shopName}\n` +
       `• *URL Toko:* marketpoint.id/${slug}\n` +
@@ -35,9 +35,9 @@ export async function POST(req: Request) {
       `• *Lokasi Toko:* ${locationText}\n` +
       `• *Waktu Verifikasi:* ${formattedDate} WIB\n\n` +
       `🚀 *Langkah Selanjutnya:*\n` +
-      `Toko Anda kini telah aktif! Silakan buka Dashboard Seller Anda di website MarketPoint untuk mulai menambah produk digital dan mengelola penjualan.\n\n` +
+      `Toko Anda kini telah aktif! Silakan buka Dashboard Seller Anda di website MarketPointID untuk mulai menambah produk digital dan mengelola penjualan.\n\n` +
       `Salam hangat,\n` +
-      `*Tim MarketPoint Indonesia* 🛍️`;
+      `*Tim MarketPointID Indonesia* 🛍️`;
 
     // 1. Send personal notification to shop owner
     const result = await sendWAMessage(formattedPhone, messageText);

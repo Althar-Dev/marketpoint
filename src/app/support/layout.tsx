@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Contact Support',
-  description: 'Pusat bantuan resmi MarketPoint Care. Dapatkan solusi kendala transaksi, panduan aktivasi lisensi, bantuan pengembalian dana, dan hubungi tim support kami.',
+  description: 'Pusat bantuan resmi MarketPointID Care. Dapatkan solusi kendala transaksi, panduan aktivasi lisensi, bantuan pengembalian dana, dan hubungi tim support kami.',
   alternates: {
     canonical: '/support',
   },
   openGraph: {
-    title: 'MarketPoint Care | Pusat Bantuan & Dukungan Pelanggan',
-    description: 'Solusi cepat untuk kendala transaksi digital, aktivasi lisensi, dan panduan toko di MarketPoint.',
+    title: 'MarketPointID Care | Pusat Bantuan & Dukungan Pelanggan',
+    description: 'Solusi cepat untuk kendala transaksi digital, aktivasi lisensi, dan panduan toko di MarketPointID.',
     url: '/support',
     type: 'website',
   },

@@ -57,7 +57,7 @@ const PRODUCTS_ECOSYSTEM = [
     badge: "Karya Developer",
     description: "Koleksi source code aplikasi siap pakai berbasis Next.js, React, Laravel, Flutter, Android Studio, bot otomatisasi, dan API backend.",
     points: [
-      "Diverifikasi langsung oleh tim teknis MarketPoint",
+      "Diverifikasi langsung oleh tim teknis MarketPointID",
       "Dilengkapi panduan instalasi dan dokumentasi rapi",
       "Dukungan langsung dari pengembang pembuat script"
     ]
@@ -103,7 +103,7 @@ const PLATFORM_PILLARS = [
   {
     icon: ShieldCheck,
     title: "Sistem Rekening Bersama (Escrow)",
-    desc: "Uang pembayaran Anda ditahan aman oleh sistem MarketPoint dan baru diteruskan kepada penjual setelah Anda mengonfirmasi bahwa produk berfungsi dengan baik."
+    desc: "Uang pembayaran Anda ditahan aman oleh sistem MarketPointID dan baru diteruskan kepada penjual setelah Anda mengonfirmasi bahwa produk berfungsi dengan baik."
   },
   {
     icon: Store,
@@ -122,7 +122,7 @@ const PLATFORM_PILLARS = [
   },
   {
     icon: Headphones,
-    title: "Bantuan Pengguna MarketPoint Care",
+    title: "Bantuan Pengguna MarketPointID Care",
     desc: "Tim layanan pelanggan yang responsif siap membantu proses mediasi, kendala transaksi, dan klaim garansi produk digital Anda."
   }
 ];
@@ -133,7 +133,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-body text-[#212121] flex flex-col">
       {/* HEADER DESKTOP KHUSUS LEGAL & ABOUT */}
-      {!isMobile && <LegalHeader title="Tentang Kami" badge="Mengenal MarketPoint" />}
+      {!isMobile && <LegalHeader title="Tentang Kami" badge="Mengenal MarketPointID" />}
 
       {/* MOBILE APP BAR */}
       {isMobile && (
@@ -144,7 +144,7 @@ export default function AboutPage() {
                 <path d="m15 18-6-6 6-6" />
               </svg>
             </Link>
-            <h1 className="text-sm font-bold leading-tight">Tentang MarketPoint</h1>
+            <h1 className="text-sm font-bold leading-tight">Tentang MarketPointID</h1>
           </div>
           <Badge className="bg-[#00AA5B]/10 text-[#00AA5B] border-none text-[10px] font-bold">
             Profil
@@ -167,7 +167,7 @@ export default function AboutPage() {
             </h1>
 
             <p className="text-xs sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              MarketPoint adalah platform e-commerce produk non-fisik yang mempertemukan kreator digital, pengembang software, dan jutaan pembeli dengan sistem transaksi otomatis, rekening bersama aman, dan serba instan.
+              MarketPointID adalah platform e-commerce produk non-fisik yang mempertemukan kreator digital, pengembang software, dan jutaan pembeli dengan sistem transaksi otomatis, rekening bersama aman, dan serba instan.
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
@@ -223,7 +223,7 @@ export default function AboutPage() {
                 Selama bertahun-tahun, transaksi produk digital di Indonesia sering kali dibayangi risiko penipuan karena dilakukan melalui transfer langsung tanpa perantara yang memadai. Di sisi lain, ribuan programmer dan kreator digital berbakat kesulitan menemukan wadah yang tepat untuk memasarkan karya mereka secara profesional.
               </p>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                <strong>MarketPoint</strong> hadir sebagai jawaban atas tantangan tersebut. Kami membangun platform yang dirancang khusus untuk karakteristik produk non-fisik: sistem serah terima lisensi otomatis dalam hitungan detik, rekening bersama (*escrow*) yang mengunci dana sampai produk terbukti berfungsi, serta ekosistem toko mandiri yang mudah digunakan oleh siapa saja.
+                <strong>MarketPointID</strong> hadir sebagai jawaban atas tantangan tersebut. Kami membangun platform yang dirancang khusus untuk karakteristik produk non-fisik: sistem serah terima lisensi otomatis dalam hitungan detik, rekening bersama (*escrow*) yang mengunci dana sampai produk terbukti berfungsi, serta ekosistem toko mandiri yang mudah digunakan oleh siapa saja.
               </p>
 
               <div className="pt-2 space-y-2">
@@ -250,7 +250,7 @@ export default function AboutPage() {
                     <Globe className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold text-foreground">Visi MarketPoint</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-foreground">Visi MarketPointID</h3>
                     <p className="text-xs text-muted-foreground">Menjadi pasar digital terbesar dan teraman di Indonesia.</p>
                   </div>
                 </div>
@@ -298,7 +298,7 @@ export default function AboutPage() {
                     StarVale Technology Solution
                   </p>
                   <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-                    Filosofi Rekayasa & Di Balik Layar MarketPoint
+                    Filosofi Rekayasa & Di Balik Layar MarketPointID
                   </h2>
                 </div>
               </div>
@@ -311,13 +311,13 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
               <div className="lg:col-span-2 space-y-3.5 text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 <p>
-                  MarketPoint didirikan dan beroperasi di bawah naungan perusahaan <strong className="text-foreground">StarVale Technology Solution</strong>, yang dibangun oleh <strong className="text-foreground">Alhadi Adriano (AltharDev)</strong> sebagai pemilik dan pengembang tunggal.
+                  MarketPointID didirikan dan beroperasi di bawah naungan perusahaan <strong className="text-foreground">StarVale Technology Solution</strong>, yang dibangun oleh <strong className="text-foreground">Alhadi Adriano (AltharDev)</strong> sebagai pemilik dan pengembang tunggal.
                 </p>
                 <p>
                   Kami meyakini bahwa keunggulan sebuah platform perangkat lunak tidak diukur dari besarnya birokrasi, melainkan dari ketelitian rekayasa kode, efisiensi arsitektur, serta perhatian mendalam pada keamanan dan kenyamanan pengguna.
                 </p>
                 <p>
-                  Sebagai platform yang dibangun secara mandiri oleh satu pengembang (<em>solo-engineered enterprise platform</em>), setiap komponen MarketPoint—mulai dari antarmuka pengguna yang bersih, bot automasi pengiriman lisensi, integrasi pembayaran digital, hingga skalabilitas database—dirancang secara utuh dari nol untuk menghadirkan pasar digital terpercaya di Indonesia.
+                  Sebagai platform yang dibangun secara mandiri oleh satu pengembang (<em>solo-engineered enterprise platform</em>), setiap komponen MarketPointID—mulai dari antarmuka pengguna yang bersih, bot automasi pengiriman lisensi, integrasi pembayaran digital, hingga skalabilitas database—dirancang secara utuh dari nol untuk menghadirkan pasar digital terpercaya di Indonesia.
                 </p>
               </div>
 
@@ -402,7 +402,7 @@ export default function AboutPage() {
               Kategori Produk
             </Badge>
             <h2 className="text-xl sm:text-3xl font-black tracking-tight text-foreground">
-              Apa Saja yang Dapat Anda Temukan di MarketPoint?
+              Apa Saja yang Dapat Anda Temukan di MarketPointID?
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Jelajahi ribuan produk digital dari ratusan penjual dan kreator teknologi terverifikasi.
@@ -458,7 +458,7 @@ export default function AboutPage() {
               Keunggulan Kami
             </Badge>
             <h2 className="text-xl sm:text-3xl font-black tracking-tight text-foreground">
-              Mengapa Berbelanja & Berjualan di MarketPoint?
+              Mengapa Berbelanja & Berjualan di MarketPointID?
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Fitur-fitur terbaik yang dirancang untuk kenyamanan, kecepatan, dan rasa aman Anda.
@@ -503,7 +503,7 @@ export default function AboutPage() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Dapatkan info flash sale terbaru, update stok lisensi, berdiskusi dengan sesama developer, dan konsultasi tips jualan langsung di grup komunitas resmi MarketPoint.
+                Dapatkan info flash sale terbaru, update stok lisensi, berdiskusi dengan sesama developer, dan konsultasi tips jualan langsung di grup komunitas resmi MarketPointID.
               </p>
               <Button asChild className="rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-9 px-4 gap-1.5 shadow-xs">
                 <a
@@ -523,7 +523,7 @@ export default function AboutPage() {
                   <Headphones className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-foreground">MarketPoint Care 24/7</h3>
+                  <h3 className="text-base font-bold text-foreground">MarketPointID Care 24/7</h3>
                   <p className="text-xs text-muted-foreground">Layanan bantuan dan penanganan kendala</p>
                 </div>
               </div>
@@ -550,7 +550,7 @@ export default function AboutPage() {
         <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24">
           <div className="rounded-3xl bg-gradient-to-r from-[#00AA5B] via-[#008f4c] to-[#006e3a] text-white p-8 sm:p-12 text-center relative overflow-hidden shadow-lg shadow-[#00AA5B]/15 space-y-5">
             <h2 className="text-xl sm:text-3xl font-black tracking-tight max-w-xl mx-auto leading-tight">
-              Mulai Langkah Anda Bersama MarketPoint Hari Ini
+              Mulai Langkah Anda Bersama MarketPointID Hari Ini
             </h2>
             <p className="text-xs sm:text-sm text-white/90 max-w-lg mx-auto leading-relaxed">
               Temukan ribuan software berlisensi original atau buka toko digital Anda sendiri dan raih penghasilan tanpa batas.

@@ -19,7 +19,7 @@ export function TopUpHeader() {
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-border/60 shadow-2xs">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-4">
         
-        {/* Left: Brand Name on Detail Page OR Back to Home & MarketPoint TopUp on Hub Page */}
+        {/* Left: Brand Name on Detail Page OR Back to Home & MarketPointID TopUp on Hub Page */}
         <div className="flex items-center gap-2 sm:gap-3">
           {isDetailPage ? (
             <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export function TopUpHeader() {
               <div className="h-4 w-[1px] bg-slate-200" />
               <Link href="/topup" className="flex items-center gap-1.5">
                 <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                  MarketPoint <span className="text-[#00AA5B]">TopUp</span>
+                  MarketPointID <span className="text-[#00AA5B]">TopUp</span>
                 </span>
               </Link>
             </div>

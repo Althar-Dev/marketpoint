@@ -238,9 +238,9 @@ export async function initDatabaseSchema(force = false) {
 
         -- Seed default system accounts including delivery@marketpoint.id
         INSERT INTO mail_accounts (email, name, role, usage, quota, status) VALUES
-        ('delivery@marketpoint.id', 'MarketPoint Delivery Service', 'Automated Fulfillment', '0.0 GB', '10 GB', 'ACTIVE'),
+        ('delivery@marketpoint.id', 'MarketPointID Delivery Service', 'Automated Fulfillment', '0.0 GB', '10 GB', 'ACTIVE'),
         ('support@marketpoint.id', 'Customer Support', 'Bantuan & Tiket Pelanggan', '0.0 GB', '5 GB', 'ACTIVE'),
-        ('admin@marketpoint.id', 'MarketPoint Administrator', 'Sistem & Operasional', '0.0 GB', '5 GB', 'ACTIVE')
+        ('admin@marketpoint.id', 'MarketPointID Administrator', 'Sistem & Operasional', '0.0 GB', '5 GB', 'ACTIVE')
         ON CONFLICT (email) DO NOTHING;
 
         -- 11. Create transactions table

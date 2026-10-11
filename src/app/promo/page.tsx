@@ -172,7 +172,7 @@ export default function PromoPage() {
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground max-w-2xl mx-auto leading-tight">
-              Belanja Produk Digital Lebih Hemat di MarketPoint
+              Belanja Produk Digital Lebih Hemat di MarketPointID
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
@@ -250,7 +250,7 @@ export default function PromoPage() {
                   Klaim Diskon 50% untuk Transaksi Pertamamu
                 </h3>
                 <p className="text-xs text-white/90 leading-relaxed max-w-md">
-                  Baru pertama kali belanja di MarketPoint? Gunakan kode voucher <code className="bg-white/25 px-1.5 py-0.5 rounded-md font-mono font-bold text-white">NEWUSER50</code> saat checkout.
+                  Baru pertama kali belanja di MarketPointID? Gunakan kode voucher <code className="bg-white/25 px-1.5 py-0.5 rounded-md font-mono font-bold text-white">NEWUSER50</code> saat checkout.
                 </p>
               </div>
 
@@ -410,7 +410,7 @@ export default function PromoPage() {
                 Panduan Praktis
               </Badge>
               <h3 className="text-lg sm:text-xl font-bold text-foreground">
-                Cara Menggunakan Kode Voucher di MarketPoint
+                Cara Menggunakan Kode Voucher di MarketPointID
               </h3>
               <p className="text-xs text-muted-foreground">
                 Hanya butuh 3 langkah mudah untuk menikmati potongan harga.

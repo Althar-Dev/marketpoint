@@ -39,7 +39,7 @@ export default function EmailAppLayout({
       <div className="h-screen bg-white flex flex-col items-center justify-center font-body">
         <div className="relative flex flex-col items-center">
           <div className="mb-4">
-             <img src="/assets/img/logo.png" alt="MarketPoint" className="h-10 w-auto object-contain animate-pulse" />
+             <img src="/assets/img/logo.png" alt="MarketPointID" className="h-10 w-auto object-contain animate-pulse" />
           </div>
           <div className="flex items-center gap-2 text-muted-foreground animate-in fade-in duration-700">
              <Loader2 className="w-4 h-4 animate-spin text-[#00AA5B]" />

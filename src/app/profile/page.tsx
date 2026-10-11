@@ -151,7 +151,7 @@ export default function ProfilePage() {
       await auth.signOut();
       toast({
         title: "Berhasil keluar",
-        description: "Sampai jumpa kembali di MarketPoint!",
+        description: "Sampai jumpa kembali di MarketPointID!",
       });
       router.push("/login");
     } catch (error) {
@@ -349,7 +349,7 @@ export default function ProfilePage() {
         <div className="py-1">
           {[
             { label: "Pesanan Dikomplain", icon: MessageSquareWarning },
-            { label: "Bantuan MarketPoint Care", icon: HelpCircle },
+            { label: "Bantuan MarketPointID Care", icon: HelpCircle },
             { label: "Scan Kode QR", icon: ScanLine },
             { label: "Keluar Akun", icon: LogOut, onClick: handleLogout, color: 'text-destructive' },
           ].map((item, idx) => (

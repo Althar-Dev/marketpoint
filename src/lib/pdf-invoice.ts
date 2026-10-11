@@ -43,7 +43,7 @@ function formatDatePdf(dateStr: string): string {
 }
 
 /**
- * Loads the MarketPoint official logo as a Base64 data URL
+ * Loads the MarketPointID official logo as a Base64 data URL
  */
 async function loadLogoBase64(): Promise<string | null> {
   if (typeof window === "undefined") return null;
@@ -70,7 +70,7 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
     format: "a4",
   });
 
-  const primaryColor = [0, 170, 91] as const; // #00AA5B (MarketPoint Green)
+  const primaryColor = [0, 170, 91] as const; // #00AA5B (MarketPointID Green)
   const darkColor = [30, 41, 59] as const; // Slate 800
   const grayColor = [100, 116, 139] as const; // Slate 500
   const lightBg = [248, 250, 252] as const; // Slate 50
@@ -98,7 +98,7 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setFont("helvetica", "bold");
   doc.setFontSize(17);
   doc.setTextColor(...primaryColor);
-  doc.text("MarketPoint", brandTextX, 17);
+  doc.text("MarketPointID", brandTextX, 17);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
@@ -435,7 +435,7 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
     "• Lisensi & file produk dikirimkan otomatis ke email Anda.",
     "• Periksa folder Kotak Masuk atau folder Spam pada email.",
     "• Simpan dokumen bukti transaksi ini untuk keperluan klaim,",
-    "  bantuan teknis, serta garansi resmi MarketPoint.",
+    "  bantuan teknis, serta garansi resmi MarketPointID.",
   ];
   let nY = y + 11.5;
   noteLines.forEach((line) => {
@@ -459,13 +459,13 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(22, 101, 52);
-  doc.text("Transaksi Resmi & Dilindungi Sistem MarketPoint", 20, y + 5);
+  doc.text("Transaksi Resmi & Dilindungi Sistem MarketPointID", 20, y + 5);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(21, 128, 61);
   doc.text(
-    "Setiap pembayaran diverifikasi secara otomatis dan tercatat aman dalam sistem basis data MarketPoint.",
+    "Setiap pembayaran diverifikasi secara otomatis dan tercatat aman dalam sistem basis data MarketPointID.",
     20,
     y + 8.5
   );
@@ -479,7 +479,7 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setFontSize(7);
   doc.setTextColor(...grayColor);
   doc.text(
-    "Dokumen ini diterbitkan secara otomatis oleh sistem MarketPoint.id dan merupakan bukti transaksi yang sah tanpa tanda tangan basah.",
+    "Dokumen ini diterbitkan secara otomatis oleh sistem MarketPointID dan merupakan bukti transaksi yang sah tanpa tanda tangan basah.",
     105,
     footerY,
     { align: "center" }
@@ -492,5 +492,5 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   );
 
   // Trigger direct download in browser
-  doc.save(`MarketPoint-Bukti-Transaksi-${tx.invoiceNumber}.pdf`);
+  doc.save(`MarketPointID-Bukti-Transaksi-${tx.invoiceNumber}.pdf`);
 }

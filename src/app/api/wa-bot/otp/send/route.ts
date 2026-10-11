@@ -36,7 +36,7 @@ export async function POST(req: Request) {
               success: false,
               requiresCommunityJoin: true,
               communityLink: memberCheck.communityLink,
-              error: "Nomor WhatsApp Anda belum terdaftar di Komunitas WhatsApp MarketPoint. Kami telah mengirimkan pesan instruksi & link ke WhatsApp Anda.",
+              error: "Nomor WhatsApp Anda belum terdaftar di Komunitas WhatsApp MarketPointID. Kami telah mengirimkan pesan instruksi & link ke WhatsApp Anda.",
             },
             { status: 403 }
           );

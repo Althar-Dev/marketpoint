@@ -24,11 +24,11 @@ export async function POST(req: Request) {
       const recipientEmail = payer_email || customer?.email || payload.email;
       if (recipientEmail) {
         try {
-          const itemTitle = items?.[0]?.name || description || "Produk Digital MarketPoint";
+          const itemTitle = items?.[0]?.name || description || "Produk Digital MarketPointID";
           await deliverProductLicense({
             orderId: external_id,
             recipientEmail,
-            recipientName: customer?.given_names || "Pelanggan MarketPoint",
+            recipientName: customer?.given_names || "Pelanggan MarketPointID",
             productTitle: itemTitle,
           });
           console.log(`[XENDIT WEBHOOK AUTO-DELIVERY SUCCESS] Order ${external_id} delivered to ${recipientEmail}`);

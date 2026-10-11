@@ -26,14 +26,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.9,
     },
-    // 3. Login MarketPoint
+    // 3. Login MarketPointID
     {
       url: `${baseUrl}/login`,
       lastModified: currentDate,
       changeFrequency: 'monthly',
       priority: 0.8,
     },
-    // 4. About MarketPoint
+    // 4. About MarketPointID
     {
       url: `${baseUrl}/about`,
       lastModified: currentDate,

@@ -120,7 +120,7 @@ export function AdminSidebar() {
           {state !== "collapsed" && (
             <div className="flex flex-col overflow-hidden">
               <span className="text-[10px] font-medium text-[#00AA5B] leading-none">Admin Control</span>
-              <span className="text-sm font-bold tracking-tight truncate">MarketPoint</span>
+              <span className="text-sm font-bold tracking-tight truncate">MarketPointID</span>
             </div>
           )}
         </div>

@@ -115,7 +115,7 @@ const DEFAULT_SMTP_SETTINGS: SmtpSettings = {
   secure: process.env.SMTP_SECURE === "true",
   user: process.env.SMTP_USER || "",
   pass: process.env.SMTP_PASS || "",
-  fromName: process.env.SMTP_FROM_NAME || "MarketPoint Delivery",
+  fromName: process.env.SMTP_FROM_NAME || "MarketPointID Delivery",
   fromEmail: process.env.SMTP_FROM_EMAIL || "delivery@marketpoint.id",
   heloDomain: process.env.MAIL_HELO_DOMAIN || "marketpoint.id",
 };

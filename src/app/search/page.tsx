@@ -111,7 +111,7 @@ function SearchContent() {
             rawProducts = rawProducts.map((p: any) => {
               const shop = shopsMap[p.shopId];
               const realName = extractString(shop?.shopName) || extractString(shop?.name) || extractString(shop?.title) || extractString(shop?.slug);
-              const fallbackName = typeof p.shopName === "string" && p.shopName && p.shopName !== "MarketPoint Seller"
+              const fallbackName = typeof p.shopName === "string" && p.shopName && p.shopName !== "MarketPointID Seller"
                 ? p.shopName
                 : (p.shopId ? `Toko ${p.shopId.substring(0, 6)}` : "Toko Seller");
 

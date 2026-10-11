@@ -12,7 +12,7 @@ export async function generateMetadata({
   if (!mod) {
     return {
       title: 'Modul Edukasi Seller',
-      description: 'Panduan lengkap dan kurikulum resmi penjual produk digital di MarketPoint.',
+      description: 'Panduan lengkap dan kurikulum resmi penjual produk digital di MarketPointID.',
     };
   }
 
@@ -23,7 +23,7 @@ export async function generateMetadata({
       canonical: `/seller-edu/${mod.slug}`,
     },
     openGraph: {
-      title: `${mod.title} | MarketPoint Seller Academy`,
+      title: `${mod.title} | MarketPointID Seller Academy`,
       description: mod.summary,
       url: `/seller-edu/${mod.slug}`,
       type: 'article',

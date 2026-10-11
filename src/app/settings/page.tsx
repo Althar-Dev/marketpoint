@@ -167,7 +167,7 @@ export default function SettingsPage() {
       await auth.signOut();
       toast({
         title: "Berhasil Keluar",
-        description: "Sampai jumpa kembali di MarketPoint!",
+        description: "Sampai jumpa kembali di MarketPointID!",
       });
       router.push("/login");
     } catch (error) {
@@ -368,11 +368,11 @@ export default function SettingsPage() {
 
             {[
               { title: "Daftar Alamat", desc: "Atur alamat pengiriman belanjaan", icon: MapPinned },
-              { title: "Rekening Bank", desc: "Tarik Saldo MarketPoint ke rekening tujuan", icon: Building2 },
+              { title: "Rekening Bank", desc: "Tarik Saldo MarketPointID ke rekening tujuan", icon: Building2 },
               { title: "Pembayaran Instan", desc: "E-Wallet, kartu kredit, & debit instan terdaftar", icon: CreditCard },
               { title: "Keamanan Akun", desc: "Kata sandi, PIN, & verifikasi data diri", icon: Shield },
               { title: "Notifikasi", desc: "Atur segala jenis pesan notifikasi", icon: Bell },
-              { title: "Mode Tampilan", desc: "Aktifkan tampilan buta warna di MarketPoint", icon: Sun },
+              { title: "Mode Tampilan", desc: "Aktifkan tampilan buta warna di MarketPointID", icon: Sun },
             ].map((menu, idx) => (
               <button 
                 key={idx}
@@ -394,12 +394,12 @@ export default function SettingsPage() {
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="seputar" className="border-none">
               <AccordionTrigger className="hover:no-underline py-3 text-[11px] font-bold text-[#2E3137] focus:outline-none">
-                Seputar MarketPoint
+                Seputar MarketPointID
               </AccordionTrigger>
               <AccordionContent className="pt-0 pb-2">
                 <div className="space-y-0.5">
                   {[
-                    { title: "Kenali MarketPoint", icon: Info, href: "/about" },
+                    { title: "Kenali MarketPointID", icon: Info, href: "/about" },
                     { title: "Syarat & Ketentuan", icon: FileText, href: "/terms" },
                     { title: "Kebijakan Privasi", icon: Lock, href: "/privacy" },
                   ].map((item, idx) => (
@@ -428,7 +428,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex-1">
               <p className="text-[12px] font-bold text-destructive leading-tight">Keluar Akun</p>
-              <p className="text-[9px] text-muted-foreground mt-0.5">Keluar dari sesi MarketPoint saat ini</p>
+              <p className="text-[9px] text-muted-foreground mt-0.5">Keluar dari sesi MarketPointID saat ini</p>
             </div>
           </button>
         </section>

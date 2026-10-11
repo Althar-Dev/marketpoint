@@ -224,10 +224,10 @@ function TopUpHubContent() {
       <Link key={b.brand} href={`/topup/${catSlug}/${brandSlug}`} scroll={true}>
         <Card className="group relative h-full rounded-2xl overflow-hidden border border-border/70 bg-white hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col shadow-xs hover:-translate-y-0.5">
           <div className="relative aspect-square w-full overflow-hidden border-b border-border/40">
-            {/* MarketPoint Logo */}
+            {/* MarketPointID Logo */}
             <img
               src="/assets/img/logo.png"
-              alt="MarketPoint"
+              alt="MarketPointID"
               className="absolute top-2 right-2 z-10 h-5 sm:h-6 w-auto object-contain pointer-events-none drop-shadow-sm transition-transform group-hover:scale-105"
               loading="lazy"
             />

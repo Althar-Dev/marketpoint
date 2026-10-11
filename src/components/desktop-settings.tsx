@@ -267,7 +267,7 @@ export function DesktopSettings({
                       
                       <Button variant="outline" className="w-full h-10 font-bold text-[12px] rounded-xl border-border/60 flex items-center justify-center gap-2.5 group transition-all">
                         <Shield className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                        <span>PIN MarketPoint</span>
+                        <span>PIN MarketPointID</span>
                       </Button>
                     </div>
                   </div>

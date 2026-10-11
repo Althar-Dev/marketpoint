@@ -159,7 +159,7 @@ export default function AdminSettingsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                            <div className="space-y-1.5">
                               <Label className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest ml-0.5">Nama Platform</Label>
-                              <Input defaultValue="MarketPoint" className="h-9 rounded-lg bg-slate-50/50 border-border/50 text-[11px] font-medium focus:ring-green-500/10" />
+                              <Input defaultValue="MarketPointID" className="h-9 rounded-lg bg-slate-50/50 border-border/50 text-[11px] font-medium focus:ring-green-500/10" />
                            </div>
                            <div className="space-y-1.5">
                               <Label className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest ml-0.5">Support Email</Label>

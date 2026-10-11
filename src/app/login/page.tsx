@@ -194,7 +194,7 @@ function SignInContent() {
 
       toast({
         title: "Berhasil Masuk",
-        description: "Anda telah masuk ke dashboard MarketPoint.",
+        description: "Anda telah masuk ke dashboard MarketPointID.",
       });
 
       router.push(redirectTarget);
@@ -220,7 +220,7 @@ function SignInContent() {
         <div className="relative w-full h-full max-w-lg transition-transform hover:scale-105 duration-700">
           <Image
             src="/assets/img/auth.png"
-            alt="MarketPoint Auth Illustration"
+            alt="MarketPointID Auth Illustration"
             fill
             className="object-contain"
             priority
@@ -228,7 +228,7 @@ function SignInContent() {
           />
         </div>
         <div className="absolute bottom-12 left-12 right-12 xl:bottom-20 xl:left-20 xl:right-20 space-y-3 text-black">
-          <h2 className="text-3xl xl:text-4xl font-black font-headline tracking-tighter">MarketPoint</h2>
+          <h2 className="text-3xl xl:text-4xl font-black font-headline tracking-tighter">MarketPointID</h2>
           <p className="text-sm xl:text-base font-medium opacity-70 max-w-md leading-relaxed">
             Jelajahi ekosistem infrastruktur digital dan API terlengkap untuk pertumbuhan bisnis Anda.
           </p>
@@ -239,12 +239,12 @@ function SignInContent() {
         <div className="w-full max-w-[400px] space-y-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 mb-6">
-              <img src="/assets/img/logo.png" alt="MarketPoint Logo" className="h-8 w-auto" />
+              <img src="/assets/img/logo.png" alt="MarketPointID Logo" className="h-8 w-auto" />
               <div className="h-5 w-px bg-border mx-1" />
               <span className="text-[10px] font-black tracking-widest text-muted-foreground/50">MASUK</span>
             </div>
             <h1 className="text-2xl font-bold font-headline tracking-tight text-foreground">Selamat Datang</h1>
-            <p className="text-muted-foreground text-xs font-medium">Masuk ke dashboard MarketPoint Anda sekarang.</p>
+            <p className="text-muted-foreground text-xs font-medium">Masuk ke dashboard MarketPointID Anda sekarang.</p>
           </div>
 
           <div className="space-y-5">
@@ -319,7 +319,7 @@ function SignInContent() {
 
           <div className="pt-5 flex justify-center">
             <p className="text-xs text-muted-foreground font-medium">
-              Baru di MarketPoint?{" "}
+              Baru di MarketPointID?{" "}
               <Link
                 href={redirectTarget !== "/" ? `/register?redirect=${encodeURIComponent(redirectTarget)}` : "/register"}
                 className="font-bold text-[#00AA5B] hover:underline"

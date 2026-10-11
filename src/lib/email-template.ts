@@ -1,5 +1,5 @@
 /**
- * Template Generator Email Pengiriman Lisensi Resmi MarketPoint
+ * Template Generator Email Pengiriman Lisensi Resmi MarketPointID
  * Menghasilkan HTML email yang 100% kompatibel dan responsif untuk Gmail, Apple Mail, Outlook, & Webmail.
  */
 
@@ -111,14 +111,14 @@ export function renderDeliveryEmailHtml(params: DeliveryEmailTemplateParams): st
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pengiriman Pesanan #${orderId} - MarketPoint</title>
+  <title>Pengiriman Pesanan #${orderId} - MarketPointID</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #334155; line-height: 1.5;">
   <!-- Wrapper Luar (Padding Ringkas & Rapi) -->
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 14px 6px; margin: 0;">
     <tr>
       <td align="center">
-        <!-- Container Kartu Utama (Tema Terang Sesuai MarketPoint) -->
+        <!-- Container Kartu Utama (Tema Terang Sesuai MarketPointID) -->
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);">
           
           <!-- Header Banner (Light Theme dengan Logo Resmi) -->
@@ -132,17 +132,31 @@ export function renderDeliveryEmailHtml(params: DeliveryEmailTemplateParams): st
                         <td style="vertical-align: middle; padding-right: 12px;">
                           <img 
                             src="https://marketpoint.id/assets/img/logo.png" 
-                            alt="MarketPoint" 
+                            alt="MarketPointID" 
                             width="36" 
                             height="36" 
                             style="display: block; width: 36px; height: 36px; border-radius: 8px; object-fit: contain;" 
                           />
                         </td>
                         <td style="vertical-align: middle;">
-                          <div style="font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; line-height: 1.2;">
-                            Market<span style="color: #00AA5B;">Point</span>
-                          </div>
-                          <div style="font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">
+                          <table cellpadding="0" cellspacing="0" border="0" style="margin: 0; padding: 0;">
+                            <tr>
+                              <td style="vertical-align: middle; line-height: 1;">
+                                <div style="font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: #94a3b8; line-height: 1; margin-bottom: 2px;">
+                                  MARKET
+                                </div>
+                                <div style="font-size: 16px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; line-height: 1;">
+                                  Point
+                                </div>
+                              </td>
+                              <td style="vertical-align: middle; padding-left: 3px; line-height: 1;">
+                                <span style="font-size: 24px; font-weight: 900; color: #00AA5B; letter-spacing: -0.04em; line-height: 1;">
+                                  ID
+                                </span>
+                              </td>
+                            </tr>
+                          </table>
+                          <div style="font-size: 9px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px;">
                             Layanan Pengiriman Digital Resmi
                           </div>
                         </td>
@@ -166,7 +180,7 @@ export function renderDeliveryEmailHtml(params: DeliveryEmailTemplateParams): st
                 Halo, ${recipientName}
               </h1>
               <p style="margin: 0 0 20px 0; font-size: 13px; color: #475569; line-height: 1.6;">
-                Terima kasih atas pesanan Anda di MarketPoint. Pembayaran Anda telah terverifikasi oleh sistem escrow dan lisensi produk digital Anda otomatis diterbitkan di bawah ini.
+                Terima kasih atas pesanan Anda di MarketPointID. Pembayaran Anda telah terverifikasi oleh sistem escrow dan lisensi produk digital Anda otomatis diterbitkan di bawah ini.
               </p>
 
               <!-- Kartu Rincian Pesanan (Modern Structured Receipt) -->
@@ -250,10 +264,10 @@ export function renderDeliveryEmailHtml(params: DeliveryEmailTemplateParams): st
           <tr>
             <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 24px; text-align: center; font-size: 11px; color: #94a3b8; line-height: 1.5;">
               <p style="margin: 0 0 4px 0;">
-                Email ini dikirim otomatis oleh MarketPoint Delivery Engine dari <strong>delivery@marketpoint.id</strong>.
+                Email ini dikirim otomatis oleh MarketPointID Delivery Engine dari <strong>delivery@marketpoint.id</strong>.
               </p>
               <p style="margin: 0;">
-                Seluruh transaksi dilindungi sistem escrow MarketPoint. Butuh bantuan? Kunjungi <a href="https://marketpoint.id" style="color: #00AA5B; text-decoration: underline;">marketpoint.id</a>.
+                Seluruh transaksi dilindungi sistem escrow MarketPointID. Butuh bantuan? Kunjungi <a href="https://marketpoint.id" style="color: #00AA5B; text-decoration: underline;">marketpoint.id</a>.
               </p>
             </td>
           </tr>
@@ -297,7 +311,7 @@ export function parsePlainTextDeliveryEmail(content: string, subject: string): D
   return {
     orderId: orderIdMatch ? orderIdMatch[1].trim() : "Pesanan",
     recipientName: greetingMatch ? greetingMatch[1].trim() : "Pelanggan Setia",
-    productTitle: productMatch ? productMatch[1].trim() : "Produk Digital MarketPoint",
+    productTitle: productMatch ? productMatch[1].trim() : "Produk Digital MarketPointID",
     variant: variantMatch ? variantMatch[1].trim() : null,
     quantity: quantityMatch ? parseInt(quantityMatch[1], 10) : 1,
     licenseKeys: keys.length > 0 ? keys : ["Tervalidasi Resmi"],

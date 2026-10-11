@@ -38,11 +38,11 @@ const PRIVACY_SECTIONS = [
     title: "1. Pendahuluan & Komitmen Privasi",
     icon: Shield,
     badge: "Komitmen",
-    summary: "Landasan hukum perlindungan data pribadi dan komitmen transparansi MarketPoint.",
+    summary: "Landasan hukum perlindungan data pribadi dan komitmen transparansi MarketPointID.",
     content: [
-      "Selamat datang di Kebijakan Privasi MarketPoint (dioperasikan oleh MarketPoint Indonesia). Kami berkomitmen tinggi untuk melindungi dan menghormati hak privasi serta kerahasiaan data pribadi setiap pengguna, pembeli, mitra merchant, dan pengembang yang mengakses platform kami.",
+      "Selamat datang di Kebijakan Privasi MarketPointID (dioperasikan oleh MarketPointID Indonesia). Kami berkomitmen tinggi untuk melindungi dan menghormati hak privasi serta kerahasiaan data pribadi setiap pengguna, pembeli, mitra merchant, dan pengembang yang mengakses platform kami.",
       "Kebijakan ini disusun berdasarkan Undang-Undang Republik Indonesia No. 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP) serta standar perlindungan privasi internasional yang relevan.",
-      "Dengan mendaftar, mengakses, atau bertransaksi di situs web dan layanan API MarketPoint, Anda menyatakan telah membaca, memahami, dan menyetujui seluruh tata cara pemrosesan data pribadi sebagaimana tercantum dalam dokumen ini."
+      "Dengan mendaftar, mengakses, atau bertransaksi di situs web dan layanan API MarketPointID, Anda menyatakan telah membaca, memahami, dan menyetujui seluruh tata cara pemrosesan data pribadi sebagaimana tercantum dalam dokumen ini."
     ]
   },
   {
@@ -66,10 +66,10 @@ const PRIVACY_SECTIONS = [
     badge: "Pemrosesan",
     summary: "Alasan mengapa data pribadi Anda diperlukan dalam ekosistem layanan kami.",
     content: [
-      "MarketPoint memproses data pribadi Anda hanya untuk tujuan yang sah dan terdefinisi secara jelas, antara lain:",
+      "MarketPointID memproses data pribadi Anda hanya untuk tujuan yang sah dan terdefinisi secara jelas, antara lain:",
       "a. Memfasilitasi Transaksi: Memverifikasi pembayaran, menerbitkan lisensi perangkat lunak otomatis, menyerahkan file source code, dan mengelola saldo dompet digital Anda.",
       "b. Keamanan & Pencegahan Penipuan: Memantau aktivitas transaksi mencurigakan, mencegah pencucian uang, melindungi akun dari peretasan (brute-force), dan menegakkan aturan anti-pembajakan.",
-      "c. Komunikasi Layanan: Mengirimkan faktur digital, notifikasi status pesanan, notifikasi keamanan akun, dan balasan tiket bantuan MarketPoint Care.",
+      "c. Komunikasi Layanan: Mengirimkan faktur digital, notifikasi status pesanan, notifikasi keamanan akun, dan balasan tiket bantuan MarketPointID Care.",
       "d. Peningkatan Platform: Menganalisis kinerja teknis, mempercepat latensi API, dan menyempurnakan antarmuka pengguna agar semakin optimal.",
       "e. Kepatuhan Hukum: Memenuhi kewajiban perpajakan, peraturan Bank Indonesia, dan instruksi penegak hukum yang sah di wilayah Republik Indonesia."
     ]
@@ -81,7 +81,7 @@ const PRIVACY_SECTIONS = [
     badge: "Pihak Ketiga",
     summary: "Batasan ketat pembagian data hanya kepada mitra berlisensi resmi.",
     content: [
-      "MarketPoint TIDAK PERNAH dan TIDAK AKAN PERNAH menjual, menyewakan, atau memperdagangkan data pribadi Anda kepada pihak ketiga untuk kepentingan periklanan tanpa persetujuan eksplisit Anda.",
+      "MarketPointID TIDAK PERNAH dan TIDAK AKAN PERNAH menjual, menyewakan, atau memperdagangkan data pribadi Anda kepada pihak ketiga untuk kepentingan periklanan tanpa persetujuan eksplisit Anda.",
       "Data Anda hanya dibagikan kepada pihak ketiga terpercaya dalam lingkup operasional berikut:",
       "a. Mitra Gerbang Pembayaran (Payment Gateway): Penyedia lisensi QRIS, bank nasional, dan switching pembayaran resmi untuk memverifikasi keabsahan transfer dana Anda.",
       "b. Agregator Provider PPOB & Telekomunikasi: Nomor tujuan pulsa, token listrik PLN, atau ID game yang Anda masukkan hanya diteruskan ke provider terkait untuk menyelesaikan pesanan.",
@@ -110,7 +110,7 @@ const PRIVACY_SECTIONS = [
     badge: "Retensi Data",
     summary: "Jangka waktu kami menyimpan data pribadi Anda dalam sistem.",
     content: [
-      "Kami menyimpan data pribadi Anda selama akun Anda aktif dan terdaftar di MarketPoint, atau selama diperlukan untuk memenuhi tujuan pengumpulannya.",
+      "Kami menyimpan data pribadi Anda selama akun Anda aktif dan terdaftar di MarketPointID, atau selama diperlukan untuk memenuhi tujuan pengumpulannya.",
       "Data transaksi keuangan dan catatan pembayaran akan disimpan sekurang-kurangnya selama 5 (lima) tahun sesuai dengan peraturan pembukuan dan perpajakan di Indonesia.",
       "Setelah periode retensi yang diwajibkan oleh hukum berakhir, data pribadi Anda akan dihapus secara permanen atau dianonimkan agar tidak dapat lagi dikaitkan dengan identitas Anda."
     ]
@@ -137,7 +137,7 @@ const PRIVACY_SECTIONS = [
     badge: "Cookie Policy",
     summary: "Bagaimana kami menggunakan cookie untuk menjaga sesi login dan preferensi Anda.",
     content: [
-      "MarketPoint menggunakan cookie dan teknologi serupa (seperti LocalStorage) untuk:",
+      "MarketPointID menggunakan cookie dan teknologi serupa (seperti LocalStorage) untuk:",
       "a. Menjaga sesi login Anda tetap aktif dan aman tanpa perlu berulang kali memasukkan kredensial.",
       "b. Menyimpan preferensi tema (Dark/Light mode) dan isi keranjang belanja sementara.",
       "c. Menganalisis lalu lintas anonim untuk mencegah serangan bot dan aktivitas scraping ilegal.",
@@ -151,12 +151,12 @@ const PRIVACY_SECTIONS = [
     badge: "Kontak DPO",
     summary: "Saluran resmi untuk pertanyaan, masukan, dan pengaduan privasi.",
     content: [
-      "MarketPoint dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu untuk menyesuaikan dengan perkembangan teknologi dan regulasi pemerintah yang baru.",
+      "MarketPointID dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu untuk menyesuaikan dengan perkembangan teknologi dan regulasi pemerintah yang baru.",
       "Setiap perubahan substansial akan diumumkan melalui notifikasi di platform atau melalui email terdaftar sebelum perubahan tersebut mulai berlaku efektif.",
       "Jika Anda memiliki pertanyaan, keberatan, atau ingin mengajukan permohonan terkait data pribadi Anda, silakan hubungi Pejabat Perlindungan Data kami:",
       "• Email Khusus Privasi: privacy@marketpoint.id / dpo@marketpoint.id",
-      "• Pusat Layanan: MarketPoint Care (Support Center 24/7)",
-      "• Alamat Operasional: Gedung MarketPoint Center, Indonesia."
+      "• Pusat Layanan: MarketPointID Care (Support Center 24/7)",
+      "• Alamat Operasional: Gedung MarketPointID Center, Indonesia."
     ]
   }
 ];
@@ -213,7 +213,7 @@ export default function PrivacyPage() {
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              Komitmen penuh MarketPoint untuk menjaga transparansi, mengamankan identitas digital, dan menghormati hak data pribadi seluruh pengguna platform.
+              Komitmen penuh MarketPointID untuk menjaga transparansi, mengamankan identitas digital, dan menghormati hak data pribadi seluruh pengguna platform.
             </p>
 
             {/* Quick Search Bar */}

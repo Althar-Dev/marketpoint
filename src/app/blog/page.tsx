@@ -55,7 +55,7 @@ const ARTICLES: Article[] = [
   {
     id: "post-1",
     slug: "panduan-sukses-jualan-produk-digital",
-    title: "Panduan Lengkap Membuka Toko Produk Digital dan Meraih Penjualan Pertama di MarketPoint",
+    title: "Panduan Lengkap Membuka Toko Produk Digital dan Meraih Penjualan Pertama di MarketPointID",
     excerpt: "Langkah-langkah strategis bagi developer dan kreator lokal dalam mengunggah source code, mengatur stok lisensi otomatis, dan mengoptimalkan etalase toko agar dipercaya pembeli.",
     category: "Panduan Seller",
     date: "10 Okt 2026",
@@ -65,9 +65,9 @@ const ARTICLES: Article[] = [
     icon: Store,
     featured: true,
     content: [
-      "Menjual produk digital seperti source code, template website, atau lisensi software memiliki potensi margin yang sangat tinggi karena tidak membutuhkan biaya ongkos kirim fisik dan tidak memiliki batasan stok gudang. Namun, bagaimana cara memulai dengan benar di MarketPoint agar toko Anda langsung dipercaya calon pembeli?",
+      "Menjual produk digital seperti source code, template website, atau lisensi software memiliki potensi margin yang sangat tinggi karena tidak membutuhkan biaya ongkos kirim fisik dan tidak memiliki batasan stok gudang. Namun, bagaimana cara memulai dengan benar di MarketPointID agar toko Anda langsung dipercaya calon pembeli?",
       "1. Optimalkan Informasi Etalase dan Portofolio Produk: Cantumkan deskripsi yang jelas mengenai spesifikasi teknis (framework yang digunakan, versi dependensi, serta persyaratan sistem minimum). Sertakan screenshot antarmuka yang representatif atau link demo live jika memungkinkan.",
-      "2. Manfaatkan Fitur Pengiriman Stok Otomatis: Di dashboard Toko Saya MarketPoint, Anda dapat memasukkan daftar serial key lisensi ke sistem. Ketika pembeli menyelesaikan pembayaran, sistem otomatis akan langsung mengirimkan lisensi tersebut tanpa perlu Anda balas secara manual.",
+      "2. Manfaatkan Fitur Pengiriman Stok Otomatis: Di dashboard Toko Saya MarketPointID, Anda dapat memasukkan daftar serial key lisensi ke sistem. Ketika pembeli menyelesaikan pembayaran, sistem otomatis akan langsung mengirimkan lisensi tersebut tanpa perlu Anda balas secara manual.",
       "3. Berikan Dokumentasi Instalasi yang Rapi: Pembeli produk digital sangat menghargai kejelasan petunjuk. Sertakan file panduan 'README' atau dokumentasi PDF yang menjelaskan langkah instalasi langkah-demi-langkah.",
       "4. Berikan Respons Chat Cepat: Pembeli sering kali bertanya terlebih dahulu sebelum membeli. Toko dengan tingkat respons obrolan di bawah 1 jam memiliki rasio konversi penjualan 3 kali lipat lebih tinggi.",
       "Dengan menerapkan keempat pilar di atas, toko Anda akan lebih cepat meraih penjualan perdana dan mendapatkan ulasan bintang lima dari pembeli terverifikasi."
@@ -77,7 +77,7 @@ const ARTICLES: Article[] = [
     id: "post-2",
     slug: "mengapa-transaksi-digital-wajib-escrow",
     title: "Mengenal Sistem Rekening Bersama (Escrow): Mengapa Transaksi Digital Wajib Memakainya?",
-    excerpt: "Bagaimana sistem Escrow di MarketPoint mengunci dana pembayaran hingga produk terbukti berfungsi dan menghilangkan risiko penipuan transfer langsung.",
+    excerpt: "Bagaimana sistem Escrow di MarketPointID mengunci dana pembayaran hingga produk terbukti berfungsi dan menghilangkan risiko penipuan transfer langsung.",
     category: "Keamanan & Lisensi",
     date: "08 Okt 2026",
     readTime: "4 min baca",
@@ -87,7 +87,7 @@ const ARTICLES: Article[] = [
     content: [
       "Transaksi produk digital di media sosial atau forum tanpa perantara sering kali menyisakan cerita buruk: uang sudah ditransfer tetapi file tidak dikirim, atau serial key yang diberikan ternyata sudah kadaluarsa (revoked).",
       "Sistem Rekening Bersama (Escrow) hadir sebagai jembatan kepercayaan. Mekanismenya sangat sederhana namun ampuh:",
-      "1. Pembeli membayar ke gerbang pembayaran resmi MarketPoint.",
+      "1. Pembeli membayar ke gerbang pembayaran resmi MarketPointID.",
       "2. Dana ditahan secara aman di rekening penampungan sistem, belum diteruskan ke rekening penjual.",
       "3. Penjual (atau sistem otomatis) mengirimkan lisensi/source code kepada pembeli.",
       "4. Pembeli memiliki waktu proteksi (hingga 48 jam) untuk mencoba aktivasi. Setelah pembeli menekan konfirmasi pesanan selesai atau masa proteksi habis tanpa komplain, barulah dana dicairkan ke saldo penjual.",
@@ -131,14 +131,14 @@ const ARTICLES: Article[] = [
       "1. Sistem Aktivasi API Berbasis Domain: Buat endpoint server otentikasi lisensi yang memverifikasi kecocokan domain atau Machine ID sebelum modul inti dijalankan.",
       "2. Pembagian Fitur Inti Berbasis Cloud: Pindahkan algoritma penting atau pemrosesan berat ke server API Anda, sehingga pembeli hanya menerima client SDK.",
       "3. Pemberian Watermark Unik per Pembeli: Sematkan metadata unik nomor invoice pada file unduhan sehingga jika terjadi kebocoran, sumbernya dapat dilacak dengan mudah.",
-      "4. Penegakan Kebijakan Ketat di MarketPoint: Tim kami secara rutin memindai dan menghapus akun yang terindikasi mengunggah produk bajakan."
+      "4. Penegakan Kebijakan Ketat di MarketPointID: Tim kami secara rutin memindai dan menghapus akun yang terindikasi mengunggah produk bajakan."
     ]
   },
   {
     id: "post-5",
     slug: "integrasi-qris-instan-e-commerce",
     title: "Integrasi Pembayaran QRIS Instan: Mempercepat Siklus Transaksi Digital Indonesia",
-    excerpt: "Mengapa QRIS menjadi standar pembayaran nomor satu di MarketPoint dan bagaimana notifikasi webhook otomatis memangkas waktu tunggu pelanggan.",
+    excerpt: "Mengapa QRIS menjadi standar pembayaran nomor satu di MarketPointID dan bagaimana notifikasi webhook otomatis memangkas waktu tunggu pelanggan.",
     category: "Update Platform",
     date: "28 Sep 2026",
     readTime: "4 min baca",
@@ -146,8 +146,8 @@ const ARTICLES: Article[] = [
     coverGradient: "from-emerald-700 via-green-600 to-teal-700",
     icon: Sparkles,
     content: [
-      "Quick Response Code Indonesian Standard (QRIS) dari Bank Indonesia telah merevolusi cara masyarakat berbelanja online. Di MarketPoint, lebih dari 75% transaksi produk digital kini diselesaikan menggunakan QRIS.",
-      "Keunggulan utama QRIS di MarketPoint:",
+      "Quick Response Code Indonesian Standard (QRIS) dari Bank Indonesia telah merevolusi cara masyarakat berbelanja online. Di MarketPointID, lebih dari 75% transaksi produk digital kini diselesaikan menggunakan QRIS.",
+      "Keunggulan utama QRIS di MarketPointID:",
       "1. Satu QR untuk Semua Aplikasi: Dapat dipindai menggunakan m-banking BCA, Mandiri, BRI, BNI maupun e-wallet seperti GoPay, OVO, Dana, dan ShopeePay.",
       "2. Verifikasi Real-Time Tanpa Bukti Transfer: Sistem webhook kami menerima notifikasi mutasi dalam hitungan milidetik sehingga pembeli tidak perlu mengunggah struk transfer bank.",
       "3. Pengurangan Human Error: Nominal transaksi tertera secara presisi tanpa risiko salah transfer ke nomor rekening lain."
@@ -217,7 +217,7 @@ export default function BlogPage() {
                 <path d="m15 18-6-6 6-6" />
               </svg>
             </Link>
-            <h1 className="text-sm font-bold leading-tight">Blog MarketPoint</h1>
+            <h1 className="text-sm font-bold leading-tight">Blog MarketPointID</h1>
           </div>
           <Badge className="bg-[#00AA5B]/10 text-[#00AA5B] border-none text-[10px] font-bold">
             Artikel
@@ -236,7 +236,7 @@ export default function BlogPage() {
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground max-w-2xl mx-auto leading-tight">
-              Blog & Wawasan Digital MarketPoint
+              Blog & Wawasan Digital MarketPointID
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
@@ -442,7 +442,7 @@ export default function BlogPage() {
                     Bergabung dengan Komunitas Diskusi Teknologi
                   </h4>
                   <p className="text-xs text-muted-foreground leading-relaxed max-w-lg">
-                    Dapatkan kabar rilis fitur MarketPoint terbaru, tips monetisasi script, dan sharing pengalaman langsung di grup WhatsApp resmi.
+                    Dapatkan kabar rilis fitur MarketPointID terbaru, tips monetisasi script, dan sharing pengalaman langsung di grup WhatsApp resmi.
                   </p>
                 </div>
               </div>
@@ -499,7 +499,7 @@ export default function BlogPage() {
               {/* Modal Footer Actions */}
               <div className="pt-6 border-t border-border/60 flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-muted-foreground">
-                  MarketPoint Blog © 2026
+                  MarketPointID Blog © 2026
                 </span>
                 <div className="flex items-center gap-2">
                   <Button

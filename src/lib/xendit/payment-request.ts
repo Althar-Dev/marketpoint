@@ -217,7 +217,7 @@ export async function requestXenditPayment(
       currency: "IDR",
       country: "ID",
       description:
-        data.description || `Pembayaran MarketPoint ${data.external_id}`,
+        data.description || `Pembayaran MarketPointID ${data.external_id}`,
       payment_method: {
         type: methodType,
         reusability: "ONE_TIME_USE",
@@ -229,7 +229,7 @@ export async function requestXenditPayment(
       payload.payment_method.virtual_account = {
         channel_code: vaChannel,
         channel_properties: {
-          customer_name: data.name || "MarketPoint Customer",
+          customer_name: data.name || "MarketPointID Customer",
         },
       };
     } else if (type === "qris") {
@@ -266,7 +266,7 @@ export async function requestXenditPayment(
       payload.payment_method.over_the_counter = {
         channel_code: rawCode as RetailChannel,
         channel_properties: {
-          customer_name: data.name || "MarketPoint Customer",
+          customer_name: data.name || "MarketPointID Customer",
         },
       };
     }

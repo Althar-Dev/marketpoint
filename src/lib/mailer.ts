@@ -61,8 +61,8 @@ export async function sendOutgoingEmail(options: SendEmailOptions): Promise<Send
   const settings = await getSmtpSettings();
 
   const defaultFrom = settings.fromEmail
-    ? `"${settings.fromName || "MarketPoint Delivery"}" <${settings.fromEmail}>`
-    : "MarketPoint Delivery <delivery@marketpoint.id>";
+    ? `"${settings.fromName || "MarketPointID Delivery"}" <${settings.fromEmail}>`
+    : "MarketPointID Delivery <delivery@marketpoint.id>";
 
   const {
     from = defaultFrom,
@@ -263,10 +263,10 @@ export async function testMailConnection(
       let response = "Handshake SMTP Terverifikasi.";
       if (targetEmail) {
         const info = await transporter.sendMail({
-          from: `"${settings.fromName || "MarketPoint Mail Engine"}" <${settings.fromEmail || "delivery@marketpoint.id"}>`,
+          from: `"${settings.fromName || "MarketPointID Mail Engine"}" <${settings.fromEmail || "delivery@marketpoint.id"}>`,
           to: targetEmail,
-          subject: "[Diagnostik] Uji Koneksi SMTP MarketPoint Berhasil",
-          text: `Halo!\n\nEmail ini adalah bukti bahwa konfigurasi SMTP (${settings.host}:${port}) di MarketPoint berfungsi dengan baik.\n\nWaktu Tes: ${new Date().toLocaleString("id-ID")}\nMode: Custom SMTP Relay\nLatensi: ${Date.now() - startTime} ms\n\nSalam,\nTim Teknis MarketPoint`,
+          subject: "[Diagnostik] Uji Koneksi SMTP MarketPointID Berhasil",
+          text: `Halo!\n\nEmail ini adalah bukti bahwa konfigurasi SMTP (${settings.host}:${port}) di MarketPointID berfungsi dengan baik.\n\nWaktu Tes: ${new Date().toLocaleString("id-ID")}\nMode: Custom SMTP Relay\nLatensi: ${Date.now() - startTime} ms\n\nSalam,\nTim Teknis MarketPointID`,
         });
         response = info.response || `Email tes terkirim. ID: ${info.messageId}`;
       }
@@ -322,7 +322,7 @@ export async function testMailConnection(
 
     if (targetEmail) {
       const info = await transporter.sendMail({
-        from: `"${settings.fromName || "MarketPoint Delivery"}" <${settings.fromEmail || "delivery@marketpoint.id"}>`,
+        from: `"${settings.fromName || "MarketPointID Delivery"}" <${settings.fromEmail || "delivery@marketpoint.id"}>`,
         to: targetEmail,
         subject: "[Diagnostik] Uji Direct MX Port 25 Berhasil",
         text: `Halo!\n\nEmail ini adalah tes Direct MX pengiriman langsung port 25 ke ${primaryMx}.\nWaktu Tes: ${new Date().toLocaleString("id-ID")}\nLatensi: ${Date.now() - startTime} ms.`,

@@ -109,7 +109,7 @@ export default function SellerEduPage() {
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground max-w-2xl mx-auto leading-tight">
-              Kuasai Cara Berjualan Produk Digital di MarketPoint
+              Kuasai Cara Berjualan Produk Digital di MarketPointID
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
@@ -275,7 +275,7 @@ export default function SellerEduPage() {
                 Kebijakan Wajib
               </Badge>
               <h3 className="text-lg sm:text-xl font-bold text-foreground">
-                Kode Etik & Standar Mutu Penjual di MarketPoint
+                Kode Etik & Standar Mutu Penjual di MarketPointID
               </h3>
               <p className="text-xs text-muted-foreground">
                 Kepatuhan mutlak yang harus ditaati demi menjaga ekosistem pasar yang sehat dan aman.

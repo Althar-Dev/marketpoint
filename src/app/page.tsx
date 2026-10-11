@@ -207,7 +207,7 @@ export default function MarketPage() {
             rawProducts = rawProducts.map((p: any) => {
               const shop = shopsMap[p.shopId];
               const realName = extractString(shop?.shopName) || extractString(shop?.name) || extractString(shop?.title) || extractString(shop?.slug);
-              const fallbackName = typeof p.shopName === "string" && p.shopName && p.shopName !== "MarketPoint Seller"
+              const fallbackName = typeof p.shopName === "string" && p.shopName && p.shopName !== "MarketPointID Seller"
                 ? p.shopName
                 : (p.shopId ? `Toko ${p.shopId.substring(0, 6)}` : "Toko Seller");
 
@@ -580,7 +580,7 @@ export default function MarketPage() {
                   Serbu Produk Digital Pilihan
                 </h3>
                 <p className="text-xs text-white/90 max-w-md">
-                  Harga promo eksklusif dengan kuota terbatas dari merchant resmi MarketPoint.
+                  Harga promo eksklusif dengan kuota terbatas dari merchant resmi MarketPointID.
                 </p>
               </div>
 

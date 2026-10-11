@@ -260,7 +260,7 @@ export default function MerchantSubscriptionPage() {
                  </CardHeader>
                  <CardContent className="p-0">
                     <Accordion type="single" collapsible className="w-full">
-                      {/* Saldo MarketPoint (Internal) */}
+                      {/* Saldo MarketPointID (Internal) */}
                       <AccordionItem value="wallet" className="border-b border-border/40 px-4 md:px-6">
                         <AccordionTrigger className="hover:no-underline py-4">
                           <div className="flex items-center gap-3">

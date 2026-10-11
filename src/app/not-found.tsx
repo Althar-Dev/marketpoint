@@ -29,7 +29,7 @@ export default function NotFound() {
         <Link href="/" className="inline-flex items-center gap-2 group transition-transform active:scale-95">
           <img
             src="/assets/img/logo.png"
-            alt="MarketPoint"
+            alt="MarketPointID"
             className="h-8 md:h-9 w-auto object-contain"
           />
         </Link>
@@ -122,7 +122,7 @@ export default function NotFound() {
 
       {/* Footer */}
       <footer className="w-full text-center pt-4 text-[10px] text-muted-foreground/60">
-        &copy; {new Date().getFullYear()} MarketPoint. Semua hak dilindungi.
+        &copy; {new Date().getFullYear()} MarketPointID. Semua hak dilindungi.
       </footer>
     </div>
   );

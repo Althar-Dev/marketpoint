@@ -149,29 +149,29 @@ const EMAIL_TEMPLATES = [
     id: "digital_product",
     name: "Pengiriman Lisensi Produk Digital",
     subject: "[Delivery] Serial Key & Panduan Aktivasi Pesanan",
-    message: "Halo Pelanggan,\n\nTerima kasih telah berbelanja di MarketPoint! Berikut lisensi aktivasi resmi untuk pesanan Anda:\n\n• Produk: [Nama Produk]\n• Serial Key / Lisensi: [XXXX-XXXX-XXXX-XXXX]\n\nPanduan Aktivasi:\n1. Buka aplikasi atau platform terkait.\n2. Masuk ke menu Pengaturan > Aktivasi.\n3. Masukkan kode serial key di atas.\n\nJika mengalami kendala, silakan hubungi tim kami dengan membalas email ini.\n\nSalam hangat,\nMarketPoint Delivery Service"
+    message: "Halo Pelanggan,\n\nTerima kasih telah berbelanja di MarketPointID! Berikut lisensi aktivasi resmi untuk pesanan Anda:\n\n• Produk: [Nama Produk]\n• Serial Key / Lisensi: [XXXX-XXXX-XXXX-XXXX]\n\nPanduan Aktivasi:\n1. Buka aplikasi atau platform terkait.\n2. Masuk ke menu Pengaturan > Aktivasi.\n3. Masukkan kode serial key di atas.\n\nJika mengalami kendala, silakan hubungi tim kami dengan membalas email ini.\n\nSalam hangat,\nMarketPointID Delivery Service"
   },
   {
     id: "payment_confirmation",
     name: "Konfirmasi Pembayaran Sukses",
     subject: "Konfirmasi Pembayaran Pesanan #[MPoint-XXXXX]",
-    message: "Halo Pelanggan,\n\nPembayaran Anda untuk nomor pesanan #[MPoint-XXXXX] telah berhasil diverifikasi oleh sistem escrow MarketPoint.\n\nPesanan Anda saat ini sedang disiapkan dan akan dikirimkan otomatis ke email ini. Anda juga dapat memantau status pesanan melalui menu Riwayat Transaksi di akun Anda.\n\nTerima kasih telah bertransaksi dengan aman di MarketPoint!"
+    message: "Halo Pelanggan,\n\nPembayaran Anda untuk nomor pesanan #[MPoint-XXXXX] telah berhasil diverifikasi oleh sistem escrow MarketPointID.\n\nPesanan Anda saat ini sedang disiapkan dan akan dikirimkan otomatis ke email ini. Anda juga dapat memantau status pesanan melalui menu Riwayat Transaksi di akun Anda.\n\nTerima kasih telah bertransaksi dengan aman di MarketPointID!"
   },
   {
     id: "cs_support",
     name: "Tanggapan Bantuan Customer Support",
-    subject: "Tanggapan Layanan Bantuan MarketPoint - Tiket #[TICKET-ID]",
-    message: "Halo Pelanggan,\n\nTerima kasih telah menghubungi Customer Care MarketPoint. Mengenai kendala yang Anda laporkan, berikut solusi yang dapat Anda lakukan:\n\n1. [Langkah penyelesaian pertama]\n2. [Langkah penyelesaian kedua]\n\nHarap informasikan kembali apabila Anda masih mengalami kendala atau memerlukan panduan lebih lanjut.\n\nSalam hormat,\nTim Layanan Pelanggan MarketPoint"
+    subject: "Tanggapan Layanan Bantuan MarketPointID - Tiket #[TICKET-ID]",
+    message: "Halo Pelanggan,\n\nTerima kasih telah menghubungi Customer Care MarketPointID. Mengenai kendala yang Anda laporkan, berikut solusi yang dapat Anda lakukan:\n\n1. [Langkah penyelesaian pertama]\n2. [Langkah penyelesaian kedua]\n\nHarap informasikan kembali apabila Anda masih mengalami kendala atau memerlukan panduan lebih lanjut.\n\nSalam hormat,\nTim Layanan Pelanggan MarketPointID"
   },
   {
     id: "maintenance_announcement",
     name: "Pengumuman Pemeliharaan Sistem",
     subject: "[Pengumuman] Jadwal Pemeliharaan Server Berkala",
-    message: "Kepada Seluruh Mitra & Pengguna MarketPoint,\n\nKami menginformasikan bahwa akan dilakukan pemeliharaan sistem berkala demi meningkatkan performa dan keamanan transaksi pada:\n\n• Hari/Tanggal: [Hari, Tanggal]\n• Waktu: 01:00 - 04:00 WIB\n\nSelama proses berlangsung, beberapa layanan mungkin mengalami jeda singkat. Terima kasih atas pengertian dan kerja sama Anda."
+    message: "Kepada Seluruh Mitra & Pengguna MarketPointID,\n\nKami menginformasikan bahwa akan dilakukan pemeliharaan sistem berkala demi meningkatkan performa dan keamanan transaksi pada:\n\n• Hari/Tanggal: [Hari, Tanggal]\n• Waktu: 01:00 - 04:00 WIB\n\nSelama proses berlangsung, beberapa layanan mungkin mengalami jeda singkat. Terima kasih atas pengertian dan kerja sama Anda."
   }
 ];
 
-// Helper avatar brand MarketPoint vs pengirim eksternal
+// Helper avatar brand MarketPointID vs pengirim eksternal
 function getBrandAvatar(emailOrFrom: string, explicitAvatar?: string): { type: "image" | "initials"; src?: string; initial: string; bg: string } {
   if (explicitAvatar && explicitAvatar.startsWith("http")) {
     return { type: "image", src: explicitAvatar, initial: "U", bg: "bg-slate-700" };
@@ -184,7 +184,7 @@ function getBrandAvatar(emailOrFrom: string, explicitAvatar?: string): { type: "
     return { type: "image", src: "/assets/img/delivery.png", initial: "D", bg: "bg-[#00AA5B]" };
   }
   if (lower.includes("admin@marketpoint.id") || lower.includes("noreply@marketpoint.id") || lower.includes("@marketpoint.id")) {
-    return { type: "image", src: "/assets/img/favicon.png", initial: "M", bg: "bg-slate-900" };
+    return { type: "image", src: "/assets/img/icon.png", initial: "M", bg: "bg-slate-900" };
   }
   if (lower.includes("google.com") || lower.includes("bounces.google.com") || lower.includes("idverification")) {
     return { type: "initials", initial: "G", bg: "bg-[#4285F4]" };
@@ -292,7 +292,7 @@ export default function EmailManagementPage() {
     secure: false,
     user: "",
     pass: "",
-    fromName: "MarketPoint Delivery",
+    fromName: "MarketPointID Delivery",
     fromEmail: "delivery@marketpoint.id",
     heloDomain: "marketpoint.id",
   });
@@ -788,7 +788,7 @@ export default function EmailManagementPage() {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>${selectedEmail.subject} - MarketPoint Email</title>
+          <title>${selectedEmail.subject} - MarketPointID Email</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #1e293b; line-height: 1.5; }
             .header { border-bottom: 2px solid #00AA5B; padding-bottom: 14px; margin-bottom: 20px; }
@@ -1510,7 +1510,7 @@ export default function EmailManagementPage() {
 
     try {
       cleaned = decodeURIComponent(escape(cleaned));
-    } catch {}
+    } catch { }
 
     cleaned = cleaned
       .replace(/@media[^{]*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/gi, " ")
@@ -1709,7 +1709,7 @@ export default function EmailManagementPage() {
           <Link href="/" className="flex items-center gap-2 group">
             <img
               src="/assets/img/logo.png"
-              alt="MarketPoint Logo"
+              alt="MarketPointID Logo"
               className="h-6 sm:h-7 w-auto transition-transform group-hover:scale-105"
             />
             <div className="h-4 w-px bg-border hidden sm:block" />
@@ -2477,10 +2477,10 @@ export default function EmailManagementPage() {
                         <Input
                           value={smtpForm.fromName}
                           onChange={(e) => setSmtpForm(prev => ({ ...prev, fromName: e.target.value }))}
-                          placeholder="MarketPoint Delivery"
+                          placeholder="MarketPointID Delivery"
                           className="h-9 text-xs rounded-xl"
                         />
-                        <p className="text-[10px] text-muted-foreground">Ditampilkan di inbox penerima (misal: MarketPoint Delivery)</p>
+                        <p className="text-[10px] text-muted-foreground">Ditampilkan di inbox penerima (misal: MarketPointID Delivery)</p>
                       </div>
 
                       {/* Sender Email */}
@@ -2603,7 +2603,7 @@ export default function EmailManagementPage() {
                         <div className="md:col-span-2 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100 flex items-start gap-2.5">
                           <ShieldCheck className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                           <div className="text-[11px] text-emerald-900 leading-relaxed">
-                            <strong>Direct MX Sending Aktif:</strong> MarketPoint Mail Engine akan melakukan pencarian DNS MX otomatis (RFC 5321) ke domain tujuan dan mengantarkan email langsung secara gratis dengan enkripsi STARTTLS opportunistik.
+                            <strong>Direct MX Sending Aktif:</strong> MarketPointID Mail Engine akan melakukan pencarian DNS MX otomatis (RFC 5321) ke domain tujuan dan mengantarkan email langsung secara gratis dengan enkripsi STARTTLS opportunistik.
                           </div>
                         </div>
                       )}
@@ -2974,7 +2974,7 @@ export default function EmailManagementPage() {
                             {isMarketpointSender && (
                               <div className="pt-2 text-[10px] sm:text-[11px] text-slate-400 flex items-center gap-1">
                                 <Zap className="w-2.5 h-2.5 text-[#00AA5B]" />
-                                <span>MarketPoint Mail Engine • Pesan Resmi Terverifikasi</span>
+                                <span>MarketPointID Mail Engine • Pesan Resmi Terverifikasi</span>
                               </div>
                             )}
                           </div>

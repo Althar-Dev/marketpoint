@@ -130,7 +130,7 @@ export async function POST(req: Request) {
 export async function GET() {
   return NextResponse.json({
     status: "online",
-    service: "MarketPoint Inbound Mail Webhook",
+    service: "MarketPointID Inbound Mail Webhook",
     instructions: "POST JSON or FormData with { from, to, subject, content } to ingest incoming emails into PostgreSQL inbox.",
   });
 }

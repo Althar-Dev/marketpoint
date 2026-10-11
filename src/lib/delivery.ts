@@ -67,7 +67,7 @@ export async function deliverProductLicense(
     productId,
     productTitle,
     recipientEmail,
-    recipientName = "Pelanggan MarketPoint",
+    recipientName = "Pelanggan MarketPointID",
     variant,
     quantity = 1,
     forceResend = false,
@@ -97,7 +97,7 @@ export async function deliverProductLicense(
   }
 
   // 2. Ambil informasi produk dari PostgreSQL
-  let resolvedTitle = productTitle || "Produk Digital MarketPoint";
+  let resolvedTitle = productTitle || "Produk Digital MarketPointID";
   let allocatedKeys: string[] = [];
   let downloadFiles: Array<{ fileName: string; fileUrl: string; fileSize?: number; version?: string }> = [];
   let demoUrl: string | undefined;
@@ -202,7 +202,7 @@ export async function deliverProductLicense(
 
   let emailContent = `Halo ${greetingName},
 
-Terima kasih telah berbelanja di MarketPoint! 
+Terima kasih telah berbelanja di MarketPointID! 
 Pembayaran untuk pesanan Anda telah berhasil diverifikasi oleh sistem escrow kami pada ${nowFormatted}.
 
 Berikut adalah data lisensi resmi dan akses produk digital Anda:
@@ -213,7 +213,7 @@ RINCIAN PESANAN
 • Nomor Pesanan : #${orderId}
 • Nama Produk   : ${resolvedTitle}${variant ? `\n• Varian        : ${variant}` : ""}${quantity > 1 ? `\n• Jumlah        : ${quantity} unit` : ""}
 • Status        : Lunas & Terkirim Otomatis
-• Pengirim      : delivery@marketpoint.id (MarketPoint Mail Engine)
+• Pengirim      : delivery@marketpoint.id (MarketPointID Mail Engine)
 
 ============================================================
 KODE LISENSI / SERIAL KEY RESMI
@@ -261,10 +261,10 @@ PANDUAN AKTIVASI & PENGGUNAAN
 ============================================================
 GARANSI TRANSAKSI & BANTUAN
 ============================================================
-Semua transaksi di MarketPoint dilindungi garansi keamanan. Apabila Anda mengalami kendala saat aktivasi lisensi atau memerlukan bantuan teknis, Anda dapat langsung membalas email ini atau membuka tiket bantuan melalui platform MarketPoint.
+Semua transaksi di MarketPointID dilindungi garansi keamanan. Apabila Anda mengalami kendala saat aktivasi lisensi atau memerlukan bantuan teknis, Anda dapat langsung membalas email ini atau membuka tiket bantuan melalui platform MarketPointID.
 
 Salam hangat,
-MarketPoint Delivery Service
+MarketPointID Delivery Service
 delivery@marketpoint.id | www.marketpoint.id`;
 
   // 4. Render HTML email resmi untuk pengiriman ke Gmail / email penerima
@@ -284,7 +284,7 @@ delivery@marketpoint.id | www.marketpoint.id`;
   let liveMailResult: SendEmailResult | undefined = undefined;
   try {
     liveMailResult = await sendOutgoingEmail({
-      from: "MarketPoint Delivery <delivery@marketpoint.id>",
+      from: "MarketPointID Delivery <delivery@marketpoint.id>",
       to: recipientEmail.trim(),
       subject: emailSubject,
       text: emailContent,

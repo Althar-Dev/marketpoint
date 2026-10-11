@@ -67,7 +67,7 @@ export default function MerchantSetupPage() {
   // OTP & Community Verification States
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [showCommunityDialog, setShowCommunityDialog] = useState(false);
-  const [communityLink, setCommunityLink] = useState("https://chat.whatsapp.com/MarketPointCommunity");
+  const [communityLink, setCommunityLink] = useState("https://chat.whatsapp.com/MarketPointIDCommunity");
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
@@ -280,7 +280,7 @@ export default function MerchantSetupPage() {
         toast({
           variant: "destructive",
           title: "Nama Toko Sudah Terpakai",
-          description: `Nama toko "${trimmedName}" sudah terdaftar di MarketPoint. Silakan gunakan nama toko lain.`,
+          description: `Nama toko "${trimmedName}" sudah terdaftar di MarketPointID. Silakan gunakan nama toko lain.`,
         });
         setSendingOtp(false);
         return;
@@ -310,7 +310,7 @@ export default function MerchantSetupPage() {
 
       if (!res.ok) {
         if (data.requiresCommunityJoin) {
-          setCommunityLink(data.communityLink || "https://chat.whatsapp.com/MarketPointCommunity");
+          setCommunityLink(data.communityLink || "https://chat.whatsapp.com/MarketPointIDCommunity");
           setShowCommunityDialog(true);
           return;
         }
@@ -499,7 +499,7 @@ export default function MerchantSetupPage() {
         <div className="max-w-screen-md mx-auto space-y-5">
           <div className="space-y-1 text-center md:text-left mb-6">
             <h1 className="text-xl font-bold tracking-tight">Informasi Toko</h1>
-            <p className="text-xs text-muted-foreground">Lengkapi informasi berikut untuk mulai berjualan solusi digital di MarketPoint.</p>
+            <p className="text-xs text-muted-foreground">Lengkapi informasi berikut untuk mulai berjualan solusi digital di MarketPointID.</p>
           </div>
 
           <Card className="border-border shadow-sm rounded-xl overflow-hidden bg-white">
@@ -737,7 +737,7 @@ export default function MerchantSetupPage() {
                   )}
                 </Button>
                 <p className="text-[9px] text-center text-muted-foreground mt-4 leading-relaxed px-4">
-                  Dengan mengklik daftar, Anda menyetujui <span className="text-[#00AA5B] font-bold cursor-pointer">Syarat & Ketentuan</span> yang berlaku bagi mitra seller MarketPoint.
+                  Dengan mengklik daftar, Anda menyetujui <span className="text-[#00AA5B] font-bold cursor-pointer">Syarat & Ketentuan</span> yang berlaku bagi mitra seller MarketPointID.
                 </p>
               </div>
             </CardContent>
@@ -896,7 +896,7 @@ export default function MerchantSetupPage() {
                   Wajib Gabung Komunitas WA
                 </DialogTitle>
                 <p className="text-[11px] text-muted-foreground">
-                  Syarat verifikasi pendaftaran seller MarketPoint
+                  Syarat verifikasi pendaftaran seller MarketPointID
                 </p>
               </div>
             </div>
@@ -905,10 +905,10 @@ export default function MerchantSetupPage() {
           <div className="py-3 space-y-4">
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-center space-y-2">
               <p className="text-xs font-bold text-amber-700 leading-snug">
-                Nomor WhatsApp Anda ({whatsapp}) belum terdaftar di Komunitas WhatsApp MarketPoint.
+                Nomor WhatsApp Anda ({whatsapp}) belum terdaftar di Komunitas WhatsApp MarketPointID.
               </p>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Sebelum mendapatkan kode OTP dan memverifikasi toko, Anda diwajibkan bergabung ke komunitas resmi seller MarketPoint terlebih dahulu.
+                Sebelum mendapatkan kode OTP dan memverifikasi toko, Anda diwajibkan bergabung ke komunitas resmi seller MarketPointID terlebih dahulu.
               </p>
             </div>
 

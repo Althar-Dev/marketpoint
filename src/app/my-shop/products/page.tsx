@@ -823,7 +823,7 @@ export default function MerchantProductsPage() {
               {editingProduct ? "Edit Produk Digital" : "Tambah Produk Baru"}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground font-medium">
-              Isi informasi produk digital Anda untuk disimpan di database MarketPoint.
+              Isi informasi produk digital Anda untuk disimpan di database MarketPointID.
             </DialogDescription>
           </DialogHeader>
 

@@ -336,7 +336,7 @@ export default function UserWalletPage() {
            <div className="flex-1 space-y-2">
               <h4 className="text-[14px] font-bold text-[#2E3137]">Sistem keamanan berlapis</h4>
               <p className="text-[11px] text-muted-foreground font-medium leading-relaxed max-w-2xl">
-                 Seluruh aktivitas transaksi di platform MarketPoint dilindungi dengan enkripsi tingkat tinggi dan pemantauan real-time. Dana Anda aman dalam sistem rekber kami dan hanya akan diteruskan ke penjual setelah konfirmasi penerimaan barang/jasa yang valid.
+                 Seluruh aktivitas transaksi di platform MarketPointID dilindungi dengan enkripsi tingkat tinggi dan pemantauan real-time. Dana Anda aman dalam sistem rekber kami dan hanya akan diteruskan ke penjual setelah konfirmasi penerimaan barang/jasa yang valid.
               </p>
            </div>
            <Button variant="ghost" className="text-[12px] font-bold text-[#00AA5B] hover:bg-[#00AA5B]/5 px-6 h-10 rounded-xl border border-transparent hover:border-[#00AA5B]/20">Pelajari Proteksi</Button>
