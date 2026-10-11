@@ -162,6 +162,100 @@ const EMAIL_TEMPLATES = [
   }
 ];
 
+function getEmailAvatar(emailStr: string = ""): { src?: string; initial: string; bgClass: string } {
+  const clean = emailStr.toLowerCase();
+  const initial = (emailStr.replace(/<[^>]+>/g, "").trim().substring(0, 1) || "M").toUpperCase();
+
+  if (clean.includes("support@marketpoint.id") || clean.includes("support@")) {
+    return {
+      src: "/assets/img/support.png",
+      initial: "S",
+      bgClass: "bg-blue-50 border-blue-200",
+    };
+  }
+  if (clean.includes("delivery@marketpoint.id") || clean.includes("delivery@")) {
+    return {
+      src: "/assets/img/delivery.png",
+      initial: "D",
+      bgClass: "bg-amber-50 border-amber-200",
+    };
+  }
+  if (clean.includes("admin@marketpoint.id")) {
+    return {
+      src: "/assets/img/favicon.png",
+      initial: "A",
+      bgClass: "bg-emerald-50 border-emerald-200",
+    };
+  }
+  if (clean.includes("@marketpoint.id")) {
+    return {
+      src: "/assets/img/favicon.png",
+      initial,
+      bgClass: "bg-emerald-50 border-emerald-200",
+    };
+  }
+
+  return {
+    initial,
+    bgClass: "bg-gradient-to-tr from-slate-700 to-slate-900 text-white",
+  };
+}
+
+function EmailAvatar({
+  email,
+  name,
+  className,
+  size = "md",
+}: {
+  email: string;
+  name?: string;
+  className?: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  const avatar = getEmailAvatar(email);
+  const sizeClasses =
+    size === "sm"
+      ? "h-7.5 w-7.5 text-[11px]"
+      : size === "lg"
+      ? "h-11 w-11 sm:h-12 sm:w-12 text-base"
+      : "h-10 w-10 sm:h-11 sm:w-11 text-sm sm:text-base";
+
+  if (avatar.src) {
+    return (
+      <div
+        className={cn(
+          sizeClasses,
+          "rounded-full overflow-hidden shrink-0 border border-slate-200/90 shadow-2xs bg-white flex items-center justify-center p-0.5",
+          className
+        )}
+      >
+        <img
+          src={avatar.src}
+          alt={name || email}
+          className="h-full w-full object-contain rounded-full"
+        />
+      </div>
+    );
+  }
+
+  const initial = name
+    ? name.substring(0, 1).toUpperCase()
+    : avatar.initial;
+
+  return (
+    <div
+      className={cn(
+        sizeClasses,
+        "rounded-full flex items-center justify-center font-black shrink-0 shadow-2xs text-white",
+        avatar.bgClass,
+        className
+      )}
+    >
+      {initial}
+    </div>
+  );
+}
+
 export default function EmailManagementPage() {
   const { toast } = useToast();
 
@@ -2074,9 +2168,7 @@ export default function EmailManagementPage() {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-10 w-10 rounded-xl bg-emerald-50 text-[#00AA5B] flex items-center justify-center font-black text-sm border border-emerald-100 shrink-0 shadow-xs">
-                              {acc.email.substring(0, 1).toUpperCase()}
-                            </div>
+                            <EmailAvatar email={acc.email} name={acc.name} size="md" className="rounded-xl" />
                             <div className="min-w-0">
                               <p className="text-xs font-black text-slate-900 truncate">{acc.email}</p>
                               <p className="text-[10px] text-muted-foreground font-bold truncate">{acc.name} • {acc.role}</p>
@@ -2643,16 +2735,7 @@ export default function EmailManagementPage() {
                             className="px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50/80 transition-all cursor-pointer flex items-center justify-between gap-3 shadow-2xs group"
                           >
                             <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <div
-                                className={cn(
-                                  "h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 text-white shadow-2xs",
-                                  isMarketpointSender
-                                    ? "bg-[#00AA5B]"
-                                    : "bg-slate-700"
-                                )}
-                              >
-                                {senderDisplayName.substring(0, 1).toUpperCase()}
-                              </div>
+                              <EmailAvatar email={msg.from} name={senderDisplayName} size="sm" />
                               <span className="text-xs font-extrabold text-slate-900 shrink-0 truncate max-w-[140px] sm:max-w-[200px]">
                                 {senderDisplayName}
                               </span>
@@ -2701,16 +2784,7 @@ export default function EmailManagementPage() {
                             )}
                           >
                             <div className="flex items-start gap-3.5 min-w-0">
-                              <div
-                                className={cn(
-                                  "h-10 w-10 sm:h-11 sm:w-11 rounded-full flex items-center justify-center font-black text-sm sm:text-base shrink-0 shadow-2xs text-white",
-                                  isMarketpointSender
-                                    ? "bg-gradient-to-tr from-[#00AA5B] to-emerald-600"
-                                    : "bg-gradient-to-tr from-slate-700 to-slate-900"
-                                )}
-                              >
-                                {senderDisplayName.substring(0, 1).toUpperCase()}
-                              </div>
+                              <EmailAvatar email={msg.from} name={senderDisplayName} size="md" />
 
                               <div className="min-w-0">
                                 <div className="flex items-baseline gap-2 flex-wrap">
@@ -3394,6 +3468,12 @@ export default function EmailManagementPage() {
                           <Square className="w-4 h-4 group-hover:text-slate-600" />
                         )}
                       </button>
+
+                      <EmailAvatar
+                        email={email.folder === "sent" ? email.to : email.from}
+                        size="sm"
+                        className="mt-0.5 shrink-0 hidden sm:flex"
+                      />
 
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-baseline gap-2 mb-1">
