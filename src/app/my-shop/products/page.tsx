@@ -707,61 +707,62 @@ export default function MerchantProductsPage() {
           </Card>
         ) : (
           <Card className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
-            <Table>
-              <TableHeader className="bg-[#F8FAFC]">
-                <TableRow className="border-b border-border hover:bg-transparent">
-                  <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 px-6">Info Produk</TableHead>
-                  <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Harga</TableHead>
-                  <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Stok</TableHead>
-                  <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10">Status</TableHead>
-                  <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 text-right px-6">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map((product) => {
-                  const primaryImg = product.images?.[0]?.imageUrl || "https://cdn.marketpoint.id/marketpoint.png";
-                  return (
-                    <TableRow key={product.id} className="border-b border-border/50 hover:bg-[#F8FAFC]/50 transition-colors group">
-                      <TableCell className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg border border-border shadow-sm overflow-hidden bg-muted relative shrink-0">
-                            <Image src={primaryImg} alt={product.title} fill className="object-cover" />
-                          </div>
-                          <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="text-xs font-bold text-[#2E3137] truncate max-w-[260px]">{product.title}</span>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{product.categoryName || "Digital"}</span>
-                              <span className="text-[8px] text-muted-foreground/30">•</span>
-                              <span className="text-[9px] text-[#00AA5B] font-bold">{product.salesCount} Terjual</span>
+            <div className="overflow-x-auto">
+              <Table className="w-full whitespace-nowrap min-w-[720px]">
+                <TableHeader className="bg-[#F8FAFC]">
+                  <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 px-6 whitespace-nowrap">Info Produk</TableHead>
+                    <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 px-4 whitespace-nowrap">Harga</TableHead>
+                    <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 px-4 whitespace-nowrap">Stok</TableHead>
+                    <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 px-4 whitespace-nowrap">Status</TableHead>
+                    <TableHead className="text-[10px] font-black text-muted-foreground uppercase h-10 text-right px-6 whitespace-nowrap">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.map((product) => {
+                    const primaryImg = product.images?.[0]?.imageUrl || "https://cdn.marketpoint.id/marketpoint.png";
+                    return (
+                      <TableRow key={product.id} className="border-b border-border/50 hover:bg-[#F8FAFC]/50 transition-colors group">
+                        <TableCell className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-lg border border-border shadow-sm overflow-hidden bg-muted relative shrink-0">
+                              <Image src={primaryImg} alt={product.title} fill className="object-cover" />
+                            </div>
+                            <div className="flex flex-col gap-0.5 min-w-0">
+                              <span className="text-xs font-bold text-[#2E3137] truncate max-w-[260px]">{product.title}</span>
+                              <div className="flex items-center gap-1.5 whitespace-nowrap">
+                                <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{product.categoryName || "Digital"}</span>
+                                <span className="text-[8px] text-muted-foreground/30">•</span>
+                                <span className="text-[9px] text-[#00AA5B] font-bold">{product.salesCount} Terjual</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-xs font-black text-[#2E3137]">Rp {product.price.toLocaleString("id-ID")}</span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-xs font-bold text-[#2E3137]">
-                          {product.stockType === "REUSABLE" ? (
-                            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-bold gap-1 inline-flex items-center">
-                              <Repeat className="w-3 h-3 text-emerald-600" /> Reusable
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold gap-1 inline-flex items-center">
-                              <Key className="w-3 h-3 text-blue-600" /> {product.stockCount} Akun / Baris
-                            </Badge>
-                          )}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={cn(
-                          "text-[9px] font-bold px-2 py-0.5 rounded-md border-none",
-                          product.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-                        )}>
-                          {product.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right px-6">
+                        </TableCell>
+                        <TableCell className="px-4 py-4 whitespace-nowrap">
+                          <span className="text-xs font-black text-[#2E3137]">Rp {product.price.toLocaleString("id-ID")}</span>
+                        </TableCell>
+                        <TableCell className="px-4 py-4 whitespace-nowrap">
+                          <span className="text-xs font-bold text-[#2E3137]">
+                            {product.stockType === "REUSABLE" ? (
+                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-bold gap-1 inline-flex items-center">
+                                <Repeat className="w-3 h-3 text-emerald-600" /> Reusable
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold gap-1 inline-flex items-center">
+                                <Key className="w-3 h-3 text-blue-600" /> {product.stockCount} Akun / Baris
+                              </Badge>
+                            )}
+                          </span>
+                        </TableCell>
+                        <TableCell className="px-4 py-4 whitespace-nowrap">
+                          <Badge className={cn(
+                            "text-[9px] font-bold px-2 py-0.5 rounded-md border-none",
+                            product.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                          )}>
+                            {product.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right px-6 py-4 whitespace-nowrap">
                         {canManageProducts ? (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -805,6 +806,7 @@ export default function MerchantProductsPage() {
                 })}
               </TableBody>
             </Table>
+            </div>
           </Card>
         )}
 

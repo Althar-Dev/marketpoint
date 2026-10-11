@@ -121,8 +121,8 @@ const EMAIL_TEMPLATES = [
   {
     id: "payment_confirmation",
     name: "Konfirmasi Pembayaran Sukses",
-    subject: "Konfirmasi Pembayaran Pesanan #[INV-XXXXX]",
-    message: "Halo Pelanggan,\n\nPembayaran Anda untuk nomor pesanan #[INV-XXXXX] telah berhasil diverifikasi oleh sistem escrow MarketPoint.\n\nPesanan Anda saat ini sedang disiapkan dan akan dikirimkan otomatis ke email ini. Anda juga dapat memantau status pesanan melalui menu Riwayat Transaksi di akun Anda.\n\nTerima kasih telah bertransaksi dengan aman di MarketPoint!"
+    subject: "Konfirmasi Pembayaran Pesanan #[MPoint-XXXXX]",
+    message: "Halo Pelanggan,\n\nPembayaran Anda untuk nomor pesanan #[MPoint-XXXXX] telah berhasil diverifikasi oleh sistem escrow MarketPoint.\n\nPesanan Anda saat ini sedang disiapkan dan akan dikirimkan otomatis ke email ini. Anda juga dapat memantau status pesanan melalui menu Riwayat Transaksi di akun Anda.\n\nTerima kasih telah bertransaksi dengan aman di MarketPoint!"
   },
   {
     id: "cs_support",

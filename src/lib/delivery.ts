@@ -6,6 +6,7 @@ import {
   getDbDeliveryLogByOrderId,
   ensureDeliveryAccountExists,
 } from "./database/mail-db";
+import { sendOutgoingEmail, renderDeliveryEmailHtml, SendEmailResult } from "./mailer";
 
 export interface DeliveryInput {
   orderId: string;
@@ -27,6 +28,7 @@ export interface DeliveryResult {
   productTitle: string;
   licenseKeys: string[];
   mailId?: string;
+  liveMailResult?: SendEmailResult;
   downloadFiles?: Array<{
     fileName: string;
     fileUrl: string;
@@ -265,7 +267,35 @@ Salam hangat,
 MarketPoint Delivery Service
 delivery@marketpoint.id | www.marketpoint.id`;
 
-  // 4. Simpan email ke PostgreSQL mail_messages (folder: 'sent')
+  // 4. Render HTML email resmi untuk pengiriman ke Gmail / email penerima
+  const emailHtml = renderDeliveryEmailHtml({
+    orderId,
+    recipientName: greetingName,
+    productTitle: resolvedTitle,
+    variant,
+    quantity,
+    licenseKeys: allocatedKeys,
+    downloadFiles,
+    demoUrl,
+    formattedDate: nowFormatted,
+  });
+
+  // 5. Kirim email nyata ke server mail penerima (Direct MX atau SMTP)
+  let liveMailResult: SendEmailResult | undefined = undefined;
+  try {
+    liveMailResult = await sendOutgoingEmail({
+      from: "MarketPoint Delivery <delivery@marketpoint.id>",
+      to: recipientEmail.trim(),
+      subject: emailSubject,
+      text: emailContent,
+      html: emailHtml,
+    });
+    console.log(`[DELIVERY ENGINE] Pengiriman email ke ${recipientEmail.trim()}:`, liveMailResult);
+  } catch (liveErr: any) {
+    console.warn("[LIVE EMAIL DISPATCH ERROR]:", liveErr?.message || liveErr);
+  }
+
+  // 6. Simpan email ke PostgreSQL mail_messages (folder: 'sent')
   const newMail = await sendDbMailMessage({
     from: "delivery@marketpoint.id",
     to: recipientEmail.trim(),
@@ -273,7 +303,7 @@ delivery@marketpoint.id | www.marketpoint.id`;
     content: emailContent,
   });
 
-  // 5. Simpan log pengiriman ke PostgreSQL mail_delivery_logs
+  // 7. Simpan log pengiriman ke PostgreSQL mail_delivery_logs
   await createDbDeliveryLog({
     orderId,
     productTitle: resolvedTitle,
@@ -292,6 +322,7 @@ delivery@marketpoint.id | www.marketpoint.id`;
     productTitle: resolvedTitle,
     licenseKeys: allocatedKeys,
     mailId: newMail.id,
+    liveMailResult,
     downloadFiles,
   };
 }

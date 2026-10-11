@@ -58,6 +58,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, collection, addDoc, updateDoc, setDoc, getDoc, getDocs, query, where, limit, serverTimestamp, increment } from "firebase/firestore";
 import { PaymentChannel as AdminPaymentChannel, DEFAULT_CHANNELS } from "@/app/admin/xendit/channels/page";
 import { CheckoutLoadingSkeleton } from "./loading";
+import { generateMPointInvoiceNumber } from "@/lib/invoice";
 
 const ADMIN_CHANNEL_METADATA: Record<string, {
   logoUrl: string;
@@ -258,6 +259,34 @@ function CheckoutContent() {
     if (!product?.id || !shopData?.flashSales) return null;
     return getProductActiveFlashSale(product.id, shopData.flashSales);
   }, [product?.id, shopData?.flashSales]);
+
+  // Seller Subscription Tier & Platform Fee Rate
+  const [sellerSubscription, setSellerSubscription] = useState<any>(null);
+  const sellerShopId = product?.shopId || product?.shop_id;
+
+  useEffect(() => {
+    if (!sellerShopId) return;
+    fetch(`/api/subscription?shopId=${encodeURIComponent(sellerShopId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && data?.subscription) {
+          setSellerSubscription(data.subscription);
+        }
+      })
+      .catch(() => {});
+  }, [sellerShopId]);
+
+  const DEFAULT_TIER_RATES: Record<string, number> = {
+    free: 5.0,
+    plus: 3.0,
+    pro: 1.5,
+    prime: 0.0,
+  };
+
+  const sellerPlanId = (sellerSubscription?.planId || shopData?.subscription?.planId || "free").toLowerCase();
+  const sellerCommissionRate = typeof sellerSubscription?.commissionRate === "number"
+    ? sellerSubscription.commissionRate
+    : (DEFAULT_TIER_RATES[sellerPlanId] ?? 5.0);
 
   // Buyer Details
   const [buyerName, setBuyerName] = useState("");
@@ -725,21 +754,46 @@ function CheckoutContent() {
               updateDoc(doc(db, "shops", sId, "orders", invoiceData.shopOrderId), updates).catch(() => {});
             }
 
-            // Kreditkan saldo hasil penjualan ke dompet akun toko
-            const salesAmount = Number(
+            // Hitung pendapatan bersih toko (Net Sales):
+            // Nilai riil yang diterima toko adalah harga produk dikurangi diskon voucher dan potongan flash sale,
+            // lalu dipotong biaya komisi platform sesuai tingkatan tier toko penjual (Free 5%, Plus 3%, Pro 1.5%, Prime 0%)
+            const rawSubtotal = Number(
               invoiceData?.itemsSubtotal ||
               (Number(invoiceData?.unitPrice || product?.price || 0) * Number(invoiceData?.quantity || quantity || 1)) ||
-              invoiceData?.totalAmount ||
               0
             );
+            const totalDiscount = Number(
+              invoiceData?.discount ||
+              invoiceData?.voucherDiscount ||
+              appliedDiscount ||
+              0
+            ) + Number(invoiceData?.flashSaleDiscount || 0);
 
-            if (salesAmount > 0) {
+            // Nilai dasar penjualan setelah diskon
+            const baseAmount = Math.max(0, rawSubtotal - totalDiscount);
+
+            // Tier toko dan persentase komisi platform
+            const sTier = (invoiceData?.shopTier || sellerPlanId || "free").toLowerCase();
+            const sRate = typeof invoiceData?.platformFeeRate === "number"
+              ? invoiceData.platformFeeRate
+              : (typeof sellerCommissionRate === "number" ? sellerCommissionRate : (DEFAULT_TIER_RATES[sTier] ?? 5.0));
+
+            // Komisi platform yang dipungut
+            const platformFee = typeof invoiceData?.platformFee === "number"
+              ? invoiceData.platformFee
+              : Math.round(baseAmount * (sRate / 100));
+
+            // Nominal bersih setelah potongan diskon & komisi platform (Net Sales to Shop Wallet)
+            const netSalesAmount = Math.max(0, baseAmount - platformFee);
+
+            if (netSalesAmount > 0) {
               const sellerWalletRef = doc(db, "users", sId, "wallet", "info");
+              // Saldo masuk ke pendingBalance (saldo tertahan masa settlement 3 hari)
               setDoc(
                 sellerWalletRef,
                 {
-                  balance: increment(salesAmount),
-                  totalRevenue: increment(salesAmount),
+                  pendingBalance: increment(netSalesAmount),
+                  totalRevenue: increment(netSalesAmount),
                   currency: "IDR",
                   userId: sId,
                   updatedAt: serverTimestamp(),
@@ -747,18 +801,66 @@ function CheckoutContent() {
                 { merge: true }
               ).catch((wErr) => console.warn("[SELLER WALLET UPDATE WARN]", wErr));
 
-              // Catat riwayat mutasi masuk (SALES) untuk toko penjual
+              // Catat riwayat mutasi masuk (SALES) untuk toko penjual dengan masa settlement 3 hari
+              const settlementDays = 3;
+              const settlementDate = new Date(Date.now() + settlementDays * 24 * 60 * 60 * 1000);
+
               addDoc(collection(db, "users", sId, "transactions"), {
                 type: "SALES",
-                amount: salesAmount,
-                description: `Hasil Penjualan #${invNum || "INV"} - ${invoiceData?.productTitle || product?.title || "Produk Digital"}`,
-                status: "SUCCESS",
+                amount: netSalesAmount,
+                originalPrice: rawSubtotal,
+                discount: totalDiscount,
+                platformFee: platformFee,
+                platformFeeRate: sRate,
+                shopTier: sTier,
+                netAmount: netSalesAmount,
+                description: `Hasil Penjualan #${invNum || "INV"} - ${invoiceData?.productTitle || product?.title || "Produk Digital"} (Tier: ${sTier.toUpperCase()} - Komisi: ${sRate}%)`,
+                status: "PENDING_SETTLEMENT",
+                settlementDate: settlementDate.toISOString(),
                 invoiceNumber: invNum,
                 orderId: invoiceData?.shopOrderId || null,
                 buyerName: invoiceData?.buyerName || buyerName.trim(),
                 timestamp: serverTimestamp(),
                 createdAt: serverTimestamp(),
               }).catch((tErr) => console.warn("[SELLER TRANSACTION LOG WARN]", tErr));
+
+              // Update status transaksi di PostgreSQL
+              if (invNum) {
+                fetch("/api/transactions", {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    identifier: invNum,
+                    status: "PAID",
+                    deliveredBy: "delivery@marketpoint.id",
+                    platformFee,
+                    platformFeeRate: sRate,
+                    shopTier: sTier,
+                    netAmount: netSalesAmount,
+                  }),
+                }).catch(() => {});
+              }
+
+              // Catat / update data pembeli ke koleksi pelanggan toko
+              const buyerContactEmail = invoiceData?.buyerEmail || buyerEmail.trim();
+              if (buyerContactEmail) {
+                const customerId = buyerContactEmail.replace(/[^a-zA-Z0-9]/g, "_");
+                setDoc(
+                  doc(db, "shops", sId, "customers", customerId),
+                  {
+                    id: customerId,
+                    name: invoiceData?.buyerName || buyerName.trim() || buyerContactEmail.split("@")[0],
+                    email: buyerContactEmail,
+                    phone: invoiceData?.buyerPhone || buyerPhone.trim() || null,
+                    totalOrders: increment(1),
+                    totalSpent: increment(netSalesAmount),
+                    lastOrder: serverTimestamp(),
+                    status: "ACTIVE",
+                    updatedAt: serverTimestamp(),
+                  },
+                  { merge: true }
+                ).catch((cErr) => console.warn("[CUSTOMER UPDATE WARN]", cErr));
+              }
             }
           }
         }
@@ -890,7 +992,7 @@ function CheckoutContent() {
     setIsProcessing(true);
 
     try {
-      const invoiceNumber = `INV-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}${String(new Date().getDate()).padStart(2, "0")}-MP-${Math.floor(100000 + Math.random() * 900000)}`;
+      const invoiceNumber = generateMPointInvoiceNumber(product?.id || productId || "item");
 
       const methodType = getMethodType(selectedMethod?.category);
 
@@ -925,6 +1027,14 @@ function CheckoutContent() {
       let userOrderId = "";
       let shopOrderId = "";
 
+      // Hitung komisi platform berdasarkan tier toko penjual
+      const orderSubtotal = itemsSubtotal;
+      const orderFlashDiscount = activeFlashSale ? (activeFlashSale.originalPrice - activeFlashSale.discountPrice) * quantity : 0;
+      const orderTotalDiscount = (appliedDiscount || 0) + orderFlashDiscount;
+      const orderBaseAmount = Math.max(0, orderSubtotal - orderTotalDiscount);
+      const orderPlatformFee = Math.round(orderBaseAmount * (sellerCommissionRate / 100));
+      const orderNetAmount = Math.max(0, orderBaseAmount - orderPlatformFee);
+
       const orderPayload = {
         invoiceNumber,
         productId: product?.id || productId || "item-1",
@@ -940,7 +1050,11 @@ function CheckoutContent() {
         voucherDiscount: appliedDiscount || 0,
         isFlashSale: Boolean(activeFlashSale),
         flashSaleSessionId: activeFlashSale?.session?.id || null,
-        flashSaleDiscount: activeFlashSale ? (activeFlashSale.originalPrice - activeFlashSale.discountPrice) * quantity : 0,
+        flashSaleDiscount: orderFlashDiscount,
+        platformFee: orderPlatformFee,
+        platformFeeRate: sellerCommissionRate,
+        shopTier: sellerPlanId,
+        netAmount: orderNetAmount,
         totalAmount: grandTotal,
         paymentMethod: selectedMethod?.id || "qris",
         paymentMethodName: selectedMethod?.name || "QRIS",
@@ -995,6 +1109,44 @@ function CheckoutContent() {
           console.warn("Could not write global transaction ledger:", e);
         }
       }
+
+      // Simpan transaksi ke database PostgreSQL
+      fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...orderPayload,
+          invoiceNumber,
+          userId: user?.uid || "guest",
+          shopId: sId,
+          productId: product?.id || productId,
+          productTitle: product?.title || "Produk Digital",
+          productImage: product?.images?.[0]?.imageUrl || null,
+          variant: selectedVariant || null,
+          unitPrice,
+          quantity,
+          itemsSubtotal,
+          paymentFee,
+          discount: appliedDiscount,
+          platformFee: orderPlatformFee,
+          platformFeeRate: sellerCommissionRate,
+          shopTier: sellerPlanId,
+          netAmount: orderNetAmount,
+          totalAmount: grandTotal,
+          paymentMethod: selectedMethod?.id || "qris",
+          paymentMethodName: selectedMethod?.name || "QRIS",
+          paymentCategory: selectedMethod?.category || "QRIS",
+          channelCode: selectedMethod?.channelCode || "QRIS",
+          paymentCode: generatedCode,
+          qrString: payResult.qr_string || null,
+          prId: payResult.pr_id || null,
+          status: "PENDING",
+          buyerName: buyerName.trim(),
+          buyerEmail: buyerEmail.trim(),
+          buyerPhone: buyerPhone.trim(),
+          notes: orderNotes.trim(),
+        }),
+      }).catch((pgErr) => console.warn("[CHECKOUT POST PG TRANSACTIONS WARN]", pgErr));
 
       // Update flash sale jika berlaku
       if (db && sId && activeFlashSale) {

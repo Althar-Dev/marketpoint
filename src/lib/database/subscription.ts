@@ -1,4 +1,5 @@
 import { query, initDatabaseSchema } from "./db";
+import { getPlatformSettings } from "./settings";
 
 export interface ShopSubscription {
   shopId: string;
@@ -6,6 +7,7 @@ export interface ShopSubscription {
   planName: string;
   billingCycle: "monthly" | "yearly";
   maxProducts: number;
+  commissionRate: number;
   status: "ACTIVE" | "EXPIRED" | "CANCELLED";
   subscribedAt?: string;
   expiresAt?: string;
@@ -26,6 +28,13 @@ const PLAN_NAMES: Record<string, string> = {
 };
 
 export async function getShopSubscription(shopId: string): Promise<ShopSubscription> {
+  let settings;
+  try {
+    settings = await getPlatformSettings();
+  } catch {
+    settings = null;
+  }
+
   try {
     await initDatabaseSchema();
     const sql = `
@@ -39,9 +48,12 @@ export async function getShopSubscription(shopId: string): Promise<ShopSubscript
     const res = await query(sql, [shopId]);
     if (res.rows.length > 0) {
       const row = res.rows[0];
+      const plan = (row.planId || "free") as "free" | "plus" | "pro" | "prime";
+      const rate = settings?.commissions?.[plan] ?? (plan === "prime" ? 0 : plan === "pro" ? 1.5 : plan === "plus" ? 3.0 : 5.0);
       return {
         ...row,
         maxProducts: Number(row.maxProducts),
+        commissionRate: rate,
       };
     }
   } catch (err) {
@@ -49,12 +61,14 @@ export async function getShopSubscription(shopId: string): Promise<ShopSubscript
   }
 
   // Default fallback
+  const defaultRate = settings?.commissions?.free ?? 5.0;
   return {
     shopId,
     planId: "free",
     planName: "Gratis",
     billingCycle: "monthly",
     maxProducts: 10,
+    commissionRate: defaultRate,
     status: "ACTIVE",
   };
 }
@@ -98,8 +112,17 @@ export async function updateShopSubscription(
   const res = await query(sql, [shopId, planId, planName, billingCycle, maxProducts, expiresAt.toISOString()]);
   const row = res.rows[0];
 
+  let rate = 5.0;
+  try {
+    const settings = await getPlatformSettings();
+    rate = settings.commissions[planId] ?? (planId === "prime" ? 0 : planId === "pro" ? 1.5 : 3.0);
+  } catch {
+    rate = planId === "prime" ? 0 : planId === "pro" ? 1.5 : 3.0;
+  }
+
   return {
     ...row,
     maxProducts: Number(row.maxProducts),
+    commissionRate: rate,
   };
 }

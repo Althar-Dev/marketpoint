@@ -12,6 +12,7 @@ import {
   clearAllDbMailData,
 } from "@/lib/database/mail-db";
 import { deliverProductLicense } from "@/lib/delivery";
+import { sendOutgoingEmail } from "@/lib/mailer";
 
 export async function GET() {
   try {
@@ -52,8 +53,21 @@ export async function POST(req: Request) {
         if (!to || !subject || !content) {
           return NextResponse.json({ success: false, error: "Data email tidak lengkap" }, { status: 400 });
         }
+
+        let liveResult = null;
+        try {
+          liveResult = await sendOutgoingEmail({
+            from: from ? `MarketPoint <${from}>` : "MarketPoint Delivery <delivery@marketpoint.id>",
+            to: to.trim(),
+            subject,
+            text: content,
+          });
+        } catch (err: any) {
+          console.warn("[MANUAL SEND DIRECT MX WARN]:", err?.message);
+        }
+
         const newMail = await sendDbMailMessage({ from, to, subject, content });
-        return NextResponse.json({ success: true, data: newMail });
+        return NextResponse.json({ success: true, data: newMail, liveResult });
       }
 
       case "create_account": {

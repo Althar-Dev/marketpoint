@@ -24,6 +24,10 @@ export interface TransactionRow {
   qrString?: string | null;
   prId?: string | null;
   status: "PENDING" | "PAID" | "SETTLED" | "EXPIRED" | "CANCELLED" | "FAILED";
+  platformFee?: number;
+  platformFeeRate?: number;
+  shopTier?: string;
+  netAmount?: number;
   buyerName?: string | null;
   buyerEmail?: string | null;
   buyerPhone?: string | null;
@@ -31,6 +35,8 @@ export interface TransactionRow {
   paymentInfo?: any;
   deliveredBy?: string | null;
   deliveredAt?: string | null;
+  licenseKey?: string | null;
+  licenseKeys?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -50,6 +56,10 @@ export interface CreateTransactionInput {
   discount?: number;
   voucherCode?: string | null;
   totalAmount: number;
+  platformFee?: number;
+  platformFeeRate?: number;
+  shopTier?: string;
+  netAmount?: number;
   paymentMethod?: string;
   paymentMethodName?: string;
   paymentCategory?: string;
@@ -90,6 +100,17 @@ function mapRowToTransaction(row: any): TransactionRow {
     qrString: row.qr_string,
     prId: row.pr_id,
     status: row.status,
+    platformFee: Number(row.platform_fee || 0),
+    platformFeeRate: Number(row.platform_fee_rate || 0),
+    shopTier: row.shop_tier || "free",
+    netAmount: (() => {
+      const parsedNet = Number(row.net_amount);
+      if (!isNaN(parsedNet) && parsedNet > 0) return parsedNet;
+      const gross = Number(row.total_amount || 0);
+      const disc = Number(row.discount || 0);
+      const fee = Number(row.platform_fee || 0);
+      return Math.max(0, gross - disc - fee);
+    })(),
     buyerName: row.buyer_name,
     buyerEmail: row.buyer_email,
     buyerPhone: row.buyer_phone,
@@ -115,21 +136,27 @@ export async function createDbTransaction(
     INSERT INTO transactions (
       id, invoice_number, user_id, shop_id, product_id, product_title, product_image,
       variant, unit_price, quantity, items_subtotal, payment_fee, discount, voucher_code,
-      total_amount, payment_method, payment_method_name, payment_category, channel_code,
+      total_amount, platform_fee, platform_fee_rate, shop_tier, net_amount,
+      payment_method, payment_method_name, payment_category, channel_code,
       payment_code, qr_string, pr_id, status, buyer_name, buyer_email, buyer_phone,
       notes, payment_info, delivered_by, delivered_at
     ) VALUES (
       $1, $2, $3, $4, $5, $6, $7,
       $8, $9, $10, $11, $12, $13, $14,
       $15, $16, $17, $18, $19,
-      $20, $21, $22, $23, $24, $25, $26,
-      $27, $28, $29, $30
+      $20, $21, $22, $23,
+      $24, $25, $26, $27, $28, $29, $30,
+      $31, $32, $33, $34
     )
     ON CONFLICT (invoice_number) DO UPDATE SET
       payment_code = COALESCE(EXCLUDED.payment_code, transactions.payment_code),
       qr_string = COALESCE(EXCLUDED.qr_string, transactions.qr_string),
       pr_id = COALESCE(EXCLUDED.pr_id, transactions.pr_id),
       payment_info = COALESCE(EXCLUDED.payment_info, transactions.payment_info),
+      platform_fee = COALESCE(EXCLUDED.platform_fee, transactions.platform_fee),
+      platform_fee_rate = COALESCE(EXCLUDED.platform_fee_rate, transactions.platform_fee_rate),
+      shop_tier = COALESCE(EXCLUDED.shop_tier, transactions.shop_tier),
+      net_amount = COALESCE(EXCLUDED.net_amount, transactions.net_amount),
       updated_at = CURRENT_TIMESTAMP
     RETURNING *;
   `;
@@ -150,6 +177,10 @@ export async function createDbTransaction(
     input.discount || 0,
     input.voucherCode || null,
     input.totalAmount,
+    input.platformFee || 0,
+    input.platformFeeRate || 0,
+    input.shopTier || "free",
+    input.netAmount !== undefined ? input.netAmount : (input.totalAmount - (input.platformFee || 0)),
     input.paymentMethod || "qris",
     input.paymentMethodName || "QRIS",
     input.paymentCategory || "QRIS",
@@ -181,6 +212,10 @@ export async function updateDbTransactionStatus(
     deliveredBy?: string;
     deliveredAt?: Date | string;
     paymentInfo?: any;
+    platformFee?: number;
+    platformFeeRate?: number;
+    shopTier?: string;
+    netAmount?: number;
   }
 ): Promise<TransactionRow | null> {
   await initDatabaseSchema();
@@ -201,6 +236,26 @@ export async function updateDbTransactionStatus(
   if (extra?.paymentInfo) {
     params.push(JSON.stringify(extra.paymentInfo));
     updates.push(`payment_info = $${params.length}`);
+  }
+
+  if (extra?.platformFee !== undefined) {
+    params.push(extra.platformFee);
+    updates.push(`platform_fee = $${params.length}`);
+  }
+
+  if (extra?.platformFeeRate !== undefined) {
+    params.push(extra.platformFeeRate);
+    updates.push(`platform_fee_rate = $${params.length}`);
+  }
+
+  if (extra?.shopTier !== undefined) {
+    params.push(extra.shopTier);
+    updates.push(`shop_tier = $${params.length}`);
+  }
+
+  if (extra?.netAmount !== undefined) {
+    params.push(extra.netAmount);
+    updates.push(`net_amount = $${params.length}`);
   }
 
   const sql = `
@@ -227,7 +282,37 @@ export async function getDbTransactionByInvoice(
     [invoiceNumber]
   );
   if (res.rows.length === 0) return null;
-  return mapRowToTransaction(res.rows[0]);
+  const tx = mapRowToTransaction(res.rows[0]);
+
+  try {
+    // 1. Ambil dari mail_delivery_logs
+    const logRes = await query(
+      `SELECT serial_key FROM mail_delivery_logs WHERE order_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      [tx.invoiceNumber]
+    );
+    if (logRes.rows.length > 0 && logRes.rows[0].serial_key) {
+      tx.licenseKey = logRes.rows[0].serial_key;
+      tx.licenseKeys = logRes.rows[0].serial_key
+        .split("\n")
+        .map((k: string) => k.trim())
+        .filter(Boolean);
+    } else {
+      // 2. Ambil dari product_license_keys jika order_id cocok
+      const keyRes = await query(
+        `SELECT license_key FROM product_license_keys WHERE order_id = $1 ORDER BY id ASC`,
+        [tx.invoiceNumber]
+      );
+      if (keyRes.rows.length > 0) {
+        const keys = keyRes.rows.map((r: any) => r.license_key);
+        tx.licenseKey = keys.join("\n");
+        tx.licenseKeys = keys;
+      }
+    }
+  } catch (err) {
+    console.error("[getDbTransactionByInvoice] Error fetching license key:", err);
+  }
+
+  return tx;
 }
 
 /**

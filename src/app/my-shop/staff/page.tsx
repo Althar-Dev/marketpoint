@@ -1241,16 +1241,16 @@ export default function MerchantAdminsPage() {
                 </div>
 
                 {/* Desktop / Tablet View: Compact Table (>= md) */}
-                <div className="hidden md:block border border-border rounded-xl overflow-hidden">
-                  <Table>
+                <div className="hidden md:block border border-border rounded-xl overflow-hidden overflow-x-auto">
+                  <Table className="w-full whitespace-nowrap min-w-[760px]">
                     <TableHeader className="bg-muted/30">
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 py-2.5">Admin / Staf</TableHead>
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80">Peran</TableHead>
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80">Hak Akses</TableHead>
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80">Status</TableHead>
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80">Terakhir Aktif</TableHead>
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 text-right pr-3">Aksi</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 py-2.5 px-4 whitespace-nowrap">Admin / Staf</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 px-4 whitespace-nowrap">Peran</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 px-4 whitespace-nowrap">Hak Akses</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 px-4 whitespace-nowrap">Status</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 px-4 whitespace-nowrap">Terakhir Aktif</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 text-right pr-4 whitespace-nowrap">Aksi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1268,7 +1268,7 @@ export default function MerchantAdminsPage() {
                             return (
                               <TableRow key={admin.id} className="hover:bg-muted/20 transition-colors">
                                 {/* Profile */}
-                                <TableCell className="py-2.5">
+                                <TableCell className="py-2.5 px-4 whitespace-nowrap">
                                   <div className="flex items-center gap-2.5">
                                     <Avatar className="h-8 w-8 border border-border">
                                       <AvatarImage src={resolveStaffAvatar(admin.avatar, admin.email, admin.name)} alt={admin.name || admin.email} />
@@ -1305,7 +1305,7 @@ export default function MerchantAdminsPage() {
                                 </TableCell>
 
                                 {/* Role */}
-                                <TableCell>
+                                <TableCell className="px-4 whitespace-nowrap">
                                   <Badge
                                     className={cn(
                                       "text-[10px] font-semibold border-none px-2 py-0.5",
@@ -1321,7 +1321,7 @@ export default function MerchantAdminsPage() {
                                 </TableCell>
 
                                 {/* Permissions Tags */}
-                                <TableCell>
+                                <TableCell className="px-4 whitespace-nowrap">
                                   <div className="flex flex-wrap gap-1 max-w-xs">
                                     {admin.permissions.finance && (
                                       <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200/60 px-1.5 py-0.5 rounded font-medium">
@@ -1342,7 +1342,7 @@ export default function MerchantAdminsPage() {
                                 </TableCell>
 
                                 {/* Status */}
-                                <TableCell>
+                                <TableCell className="px-4 whitespace-nowrap">
                                   <div className="flex items-center gap-2">
                                     {admin.status === "ACTIVE" ? (
                                       <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-semibold gap-1 px-1.5 py-0.5">
@@ -1371,7 +1371,7 @@ export default function MerchantAdminsPage() {
                                 </TableCell>
 
                                 {/* Last Active */}
-                                <TableCell>
+                                <TableCell className="px-4 whitespace-nowrap">
                                   <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                                     <Clock className="h-3 w-3 text-muted-foreground/60" />
                                     {admin.lastActive || "Baru saja"}
@@ -1379,7 +1379,7 @@ export default function MerchantAdminsPage() {
                                 </TableCell>
 
                                 {/* Actions */}
-                                <TableCell className="text-right pr-3">
+                                <TableCell className="text-right px-4 whitespace-nowrap">
                                   <div className="flex items-center justify-end gap-1.5">
                                     {admin.status === "PENDING" && (
                                       <Button
@@ -1522,14 +1522,14 @@ export default function MerchantAdminsPage() {
 
                 {/* Responsive Log Table */}
                 <div className="border border-border rounded-xl overflow-x-auto">
-                  <Table className="min-w-[600px]">
+                  <Table className="w-full whitespace-nowrap min-w-[720px]">
                     <TableHeader className="bg-muted/30">
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 py-2.5">Staf Pelaksana</TableHead>
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80">Aksi & Modul</TableHead>
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80">Rincian Perubahan</TableHead>
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80">Waktu</TableHead>
-                        <TableHead className="text-[11px] font-bold text-muted-foreground/80">Alamat IP</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 py-2.5 px-4 whitespace-nowrap">Staf Pelaksana</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 px-4 whitespace-nowrap">Aksi & Modul</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 px-4 whitespace-nowrap">Rincian Perubahan</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 px-4 whitespace-nowrap">Waktu</TableHead>
+                        <TableHead className="text-[11px] font-bold text-muted-foreground/80 px-4 whitespace-nowrap">Alamat IP</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1542,14 +1542,14 @@ export default function MerchantAdminsPage() {
                       ) : (
                         filteredLogs.map((log) => (
                           <TableRow key={log.id} className="hover:bg-muted/20 transition-colors">
-                            <TableCell className="py-2.5">
+                            <TableCell className="py-2.5 px-4 whitespace-nowrap">
                               <div className="flex flex-col leading-tight">
                                 <span className="text-xs font-bold text-foreground">{log.adminName}</span>
                                 <span className="text-[10px] text-muted-foreground">{log.adminRole}</span>
                               </div>
                             </TableCell>
 
-                            <TableCell>
+                            <TableCell className="px-4 whitespace-nowrap">
                               <div className="flex items-center gap-1.5">
                                 <Badge
                                   className={cn(
@@ -1566,16 +1566,16 @@ export default function MerchantAdminsPage() {
                               </div>
                             </TableCell>
 
-                            <TableCell>
-                              <span className="text-xs text-muted-foreground line-clamp-1">{log.target}</span>
+                            <TableCell className="px-4 whitespace-nowrap">
+                              <span className="text-xs text-muted-foreground">{log.target}</span>
                             </TableCell>
 
-                            <TableCell>
-                              <span className="text-[11px] text-muted-foreground whitespace-nowrap">{log.timestamp}</span>
+                            <TableCell className="px-4 whitespace-nowrap">
+                              <span className="text-[11px] text-muted-foreground">{log.timestamp}</span>
                             </TableCell>
 
-                            <TableCell>
-                              <span className="text-[10px] font-mono text-muted-foreground/80 whitespace-nowrap">{log.ip}</span>
+                            <TableCell className="px-4 whitespace-nowrap">
+                              <span className="text-[10px] font-mono text-muted-foreground/80">{log.ip}</span>
                             </TableCell>
                           </TableRow>
                         ))

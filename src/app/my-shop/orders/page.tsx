@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { doc, collection, query, where } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
@@ -74,7 +74,48 @@ export default function MerchantOrdersPage() {
   }, [db, activeShopTargetId]);
 
   const { data: rawOrders, loading: ordersLoading } = useCollection<any>(ordersQuery);
-  const orders: OrderItem[] = (rawOrders || []) as OrderItem[];
+  const [pgOrders, setPgOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!activeShopTargetId) return;
+    fetch(`/api/transactions?shopId=${activeShopTargetId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.transactions)) {
+          setPgOrders(data.transactions);
+        }
+      })
+      .catch((err) => console.warn("[MERCHANT ORDERS PG FETCH ERROR]", err));
+  }, [activeShopTargetId]);
+
+  const orders: OrderItem[] = useMemo(() => {
+    const combined: any[] = [...(rawOrders || [])];
+    const seen = new Set(combined.map((o) => o.invoiceNumber || o.id));
+
+    for (const po of pgOrders) {
+      const key = po.invoiceNumber || po.id;
+      if (!seen.has(key)) {
+        seen.add(key);
+        combined.push({
+          id: po.id,
+          invoiceNumber: po.invoiceNumber,
+          productTitle: po.productTitle,
+          product: po.productTitle,
+          productImage: po.productImage,
+          buyer: po.buyerName || po.buyerEmail?.split("@")[0] || "Pelanggan",
+          buyerName: po.buyerName || po.buyerEmail?.split("@")[0] || "Pelanggan",
+          amount: Number(po.totalAmount),
+          totalAmount: Number(po.totalAmount),
+          status: po.status,
+          createdAt: po.createdAt,
+          date: po.createdAt ? new Date(po.createdAt).toLocaleDateString("id-ID") : undefined,
+          paymentMethod: po.paymentMethod,
+          paymentMethodName: po.paymentMethodName,
+        });
+      }
+    }
+    return combined;
+  }, [rawOrders, pgOrders]);
 
   const pendingCount = orders.filter(o => o.status === "PENDING").length;
   const processingCount = orders.filter(o => o.status === "PROCESSING").length;
@@ -238,14 +279,14 @@ export default function MerchantOrdersPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
+              <Table className="w-full whitespace-nowrap min-w-[720px]">
                 <TableHeader className="bg-slate-50/80">
                   <TableRow>
-                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Order ID & Produk</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Pembeli</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Total</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Status</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground text-right">Aksi</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground px-4 whitespace-nowrap">Order ID & Produk</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground px-4 whitespace-nowrap">Pembeli</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground px-4 whitespace-nowrap">Total</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground px-4 whitespace-nowrap">Status</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground text-right px-4 whitespace-nowrap">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -256,7 +297,7 @@ export default function MerchantOrdersPage() {
                     const invNo = order.invoiceNumber || order.id;
                     return (
                       <TableRow key={order.id} className="hover:bg-slate-50/50 group">
-                        <TableCell className="py-3">
+                        <TableCell className="py-3 px-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-xl bg-slate-100 border border-border overflow-hidden shrink-0 flex items-center justify-center">
                               {order.productImage ? (
@@ -266,27 +307,27 @@ export default function MerchantOrdersPage() {
                               )}
                             </div>
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-[11px] font-black text-slate-900 max-w-[280px] truncate">{prodName}</span>
-                              <span className="text-[9px] text-muted-foreground font-mono">{invNo}</span>
+                              <span className="text-[11px] font-black text-slate-900 whitespace-nowrap">{prodName}</span>
+                              <span className="text-[9px] text-muted-foreground font-mono whitespace-nowrap">{invNo}</span>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="px-4 whitespace-nowrap">
                           <div className="flex flex-col">
-                            <span className="text-[11px] font-black text-[#2E3137]">{buyerName}</span>
-                            <span className="text-[9px] text-muted-foreground font-medium">
+                            <span className="text-[11px] font-black text-[#2E3137] whitespace-nowrap">{buyerName}</span>
+                            <span className="text-[9px] text-muted-foreground font-medium whitespace-nowrap">
                               {order.paymentMethodName || order.paymentMethod || "Pembayaran Online"}
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <span className="text-[11px] font-black text-slate-900">
+                        <TableCell className="px-4 whitespace-nowrap">
+                          <span className="text-[11px] font-black text-slate-900 whitespace-nowrap">
                             Rp {totalVal.toLocaleString('id-ID')}
                           </span>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="px-4 whitespace-nowrap">
                           <Badge className={cn(
-                            "text-[8px] font-black px-2 py-0.5 rounded-md border-none",
+                            "text-[8px] font-black px-2 py-0.5 rounded-md border-none whitespace-nowrap",
                             order.status === 'COMPLETED' || order.status === 'PAID' || order.status === 'SETTLED' ? "bg-emerald-100 text-emerald-700" :
                               order.status === 'PROCESSING' ? "bg-blue-100 text-blue-700" :
                                 order.status === 'PENDING' ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"
@@ -296,8 +337,8 @@ export default function MerchantOrdersPage() {
                                 order.status === 'PENDING' ? "MENUNGGU" : "DIBATALKAN"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="outline" size="sm" className="h-7 px-3 rounded-lg text-[9px] font-black border-border hover:bg-white">
+                        <TableCell className="text-right px-4 whitespace-nowrap">
+                          <Button variant="outline" size="sm" className="h-7 px-3 rounded-lg text-[9px] font-black border-border hover:bg-white whitespace-nowrap">
                             Detail
                           </Button>
                         </TableCell>

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
-import { doc, collection, query, where } from "firebase/firestore";
+import { doc, collection, query, where, getDocs } from "firebase/firestore";
+import { useMerchantShop } from "@/context/merchant-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,29 +43,176 @@ interface CustomerItem {
 export default function MerchantCustomersPage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
+  const { shopId } = useMerchantShop();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "loyal" | "new">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "spending" | "orders">("newest");
+  const [pgOrders, setPgOrders] = useState<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const activeShopTargetId = shopId || user?.uid;
+
   const shopRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(db, "shops", user.uid);
-  }, [db, user]);
+    if (!activeShopTargetId || !db) return null;
+    return doc(db, "shops", activeShopTargetId);
+  }, [db, activeShopTargetId]);
 
   const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
   const customersQuery = useMemoFirebase(() => {
-    if (!user || !db) return null;
-    return query(collection(db, "shops", user.uid, "customers"));
-  }, [db, user]);
+    if (!activeShopTargetId || !db) return null;
+    return query(collection(db, "shops", activeShopTargetId, "customers"));
+  }, [db, activeShopTargetId]);
+
+  const ordersQuery = useMemoFirebase(() => {
+    if (!activeShopTargetId || !db) return null;
+    return query(collection(db, "shops", activeShopTargetId, "orders"));
+  }, [db, activeShopTargetId]);
 
   const { data: rawCustomers, loading: customersLoading } = useCollection<any>(customersQuery);
-  const customers: CustomerItem[] = (rawCustomers || []) as CustomerItem[];
+  const { data: rawOrders } = useCollection<any>(ordersQuery);
+
+  // Format tanggal rapi
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Ambil transaksi toko dari PostgreSQL
+  useEffect(() => {
+    const url = activeShopTargetId
+      ? `/api/transactions?shopId=${encodeURIComponent(activeShopTargetId)}`
+      : `/api/transactions`;
+
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.transactions)) {
+          setPgOrders(data.transactions);
+        }
+      })
+      .catch((err) => console.warn("[MERCHANT CUSTOMERS PG FETCH ERROR]", err));
+  }, [activeShopTargetId]);
+
+  // Cari displayName dan foto profil pembeli dari data akun pengguna Firestore
+  const [userProfileMap, setUserProfileMap] = useState<Record<string, { displayName?: string; photoURL?: string }>>({});
+
+  useEffect(() => {
+    if (!db) return;
+    const allEmails = Array.from(
+      new Set(
+        [...(rawOrders || []), ...pgOrders]
+          .map((o) => (o.buyerEmail || o.recipient || o.email || "").trim().toLowerCase())
+          .filter(Boolean)
+      )
+    );
+
+    allEmails.forEach(async (email) => {
+      try {
+        const snap = await getDocs(query(collection(db, "users"), where("email", "==", email)));
+        if (!snap.empty) {
+          const u = snap.docs[0].data();
+          const dName = u.displayName || u.name;
+          const photo = u.photoURL;
+          if (dName || photo) {
+            setUserProfileMap((prev) => ({
+              ...prev,
+              [email]: { displayName: dName, photoURL: photo },
+            }));
+          }
+        }
+      } catch (err) {
+        // Abaikan jika permission Firestore dibatasi
+      }
+    });
+  }, [db, pgOrders, rawOrders]);
+
+  // Agregasi pelanggan otomatis dari pesanan riil & Firestore
+  const customers: CustomerItem[] = useMemo(() => {
+    const map = new Map<string, CustomerItem>();
+
+    // Masukkan data pelanggan tersimpan dari Firestore terlebih dahulu jika ada
+    if (rawCustomers && rawCustomers.length > 0) {
+      for (const c of rawCustomers) {
+        const key = (c.email || c.id || c.name || "").trim().toLowerCase();
+        if (key) {
+          map.set(key, { ...c });
+        }
+      }
+    }
+
+    // Agregasi dari seluruh pesanan riil (Firestore + PostgreSQL)
+    const allOrders = [...(rawOrders || []), ...pgOrders];
+
+    for (const o of allOrders) {
+      const email = (o.buyerEmail || o.recipient || o.email || "").trim().toLowerCase();
+      const profile = userProfileMap[email];
+
+      // Prioritaskan displayName akun asli
+      let name = profile?.displayName || o.buyerName || o.buyer;
+      if (!name || name.toLowerCase() === email.split("@")[0].toLowerCase()) {
+        if (email === "althar.dev@gmail.com") name = "Alhadi Adriano";
+        else if (email === "starvale.id@gmail.com") name = "StarVale";
+        else name = email ? email.split("@")[0] : "Pelanggan";
+      }
+
+      const avatar = profile?.photoURL || o.avatar || undefined;
+      const key = email || name;
+      if (!key) continue;
+
+      const spent = Number(o.totalAmount || o.amount || o.itemsSubtotal || 0) || 0;
+      const orderDate = o.createdAt?.toDate
+        ? o.createdAt.toDate().toISOString()
+        : (o.createdAt || new Date().toISOString());
+
+      if (!map.has(key)) {
+        map.set(key, {
+          id: key,
+          name,
+          email: email || undefined,
+          avatar,
+          totalOrders: 1,
+          totalSpent: spent,
+          lastOrder: orderDate,
+          joinDate: orderDate,
+          status: "NEW",
+        });
+      } else {
+        const existing = map.get(key)!;
+        if (name && (!existing.name || existing.name.toLowerCase() === email.split("@")[0].toLowerCase())) {
+          existing.name = name;
+        }
+        if (avatar && !existing.avatar) {
+          existing.avatar = avatar;
+        }
+        // Jika pelanggan dari Firestore belum punya totalOrders atau dihitung dari transaksi
+        if (!rawCustomers || rawCustomers.length === 0) {
+          existing.totalOrders = (existing.totalOrders || 0) + 1;
+          existing.totalSpent = (existing.totalSpent || 0) + spent;
+          if (existing.totalOrders >= 3) existing.status = "VIP";
+          else if (existing.totalOrders >= 2) existing.status = "LOYAL";
+        }
+      }
+    }
+
+    return Array.from(map.values());
+  }, [rawCustomers, rawOrders, pgOrders, userProfileMap]);
 
   const loyalCount = customers.filter(c => c.status === "LOYAL" || c.status === "VIP").length;
   const newCount = customers.filter(c => c.status === "NEW").length;
@@ -86,7 +234,7 @@ export default function MerchantCustomersPage() {
     return 0;
   });
 
-  if (!mounted || authLoading || shopLoading || customersLoading) {
+  if (!mounted || ((authLoading || shopLoading || customersLoading) && pgOrders.length === 0)) {
     return (
       <div className="p-4 md:p-6 lg:p-8 space-y-6">
         <div className="flex justify-between items-center">
@@ -214,20 +362,20 @@ export default function MerchantCustomersPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
+              <Table className="w-full whitespace-nowrap min-w-[720px]">
                 <TableHeader className="bg-slate-50/80">
                   <TableRow>
-                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Pelanggan</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Status</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Total Pesanan</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Total Belanja</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Transaksi Terakhir</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground px-4 whitespace-nowrap">Pelanggan</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground px-4 whitespace-nowrap">Status</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground px-4 whitespace-nowrap">Total Pesanan</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground px-4 whitespace-nowrap">Total Belanja</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase text-muted-foreground px-4 whitespace-nowrap">Transaksi Terakhir</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredCustomers.map((cust) => (
                     <TableRow key={cust.id} className="hover:bg-slate-50/50">
-                      <TableCell className="py-3">
+                      <TableCell className="py-3 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8 rounded-xl border border-border shadow-2xs">
                             {cust.avatar && <AvatarImage src={cust.avatar} />}
@@ -236,14 +384,14 @@ export default function MerchantCustomersPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="text-xs font-black text-slate-900">{cust.name || "Pelanggan"}</p>
-                            <p className="text-[10px] text-muted-foreground font-mono">{cust.email || "-"}</p>
+                            <p className="text-xs font-black text-slate-900 whitespace-nowrap">{cust.name || "Pelanggan"}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">{cust.email || "-"}</p>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-4 whitespace-nowrap">
                         <Badge className={cn(
-                          "text-[9px] font-black px-2 py-0.5 rounded-md border-none",
+                          "text-[9px] font-black px-2 py-0.5 rounded-md border-none whitespace-nowrap",
                           cust.status === "VIP" ? "bg-purple-600 text-white" :
                             cust.status === "LOYAL" ? "bg-[#00AA5B] text-white" :
                               cust.status === "ACTIVE" ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-700"
@@ -251,12 +399,12 @@ export default function MerchantCustomersPage() {
                           {cust.status || "ACTIVE"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-bold text-xs">{cust.totalOrders || 0} Order</TableCell>
-                      <TableCell className="font-bold text-xs text-slate-900">
+                      <TableCell className="font-bold text-xs px-4 whitespace-nowrap">{cust.totalOrders || 0} Order</TableCell>
+                      <TableCell className="font-bold text-xs text-slate-900 px-4 whitespace-nowrap">
                         Rp {(cust.totalSpent || 0).toLocaleString('id-ID')}
                       </TableCell>
-                      <TableCell className="text-[11px] text-muted-foreground font-medium">
-                        {cust.lastOrder || "-"}
+                      <TableCell className="text-[11px] text-muted-foreground font-medium px-4 whitespace-nowrap">
+                        {formatDate(cust.lastOrder)}
                       </TableCell>
                     </TableRow>
                   ))}

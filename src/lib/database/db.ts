@@ -279,6 +279,20 @@ export async function initDatabaseSchema(force = false) {
           updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         );
 
+        -- Add platform commission columns if not existing
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS platform_fee NUMERIC(12, 2) DEFAULT 0.00;
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS platform_fee_rate NUMERIC(6, 2) DEFAULT 0.00;
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS shop_tier VARCHAR(50) DEFAULT 'free';
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS net_amount NUMERIC(12, 2) DEFAULT 0.00;
+        ALTER TABLE transactions ALTER COLUMN id TYPE VARCHAR(150);
+        ALTER TABLE transactions ALTER COLUMN invoice_number TYPE VARCHAR(150);
+        ALTER TABLE mail_delivery_logs ALTER COLUMN order_id TYPE VARCHAR(150);
+
+        -- Auto-repair existing transactions where net_amount is 0 or null
+        UPDATE transactions 
+        SET net_amount = GREATEST(0, total_amount - COALESCE(discount, 0) - COALESCE(platform_fee, 0)) 
+        WHERE (net_amount IS NULL OR net_amount = 0) AND total_amount > 0;
+
         CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id);
         CREATE INDEX IF NOT EXISTS idx_transactions_shop ON transactions(shop_id);
         CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);

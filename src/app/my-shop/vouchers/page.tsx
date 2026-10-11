@@ -713,7 +713,7 @@ export default function MerchantVouchersPage() {
             </div>
           ) : (
             <div className="overflow-x-auto w-full scrollbar-thin">
-              <Table className="min-w-[760px] w-full">
+              <Table className="min-w-[760px] w-full whitespace-nowrap">
                 <TableHeader className="bg-slate-50/50">
                   <TableRow className="border-b border-border hover:bg-transparent">
                     <TableHead className="text-[11px] font-extrabold text-muted-foreground uppercase h-11 px-5 whitespace-nowrap">
