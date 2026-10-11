@@ -124,25 +124,34 @@ export async function getDbMailMessages(): Promise<MailMessageRow[]> {
     ORDER BY created_at DESC
   `);
 
-  return res.rows.map((row) => ({
-    id: row.id,
-    from: row.from,
-    to: row.to,
-    subject: row.subject,
-    preview: row.preview || "",
-    content: row.content,
-    folder: row.folder,
-    previousFolder: row.previousFolder || undefined,
-    isUnread: row.isUnread,
-    date: formatMailDate(row.createdAt),
-    createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : undefined,
-    attachment: row.attachmentName
-      ? {
-          name: row.attachmentName,
-          size: row.attachmentSize || "1.0 MB",
-        }
-      : undefined,
-  }));
+  return res.rows.map((row) => {
+    const cleanContent = sanitizeRawMimeContent(row.content);
+    let cleanPreview = row.preview || "";
+    if (cleanPreview.includes("Received:") || cleanPreview.includes("ARC-Seal:") || !cleanPreview) {
+      const textOnly = cleanContent.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      cleanPreview = textOnly.substring(0, 70) + (textOnly.length > 70 ? "..." : "");
+    }
+
+    return {
+      id: row.id,
+      from: row.from,
+      to: row.to,
+      subject: row.subject,
+      preview: cleanPreview,
+      content: cleanContent,
+      folder: row.folder,
+      previousFolder: row.previousFolder || undefined,
+      isUnread: row.isUnread,
+      date: formatMailDate(row.createdAt),
+      createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : undefined,
+      attachment: row.attachmentName
+        ? {
+            name: row.attachmentName,
+            size: row.attachmentSize || "1.0 MB",
+          }
+        : undefined,
+    };
+  });
 }
 
 // 4. Kirim Email Baru (Simpan ke folder 'sent')
@@ -409,3 +418,51 @@ function formatSerialSnippet(key: string): string {
   if (key.length <= 12) return key;
   return key.substring(0, 10) + "-****";
 }
+
+export function sanitizeRawMimeContent(raw: string): string {
+  if (!raw || typeof raw !== "string") return raw || "";
+  if (!raw.includes("Received:") && !raw.includes("Content-Type:") && !raw.includes("ARC-Seal:") && !raw.includes("boundary=")) {
+    return raw;
+  }
+
+  // Handle multipart boundary
+  const boundaryMatch = raw.match(/boundary="?([^"\r\n]+)"?/i);
+  if (boundaryMatch) {
+    const boundary = boundaryMatch[1];
+    const parts = raw.split(`--${boundary}`);
+    // Priority: text/html
+    for (const part of parts) {
+      if (part.includes("text/html")) {
+        const bodySplit = part.split(/\r?\n\r?\n/);
+        if (bodySplit.length > 1) {
+          const body = bodySplit.slice(1).join("\n\n").replace(/--\s*$/, "").trim();
+          if (body) return body;
+        }
+      }
+    }
+    // Fallback: text/plain
+    for (const part of parts) {
+      if (part.includes("text/plain")) {
+        const bodySplit = part.split(/\r?\n\r?\n/);
+        if (bodySplit.length > 1) {
+          const body = bodySplit.slice(1).join("\n\n").replace(/--\s*$/, "").trim();
+          if (body) return body;
+        }
+      }
+    }
+  }
+
+  // Fallback: strip headers separated by double newline
+  if (raw.startsWith("Received:") || raw.includes("\nReceived:") || raw.includes("ARC-Seal:")) {
+    const doubleNewlineIdx = raw.indexOf("\r\n\r\n");
+    const unixDoubleIdx = raw.indexOf("\n\n");
+    const splitIdx = doubleNewlineIdx !== -1 ? doubleNewlineIdx + 4 : (unixDoubleIdx !== -1 ? unixDoubleIdx + 2 : -1);
+    if (splitIdx !== -1) {
+      const rest = raw.substring(splitIdx).trim();
+      if (rest) return rest;
+    }
+  }
+
+  return raw;
+}
+

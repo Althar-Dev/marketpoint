@@ -1265,6 +1265,61 @@ export default function EmailManagementPage() {
       .trim();
   };
 
+  // Helper membersihkan header RFC mentah / MIME artifacts agar tampilan selalu rapi
+  const cleanDisplayEmailContent = (content: string = "") => {
+    if (!content || typeof content !== "string") return "";
+    if (
+      !content.includes("Received:") &&
+      !content.includes("Content-Type:") &&
+      !content.includes("ARC-Seal:") &&
+      !content.includes("boundary=")
+    ) {
+      return content;
+    }
+
+    // Ekstrak bagian pesan dari multipart boundary
+    const boundaryMatch = content.match(/boundary="?([^"\r\n]+)"?/i);
+    if (boundaryMatch) {
+      const boundary = boundaryMatch[1];
+      const parts = content.split(new RegExp(`--${boundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+
+      // Prioritas 1: text/html
+      for (const part of parts) {
+        if (part.includes("text/html")) {
+          const bodySplit = part.split(/\r?\n\r?\n/);
+          if (bodySplit.length > 1) {
+            const body = bodySplit.slice(1).join("\n\n").replace(/--\s*$/, "").trim();
+            if (body) return body;
+          }
+        }
+      }
+
+      // Prioritas 2: text/plain
+      for (const part of parts) {
+        if (part.includes("text/plain")) {
+          const bodySplit = part.split(/\r?\n\r?\n/);
+          if (bodySplit.length > 1) {
+            const body = bodySplit.slice(1).join("\n\n").replace(/--\s*$/, "").trim();
+            if (body) return body;
+          }
+        }
+      }
+    }
+
+    // Fallback pemotongan header blok RFC
+    if (content.includes("Received:") || content.includes("ARC-Seal:") || content.includes("MIME-Version:")) {
+      const doubleNewlineIdx = content.indexOf("\r\n\r\n");
+      const unixDoubleIdx = content.indexOf("\n\n");
+      const splitIdx = doubleNewlineIdx !== -1 ? doubleNewlineIdx + 4 : (unixDoubleIdx !== -1 ? unixDoubleIdx + 2 : -1);
+      if (splitIdx !== -1) {
+        const rest = content.substring(splitIdx).trim();
+        if (rest) return rest;
+      }
+    }
+
+    return content;
+  };
+
   // Kumpulan seluruh pesan dalam satu utas percakapan (Conversation Thread ala Gmail)
   const activeThreadMessages = useMemo(() => {
     if (!selectedEmail) return [];
@@ -2544,22 +2599,23 @@ export default function EmailManagementPage() {
                   <div className="space-y-4">
                     {activeThreadMessages.map((msg, idx) => {
                       const isLastMessage = idx === activeThreadMessages.length - 1;
+                      const sanitizedContent = cleanDisplayEmailContent(msg.content);
                       const isFullTemplate =
-                        msg.content.includes("<!DOCTYPE") ||
-                        msg.content.includes("<html") ||
-                        msg.content.includes("<table");
-                      let htmlToRender = isFullTemplate ? msg.content : null;
+                        sanitizedContent.includes("<!DOCTYPE") ||
+                        sanitizedContent.includes("<html") ||
+                        sanitizedContent.includes("<table");
+                      let htmlToRender = isFullTemplate ? sanitizedContent : null;
 
                       if (!htmlToRender && msg.from.includes("delivery@marketpoint.id")) {
-                        const parsed = parsePlainTextDeliveryEmail(msg.content, msg.subject);
+                        const parsed = parsePlainTextDeliveryEmail(sanitizedContent, msg.subject);
                         if (parsed) {
                           htmlToRender = renderDeliveryEmailHtml(parsed);
                         }
                       }
 
-                      const hasHtmlTags = /<[a-z][\s\S]*>/i.test(msg.content);
+                      const hasHtmlTags = /<[a-z][\s\S]*>/i.test(sanitizedContent);
                       const cleanHtmlContent = hasHtmlTags
-                        ? msg.content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+                        ? sanitizedContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
                         : null;
 
                       const isMarketpointSender = msg.from.includes("marketpoint.id");
@@ -2684,7 +2740,7 @@ export default function EmailManagementPage() {
                               />
                             ) : (
                               <div className="text-slate-800 text-sm sm:text-base leading-relaxed whitespace-pre-wrap font-normal break-words">
-                                {msg.content}
+                                {sanitizedContent}
                               </div>
                             )}
 
