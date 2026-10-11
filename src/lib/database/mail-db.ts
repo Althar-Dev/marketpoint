@@ -20,6 +20,7 @@ export interface MailMessageRow {
   previousFolder?: "inbox" | "sent" | "drafts";
   isUnread: boolean;
   date: string;
+  createdAt?: string;
   attachment?: {
     name: string;
     size: string;
@@ -134,6 +135,7 @@ export async function getDbMailMessages(): Promise<MailMessageRow[]> {
     previousFolder: row.previousFolder || undefined,
     isUnread: row.isUnread,
     date: formatMailDate(row.createdAt),
+    createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : undefined,
     attachment: row.attachmentName
       ? {
           name: row.attachmentName,
@@ -170,14 +172,18 @@ export async function sendDbMailMessage(params: {
     [sentId, params.from, params.to, params.subject, preview, params.content]
   );
 
-  // Simpan salinan ke folder 'inbox' milik penerima agar terlihat di kotak masuk
-  await query(
-    `
-    INSERT INTO mail_messages (id, from_email, to_email, subject, preview, content, folder, is_unread)
-    VALUES ($1, $2, $3, $4, $5, $6, 'inbox', true)
-  `,
-    [inboxId, params.from, params.to, params.subject, preview, params.content]
-  );
+  // Hanya simpan salinan ke 'inbox' jika penerima adalah akun internal (@marketpoint.id) yang berbeda
+  const isInternalRecipient = params.to.toLowerCase().includes("@marketpoint.id");
+  const isDifferentAccount = params.to.toLowerCase() !== params.from.toLowerCase();
+  if (isInternalRecipient && isDifferentAccount) {
+    await query(
+      `
+      INSERT INTO mail_messages (id, from_email, to_email, subject, preview, content, folder, is_unread)
+      VALUES ($1, $2, $3, $4, $5, $6, 'inbox', true)
+    `,
+      [inboxId, params.from, params.to, params.subject, preview, params.content]
+    );
+  }
 
   return {
     id: sentId,
