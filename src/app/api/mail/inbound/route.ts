@@ -17,37 +17,72 @@ export async function POST(req: Request) {
     let content = "";
     let preview = "";
 
+    let rawInput = "";
+
     if (contentType.includes("application/json")) {
       const body = await req.json();
-      from = body.from || body.sender || body.from_email || "unknown@domain.com";
-      to = body.to || body.recipient || body.to_email || "support@marketpoint.id";
-      subject = body.subject || "(Tanpa Subjek)";
-      content = body.content || body.text || body.html || body.body || "";
+      from = body.from || body.sender || body.from_email || "";
+      to = body.to || body.recipient || body.to_email || "";
+      subject = body.subject || "";
+      rawInput = body.content || body.text || body.html || body.body || "";
     } else if (
       contentType.includes("multipart/form-data") ||
       contentType.includes("application/x-www-form-urlencoded")
     ) {
       const formData = await req.formData();
-      from = (formData.get("from") || formData.get("sender"))?.toString() || "unknown@domain.com";
-      to = (formData.get("to") || formData.get("recipient"))?.toString() || "support@marketpoint.id";
-      subject = formData.get("subject")?.toString() || "(Tanpa Subjek)";
-      content =
+      from = (formData.get("from") || formData.get("sender"))?.toString() || "";
+      to = (formData.get("to") || formData.get("recipient"))?.toString() || "";
+      subject = formData.get("subject")?.toString() || "";
+      rawInput =
         (formData.get("html") || formData.get("text") || formData.get("body"))?.toString() || "";
     } else {
       const rawText = await req.text();
       try {
         const body = JSON.parse(rawText);
-        from = body.from || "unknown@domain.com";
-        to = body.to || "support@marketpoint.id";
-        subject = body.subject || "(Tanpa Subjek)";
-        content = body.content || body.text || body.html || rawText;
+        from = body.from || "";
+        to = body.to || "";
+        subject = body.subject || "";
+        rawInput = body.content || body.text || body.html || rawText;
       } catch {
-        content = rawText;
-        from = "external@domain.com";
-        to = "support@marketpoint.id";
-        subject = "Pesan Masuk Eksternal";
+        rawInput = rawText;
       }
     }
+
+    // Jika pesan mengandung format MIME mentah (header RFC 822/5322 seperti Received:, Content-Type:, dll)
+    if (
+      typeof rawInput === "string" &&
+      (rawInput.includes("Received:") ||
+        rawInput.includes("Content-Type:") ||
+        rawInput.includes("ARC-Seal:") ||
+        rawInput.includes("MIME-Version:"))
+    ) {
+      try {
+        const { simpleParser } = await import("mailparser");
+        const parsed = await simpleParser(rawInput);
+
+        if (!from && parsed.from?.value?.[0]?.address) {
+          from = parsed.from.value[0].address;
+        }
+        if (!to && parsed.to) {
+          const toArr = Array.isArray(parsed.to) ? parsed.to : [parsed.to];
+          to = toArr[0]?.value?.[0]?.address || "";
+        }
+        if (!subject || subject === "(Tanpa Subjek)") {
+          subject = parsed.subject || "(Tanpa Subjek)";
+        }
+
+        content = parsed.html || parsed.textAsHtml || parsed.text || rawInput;
+      } catch (mimeErr) {
+        console.warn("[INBOUND MAIL] Gagal parse MIME, fallback ke raw:", mimeErr);
+        content = rawInput;
+      }
+    } else {
+      content = rawInput;
+    }
+
+    if (!from) from = "unknown@domain.com";
+    if (!to) to = "support@marketpoint.id";
+    if (!subject) subject = "(Tanpa Subjek)";
 
     const cleanText = content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
     preview = cleanText.substring(0, 70) + (cleanText.length > 70 ? "..." : "");
