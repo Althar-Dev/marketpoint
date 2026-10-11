@@ -3,8 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useUser, useFirestore, useCollection, useMemoFirebase, useAuth } from "@/firebase";
-import { collection, query, orderBy, limit } from "firebase/firestore";
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from "@/firebase";
+import { doc } from "firebase/firestore";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
 import { MarketBottomNav } from "@/components/market-bottom-nav";
@@ -24,14 +24,13 @@ import {
   Clock, 
   CheckCircle2, 
   XCircle, 
-  AlertCircle,
   Filter,
-  Calendar,
   ChevronLeft,
   Loader2,
-  Tag
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const STATUS_TABS = [
   { id: "all", label: "Semua", icon: ReceiptText },
@@ -53,15 +52,10 @@ export default function TransactionsPage() {
   const initialStatus = searchParams.get("status") || "all";
   const [activeTab, setActiveTab] = useState(initialStatus);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const transactionsQuery = useMemoFirebase(() => {
-    if (!user || !db) return null;
-    return query(
-      collection(db, "users", user.uid, "transactions"),
-      orderBy("createdAt", "desc"),
-      limit(50)
-    );
-  }, [db, user]);
+  
+  // PostgreSQL State
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transLoading, setTransLoading] = useState(true);
 
   const walletRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -78,15 +72,32 @@ export default function TransactionsPage() {
     return doc(db, "users", user.uid);
   }, [db, user]);
 
-  const { data: transactions, loading: transLoading } = useCollection(transactionsQuery);
   const { data: wallet } = useDoc(walletRef);
   const { data: shop } = useDoc(shopRef);
   const { data: userData } = useDoc(userRef);
+
+  // Fetch from PostgreSQL API
+  const fetchTransactions = async (uid: string) => {
+    setTransLoading(true);
+    try {
+      const res = await fetch(`/api/transactions?userId=${uid}`);
+      const data = await res.json();
+      if (data.success) {
+        setTransactions(data.transactions || []);
+      }
+    } catch (err) {
+      console.error("Gagal mengambil transaksi dari PostgreSQL:", err);
+    } finally {
+      setTransLoading(false);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
     if (!authLoading && !user) {
       router.push("/login?redirect=/transactions");
+    } else if (user) {
+      fetchTransactions(user.uid);
     }
   }, [user, authLoading, router]);
 
@@ -100,13 +111,11 @@ export default function TransactionsPage() {
   };
 
   const filteredTransactions = useMemo(() => {
-    if (!transactions) return [];
-    
     return transactions.filter((t: any) => {
       // 1. Status Filter
       if (activeTab === "pending" && t.status !== "PENDING") return false;
-      if (activeTab === "success" && t.status !== "PAID" && t.status !== "SETTLED" && t.status !== "SUCCESS") return false;
-      if (activeTab === "failed" && t.status !== "FAILED" && t.status !== "CANCELLED" && t.status !== "EXPIRED") return false;
+      if (activeTab === "success" && !["PAID", "SETTLED", "SUCCESS"].includes(t.status)) return false;
+      if (activeTab === "failed" && !["FAILED", "CANCELLED", "EXPIRED"].includes(t.status)) return false;
 
       // 2. Search Filter
       if (searchQuery.trim()) {
@@ -151,13 +160,11 @@ export default function TransactionsPage() {
       {!isMobile && <MarketHeader />}
 
       {isMobile && (
-        <header className="sticky top-0 z-40 bg-white border-b border-border/60 px-4 h-14 flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-3">
-            <Link href="/profile" className="p-1 -ml-1 rounded-full hover:bg-muted text-foreground transition-colors">
-              <ChevronLeft className="w-5 h-5" />
-            </Link>
-            <h1 className="text-sm font-bold">Daftar Transaksi</h1>
-          </div>
+        <header className="sticky top-0 z-40 bg-white border-b border-border/60 px-4 h-14 flex items-center gap-3 shadow-xs">
+          <Link href="/profile" className="p-1 -ml-1 rounded-full hover:bg-muted text-foreground transition-colors">
+            <ChevronLeft className="w-5 h-5" />
+          </Link>
+          <h1 className="text-sm font-bold">Daftar Transaksi</h1>
         </header>
       )}
 
@@ -184,7 +191,7 @@ export default function TransactionsPage() {
                       Riwayat Pembelian
                     </h2>
                     <p className="text-[11px] text-muted-foreground font-medium">
-                      Pantau status pesanan dan ambil lisensi produk digitalmu.
+                      Pantau status pesanan dan ambil lisensi produk digitalmu (PostgreSQL Database).
                     </p>
                   </div>
 
@@ -256,7 +263,7 @@ export default function TransactionsPage() {
                             </div>
                             <div className="min-w-0 space-y-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Baru saja'}</span>
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t.createdAt ? new Date(t.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Baru saja'}</span>
                                 {getStatusBadge(t.status)}
                                 <span className="text-[10px] font-mono text-muted-foreground/60">{t.invoiceNumber}</span>
                               </div>
@@ -266,7 +273,7 @@ export default function TransactionsPage() {
                               <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
                                 <span>{t.quantity} Barang</span>
                                 <span>•</span>
-                                <span className="font-bold text-slate-800">Rp {(t.totalAmount || 0).toLocaleString('id-ID')}</span>
+                                <span className="font-bold text-slate-800">Rp {(Number(t.totalAmount) || 0).toLocaleString('id-ID')}</span>
                               </div>
                             </div>
                           </div>
@@ -274,7 +281,7 @@ export default function TransactionsPage() {
                           <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t sm:border-0 border-border/40">
                              <div className="sm:hidden">
                                <p className="text-[10px] text-muted-foreground">Total Bayar</p>
-                               <p className="text-xs font-black">Rp {(t.totalAmount || 0).toLocaleString('id-ID')}</p>
+                               <p className="text-xs font-black">Rp {(Number(t.totalAmount) || 0).toLocaleString('id-ID')}</p>
                              </div>
                              <Button variant="ghost" size="sm" className="h-8 px-3 rounded-lg text-[10px] font-bold text-[#00AA5B] hover:bg-emerald-50 gap-1">
                                Detail <ChevronRight className="w-3 h-3" />
