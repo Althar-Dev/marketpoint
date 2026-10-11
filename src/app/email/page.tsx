@@ -67,7 +67,9 @@ import {
   ChevronDown,
   ChevronUp,
   Reply,
-  Forward
+  Forward,
+  Headphones,
+  Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -221,7 +223,9 @@ export default function EmailManagementPage() {
   const [isUpdatingBuyerEmail, setIsUpdatingBuyerEmail] = useState(false);
 
   // Feature 3: Filter Cepat & Pencarian Pintar
-  const [emailCategoryFilter, setEmailCategoryFilter] = useState<"all" | "unread" | "delivery" | "support">("all");
+  const [emailCategoryFilter, setEmailCategoryFilter] = useState<
+    "all" | "unread" | "delivery" | "support" | "admin" | "noreply"
+  >("all");
 
   // Feature 4: Cetak / Simpan PDF
   const emailIframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -1124,21 +1128,44 @@ export default function EmailManagementPage() {
 
   const emailsInActiveFolder = emails.filter((item) => item.folder === activeFolder);
   const unreadInActiveFolder = emailsInActiveFolder.filter((e) => e.isUnread).length;
+
   const deliveryInActiveFolder = emailsInActiveFolder.filter(
     (e) =>
       e.subject.toLowerCase().includes("delivery") ||
       e.subject.toLowerCase().includes("lisensi") ||
       e.subject.toLowerCase().includes("pesanan") ||
-      e.from.includes("delivery@") ||
+      e.from.toLowerCase().includes("delivery@") ||
+      e.to.toLowerCase().includes("delivery@") ||
       e.preview.toLowerCase().includes("lisensi")
   ).length;
+
   const supportInActiveFolder = emailsInActiveFolder.filter(
     (e) =>
       e.subject.toLowerCase().includes("bantuan") ||
       e.subject.toLowerCase().includes("support") ||
       e.subject.toLowerCase().includes("tiket") ||
-      e.from.includes("support@") ||
-      e.from.includes("admin@")
+      e.subject.toLowerCase().includes("kendala") ||
+      e.from.toLowerCase().includes("support@") ||
+      e.to.toLowerCase().includes("support@") ||
+      e.preview.toLowerCase().includes("support")
+  ).length;
+
+  const adminInActiveFolder = emailsInActiveFolder.filter(
+    (e) =>
+      e.from.toLowerCase().includes("admin@") ||
+      e.to.toLowerCase().includes("admin@") ||
+      e.subject.toLowerCase().includes("admin") ||
+      e.preview.toLowerCase().includes("admin")
+  ).length;
+
+  const noreplyInActiveFolder = emailsInActiveFolder.filter(
+    (e) =>
+      e.from.toLowerCase().includes("no-reply@") ||
+      e.from.toLowerCase().includes("noreply@") ||
+      e.to.toLowerCase().includes("no-reply@") ||
+      e.to.toLowerCase().includes("noreply@") ||
+      e.subject.toLowerCase().includes("no-reply") ||
+      e.subject.toLowerCase().includes("notifikasi")
   ).length;
 
   const filteredEmails = emailsInActiveFolder.filter((item) => {
@@ -1159,15 +1186,32 @@ export default function EmailManagementPage() {
         item.subject.toLowerCase().includes("delivery") ||
         item.subject.toLowerCase().includes("lisensi") ||
         item.subject.toLowerCase().includes("pesanan") ||
-        item.from.includes("delivery@") ||
+        item.from.toLowerCase().includes("delivery@") ||
+        item.to.toLowerCase().includes("delivery@") ||
         item.preview.toLowerCase().includes("lisensi");
     } else if (emailCategoryFilter === "support") {
       matchCategory =
         item.subject.toLowerCase().includes("bantuan") ||
         item.subject.toLowerCase().includes("support") ||
         item.subject.toLowerCase().includes("tiket") ||
-        item.from.includes("support@") ||
-        item.from.includes("admin@");
+        item.subject.toLowerCase().includes("kendala") ||
+        item.from.toLowerCase().includes("support@") ||
+        item.to.toLowerCase().includes("support@") ||
+        item.preview.toLowerCase().includes("support");
+    } else if (emailCategoryFilter === "admin") {
+      matchCategory =
+        item.from.toLowerCase().includes("admin@") ||
+        item.to.toLowerCase().includes("admin@") ||
+        item.subject.toLowerCase().includes("admin") ||
+        item.preview.toLowerCase().includes("admin");
+    } else if (emailCategoryFilter === "noreply") {
+      matchCategory =
+        item.from.toLowerCase().includes("no-reply@") ||
+        item.from.toLowerCase().includes("noreply@") ||
+        item.to.toLowerCase().includes("no-reply@") ||
+        item.to.toLowerCase().includes("noreply@") ||
+        item.subject.toLowerCase().includes("no-reply") ||
+        item.subject.toLowerCase().includes("notifikasi");
     }
 
     return matchSearch && matchCategory;
@@ -2686,8 +2730,9 @@ export default function EmailManagementPage() {
                 </div>
               )}
 
-              {/* Quick Filter Tabs (Semua, Belum Dibaca, Lisensi, Bantuan) */}
+              {/* Quick Filter Tabs (Semua, Belum Dibaca, Delivery, Support, Admin, No-Reply) */}
               <div className="px-3 sm:px-4 py-2 border-b border-border/60 bg-white flex items-center gap-1.5 sm:gap-2 overflow-x-auto shrink-0">
+                {/* 1. Semua */}
                 <button
                   type="button"
                   onClick={() => setEmailCategoryFilter("all")}
@@ -2699,14 +2744,17 @@ export default function EmailManagementPage() {
                   )}
                 >
                   <span>Semua</span>
-                  <span className={cn(
-                    "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
-                    emailCategoryFilter === "all" ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
-                  )}>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
+                      emailCategoryFilter === "all" ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
+                    )}
+                  >
                     {emailsInActiveFolder.length}
                   </span>
                 </button>
 
+                {/* 2. Belum Dibaca */}
                 <button
                   type="button"
                   onClick={() => setEmailCategoryFilter("unread")}
@@ -2720,15 +2768,18 @@ export default function EmailManagementPage() {
                   <Mail className="w-3 h-3" />
                   <span>Belum Dibaca</span>
                   {unreadInActiveFolder > 0 && (
-                    <span className={cn(
-                      "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
-                      emailCategoryFilter === "unread" ? "bg-white/20 text-white" : "bg-emerald-200/60 text-emerald-800"
-                    )}>
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
+                        emailCategoryFilter === "unread" ? "bg-white/20 text-white" : "bg-emerald-200/60 text-emerald-800"
+                      )}
+                    >
                       {unreadInActiveFolder}
                     </span>
                   )}
                 </button>
 
+                {/* 3. Delivery */}
                 <button
                   type="button"
                   onClick={() => setEmailCategoryFilter("delivery")}
@@ -2740,17 +2791,20 @@ export default function EmailManagementPage() {
                   )}
                 >
                   <Package className="w-3 h-3" />
-                  <span>Pengiriman Lisensi</span>
+                  <span>Delivery</span>
                   {deliveryInActiveFolder > 0 && (
-                    <span className={cn(
-                      "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
-                      emailCategoryFilter === "delivery" ? "bg-white/20 text-white" : "bg-amber-200/60 text-amber-800"
-                    )}>
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
+                        emailCategoryFilter === "delivery" ? "bg-white/20 text-white" : "bg-amber-200/60 text-amber-800"
+                      )}
+                    >
                       {deliveryInActiveFolder}
                     </span>
                   )}
                 </button>
 
+                {/* 4. Support */}
                 <button
                   type="button"
                   onClick={() => setEmailCategoryFilter("support")}
@@ -2761,14 +2815,66 @@ export default function EmailManagementPage() {
                       : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100"
                   )}
                 >
-                  <Users className="w-3 h-3" />
-                  <span>Bantuan & CS</span>
+                  <Headphones className="w-3 h-3" />
+                  <span>Support</span>
                   {supportInActiveFolder > 0 && (
-                    <span className={cn(
-                      "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
-                      emailCategoryFilter === "support" ? "bg-white/20 text-white" : "bg-blue-200/60 text-blue-800"
-                    )}>
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
+                        emailCategoryFilter === "support" ? "bg-white/20 text-white" : "bg-blue-200/60 text-blue-800"
+                      )}
+                    >
                       {supportInActiveFolder}
+                    </span>
+                  )}
+                </button>
+
+                {/* 5. Admin */}
+                <button
+                  type="button"
+                  onClick={() => setEmailCategoryFilter("admin")}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-[11px] font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
+                    emailCategoryFilter === "admin"
+                      ? "bg-indigo-600 text-white shadow-2xs"
+                      : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100"
+                  )}
+                >
+                  <ShieldCheck className="w-3 h-3" />
+                  <span>Admin</span>
+                  {adminInActiveFolder > 0 && (
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
+                        emailCategoryFilter === "admin" ? "bg-white/20 text-white" : "bg-indigo-200/60 text-indigo-800"
+                      )}
+                    >
+                      {adminInActiveFolder}
+                    </span>
+                  )}
+                </button>
+
+                {/* 6. No-Reply */}
+                <button
+                  type="button"
+                  onClick={() => setEmailCategoryFilter("noreply")}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-[11px] font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer",
+                    emailCategoryFilter === "noreply"
+                      ? "bg-rose-600 text-white shadow-2xs"
+                      : "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-100"
+                  )}
+                >
+                  <Bell className="w-3 h-3" />
+                  <span>No-Reply</span>
+                  {noreplyInActiveFolder > 0 && (
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.2 rounded-full text-[9px] font-bold",
+                        emailCategoryFilter === "noreply" ? "bg-white/20 text-white" : "bg-rose-200/60 text-rose-800"
+                      )}
+                    >
+                      {noreplyInActiveFolder}
                     </span>
                   )}
                 </button>
