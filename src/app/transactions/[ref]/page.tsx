@@ -33,6 +33,10 @@ import {
   KeyRound,
   Star,
   MessageSquare,
+  ShieldAlert,
+  AlertTriangle,
+  Scale,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,8 +46,17 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -246,6 +259,15 @@ export default function TransactionDetailPage() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
 
+  // State Dispute
+  const [existingDispute, setExistingDispute] = useState<any>(null);
+  const [checkingDispute, setCheckingDispute] = useState(false);
+  const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState<string>("not_received");
+  const [disputeDescription, setDisputeDescription] = useState("");
+  const [disputeEvidenceUrls, setDisputeEvidenceUrls] = useState("");
+  const [submittingDispute, setSubmittingDispute] = useState(false);
+
   const fetchReview = async (invoiceNum: string) => {
     try {
       setCheckingReview(true);
@@ -258,6 +280,21 @@ export default function TransactionDetailPage() {
       console.warn("Gagal memuat ulasan transaksi:", err);
     } finally {
       setCheckingReview(false);
+    }
+  };
+
+  const fetchDispute = async (txId: string) => {
+    try {
+      setCheckingDispute(true);
+      const res = await fetch(`/api/disputes?transactionId=${encodeURIComponent(txId)}`);
+      const data = await res.json();
+      if (data.success && data.dispute) {
+        setExistingDispute(data.dispute);
+      }
+    } catch (err) {
+      console.warn("Gagal memuat dispute:", err);
+    } finally {
+      setCheckingDispute(false);
     }
   };
 
@@ -296,6 +333,7 @@ export default function TransactionDetailPage() {
       setTransaction(data.transaction);
       if (data.transaction.status === "PAID" || data.transaction.status === "SETTLED") {
         fetchReview(data.transaction.invoiceNumber || data.transaction.id);
+        fetchDispute(data.transaction.id || data.transaction.invoiceNumber);
       }
     } catch (err: any) {
       setError(err.message || "Gagal memuat detail transaksi.");
@@ -930,7 +968,136 @@ export default function TransactionDetailPage() {
                 </Card>
               )}
 
-              {/* 5. Jaminan Keamanan Transaksi MarketPointID */}
+              {/* 5. Dispute / Komplain Card */}
+              {isPaid && (
+                <Card className="rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs bg-white overflow-hidden transition-all">
+                  <div className="px-4 sm:px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-orange-500" />
+                      <h2 className="text-xs sm:text-sm font-bold text-slate-800">
+                        {existingDispute ? "Status Sengketa" : "Ajukan Sengketa"}
+                      </h2>
+                    </div>
+                    {existingDispute ? (
+                      <Badge
+                        className={cn(
+                          "text-[10px] font-bold px-2 py-0.5 border shadow-none",
+                          existingDispute.status === "OPEN"
+                            ? "bg-orange-100 text-orange-700 border-orange-200"
+                            : existingDispute.status === "RESOLVED"
+                            ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                            : existingDispute.status === "REJECTED"
+                            ? "bg-slate-100 text-slate-600 border-slate-200"
+                            : "bg-blue-100 text-blue-700 border-blue-200"
+                        )}
+                      >
+                        {existingDispute.status === "OPEN" && "Menunggu Respon"}
+                        {existingDispute.status === "SELLER_RESPONDED" && "Direspon Penjual"}
+                        {existingDispute.status === "ADMIN_REVIEW" && "Ditinjau Admin"}
+                        {existingDispute.status === "RESOLVED" && "Selesai"}
+                        {existingDispute.status === "REJECTED" && "Ditolak"}
+                        {existingDispute.status === "CANCELLED" && "Dibatalkan"}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] font-bold text-slate-500 border-slate-200">
+                        Belum Ada
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="p-4 sm:p-5">
+                    {checkingDispute ? (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
+                        <span>Memeriksa status sengketa...</span>
+                      </div>
+                    ) : existingDispute ? (
+                      <div className="space-y-3">
+                        <div className="p-3 rounded-xl bg-orange-50/70 border border-orange-100">
+                          <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">
+                            {{
+                              not_received: "Produk tidak diterima",
+                              not_as_described: "Tidak sesuai deskripsi",
+                              invalid_license: "Lisensi tidak valid",
+                              corrupted_file: "File rusak / tidak lengkap",
+                              wrong_item: "Item salah",
+                              refund_request: "Permintaan refund",
+                              other: "Alasan lainnya",
+                            }[existingDispute.reason as string] || existingDispute.reason}
+                          </p>
+                          <p className="text-xs text-slate-700 leading-relaxed">
+                            {existingDispute.description}
+                          </p>
+                        </div>
+
+                        {existingDispute.sellerResponse && (
+                          <div className="ml-3 pl-3 border-l-2 border-blue-400 space-y-1 text-xs">
+                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">
+                              Respons Penjual:
+                            </span>
+                            <p className="text-slate-600 bg-blue-50/50 p-2.5 rounded-lg border border-blue-100/60 leading-relaxed">
+                              {existingDispute.sellerResponse}
+                            </p>
+                          </div>
+                        )}
+
+                        {existingDispute.adminNote && (
+                          <div className="ml-3 pl-3 border-l-2 border-purple-400 space-y-1 text-xs">
+                            <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wider">
+                              Catatan Admin:
+                            </span>
+                            <p className="text-slate-600 bg-purple-50/50 p-2.5 rounded-lg border border-purple-100/60 leading-relaxed">
+                              {existingDispute.adminNote}
+                            </p>
+                          </div>
+                        )}
+
+                        {existingDispute.resolution && (
+                          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-100 text-xs">
+                            <CheckCircle2 className="w-4 h-4 text-[#00AA5B] shrink-0" />
+                            <span className="font-bold text-slate-700">
+                              Resolusi:{" "}
+                              {existingDispute.resolution === "refund_buyer"
+                                ? "Refund ke Anda"
+                                : existingDispute.resolution === "release_seller"
+                                ? "Dana ke Penjual"
+                                : "Refund Parsial"}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
+                          <span className="flex items-center gap-1 font-medium">
+                            <ShieldCheck className="w-3.5 h-3.5 text-[#00AA5B]" />
+                            Sengketa #ID: {existingDispute.id}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-orange-50/60 to-slate-50 p-3.5 sm:p-4 rounded-2xl border border-orange-200/60">
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold text-slate-900">
+                            Ada Masalah dengan Pesanan Ini?
+                          </p>
+                          <p className="text-[11px] text-slate-600 leading-relaxed max-w-md">
+                            Jika produk tidak sesuai, lisensi tidak valid, atau ada masalah lain — ajukan sengketa untuk mendapatkan bantuan tim admin MarketPointID.
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => setIsDisputeModalOpen(true)}
+                          variant="outline"
+                          className="border-orange-300 text-orange-700 hover:bg-orange-50 font-bold text-xs h-9 px-4 rounded-xl shadow-xs shrink-0 gap-1.5"
+                        >
+                          <ShieldAlert className="w-3.5 h-3.5" />
+                          <span>Ajukan Sengketa</span>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )}
+
+              {/* 6. Jaminan Keamanan Transaksi MarketPointID */}
               <div className="rounded-2xl border border-slate-200/70 bg-white p-3.5 sm:p-4 flex items-center gap-3 text-xs text-muted-foreground">
                 <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#00AA5B] flex items-center justify-center shrink-0">
                   <ShieldCheck className="w-5 h-5" />
@@ -1226,6 +1393,159 @@ export default function TransactionDetailPage() {
                 <>
                   <Check className="w-3.5 h-3.5" />
                   <span>Kirim Ulasan</span>
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dispute Modal ─────────────────────────────────────────────────── */}
+      <Dialog open={isDisputeModalOpen} onOpenChange={setIsDisputeModalOpen}>
+        <DialogContent className="sm:max-w-md rounded-2xl sm:rounded-3xl p-5 sm:p-6 bg-white max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-orange-500" />
+              <span>Ajukan Sengketa</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Invoice #{transaction?.invoiceNumber} · {transaction?.productTitle}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Info box */}
+            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-amber-800 leading-relaxed">
+                Sengketa akan diproses oleh tim admin MarketPointID dalam 1×24 jam kerja. Pastikan Anda sudah mencoba menghubungi penjual terlebih dahulu.
+              </p>
+            </div>
+
+            {/* Reason */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">
+                Alasan Sengketa <span className="text-red-500">*</span>
+              </label>
+              <Select value={disputeReason} onValueChange={setDisputeReason}>
+                <SelectTrigger className="h-9 rounded-xl border-slate-200 text-xs font-bold focus:ring-orange-400">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="not_received" className="text-xs font-bold">Produk tidak diterima</SelectItem>
+                  <SelectItem value="not_as_described" className="text-xs font-bold">Tidak sesuai deskripsi</SelectItem>
+                  <SelectItem value="invalid_license" className="text-xs font-bold">Lisensi / kunci tidak valid</SelectItem>
+                  <SelectItem value="corrupted_file" className="text-xs font-bold">File rusak / tidak lengkap</SelectItem>
+                  <SelectItem value="wrong_item" className="text-xs font-bold">Item salah / berbeda</SelectItem>
+                  <SelectItem value="refund_request" className="text-xs font-bold">Permintaan pengembalian dana</SelectItem>
+                  <SelectItem value="other" className="text-xs font-bold">Alasan lainnya</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">
+                Deskripsi Masalah <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                placeholder="Jelaskan masalah yang Anda alami secara detail. Sertakan langkah-langkah yang sudah Anda coba..."
+                value={disputeDescription}
+                onChange={(e) => setDisputeDescription(e.target.value)}
+                rows={4}
+                className="text-xs rounded-xl resize-none border-slate-200 focus-visible:ring-orange-400"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                {disputeDescription.length}/1000 karakter
+              </p>
+            </div>
+
+            {/* Evidence URLs */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">
+                URL Bukti Screenshot (opsional)
+              </label>
+              <Input
+                placeholder="https://drive.google.com/... (pisahkan dengan koma jika lebih dari 1)"
+                value={disputeEvidenceUrls}
+                onChange={(e) => setDisputeEvidenceUrls(e.target.value)}
+                className="h-9 text-xs rounded-xl border-slate-200 focus-visible:ring-orange-400"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Upload screenshot ke Google Drive / Imgur lalu tempelkan linknya di sini.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDisputeModalOpen(false)}
+              disabled={submittingDispute}
+              className="text-xs font-bold rounded-xl h-9"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              onClick={async () => {
+                if (!transaction || !disputeDescription.trim()) return;
+                setSubmittingDispute(true);
+                try {
+                  const evidenceArr = disputeEvidenceUrls
+                    .split(",")
+                    .map((u) => u.trim())
+                    .filter(Boolean);
+                  const res = await fetch("/api/disputes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      transactionId: transaction.id,
+                      invoiceNumber: transaction.invoiceNumber,
+                      buyerId: user?.uid || (transaction as any).userId || "",
+                      buyerName: userData?.displayName || user?.displayName || transaction.buyerName || "Pembeli",
+                      buyerEmail: transaction.buyerEmail || user?.email || "",
+                      sellerId: (transaction as any).shopId || "",
+                      sellerName: undefined,
+                      productTitle: transaction.productTitle,
+                      productImage: transaction.productImage,
+                      totalAmount: transaction.totalAmount,
+                      reason: disputeReason,
+                      description: disputeDescription.trim(),
+                      evidenceUrls: evidenceArr,
+                    }),
+                  });
+                  const data = await res.json();
+                  if (!data.success) throw new Error(data.error || "Gagal mengajukan sengketa");
+                  setExistingDispute(data.dispute);
+                  setIsDisputeModalOpen(false);
+                  toast({
+                    title: "Sengketa Berhasil Diajukan",
+                    description: `ID Sengketa: ${data.dispute.id}. Tim admin akan meninjau dalam 1×24 jam kerja.`,
+                  });
+                } catch (err: any) {
+                  toast({
+                    title: "Gagal Mengajukan Sengketa",
+                    description: err.message || "Terjadi kesalahan.",
+                    variant: "destructive",
+                  });
+                } finally {
+                  setSubmittingDispute(false);
+                }
+              }}
+              disabled={submittingDispute || !disputeDescription.trim()}
+              className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl h-9 gap-1.5"
+            >
+              {submittingDispute ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Mengajukan...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Kirim Sengketa</span>
                 </>
               )}
             </Button>
