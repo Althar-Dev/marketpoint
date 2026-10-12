@@ -202,12 +202,13 @@ export function ShopHeader() {
               <Search className="w-4.5 h-4.5" />
             </Button>
 
+            {/* Keranjang belanja - di-hidden sementara */}
             <Button 
               size="icon" 
               variant="ghost" 
               onClick={() => router.push("/checkout")}
               title="Keranjang" 
-              className="rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer"
+              className="hidden rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer"
             >
               <ShoppingBag className="w-4.5 h-4.5" />
             </Button>

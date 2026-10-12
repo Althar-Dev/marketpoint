@@ -442,7 +442,8 @@ export function MarketHeader() {
         {/* Action Area */}
         <div className="flex items-center gap-1 sm:gap-4 shrink-0">
           <div className="hidden md:flex items-center gap-1">
-            <Button size="icon" variant="ghost" className="rounded-xl h-9 w-9 text-muted-foreground">
+            {/* Keranjang belanja - di-hidden sementara */}
+            <Button size="icon" variant="ghost" className="hidden rounded-xl h-9 w-9 text-muted-foreground">
               <ShoppingBag className="w-4.5 h-4.5" />
             </Button>
             <Button size="icon" variant="ghost" className="rounded-xl h-9 w-9 text-muted-foreground">

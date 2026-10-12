@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { MarketHeader } from "@/components/market-header";
 import { MarketFooter } from "@/components/market-footer";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFirestore } from "@/firebase";
@@ -12,7 +12,6 @@ import {
   ShieldCheck,
   ShoppingBag,
   Store,
-  Star,
   Search,
   BadgeCheck,
   Award,
@@ -20,11 +19,9 @@ import {
   ArrowRight,
   SlidersHorizontal,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { PromoPriceBadge } from "@/components/promo-price-badge";
-import { getProductActiveFlashSale } from "@/lib/flash-sale";
+import { ProductCard } from "@/components/product-card";
 
 type SortKey = "default" | "rating" | "sales" | "price_asc" | "price_desc";
 
@@ -67,13 +64,19 @@ export default function OfficialPage() {
 
         rawProducts = rawProducts.map((p: any) => {
           const shop = sMap[p.shopId];
+          const isVerified = Boolean(
+            shop?.isVerified ?? shop?.verified ?? shop?.is_verified ?? p.shopIsVerified ?? false
+          );
+          const isOfficial = Boolean(
+            shop?.isOfficial ?? shop?.official ?? shop?.is_official ?? (shop?.slug === "marketpoint" || p.shopSlug === "marketpoint") ?? p.shopIsOfficial ?? false
+          );
           return {
             ...p,
             shopName: shop?.name || shop?.shopName || p.shopName || "Toko Seller",
             shopSlug: shop?.slug || p.shopSlug || p.shopId,
-            shopLogoUrl: shop?.logoUrl || shop?.logo || shop?.avatar || p.shopLogoUrl || "",
-            shopIsVerified: Boolean(shop?.isVerified ?? p.shopIsVerified),
-            shopIsOfficial: Boolean(shop?.isOfficial ?? shop?.official ?? p.shopIsOfficial),
+            shopLogoUrl: shop?.logoUrl || shop?.logo || shop?.avatar || shop?.photoUrl || p.shopLogoUrl || "",
+            shopIsVerified: isVerified,
+            shopIsOfficial: isOfficial,
             shopFlashSales: Array.isArray(shop?.flashSales) ? shop.flashSales : [],
             shopCity: shop?.city || shop?.province || p.shopCity || "",
           };
@@ -141,32 +144,51 @@ export default function OfficialPage() {
 
         {/* ── Hero ─────────────────────────────────────────────────────── */}
         <section className="bg-white border-b border-border/70">
-          <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-6 md:py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-5 md:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#00AA5B] flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-[#00AA5B]/10 border border-[#00AA5B]/20 flex items-center justify-center shrink-0 p-1.5 shadow-2xs">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/assets/badge/officials.png"
+                  alt="Official Store"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
-                <h1 className="text-base font-bold text-[#1A1A1A]">Official Store</h1>
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-base sm:text-lg font-bold text-[#1A1A1A]">Official Store</h1>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/assets/badge/officials.png"
+                    alt="Official"
+                    className="w-4 h-4 object-contain shrink-0"
+                  />
+                </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Toko resmi terverifikasi MarketPointID
+                  Toko resmi terverifikasi & bergaransi MarketPointID
                 </p>
               </div>
             </div>
 
             {/* Trust pills */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {[
-                { icon: ShieldCheck, label: "Produk Original" },
-                { icon: BadgeCheck, label: "Terverifikasi" },
+                { img: "/assets/badge/officials.png", label: "100% Original" },
+                { img: "/assets/badge/verified.png", label: "Terverifikasi" },
                 { icon: Award, label: "Garansi Resmi" },
+                { icon: ShieldCheck, label: "Transaksi Aman" },
               ].map((b) => (
                 <div
                   key={b.label}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#00AA5B]/30 bg-[#00AA5B]/6 text-[10px] font-semibold text-[#00AA5B]"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#00AA5B]/25 bg-[#00AA5B]/5 text-[10px] font-semibold text-[#00AA5B]"
                 >
-                  <b.icon className="w-3 h-3" />
-                  {b.label}
+                  {b.img ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={b.img} alt={b.label} className="w-3.5 h-3.5 object-contain shrink-0" />
+                  ) : b.icon ? (
+                    <b.icon className="w-3 h-3 text-[#00AA5B] shrink-0" />
+                  ) : null}
+                  <span>{b.label}</span>
                 </div>
               ))}
             </div>
@@ -206,7 +228,7 @@ export default function OfficialPage() {
                         setSelectedShop(shop.id === selectedShop ? "all" : shop.id)
                       }
                       className={cn(
-                        "flex items-center gap-2 shrink-0 px-3 py-2 rounded-xl border text-xs font-semibold transition-all max-w-[180px]",
+                        "flex items-center gap-2 shrink-0 px-3 py-2 rounded-xl border text-xs font-semibold transition-all max-w-[200px]",
                         selectedShop === shop.id
                           ? "border-[#00AA5B] bg-[#00AA5B] text-white shadow-sm"
                           : "border-border bg-white text-muted-foreground hover:border-[#00AA5B]/50 hover:text-foreground"
@@ -225,14 +247,24 @@ export default function OfficialPage() {
                         </div>
                       )}
                       <span className="truncate">{shop.name}</span>
-                      {shop.isOfficial && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src="/assets/badge/officials.png"
-                          alt="Official"
-                          className="w-3.5 h-3.5 object-contain shrink-0"
-                        />
-                      )}
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        {shop.isVerified && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src="/assets/badge/verified.png"
+                            alt="Verified"
+                            className="w-3.5 h-3.5 object-contain shrink-0"
+                          />
+                        )}
+                        {shop.isOfficial && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src="/assets/badge/officials.png"
+                            alt="Official"
+                            className="w-3.5 h-3.5 object-contain shrink-0"
+                          />
+                        )}
+                      </div>
                     </button>
                   ))}
             </div>
@@ -287,8 +319,8 @@ export default function OfficialPage() {
           {/* ── Product Grid ────────────────────────────────────────────── */}
           <section className="pb-4">
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
-                {Array.from({ length: 10 }).map((_, idx) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
+                {Array.from({ length: 12 }).map((_, idx) => (
                   <Card key={idx} className="rounded-xl overflow-hidden bg-white border-border/70">
                     <Skeleton className="aspect-square w-full" />
                     <div className="p-2.5 space-y-1.5">
@@ -319,123 +351,10 @@ export default function OfficialPage() {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 md:gap-3">
-                {filteredProducts.map((product: any) => {
-                  const flashSaleInfo = getProductActiveFlashSale(
-                    product.id, product.shopFlashSales, nowTime
-                  );
-                  const isFlashSale = !!flashSaleInfo;
-                  const imageUrl = product.images?.[0]?.imageUrl || "https://cdn.marketpoint.id/marketpoint.png";
-                  const price = isFlashSale ? flashSaleInfo.discountPrice : Number(product.price || 0);
-                  const originalPrice = isFlashSale
-                    ? flashSaleInfo.originalPrice
-                    : product.discountPrice ? Number(product.discountPrice) : null;
-                  const discountPercent =
-                    originalPrice && originalPrice > price
-                      ? `${Math.round(((originalPrice - price) / originalPrice) * 100)}%`
-                      : null;
-                  const rating = Number(product.ratingAvg || 0) > 0
-                    ? Number(product.ratingAvg).toFixed(1)
-                    : "0.0";
-                  const soldText = product.salesCount ? `${product.salesCount} terjual` : "0 terjual";
-
-                  return (
-                    <Link
-                      key={product.id}
-                      href={`/${product.shopSlug || "marketpoint"}/${product.slug || product.id}`}
-                    >
-                      <Card className="group border-border/70 rounded-xl overflow-hidden bg-white hover:shadow-md transition-all duration-200 flex flex-col h-full">
-                        <CardContent className="p-0 flex flex-col h-full">
-                          {/* Image */}
-                          <div className="relative aspect-square w-full bg-muted/20 overflow-hidden">
-                            <Image
-                              src={imageUrl}
-                              alt={product.title}
-                              fill
-                              className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                            />
-                            {isFlashSale ? (
-                              <div className="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-br-lg flex items-center gap-0.5 z-10">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src="/assets/icon/bolt.gif" alt="" className="w-3 h-3 object-contain" />
-                                {flashSaleInfo.discountPercentage}%
-                              </div>
-                            ) : discountPercent ? (
-                              <div className="absolute top-0 left-0 bg-[#FF5E5E] text-white text-[8px] font-bold px-1.5 py-0.5 rounded-br-lg z-10">
-                                {discountPercent}
-                              </div>
-                            ) : null}
-
-                            {/* Official badge on image */}
-                            {product.shopIsOfficial && (
-                              <div className="absolute top-1.5 right-1.5 z-10">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src="/assets/badge/officials.png" alt="Official" className="w-4 h-4 object-contain drop-shadow" />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Info */}
-                          <div className="p-2 sm:p-2.5 flex flex-col flex-1 justify-between gap-1.5">
-                            <h4 className="text-[11px] sm:text-xs font-medium text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">
-                              {product.title}
-                            </h4>
-
-                            <div>
-                              {isFlashSale ? (
-                                <PromoPriceBadge price={price} />
-                              ) : (
-                                <p className="text-xs sm:text-[13px] font-bold text-[#1A1A1A]">
-                                  Rp {price.toLocaleString("id-ID")}
-                                </p>
-                              )}
-                              {originalPrice && originalPrice > price && (
-                                <p className="text-[9px] text-muted-foreground line-through opacity-60 mt-0.5">
-                                  Rp {originalPrice.toLocaleString("id-ID")}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Rating */}
-                            <div className="flex items-center gap-1">
-                              <Star className={cn("w-2.5 h-2.5 shrink-0", Number(rating) > 0 ? "text-[#FFC400] fill-[#FFC400]" : "text-slate-300 fill-slate-200")} />
-                              <span className="text-[10px] text-muted-foreground truncate">
-                                {rating} <span className="opacity-40">·</span> {soldText}
-                              </span>
-                            </div>
-
-                            {/* Shop */}
-                            <div className="flex items-center gap-1 pt-0.5 border-t border-border/50">
-                              {product.shopLogoUrl ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={product.shopLogoUrl}
-                                  alt={product.shopName}
-                                  className="w-4 h-4 rounded-[4px] object-cover shrink-0 border border-border/60"
-                                />
-                              ) : (
-                                <div className="w-4 h-4 rounded-[4px] bg-[#00AA5B] flex items-center justify-center shrink-0">
-                                  <Store className="w-2.5 h-2.5 text-white" />
-                                </div>
-                              )}
-                              <span className="text-[10px] font-medium text-muted-foreground truncate flex-1">
-                                {product.shopName}
-                              </span>
-                              {product.shopIsVerified && (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src="/assets/badge/verified.png" alt="Verified" className="w-3.5 h-3.5 object-contain shrink-0" />
-                              )}
-                              {product.shopIsOfficial && (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src="/assets/badge/officials.png" alt="Official" className="w-3.5 h-3.5 object-contain shrink-0" />
-                              )}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  );
-                })}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
+                {filteredProducts.map((product: any) => (
+                  <ProductCard key={product.id} product={product} nowTime={nowTime} />
+                ))}
               </div>
             )}
           </section>

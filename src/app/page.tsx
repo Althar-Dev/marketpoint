@@ -62,6 +62,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getProductActiveFlashSale, formatCountdown } from "@/lib/flash-sale";
 import { PromoPriceBadge } from "@/components/promo-price-badge";
+import { ProductCard } from "@/components/product-card";
 
 const BANNERS = [
   { id: "banner-main", imageUrl: "/assets/banner/banner.png", title: "Main Promo" },
@@ -217,8 +218,8 @@ export default function MarketPage() {
                 ...p,
                 shopName: realName || fallbackName,
                 shopLogoUrl: shop?.logoUrl || shop?.logo || shop?.avatar || shop?.photoUrl || p.shopLogoUrl || "",
-                shopIsVerified: shop?.isVerified ?? shop?.verified ?? shop?.is_verified ?? p.shopIsVerified ?? false,
-                shopIsOfficial: shop?.isOfficial ?? shop?.official ?? shop?.is_official ?? p.shopIsOfficial ?? false,
+                shopIsVerified: Boolean(shop?.isVerified ?? shop?.verified ?? shop?.is_verified ?? p.shopIsVerified ?? false),
+                shopIsOfficial: Boolean(shop?.isOfficial ?? shop?.official ?? shop?.is_official ?? (shop?.slug === "marketpoint" || p.shopSlug === "marketpoint") ?? p.shopIsOfficial ?? false),
                 shopCity: rawCity,
                 shopFlashSales: Array.isArray(shop?.flashSales) ? shop.flashSales : [],
               };
@@ -426,7 +427,7 @@ export default function MarketPage() {
                 <div className="relative h-[160px] md:h-[180px] rounded-2xl overflow-hidden bg-[#00AA5B] group cursor-pointer border border-border shadow-inner">
                   <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-center space-y-4 z-10 text-white">
                     <div className="space-y-1">
-                      <p className="text-lg md:text-xl font-bold leading-tight">Yuk, belanja di STS Market</p>
+                      <p className="text-lg md:text-xl font-bold leading-tight">Yuk, belanja di MarketPoint</p>
                       <p className="text-[10px] md:text-xs opacity-90 font-medium max-w-[200px]">Infrastruktur lengkap untuk bisnis digital</p>
                     </div>
                     <Button variant="outline" className="w-fit bg-transparent border-white text-white hover:bg-white/10 font-bold rounded-xl h-10 px-6 text-xs transition-all">
@@ -636,131 +637,9 @@ export default function MarketPage() {
                 </Link>
               </div>
             ) : (
-              filteredProducts.map((product: any) => {
-                const flashSaleInfo = getProductActiveFlashSale(product.id, product.shopFlashSales, nowTime);
-                const isFlashSale = !!flashSaleInfo;
-                const imageUrl = product.images && product.images.length > 0 ? product.images[0].imageUrl : "https://cdn.marketpoint.id/marketpoint.png";
-                const price = isFlashSale ? flashSaleInfo.discountPrice : Number(product.price || 0);
-                const originalPrice = isFlashSale ? flashSaleInfo.originalPrice : (product.discountPrice ? Number(product.discountPrice) : null);
-                const discountPercent = isFlashSale
-                  ? `${flashSaleInfo.discountPercentage}%`
-                  : (originalPrice && originalPrice > price
-                    ? `${Math.round(((originalPrice - price) / originalPrice) * 100)}%`
-                    : null);
-                const rating = Number(product.ratingAvg || 0) > 0 ? Number(product.ratingAvg).toFixed(1) : "0.0";
-                const soldText = product.salesCount ? `${product.salesCount} terjual` : "0 terjual";
-                const shopName = typeof product.shopName === "string"
-                  ? product.shopName
-                  : (product.shopName && typeof product.shopName === "object" ? (product.shopName.name || product.shopName.shopName || "Toko Seller") : "Toko Seller");
-                const shopLogoUrl = typeof product.shopLogoUrl === "string" ? product.shopLogoUrl : "";
-                const isVerified = Boolean(product.shopIsVerified);
-                const isOfficial = Boolean(product.shopIsOfficial);
-                const shopCity = typeof product.shopCity === "string"
-                  ? product.shopCity
-                  : (product.shopCity && typeof product.shopCity === "object" ? (product.shopCity.city || product.shopCity.province || "") : "");
-
-                return (
-                  <Link key={product.id} href={`/${product.shopSlug || 'marketpoint'}/${product.slug || product.id}`}>
-                    <Card className="group border-border/70 shadow-2xs rounded-xl overflow-hidden bg-card hover:shadow-md transition-all duration-300 flex flex-col cursor-pointer border-[1px] h-full">
-                      <CardContent className="p-0 flex flex-col h-full">
-                        <div className="relative aspect-square w-full bg-muted/20 overflow-hidden">
-                          <Image
-                            src={imageUrl}
-                            alt={product.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                          {isFlashSale ? (
-                            <div className="absolute top-0 left-0 bg-gradient-to-r from-red-600 to-amber-500 text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-br-lg shadow-xs flex items-center gap-0.5 z-10">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src="/assets/icon/bolt.gif"
-                                alt="Flash Sale"
-                                className="w-3.5 h-3.5 object-contain shrink-0"
-                              />
-                              {flashSaleInfo.discountPercentage}%
-                            </div>
-                          ) : discountPercent ? (
-                            <div className="absolute top-0 left-0 bg-[#FF5E5E] text-white text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-br-lg shadow-xs z-10">
-                              {discountPercent}
-                            </div>
-                          ) : null}
-                        </div>
-
-                        <div className="p-2 sm:p-2.5 md:p-3 space-y-1.5 flex-1 flex flex-col justify-between">
-                          <div className="space-y-1">
-                            <h4 className="text-[11px] sm:text-xs font-medium text-foreground line-clamp-2 leading-snug group-hover:text-[#00AA5B] transition-colors">
-                              {product.title}
-                            </h4>
-                            <div className="flex flex-col gap-0.5">
-                              <div className="flex items-center gap-1">
-                                {isFlashSale ? (
-                                  <PromoPriceBadge price={price} />
-                                ) : (
-                                  <span className="text-xs sm:text-sm font-bold text-[#000000]">
-                                    Rp {price.toLocaleString('id-ID')}
-                                  </span>
-                                )}
-                              </div>
-                              {!isFlashSale && originalPrice && originalPrice > price && (
-                                <p className="text-[9px] sm:text-[10px] text-muted-foreground line-through opacity-60">
-                                  Rp {originalPrice.toLocaleString('id-ID')}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="space-y-1 pt-1">
-                            <div className="flex items-center gap-1">
-                              <Star className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3", Number(rating) > 0 ? "text-[#FFC400] fill-[#FFC400]" : "text-slate-300 fill-slate-200")} />
-                              <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground">
-                                {rating} <span className="opacity-40">|</span> {soldText}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <div className="flex items-center gap-1 min-w-0">
-                                {shopLogoUrl ? (
-                                  /* eslint-disable-next-line @next/next/no-img-element */
-                                  <img
-                                    src={shopLogoUrl}
-                                    alt={String(shopName)}
-                                    className="w-[18px] h-[18px] rounded-md object-cover shrink-0 border border-border/80"
-                                  />
-                                ) : (
-                                  <div className="w-[18px] h-[18px] bg-[#00AA5B] rounded-xs flex items-center justify-center shrink-0">
-                                    <Store className="w-2.5 h-2.5 text-white" />
-                                  </div>
-                                )}
-                                <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground truncate max-w-[70px] sm:max-w-[90px]">
-                                  {String(shopName)}
-                                </span>
-                                <div className="flex items-center gap-0.5 shrink-0">
-                                  {isVerified && (
-                                    /* eslint-disable-next-line @next/next/no-img-element */
-                                    <img
-                                      src="/assets/badge/verified.png"
-                                      alt="Verified"
-                                      className="w-[17px] h-[17px] object-contain shrink-0"
-                                    />
-                                  )}
-                                  {isOfficial && (
-                                    /* eslint-disable-next-line @next/next/no-img-element */
-                                    <img
-                                      src="/assets/badge/officials.png"
-                                      alt="Official"
-                                      className="w-[17px] h-[17px] object-contain shrink-0"
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })
+              filteredProducts.map((product: any) => (
+                <ProductCard key={product.id} product={product} nowTime={nowTime} />
+              ))
             )}
           </div>
         </section>

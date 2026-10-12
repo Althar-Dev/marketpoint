@@ -282,7 +282,8 @@ function SearchContent() {
         </form>
 
         <div className="flex items-center gap-1 shrink-0">
-          <Button size="icon" variant="ghost" title="Keranjang" className="rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground">
+          {/* Keranjang belanja - di-hidden sementara */}
+          <Button size="icon" variant="ghost" title="Keranjang" className="hidden rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground">
             <ShoppingBag className="w-4.5 h-4.5" />
           </Button>
           <Button size="icon" variant="ghost" title="Menu" className="rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground">
