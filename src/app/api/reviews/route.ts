@@ -5,6 +5,7 @@ import {
   getReviewsByProductId,
   getReviewsByShopId,
   updateReviewUserAvatar,
+  updateReviewSellerReply,
 } from "@/lib/database/review-db";
 import { getDbTransactionByInvoice } from "@/lib/database/transaction-db";
 
@@ -161,6 +162,44 @@ export async function PUT(req: Request) {
     console.error("[API REVIEWS PUT ERROR]", error);
     return NextResponse.json(
       { success: false, error: error.message || "Gagal memperbarui avatar ulasan." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const body = await req.json();
+    const { reviewId, sellerReply } = body;
+
+    if (!reviewId) {
+      return NextResponse.json(
+        { success: false, error: "Parameter reviewId diperlukan." },
+        { status: 400 }
+      );
+    }
+
+    const updated = await updateReviewSellerReply(
+      reviewId,
+      typeof sellerReply === "string" ? sellerReply.trim() : null
+    );
+
+    if (!updated) {
+      return NextResponse.json(
+        { success: false, error: "Ulasan tidak ditemukan atau gagal diperbarui." },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: sellerReply ? "Balasan penjual berhasil disimpan." : "Balasan penjual telah dihapus.",
+      review: updated,
+    });
+  } catch (error: any) {
+    console.error("[API REVIEWS PATCH ERROR]", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Gagal memperbarui balasan ulasan." },
       { status: 500 }
     );
   }

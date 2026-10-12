@@ -507,6 +507,7 @@ export default function ProductDetailPage() {
         {/* Mobile Bottom Bar Skeleton */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border/60 px-4 py-2.5 flex items-center gap-2">
           <Skeleton className="h-10 w-10 rounded-xl" />
+          <Skeleton className="h-10 w-10 rounded-xl" />
           <Skeleton className="h-10 flex-1 rounded-xl" />
           <Skeleton className="h-10 flex-1 rounded-xl" />
         </div>
@@ -585,6 +586,24 @@ export default function ProductDetailPage() {
               ))}
             </div>
 
+            {/* Wishlist Button Overlay on Image */}
+            <button
+              type="button"
+              onClick={handleToggleWishlist}
+              aria-label={isWishlisted ? "Hapus dari Wishlist" : "Tambah ke Wishlist"}
+              className={cn(
+                "absolute top-2.5 right-2.5 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md shadow-xs border border-border/60 flex items-center justify-center transition-all active:scale-90 hover:scale-105 cursor-pointer",
+                isWishlisted && "bg-rose-50 text-rose-500 border-rose-200 shadow-rose-500/10"
+              )}
+            >
+              <Heart
+                className={cn(
+                  "w-4.5 h-4.5 transition-colors",
+                  isWishlisted ? "fill-rose-500 text-rose-500" : "text-muted-foreground hover:text-foreground"
+                )}
+              />
+            </button>
+
             {/* Discount Badge */}
             {hasDiscount && (
               <div className={cn(
@@ -594,7 +613,7 @@ export default function ProductDetailPage() {
                 {activeFlashSale && (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    src="/assets/icon/bolt.gif"
+                    src="/assets/icon/fire.gif"
                     alt="Flash Sale"
                     className="w-3.5 h-3.5 object-contain shrink-0"
                   />
@@ -1549,9 +1568,29 @@ export default function ProductDetailPage() {
             variant="outline"
             size="icon"
             onClick={handleContactSeller}
+            title="Chat Penjual"
             className="h-10 w-10 rounded-xl border-border shrink-0"
           >
             <MessageCircle className="w-4 h-4 text-foreground" />
+          </Button>
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleToggleWishlist}
+            aria-label={isWishlisted ? "Hapus dari Wishlist" : "Simpan ke Wishlist"}
+            title="Wishlist"
+            className={cn(
+              "h-10 w-10 rounded-xl border-border shrink-0 transition-colors",
+              isWishlisted && "border-rose-200 bg-rose-50 text-rose-500 hover:bg-rose-100 hover:text-rose-600"
+            )}
+          >
+            <Heart
+              className={cn(
+                "w-4 h-4 transition-transform active:scale-125",
+                isWishlisted ? "fill-rose-500 text-rose-500" : "text-foreground"
+              )}
+            />
           </Button>
 
           {isOwnProduct ? (

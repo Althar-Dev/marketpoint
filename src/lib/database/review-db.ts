@@ -340,3 +340,39 @@ export async function updateReviewUserAvatar(
   const res = await query(sql, params);
   return (res.rowCount || 0) > 0;
 }
+
+/**
+ * Update seller reply for a review in PostgreSQL
+ */
+export async function updateReviewSellerReply(
+  reviewId: string,
+  sellerReply: string | null
+): Promise<ReviewRecord | null> {
+  const cleanReply = sellerReply && sellerReply.trim() ? sellerReply.trim() : null;
+
+  if (!cleanReply) {
+    const sql = `
+      UPDATE reviews 
+      SET seller_reply = NULL, 
+          seller_replied_at = NULL,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1::VARCHAR OR transaction_id = $1::VARCHAR OR invoice_number = $1::VARCHAR
+      RETURNING *;
+    `;
+    const res = await query(sql, [reviewId]);
+    if (!res.rows || res.rows.length === 0) return null;
+    return mapReviewRow(res.rows[0]);
+  }
+
+  const sql = `
+    UPDATE reviews 
+    SET seller_reply = $1::TEXT, 
+        seller_replied_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = $2::VARCHAR OR transaction_id = $2::VARCHAR OR invoice_number = $2::VARCHAR
+    RETURNING *;
+  `;
+  const res = await query(sql, [cleanReply, reviewId]);
+  if (!res.rows || res.rows.length === 0) return null;
+  return mapReviewRow(res.rows[0]);
+}
