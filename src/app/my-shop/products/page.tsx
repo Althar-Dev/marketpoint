@@ -763,49 +763,49 @@ export default function MerchantProductsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right px-6 py-4 whitespace-nowrap">
-                        {canManageProducts ? (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
-                              >
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-36 rounded-xl border-border p-1">
-                              <DropdownMenuItem
-                                onSelect={(e) => {
-                                  e.preventDefault();
-                                  handleEditProduct(product);
-                                }}
-                                className="text-xs font-bold gap-2 cursor-pointer py-2 focus:bg-muted"
-                              >
-                                <Pencil className="w-3.5 h-3.5 text-blue-600" />
-                                Edit Produk
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onSelect={(e) => {
-                                  e.preventDefault();
-                                  handleOpenDeleteDialog(product);
-                                }}
-                                className="text-xs font-bold gap-2 cursor-pointer py-2 focus:bg-red-50 text-red-600 focus:text-red-600"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                Hapus Produk
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        ) : (
-                          <span className="text-[11px] text-muted-foreground/60 italic font-medium">Hanya Lihat</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                          {canManageProducts ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                                >
+                                  <MoreVertical className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-36 rounded-xl border-border p-1">
+                                <DropdownMenuItem
+                                  onSelect={(e) => {
+                                    e.preventDefault();
+                                    handleEditProduct(product);
+                                  }}
+                                  className="text-xs font-bold gap-2 cursor-pointer py-2 focus:bg-muted"
+                                >
+                                  <Pencil className="w-3.5 h-3.5 text-blue-600" />
+                                  Edit Produk
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onSelect={(e) => {
+                                    e.preventDefault();
+                                    handleOpenDeleteDialog(product);
+                                  }}
+                                  className="text-xs font-bold gap-2 cursor-pointer py-2 focus:bg-red-50 text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  Hapus Produk
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : (
+                            <span className="text-[11px] text-muted-foreground/60 italic font-medium">Hanya Lihat</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
           </Card>
         )}
@@ -858,8 +858,8 @@ export default function MerchantProductsPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-bold text-muted-foreground">Deskripsi Produk <span className="text-red-500">*</span></Label>
-                <span className={cn("text-[10px] font-bold", formDesc.length > 10000 ? "text-red-600" : "text-muted-foreground")}>
-                  {formDesc.length}/10.000 Karakter
+                <span className={cn("text-[10px] font-bold", formDesc.length > 2000 ? "text-red-600" : "text-muted-foreground")}>
+                  {formDesc.length}/2000 Karakter
                 </span>
               </div>
               <Textarea

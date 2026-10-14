@@ -160,7 +160,7 @@ function formatRupiah(amount: number) {
 export default function MerchantDisputePage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
-  const { shop, isLoading: shopLoading } = useMerchantShop();
+  const { shop, loading: shopLoading } = useMerchantShop();
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
 

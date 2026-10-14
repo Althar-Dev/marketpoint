@@ -586,23 +586,6 @@ export default function ProductDetailPage() {
               ))}
             </div>
 
-            {/* Wishlist Button Overlay on Image */}
-            <button
-              type="button"
-              onClick={handleToggleWishlist}
-              aria-label={isWishlisted ? "Hapus dari Wishlist" : "Tambah ke Wishlist"}
-              className={cn(
-                "absolute top-2.5 right-2.5 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md shadow-xs border border-border/60 flex items-center justify-center transition-all active:scale-90 hover:scale-105 cursor-pointer",
-                isWishlisted && "bg-rose-50 text-rose-500 border-rose-200 shadow-rose-500/10"
-              )}
-            >
-              <Heart
-                className={cn(
-                  "w-4.5 h-4.5 transition-colors",
-                  isWishlisted ? "fill-rose-500 text-rose-500" : "text-muted-foreground hover:text-foreground"
-                )}
-              />
-            </button>
 
             {/* Discount Badge */}
             {hasDiscount && (
@@ -856,11 +839,14 @@ export default function ProductDetailPage() {
               <h3 className="text-xs font-bold text-[#212121] tracking-wider">
                 Deskripsi Produk
               </h3>
-              <div className="prose prose-sm max-w-none text-[#2E3137] text-xs sm:text-sm font-medium leading-relaxed space-y-3">
+              <div className="prose prose-sm max-w-none text-[#2E3137] text-xs sm:text-sm font-medium leading-relaxed">
                 {product.description ? (
-                  <div dangerouslySetInnerHTML={{ __html: product.description }} />
+                  <div 
+                    className="whitespace-pre-line break-words leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: product.description }} 
+                  />
                 ) : product.shortDescription ? (
-                  <p>{product.shortDescription}</p>
+                  <p className="whitespace-pre-line break-words leading-relaxed">{product.shortDescription}</p>
                 ) : (
                   <p className="text-muted-foreground italic text-xs">Tidak ada deskripsi rinci untuk produk ini.</p>
                 )}
