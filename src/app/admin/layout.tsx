@@ -13,6 +13,8 @@ const VALID_ADMIN_PATHS = new Set([
   "/admin",
   "/admin/analytics",
   "/admin/commissions",
+  "/admin/subscription",
+  "/admin/subscribtion",
   "/admin/digiflazz",
   "/admin/digiflazz/catalog",
   "/admin/digiflazz/config",

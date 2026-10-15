@@ -1,17 +1,31 @@
 import { NextResponse } from "next/server";
 import { getShopSubscription, updateShopSubscription } from "@/lib/database/subscription";
+import { getPlatformSettings } from "@/lib/database/settings";
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const shopId = searchParams.get("shopId");
 
-    if (!shopId) {
-      return NextResponse.json({ success: false, error: "Parameter shopId wajib disertakan." }, { status: 400 });
+    const settings = await getPlatformSettings();
+    const commissions = settings?.commissions || {
+      free: 7.0,
+      plus: 5.0,
+      pro: 3.5,
+      prime: 2.0,
+    };
+
+    let subscription = null;
+    if (shopId) {
+      subscription = await getShopSubscription(shopId);
     }
 
-    const subscription = await getShopSubscription(shopId);
-    return NextResponse.json({ success: true, subscription });
+    return NextResponse.json({
+      success: true,
+      subscription,
+      commissions,
+      plans: settings?.plans || [],
+    });
   } catch (error: any) {
     console.error("[API SUBSCRIPTION GET ERROR]", error);
     return NextResponse.json({ success: false, error: error.message || "Gagal mengambil data berlangganan." }, { status: 500 });

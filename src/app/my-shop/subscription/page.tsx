@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ import {
   Crown,
   Loader2,
   Check,
+  X,
   Sparkles,
   ChevronLeft,
   CreditCard,
@@ -33,80 +34,374 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+export interface PlanFeatureItem {
+  label: string;
+  included: boolean;
+}
+
 interface PlanItem {
   id: "plus" | "pro" | "prime";
   name: string;
+  badgeTag: string;
   description: string;
   monthlyPrice: number;
   yearlyPrice: number;
+  commissionRate?: number;
+  maxProducts?: number;
+  maxVouchers?: number;
+  maxFlashSaleProducts?: number;
   icon: any;
   color: string;
   bgColor: string;
   borderColor: string;
   popular?: boolean;
   features: string[];
+  featureItems: PlanFeatureItem[];
 }
 
-const PLANS: PlanItem[] = [
-  {
-    id: "plus",
-    name: "Plus",
-    description: "Ideal untuk penjual berkembang yang ingin kuota lebih besar dan fitur promo.",
-    monthlyPrice: 29000,
-    yearlyPrice: 290000,
-    icon: Zap,
-    color: "text-[#00AA5B]",
-    bgColor: "bg-green-50",
-    borderColor: "border-border/50",
-    features: [
-      "Hingga 50 produk",
-      "Komisi rendah",
-      "Voucher toko",
-      "Flash sale"
-    ]
+function buildPlanFeatureItems(
+  p: {
+    id: string;
+    commissionRate?: number;
+    maxProducts?: number;
+    maxVouchers?: number;
+    maxFlashSaleProducts?: number;
+    features?: any;
+    customFeatures?: string[];
   },
-  {
-    id: "pro",
-    name: "Pro",
-    description: "Paling populer untuk merchant profesional dengan bot otomatisasi Telegram.",
-    monthlyPrice: 49000,
-    yearlyPrice: 490000,
-    icon: Rocket,
-    color: "text-[#00AA5B]",
-    bgColor: "bg-green-50",
-    borderColor: "border-border/50",
-    popular: true,
-    features: [
-      "Hingga 100 produk",
-      "Komisi lebih rendah",
-      "Voucher toko",
-      "Flash sale",
-      "Badge verified",
-      "Bot Telegram"
-    ]
-  },
-  {
-    id: "prime",
-    name: "Prime",
-    description: "Solusi tanpa batas untuk merchant skala besar, API reseller dan prioritas support.",
-    monthlyPrice: 149000,
-    yearlyPrice: 1490000,
-    icon: Crown,
-    color: "text-[#00AA5B]",
-    bgColor: "bg-green-50",
-    borderColor: "border-border/50",
-    features: [
-      "Unlimited produk",
-      "Komisi sangat rendah",
-      "Voucher toko",
-      "Flash sale",
-      "Badge official",
-      "Bot Telegram",
-      "API reseller",
-      "Prioritas support"
-    ]
+  allPlans?: any[]
+): PlanFeatureItem[] {
+  const comm = p.commissionRate ?? (p.id === "prime" ? 2.0 : p.id === "pro" ? 3.5 : 5.0);
+  const products = p.maxProducts ?? (p.id === "prime" ? -1 : p.id === "pro" ? 40 : 15);
+  const vouchers = p.maxVouchers ?? (p.id === "prime" ? -1 : p.id === "pro" ? 5 : 2);
+  const flash = p.maxFlashSaleProducts ?? (p.id === "prime" ? -1 : p.id === "pro" ? 3 : 1);
+  const featConfig = p.features || {};
+  const customFeats = Array.isArray(p.customFeatures) ? p.customFeatures : [];
+
+  // Helper to extract custom string for core metrics if defined in admin
+  const findCustom = (keyword: string) => {
+    return customFeats.find((f) => f.toLowerCase().includes(keyword.toLowerCase()));
+  };
+
+  // 1. Core metric: Komisi
+  const komisiLabel = findCustom("komisi") || `Komisi ${Number(comm).toFixed(1)}%`;
+
+  // 2. Core metric: Batas Produk
+  const produkLabel =
+    findCustom("produk") ||
+    (products === -1 ? "Unlimited produk" : `Max ${products} Produk`);
+
+  // 3. Core metric: Voucher Toko
+  const voucherLabel =
+    findCustom("voucher") ||
+    (vouchers === -1
+      ? "Unlimited Voucher toko"
+      : vouchers > 0
+      ? `Max ${vouchers} Voucher toko`
+      : "Voucher diskon toko");
+  const voucherIncluded = vouchers !== 0 && (featConfig.voucherToko ?? true);
+
+  // 4. Core metric: Flash Sale
+  const flashLabel =
+    findCustom("flash") ||
+    (flash === -1
+      ? "Unlimited Flash sale"
+      : flash > 0
+      ? `Max ${flash} Flash sale`
+      : "Flash sale");
+  const flashIncluded = flash !== 0 && (featConfig.flashSale ?? true);
+
+  // 5. Core metric: Statistik
+  const statistikLabel =
+    findCustom("statistik") ||
+    (p.id === "prime"
+      ? "Statistik Lengkap & Ekspor Laporan"
+      : p.id === "pro"
+      ? "Statistik Lanjutan"
+      : "Statistik dasar & Produk terlaris");
+
+  const coreItems: PlanFeatureItem[] = [
+    { label: komisiLabel, included: true },
+    { label: produkLabel, included: true },
+    { label: voucherLabel, included: voucherIncluded },
+    { label: flashLabel, included: flashIncluded },
+    { label: statistikLabel, included: true },
+  ];
+
+  // Standard add-ons configured across plans or in Admin
+  const standardAddons = [
+    {
+      key: "badgeVerified",
+      label: "Badge verified",
+      check: (plan: any) =>
+        Boolean(plan.features?.badgeVerified) ||
+        (Array.isArray(plan.customFeatures) &&
+          plan.customFeatures.some((f: string) =>
+            f.toLowerCase().includes("verified")
+          )),
+    },
+    {
+      key: "telegramBot",
+      label: "Bot Telegram",
+      check: (plan: any) =>
+        Boolean(plan.features?.telegramBot) ||
+        (Array.isArray(plan.customFeatures) &&
+          plan.customFeatures.some(
+            (f: string) =>
+              f.toLowerCase().includes("telegram") ||
+              f.toLowerCase().includes("bot")
+          )),
+    },
+    {
+      key: "badgeOfficial",
+      label: "Badge official",
+      check: (plan: any) =>
+        Boolean(plan.features?.badgeOfficial) ||
+        (Array.isArray(plan.customFeatures) &&
+          plan.customFeatures.some((f: string) =>
+            f.toLowerCase().includes("official")
+          )),
+    },
+    {
+      key: "resellerApi",
+      label: "API Reseller / Public Provider",
+      check: (plan: any) =>
+        Boolean(plan.features?.resellerApi) ||
+        (Array.isArray(plan.customFeatures) &&
+          plan.customFeatures.some(
+            (f: string) =>
+              f.toLowerCase().includes("api") ||
+              f.toLowerCase().includes("reseller")
+          )),
+    },
+    {
+      key: "prioritySupport",
+      label: "Prioritas support",
+      check: (plan: any) =>
+        Boolean(plan.features?.prioritySupport) ||
+        (Array.isArray(plan.customFeatures) &&
+          plan.customFeatures.some(
+            (f: string) =>
+              f.toLowerCase().includes("support") ||
+              f.toLowerCase().includes("prioritas") ||
+              f.toLowerCase().includes("vip")
+          )),
+    },
+  ];
+
+  // Collect any additional custom features from allPlans that aren't core metrics
+  const extraAddons: { label: string; check: (plan: any) => boolean }[] = [];
+  const knownAddonKeywords = [
+    "verified",
+    "telegram",
+    "bot",
+    "official",
+    "api",
+    "reseller",
+    "support",
+    "prioritas",
+    "vip",
+  ];
+
+  if (Array.isArray(allPlans)) {
+    for (const otherPlan of allPlans) {
+      if (Array.isArray(otherPlan.customFeatures)) {
+        for (const feat of otherPlan.customFeatures) {
+          const trimmed = feat.trim();
+          if (!trimmed) continue;
+          const low = trimmed.toLowerCase();
+          // Skip core features
+          if (
+            low.includes("komisi") ||
+            low.includes("produk") ||
+            low.includes("voucher") ||
+            low.includes("flash") ||
+            low.includes("statistik")
+          ) {
+            continue;
+          }
+          // Skip if already in standardAddons
+          if (knownAddonKeywords.some((k) => low.includes(k))) {
+            continue;
+          }
+          // If not already in extraAddons
+          if (!extraAddons.some((e) => e.label.toLowerCase() === low)) {
+            extraAddons.push({
+              label: trimmed,
+              check: (plan: any) =>
+                Array.isArray(plan.customFeatures) &&
+                plan.customFeatures.some(
+                  (f: string) => f.trim().toLowerCase() === low
+                ),
+            });
+          }
+        }
+      }
+    }
   }
-];
+
+  const addonItems: PlanFeatureItem[] = [
+    ...standardAddons.map((addon) => {
+      // Find exact custom label if present in any plan's customFeatures (e.g. "API Reseller / Public Provider")
+      let displayLabel = addon.label;
+      if (Array.isArray(allPlans)) {
+        for (const plan of allPlans) {
+          const match = (plan.customFeatures || []).find((f: string) => {
+            const low = f.toLowerCase();
+            if (addon.key === "badgeVerified") return low.includes("verified");
+            if (addon.key === "telegramBot") return low.includes("telegram") || low.includes("bot");
+            if (addon.key === "badgeOfficial") return low.includes("official");
+            if (addon.key === "resellerApi") return low.includes("reseller") || low.includes("api");
+            if (addon.key === "prioritySupport") return low.includes("support") || low.includes("prioritas");
+            return false;
+          });
+          if (match) {
+            displayLabel = match;
+            break;
+          }
+        }
+      }
+      return {
+        label: displayLabel,
+        included: addon.check(p),
+      };
+    }),
+    ...extraAddons.map((extra) => ({
+      label: extra.label,
+      included: extra.check(p),
+    })),
+  ];
+
+  return [...coreItems, ...addonItems];
+}
+
+function getPlans(commissions: Record<string, number>): PlanItem[] {
+  const rawPlans = [
+    {
+      id: "plus",
+      name: "Plus",
+      badgeTag: "Starter Pro",
+      description: "Ideal untuk penjual berkembang yang ingin kuota lebih besar dan fitur promo.",
+      monthlyPrice: 29000,
+      yearlyPrice: 290000,
+      commissionRate: commissions.plus ?? 5.0,
+      maxProducts: 15,
+      maxVouchers: 2,
+      maxFlashSaleProducts: 1,
+      icon: Zap,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200",
+      features: {
+        voucherToko: true,
+        flashSale: true,
+        badgeVerified: false,
+        badgeOfficial: false,
+        telegramBot: false,
+        resellerApi: false,
+        prioritySupport: false,
+      },
+      customFeatures: [
+        `Komisi ${commissions.plus ?? 5.0}%`,
+        "Max 15 Produk",
+        "Max 2 Voucher toko",
+        "Max 1 Flash sale",
+        "Statistik dasar & Produk terlaris",
+      ],
+    },
+    {
+      id: "pro",
+      name: "Pro",
+      badgeTag: "Paling Populer",
+      description: "Paling populer untuk merchant profesional dengan bot otomatisasi Telegram.",
+      monthlyPrice: 49000,
+      yearlyPrice: 490000,
+      commissionRate: commissions.pro ?? 3.5,
+      maxProducts: 40,
+      maxVouchers: 5,
+      maxFlashSaleProducts: 3,
+      icon: Rocket,
+      color: "text-[#00AA5B]",
+      bgColor: "bg-emerald-50",
+      borderColor: "border-[#00AA5B]",
+      popular: true,
+      features: {
+        voucherToko: true,
+        flashSale: true,
+        badgeVerified: true,
+        badgeOfficial: false,
+        telegramBot: true,
+        resellerApi: false,
+        prioritySupport: false,
+      },
+      customFeatures: [
+        `Komisi ${commissions.pro ?? 3.5}%`,
+        "Max 40 Produk",
+        "Max 5 Voucher toko",
+        "Max 3 Flash sale",
+        "Badge verified",
+        "Bot Telegram",
+        "Statistik Lanjutan",
+      ],
+    },
+    {
+      id: "prime",
+      name: "Prime",
+      badgeTag: "Ultimate Enterprise",
+      description: "Solusi tanpa batas untuk merchant skala besar, API reseller dan prioritas support.",
+      monthlyPrice: 249000,
+      yearlyPrice: 2490000,
+      commissionRate: commissions.prime ?? 2.0,
+      maxProducts: -1,
+      maxVouchers: 15,
+      maxFlashSaleProducts: 10,
+      icon: Crown,
+      color: "text-amber-600",
+      bgColor: "bg-amber-50",
+      borderColor: "border-amber-300",
+      features: {
+        voucherToko: true,
+        flashSale: true,
+        badgeVerified: true,
+        badgeOfficial: true,
+        telegramBot: true,
+        resellerApi: true,
+        prioritySupport: true,
+      },
+      customFeatures: [
+        `Komisi ${commissions.prime ?? 2.0}%`,
+        "Unlimited produk",
+        "Max 15 Voucher toko",
+        "Max 10 Flash sale",
+        "Badge official",
+        "Bot Telegram",
+        "Statistik Lengkap & Ekspor Laporan",
+        "API Reseller / Public Provider",
+        "Prioritas support",
+      ],
+    },
+  ];
+
+  return rawPlans.map((p) => ({
+    id: p.id as "plus" | "pro" | "prime",
+    name: p.name,
+    badgeTag: p.badgeTag,
+    description: p.description,
+    monthlyPrice: p.monthlyPrice,
+    yearlyPrice: p.yearlyPrice,
+    commissionRate: p.commissionRate,
+    maxProducts: p.maxProducts,
+    maxVouchers: p.maxVouchers,
+    maxFlashSaleProducts: p.maxFlashSaleProducts,
+    icon: p.icon,
+    color: p.color,
+    bgColor: p.bgColor,
+    borderColor: p.borderColor,
+    popular: p.popular,
+    features: p.customFeatures,
+    featureItems: buildPlanFeatureItems(p, rawPlans),
+  }));
+}
 
 const PAYMENT_CATEGORIES = [
   {
@@ -151,9 +446,34 @@ export default function MerchantSubscriptionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
 
+  const [commissions, setCommissions] = useState<Record<string, number>>({
+    free: 7.0,
+    plus: 5.0,
+    pro: 3.5,
+    prime: 2.0,
+  });
+  const [dbSubscription, setDbSubscription] = useState<any>(null);
+  const [dbPlans, setDbPlans] = useState<any[] | null>(null);
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    const url = user?.uid ? `/api/subscription?shopId=${encodeURIComponent(user.uid)}` : "/api/subscription";
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success) {
+          if (data.commissions) setCommissions(data.commissions);
+          if (data.subscription) setDbSubscription(data.subscription);
+          if (data.plans && Array.isArray(data.plans) && data.plans.length > 0) {
+            setDbPlans(data.plans);
+          }
+        }
+      })
+      .catch((err) => console.warn("Gagal memuat info langganan & komisi:", err));
+  }, [user]);
 
   const shopRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -162,13 +482,55 @@ export default function MerchantSubscriptionPage() {
 
   const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
-  const activeSubscription = shop?.subscription || {
+  const activeSubscription = dbSubscription || shop?.subscription || {
     planId: "free",
     planName: "Gratis",
     billingCycle: "monthly",
     maxProducts: 10,
+    commissionRate: commissions.free ?? 7.0,
     status: "ACTIVE"
   };
+
+  const iconMap: Record<string, any> = {
+    plus: Zap,
+    pro: Rocket,
+    prime: Crown,
+  };
+
+  const plans: PlanItem[] = useMemo(() => {
+    const defaultList = getPlans(commissions);
+    if (dbPlans && dbPlans.length > 0) {
+      return dbPlans
+        .filter((p) => p.id !== "free")
+        .map((p) => {
+          const fallback = defaultList.find((d) => d.id === p.id);
+          const featureItems = buildPlanFeatureItems(p, dbPlans);
+          return {
+            id: p.id as "plus" | "pro" | "prime",
+            name: p.name || fallback?.name || p.id,
+            badgeTag: fallback?.badgeTag || (p.popular ? "Paling Populer" : "Paket Pilihan"),
+            description: p.description || fallback?.description || "",
+            monthlyPrice: p.monthlyPrice ?? fallback?.monthlyPrice ?? 0,
+            yearlyPrice: p.yearlyPrice ?? fallback?.yearlyPrice ?? 0,
+            commissionRate: p.commissionRate ?? commissions[p.id] ?? fallback?.commissionRate ?? 5,
+            maxProducts: p.maxProducts !== undefined ? p.maxProducts : (fallback?.maxProducts ?? 30),
+            maxVouchers: p.maxVouchers !== undefined ? p.maxVouchers : (fallback?.maxVouchers ?? 5),
+            maxFlashSaleProducts: p.maxFlashSaleProducts !== undefined ? p.maxFlashSaleProducts : (fallback?.maxFlashSaleProducts ?? 3),
+            popular: p.popular ?? fallback?.popular,
+            icon: iconMap[p.id] || fallback?.icon || Zap,
+            color: p.id === "pro" ? "text-[#00AA5B]" : p.id === "prime" ? "text-amber-600" : "text-blue-600",
+            bgColor: p.id === "pro" ? "bg-emerald-500/10" : p.id === "prime" ? "bg-amber-500/10" : "bg-blue-500/10",
+            borderColor: p.id === "pro" ? "border-[#00AA5B]" : p.id === "prime" ? "border-amber-300" : "border-slate-200",
+            features:
+              p.customFeatures && p.customFeatures.length > 0
+                ? p.customFeatures
+                : fallback?.features || [],
+            featureItems,
+          };
+        });
+    }
+    return defaultList;
+  }, [dbPlans, commissions]);
 
   const handleSelectPlan = (plan: PlanItem) => {
     setSelectedPlan(plan);
@@ -198,6 +560,23 @@ export default function MerchantSubscriptionPage() {
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Gagal memproses paket berlangganan.");
+      }
+
+      if (data.subscription) {
+        setDbSubscription(data.subscription);
+        if (db && user) {
+          updateDoc(doc(db, "shops", user.uid), {
+            subscription: {
+              planId: data.subscription.planId,
+              planName: data.subscription.planName,
+              billingCycle: data.subscription.billingCycle,
+              maxProducts: data.subscription.maxProducts,
+              commissionRate: data.subscription.commissionRate,
+              status: "ACTIVE",
+              expiresAt: data.subscription.expiresAt,
+            }
+          }).catch(() => { });
+        }
       }
 
       toast({
@@ -235,11 +614,11 @@ export default function MerchantSubscriptionPage() {
 
   if (view === "checkout" && selectedPlan) {
     const priceDisplay = billingCycle === "yearly" ? selectedPlan.yearlyPrice : selectedPlan.monthlyPrice;
-    
+
     return (
       <main className="p-3 md:p-6 lg:p-8 bg-[#F9FAFB] min-h-screen">
         <div className="max-w-4xl mx-auto space-y-5 md:space-y-6">
-          <button 
+          <button
             onClick={() => setView("plans")}
             className="flex items-center gap-1.5 text-muted-foreground hover:text-[#00AA5B] transition-colors text-[10px] md:text-[11px] font-bold group"
           >
@@ -254,85 +633,85 @@ export default function MerchantSubscriptionPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 items-start">
             <div className="lg:col-span-7 space-y-5">
-               <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl overflow-hidden bg-white">
-                 <CardHeader className="p-4 md:p-5 border-b border-border/40 bg-slate-50/30">
-                    <CardTitle className="text-[11px] md:text-[12px] font-bold">Pilih Metode Pembayaran</CardTitle>
-                 </CardHeader>
-                 <CardContent className="p-0">
-                    <Accordion type="single" collapsible className="w-full">
-                      {/* Saldo MarketPointID (Internal) */}
-                      <AccordionItem value="wallet" className="border-b border-border/40 px-4 md:px-6">
+              <Card className="border-border/50 shadow-sm rounded-xl md:rounded-2xl overflow-hidden bg-white">
+                <CardHeader className="p-4 md:p-5 border-b border-border/40 bg-slate-50/30">
+                  <CardTitle className="text-[11px] md:text-[12px] font-bold">Pilih Metode Pembayaran</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Accordion type="single" collapsible className="w-full">
+                    {/* Saldo MarketPointID (Internal) */}
+                    <AccordionItem value="wallet" className="border-b border-border/40 px-4 md:px-6">
+                      <AccordionTrigger className="hover:no-underline py-4">
+                        <div className="flex items-center gap-3">
+                          <Wallet className="w-4 h-4 text-[#8B5CF6]" />
+                          <span className="text-[10px] font-black tracking-wider text-[#2E3137]">SALDO MARKETPOINT</span>
+                        </div>
+                        <div className="flex items-center gap-2 mr-2">
+                          <span className="text-[9px] font-bold text-muted-foreground">Rp 0</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-5">
+                        <div className="p-4 rounded-xl border border-dashed border-border bg-slate-50/50 text-center">
+                          <p className="text-[10px] text-muted-foreground font-medium">Saldo Anda tidak mencukupi untuk melakukan transaksi ini.</p>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Payment Categories from Design */}
+                    {PAYMENT_CATEGORIES.map((cat) => (
+                      <AccordionItem key={cat.id} value={cat.id} className="border-b border-border/40 px-4 md:px-6 last:border-0">
                         <AccordionTrigger className="hover:no-underline py-4">
                           <div className="flex items-center gap-3">
-                            <Wallet className="w-4 h-4 text-[#8B5CF6]" />
-                            <span className="text-[10px] font-black tracking-wider text-[#2E3137]">SALDO MARKETPOINT</span>
+                            <cat.icon className="w-4 h-4 text-[#8B5CF6]" />
+                            <span className="text-[10px] font-black tracking-wider text-[#2E3137]">{cat.label}</span>
                           </div>
-                          <div className="flex items-center gap-2 mr-2">
-                             <span className="text-[9px] font-bold text-muted-foreground">Rp 0</span>
+                          <div className="flex items-center gap-2.5 mr-2 ml-auto overflow-hidden">
+                            {cat.logos.slice(0, cat.previewCount).map((logo) => (
+                              <img key={logo} src={`/assets/payments/${logo}.png`} alt={logo} className="h-4 w-auto object-contain opacity-80" />
+                            ))}
+                            {cat.logos.length > cat.previewCount && (
+                              <span className="text-[9px] font-bold text-muted-foreground">+{cat.logos.length - cat.previewCount}</span>
+                            )}
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="pb-5">
-                           <div className="p-4 rounded-xl border border-dashed border-border bg-slate-50/50 text-center">
-                              <p className="text-[10px] text-muted-foreground font-medium">Saldo Anda tidak mencukupi untuk melakukan transaksi ini.</p>
-                           </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {cat.logos.map((logo) => (
+                              <button
+                                key={logo}
+                                onClick={() => setSelectedMethod(logo)}
+                                className={cn(
+                                  "p-3 border rounded-xl flex items-center justify-center transition-all hover:bg-slate-50 group relative",
+                                  selectedMethod === logo ? "border-[#00AA5B] bg-[#00AA5B]/5 ring-2 ring-[#00AA5B]/10" : "border-border/60"
+                                )}
+                              >
+                                <img src={`/assets/payments/${logo}.png`} alt={logo} className="h-7 sm:h-8 w-auto object-contain" />
+                                {selectedMethod === logo && (
+                                  <div className="absolute -top-1 -right-1 bg-[#00AA5B] text-white rounded-full p-0.5">
+                                    <Check className="w-2 h-2 stroke-[4]" />
+                                  </div>
+                                )}
+                              </button>
+                            ))}
+                          </div>
                         </AccordionContent>
                       </AccordionItem>
+                    ))}
+                  </Accordion>
+                </CardContent>
+                <CardFooter className="p-4 md:p-5 border-t border-border/40 bg-slate-50/20">
+                  <Button
+                    onClick={handleConfirmSubscription}
+                    disabled={isSubmitting || !selectedMethod}
+                    className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-[11px] gap-2 shadow-md shadow-[#00AA5B]/10 transition-transform active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                    Bayar dan Aktifkan Sekarang
+                  </Button>
+                </CardFooter>
+              </Card>
 
-                      {/* Payment Categories from Design */}
-                      {PAYMENT_CATEGORIES.map((cat) => (
-                        <AccordionItem key={cat.id} value={cat.id} className="border-b border-border/40 px-4 md:px-6 last:border-0">
-                          <AccordionTrigger className="hover:no-underline py-4">
-                            <div className="flex items-center gap-3">
-                              <cat.icon className="w-4 h-4 text-[#8B5CF6]" />
-                              <span className="text-[10px] font-black tracking-wider text-[#2E3137]">{cat.label}</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 mr-2 ml-auto overflow-hidden">
-                               {cat.logos.slice(0, cat.previewCount).map((logo) => (
-                                 <img key={logo} src={`/assets/payments/${logo}.png`} alt={logo} className="h-4 w-auto object-contain opacity-80" />
-                               ))}
-                               {cat.logos.length > cat.previewCount && (
-                                 <span className="text-[9px] font-bold text-muted-foreground">+{cat.logos.length - cat.previewCount}</span>
-                               )}
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent className="pb-5">
-                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                {cat.logos.map((logo) => (
-                                  <button 
-                                    key={logo} 
-                                    onClick={() => setSelectedMethod(logo)}
-                                    className={cn(
-                                      "p-3 border rounded-xl flex items-center justify-center transition-all hover:bg-slate-50 group relative",
-                                      selectedMethod === logo ? "border-[#00AA5B] bg-[#00AA5B]/5 ring-2 ring-[#00AA5B]/10" : "border-border/60"
-                                    )}
-                                  >
-                                    <img src={`/assets/payments/${logo}.png`} alt={logo} className="h-7 sm:h-8 w-auto object-contain" />
-                                    {selectedMethod === logo && (
-                                      <div className="absolute -top-1 -right-1 bg-[#00AA5B] text-white rounded-full p-0.5">
-                                        <Check className="w-2 h-2 stroke-[4]" />
-                                      </div>
-                                    )}
-                                  </button>
-                                ))}
-                             </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                 </CardContent>
-                 <CardFooter className="p-4 md:p-5 border-t border-border/40 bg-slate-50/20">
-                    <Button 
-                      onClick={handleConfirmSubscription}
-                      disabled={isSubmitting || !selectedMethod}
-                      className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-[11px] gap-2 shadow-md shadow-[#00AA5B]/10 transition-transform active:scale-[0.98] disabled:opacity-50"
-                    >
-                      {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                      Bayar dan Aktifkan Sekarang
-                    </Button>
-                 </CardFooter>
-               </Card>
-
-               <div className="p-4 rounded-xl md:rounded-2xl bg-[#FFC400]/5 border border-[#FFC400]/20 flex items-start gap-3">
+              <div className="p-4 rounded-xl md:rounded-2xl bg-[#FFC400]/5 border border-[#FFC400]/20 flex items-start gap-3">
                 <ShieldCheck className="w-4 h-4 text-[#FFC400] shrink-0 mt-0.5" />
                 <p className="text-[10px] md:text-[11px] text-muted-foreground leading-relaxed font-medium">
                   Paket akan langsung aktif setelah konfirmasi pembayaran berhasil dilakukan secara otomatis oleh sistem kami.
@@ -384,28 +763,31 @@ export default function MerchantSubscriptionPage() {
 
   return (
     <main className="p-3 md:p-6 lg:p-8 space-y-5 md:space-y-6 bg-[#F9FAFB] min-h-screen">
-      <div className="max-w-screen-xl mx-auto space-y-6">
-        
-        <div className="text-center space-y-2 max-w-xl mx-auto">
-          <Badge variant="outline" className="bg-white border-border/50 text-[#00AA5B] font-medium text-[9px] md:text-[10px] px-2.5 py-0.5 rounded-full shadow-sm">
-            <Sparkles className="w-3 h-3 mr-1 text-[#00AA5B]" />
-            Paket berlangganan toko
-          </Badge>
-          <h2 className="text-base md:text-lg font-bold tracking-tight text-[#212121]">Pilih paket fitur toko Anda</h2>
-          <p className="text-[10px] md:text-[11px] text-muted-foreground font-medium">
-            Tingkatkan batas produk, aktifkan voucher toko, flash sale, hingga otomatisasi bot Telegram dan API reseller.
+      <div className="max-w-5xl mx-auto space-y-6">
+
+        {/* Hero Header & Period Toggle */}
+        <div className="text-center space-y-2.5 max-w-xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 text-[#00AA5B] font-semibold text-[10px] md:text-[11px] px-3 py-0.5 rounded-full shadow-2xs">
+            <Sparkles className="w-3 h-3 text-[#00AA5B]" />
+            Paket Berlangganan & Fitur Toko
+          </div>
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#212121]">
+            Pilih Paket Fitur Toko Anda
+          </h2>
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+            Tingkatkan kuota produk, voucher diskon toko, flash sale, hingga otomatisasi bot Telegram dan API reseller.
           </p>
 
-          <div className="flex items-center justify-center pt-3">
-            <div className="bg-white p-1 rounded-xl border border-border/50 shadow-sm flex items-center gap-1">
+          <div className="flex items-center justify-center pt-1.5">
+            <div className="bg-white p-1 rounded-xl border border-slate-200/80 shadow-2xs inline-flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setBillingCycle("monthly")}
                 className={cn(
-                  "px-4 py-1.5 rounded-lg text-[10px] md:text-[11px] font-medium transition-all",
+                  "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
                   billingCycle === "monthly"
-                    ? "bg-[#00AA5B] text-white shadow-sm font-bold"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-[#00AA5B] text-white shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900"
                 )}
               >
                 Bulanan
@@ -414,16 +796,16 @@ export default function MerchantSubscriptionPage() {
                 type="button"
                 onClick={() => setBillingCycle("yearly")}
                 className={cn(
-                  "px-4 py-1.5 rounded-lg text-[10px] md:text-[11px] font-medium transition-all flex items-center gap-1.5",
+                  "px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
                   billingCycle === "yearly"
-                    ? "bg-[#00AA5B] text-white shadow-sm font-bold"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-[#00AA5B] text-white shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900"
                 )}
               >
                 <span>Tahunan</span>
                 <span className={cn(
-                  "text-[8px] font-bold px-1.5 py-0.5 rounded-md",
-                  billingCycle === "yearly" ? "bg-white text-[#00AA5B]" : "bg-green-100 text-green-800"
+                  "text-[9px] font-bold px-1.5 py-0.2 rounded-md",
+                  billingCycle === "yearly" ? "bg-white/20 text-white" : "bg-emerald-100 text-emerald-800"
                 )}>
                   HEMAT 2 BULAN
                 </span>
@@ -432,81 +814,215 @@ export default function MerchantSubscriptionPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 items-stretch">
-          {PLANS.map((plan) => {
+        {/* Status Paket Toko Saat Ini */}
+        <div className="bg-white border border-slate-200/80 rounded-xl p-3.5 md:p-4 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 max-w-2xl mx-auto">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-[#00AA5B] flex items-center justify-center shrink-0 border border-emerald-100">
+              <Zap className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-800">
+                  Paket Aktif: Paket {activeSubscription.planName || "Gratis"}
+                </span>
+                <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold px-2 py-0.2 rounded-full">
+                  <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" /> Aktif
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground font-medium mt-0.5">
+                Tarif komisi platform: <span className="font-bold text-[#00AA5B]">{activeSubscription.commissionRate ?? (commissions[activeSubscription.planId] ?? commissions.free ?? 7)}%</span> • Batas produk: <span className="font-semibold text-slate-800">{activeSubscription.maxProducts === -1 ? "Unlimited" : `${activeSubscription.maxProducts} produk`}</span>
+              </p>
+            </div>
+          </div>
+          {activeSubscription.planId === "free" && (
+            <div className="text-[11px] text-muted-foreground bg-slate-50 border border-slate-200/60 px-2.5 py-1 rounded-md font-medium shrink-0">
+              Upgrade untuk fitur promo & otomatisasi
+            </div>
+          )}
+        </div>
+
+        {/* 3 Pricing Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 items-stretch pt-2">
+          {plans.map((plan) => {
             const isActive = activeSubscription.planId === plan.id;
             const priceDisplay = billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
+            const perMonthEquivalent = billingCycle === "yearly" ? Math.round(plan.yearlyPrice / 12) : plan.monthlyPrice;
+            const monthlyCostTotal = plan.monthlyPrice * 12;
+            const savingsAmount = billingCycle === "yearly" ? monthlyCostTotal - plan.yearlyPrice : 0;
             const PlanIcon = plan.icon;
+            const isPro = plan.id === "pro";
+            const isPrime = plan.id === "prime";
+            const isPlus = plan.id === "plus";
 
             return (
-              <Card 
-                key={plan.id} 
+              <div
+                key={plan.id}
                 className={cn(
-                  "relative flex flex-col border-border/50 transition-all duration-200 rounded-xl md:rounded-2xl overflow-hidden bg-white shadow-sm",
-                  plan.popular ? "border-[#00AA5B]/50 ring-1 ring-[#00AA5B]/20" : "hover:border-border"
+                  "relative flex flex-col justify-between rounded-2xl transition-all duration-200 bg-white group",
+                  isPro
+                    ? "border-2 border-[#00AA5B] shadow-sm md:-translate-y-1.5 ring-2 ring-[#00AA5B]/10 z-10"
+                    : isPrime
+                      ? "border border-amber-200/80 hover:border-amber-300 shadow-2xs hover:shadow-sm"
+                      : "border border-slate-200 hover:border-blue-300 shadow-2xs hover:shadow-sm"
                 )}
               >
-                {plan.popular && (
-                  <div className="absolute top-0 right-0">
-                    <div className="bg-[#00AA5B] text-white text-[8px] md:text-[9px] font-bold px-3 py-1 rounded-bl-xl">
-                      Populer
+                {/* Floating Top Badge */}
+                {isPro && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+                    <div className="inline-flex items-center gap-1 bg-[#00AA5B] text-white text-[9px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full shadow-xs ring-2 ring-white">
+                      <Rocket className="w-2.5 h-2.5 text-emerald-200" />
+                      Paling Populer
+                    </div>
+                  </div>
+                )}
+                {isPrime && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+                    <div className="inline-flex items-center gap-1 bg-amber-500 text-white text-[9px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full shadow-xs ring-2 ring-white">
+                      <Crown className="w-2.5 h-2.5 text-amber-200" />
+                      Ultimate Power
+                    </div>
+                  </div>
+                )}
+                {isPlus && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+                    <div className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 text-[9px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full border border-slate-200 shadow-2xs">
+                      <Zap className="w-2.5 h-2.5 text-blue-500" />
+                      Starter Pro
                     </div>
                   </div>
                 )}
 
-                <CardHeader className="p-5 pb-0 space-y-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-green-50 text-[#00AA5B] flex items-center justify-center shrink-0">
+                {/* Card Main Body */}
+                <div className="p-5 md:p-6 flex-1 flex flex-col">
+                  {/* Header Title + Icon */}
+                  <div className="flex items-start justify-between gap-2.5 pt-0.5">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-slate-800 tracking-tight">
+                          {plan.name}
+                        </h3>
+                        {isActive && (
+                          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[9px] font-bold px-1.5 py-0 h-4">
+                            Aktif
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground font-medium leading-relaxed mt-1 min-h-[32px]">
+                        {plan.description}
+                      </p>
+                    </div>
+
+                    <div
+                      className={cn(
+                        "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs",
+                        isPro && "bg-emerald-50 text-[#00AA5B] border border-emerald-200/60",
+                        isPrime && "bg-amber-50 text-amber-600 border border-amber-200/60",
+                        isPlus && "bg-blue-50 text-blue-600 border border-blue-200/60"
+                      )}
+                    >
                       <PlanIcon className="w-4 h-4" />
                     </div>
-                    <CardTitle className="text-sm md:text-base font-medium text-[#212121]">{plan.name}</CardTitle>
                   </div>
-                  <CardDescription className="text-[9px] md:text-[10px] text-muted-foreground font-medium min-h-[32px]">{plan.description}</CardDescription>
-                  <div className="pt-2 border-b border-border/40 pb-4">
+
+                  {/* Pricing Display */}
+                  <div className="py-3.5 my-3.5 border-y border-slate-100 space-y-1">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-[10px] font-medium text-muted-foreground">Rp</span>
-                      <span className="text-lg md:text-xl font-bold tracking-tight text-[#212121]">{priceDisplay.toLocaleString('id-ID')}</span>
-                      <span className="text-[9px] md:text-[10px] font-medium text-muted-foreground">/{billingCycle === "yearly" ? "tahun" : "bulan"}</span>
+                      <span className="text-xs font-semibold text-muted-foreground">Rp</span>
+                      <span className="text-2xl font-bold text-slate-900 tracking-tight">
+                        {priceDisplay.toLocaleString("id-ID")}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-medium">
+                        /{billingCycle === "yearly" ? "tahun" : "bulan"}
+                      </span>
                     </div>
-                    {billingCycle === "yearly" && (
-                      <p className="text-[8px] md:text-[9px] font-medium text-[#00AA5B] mt-0.5">
-                        Setara Rp {Math.round(plan.yearlyPrice / 12).toLocaleString('id-ID')}/bulan
+
+                    {billingCycle === "yearly" ? (
+                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                        <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-1.5 py-0.2 rounded">
+                          Setara Rp {perMonthEquivalent.toLocaleString("id-ID")}/bln
+                        </span>
+                        {savingsAmount > 0 && (
+                          <span className="text-[10px] text-muted-foreground font-medium">
+                            • Hemat Rp {savingsAmount.toLocaleString("id-ID")}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-muted-foreground font-medium">
+                        Ditagih bulanan, dapat dibatalkan kapan saja.
                       </p>
                     )}
                   </div>
-                </CardHeader>
 
-                <CardContent className="p-5 flex-1 space-y-3">
-                  <p className="text-[8px] md:text-[9px] font-medium text-muted-foreground uppercase tracking-widest">Fitur paket {plan.name}:</p>
-                  <ul className="space-y-2">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-center gap-2">
-                        <div className="w-3.5 h-3.5 rounded-full bg-green-50 flex items-center justify-center shrink-0">
-                          <Check className="w-2.5 h-2.5 text-[#00AA5B] stroke-[3]" />
-                        </div>
-                        <span className="text-[10px] md:text-[11px] font-medium text-[#2E3137]">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
+                  {/* Features List with Check and Cross Icons */}
+                  <div className="space-y-3 flex-1 pt-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Daftar Fitur Paket {plan.name}:
+                    </p>
+                    <ul className="space-y-2.5">
+                      {plan.featureItems.map((item, idx) => (
+                        <li
+                          key={idx}
+                          className={cn(
+                            "flex items-center gap-2.5 text-xs transition-colors",
+                            item.included
+                              ? "text-slate-700 font-medium"
+                              : "text-slate-400 font-normal"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "w-4 h-4 rounded-full flex items-center justify-center shrink-0",
+                              item.included
+                                ? "bg-emerald-50 text-[#00AA5B] border border-emerald-200/60"
+                                : "bg-slate-100 text-slate-400 border border-slate-200/60"
+                            )}
+                          >
+                            {item.included ? (
+                              <Check className="w-2.5 h-2.5 stroke-[2.5]" />
+                            ) : (
+                              <X className="w-2.5 h-2.5 stroke-[2.5]" />
+                            )}
+                          </div>
+                          <span className={cn(!item.included && "text-slate-400/90")}>
+                            {item.label}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
 
-                <CardFooter className="p-5 pt-0 mt-auto">
-                  <Button 
+                {/* Footer Action */}
+                <div className="p-5 md:p-6 pt-0 mt-auto">
+                  <Button
                     onClick={() => handleSelectPlan(plan)}
-                    className={cn(
-                      "w-full h-8 rounded-lg font-bold text-[10px] md:text-[11px] transition-all shadow-sm",
-                      isActive 
-                        ? "bg-slate-100 text-slate-500 border border-slate-200 cursor-default hover:bg-slate-100" 
-                        : plan.popular
-                        ? "bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white shadow-sm"
-                        : "bg-white hover:bg-slate-50 border border-border/60 text-[#212121]"
-                    )}
                     disabled={isActive}
+                    className={cn(
+                      "w-full h-9 rounded-lg font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5",
+                      isActive
+                        ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed hover:bg-slate-100 shadow-none"
+                        : isPro
+                          ? "bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white shadow-xs"
+                          : isPrime
+                            ? "bg-amber-600 hover:bg-amber-700 text-white shadow-xs"
+                            : "bg-slate-900 hover:bg-slate-800 text-white shadow-xs"
+                    )}
                   >
-                    {isActive ? "Paket toko aktif" : `Pilih paket ${plan.name}`}
+                    {isActive ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Paket Toko Aktif</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Pilih Paket {plan.name}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </>
+                    )}
                   </Button>
-                </CardFooter>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>

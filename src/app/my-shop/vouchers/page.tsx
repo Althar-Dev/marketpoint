@@ -132,6 +132,43 @@ export default function MerchantVouchersPage() {
     setFormExpiry(d.toISOString().split("T")[0]);
   }, []);
 
+  // Subscription Info
+  const [subInfo, setSubInfo] = useState<{
+    planId: string;
+    planName: string;
+    maxVouchers: number;
+    voucherAllowed: boolean;
+  }>({
+    planId: "free",
+    planName: "Gratis",
+    maxVouchers: 0,
+    voucherAllowed: false,
+  });
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    fetch(`/api/subscription?shopId=${encodeURIComponent(user.uid)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success) {
+          const sub = data.subscription;
+          const planId = sub?.planId || "free";
+          const plansList = data.plans || [];
+          const activePlan = plansList.find((p: any) => p.id === planId);
+          const maxVouchers = activePlan?.maxVouchers ?? (planId === "prime" ? -1 : planId === "pro" ? 20 : planId === "plus" ? 5 : 0);
+          const voucherAllowed = activePlan?.features?.voucherToko ?? (planId !== "free");
+
+          setSubInfo({
+            planId,
+            planName: sub?.planName || (planId === "prime" ? "Prime" : planId === "pro" ? "Pro" : planId === "plus" ? "Plus" : "Gratis"),
+            maxVouchers,
+            voucherAllowed,
+          });
+        }
+      })
+      .catch((e) => console.warn("Gagal memuat info subscription voucher:", e));
+  }, [user?.uid]);
+
   // Fetch shop products when user is loaded
   useEffect(() => {
     if (user?.uid) {
@@ -275,6 +312,24 @@ export default function MerchantVouchersPage() {
 
   // Open Create Modal
   const handleOpenCreate = () => {
+    if (!subInfo.voucherAllowed || subInfo.maxVouchers === 0) {
+      toast({
+        variant: "destructive",
+        title: "Fitur Belum Tersedia",
+        description: `Paket ${subInfo.planName} belum mengaktifkan fitur Voucher Toko. Silakan upgrade paket langganan Anda!`,
+      });
+      return;
+    }
+
+    if (subInfo.maxVouchers !== -1 && vouchers.length >= subInfo.maxVouchers) {
+      toast({
+        variant: "destructive",
+        title: "Batas Kuota Voucher Tercapai",
+        description: `Toko Anda telah mencapai batas maksimal (${subInfo.maxVouchers} voucher) pada paket ${subInfo.planName}. Upgrade ke paket yang lebih tinggi untuk menambah kuota voucher.`,
+      });
+      return;
+    }
+
     setEditingVoucher(null);
     setFormCode("");
     setFormType("percentage");
@@ -566,6 +621,16 @@ export default function MerchantVouchersPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-border/60 text-xs font-semibold text-slate-700 shadow-2xs">
+              <Ticket className="w-3.5 h-3.5 text-amber-500" />
+              <span>Kuota Voucher:</span>
+              <span className="font-extrabold text-[#00AA5B]">
+                {subInfo.maxVouchers === -1
+                  ? `${vouchers.length} / Unlimited`
+                  : `${vouchers.length} / ${subInfo.maxVouchers}`}
+              </span>
+            </div>
+
             <Button
               onClick={handleOpenCreate}
               className="h-10 px-5 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-extrabold text-white text-xs gap-2 shadow-md shadow-[#00AA5B]/20 transition-transform active:scale-95"
@@ -574,6 +639,24 @@ export default function MerchantVouchersPage() {
             </Button>
           </div>
         </div>
+
+        {/* Upgrade Alert Banner if voucher feature not allowed or 0 limit */}
+        {(!subInfo.voucherAllowed || subInfo.maxVouchers === 0) && (
+          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-between gap-3 text-xs text-amber-900 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                Toko Anda saat ini menggunakan paket <strong>{subInfo.planName}</strong> yang belum mendukung pembuatan voucher toko.
+              </span>
+            </div>
+            <a
+              href="/my-shop/subscription"
+              className="shrink-0 font-bold text-amber-800 hover:underline flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-amber-200 shadow-2xs"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Upgrade Paket
+            </a>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

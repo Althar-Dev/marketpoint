@@ -7,6 +7,13 @@ export interface CommissionSettings {
   prime: number;
 }
 
+import { 
+  PlanFeaturesConfig, 
+  PlanConfigItem, 
+  DEFAULT_PLANS_CONFIG 
+} from "@/lib/subscription-plans";
+export * from "@/lib/subscription-plans";
+
 export interface DigiFlazzSettings {
   mode: "production" | string;
   username: string;
@@ -17,15 +24,15 @@ export interface DigiFlazzSettings {
 export interface PlatformSettings {
   commissions: CommissionSettings;
   digiflazz: DigiFlazzSettings;
-  // Xendit removed from here, managed in Firestore client-side
+  plans: PlanConfigItem[];
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
   commissions: {
-    free: 5.0,
-    plus: 3.0,
-    pro: 1.5,
-    prime: 0.0,
+    free: 7.0,
+    plus: 5.0,
+    pro: 3.5,
+    prime: 2.0,
   },
   digiflazz: {
     mode: "production",
@@ -33,6 +40,7 @@ const DEFAULT_SETTINGS: PlatformSettings = {
     apiKey: process.env.DIGIFLAZZ_API_KEY || "",
     webhookSecret: process.env.DIGIFLAZZ_WEBHOOK_SECRET || "",
   },
+  plans: DEFAULT_PLANS_CONFIG,
 };
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {
@@ -47,19 +55,48 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
       map[r.key_name] = r.setting_value;
     }
 
+    const commissions: CommissionSettings = {
+      free: parseFloat(map.commission_free ?? "7.0") || 7.0,
+      plus: parseFloat(map.commission_plus ?? "5.0") || 5.0,
+      pro: parseFloat(map.commission_pro ?? "3.5") || 3.5,
+      prime: parseFloat(map.commission_prime ?? "2.0") || 2.0,
+    };
+
+    let plans: PlanConfigItem[] = DEFAULT_PLANS_CONFIG;
+    if (map.plans_config) {
+      try {
+        plans = JSON.parse(map.plans_config);
+      } catch (e) {
+        plans = DEFAULT_PLANS_CONFIG;
+      }
+    }
+
+    // Pastikan nilai baru seperti maxVouchers dan maxFlashSaleProducts terisi default jika belum ada
+    plans = plans.map(p => {
+      const def = DEFAULT_PLANS_CONFIG.find(d => d.id === p.id);
+      return {
+        ...def,
+        ...p,
+        commissionRate: commissions[p.id as keyof CommissionSettings] ?? p.commissionRate,
+        maxProducts: p.maxProducts !== undefined ? p.maxProducts : (def?.maxProducts ?? 10),
+        maxVouchers: p.maxVouchers !== undefined ? p.maxVouchers : (def?.maxVouchers ?? 0),
+        maxFlashSaleProducts: p.maxFlashSaleProducts !== undefined ? p.maxFlashSaleProducts : (def?.maxFlashSaleProducts ?? 0),
+        features: {
+          ...def?.features,
+          ...p.features,
+        },
+      };
+    });
+
     return {
-      commissions: {
-        free: parseFloat(map.commission_free ?? "5.0") || 5.0,
-        plus: parseFloat(map.commission_plus ?? "3.0") || 3.0,
-        pro: parseFloat(map.commission_pro ?? "1.5") || 1.5,
-        prime: parseFloat(map.commission_prime ?? "0.0") || 0.0,
-      },
+      commissions,
       digiflazz: {
         mode: map.digiflazz_mode || "production",
         username: map.digiflazz_username || process.env.DIGIFLAZZ_USERNAME || "",
         apiKey: map.digiflazz_api_key || process.env.DIGIFLAZZ_API_KEY || "",
         webhookSecret: map.digiflazz_webhook_secret || process.env.DIGIFLAZZ_WEBHOOK_SECRET || "",
       },
+      plans,
     };
   } catch (err) {
     console.warn("[GET PLATFORM SETTINGS WARN]", err);
@@ -85,6 +122,33 @@ export async function updateCommissionSettings(commissions: CommissionSettings):
   await updatePlatformSetting("commission_plus", String(commissions.plus));
   await updatePlatformSetting("commission_pro", String(commissions.pro));
   await updatePlatformSetting("commission_prime", String(commissions.prime));
+  
+  // Update juga plans_config jika ada
+  try {
+    const settings = await getPlatformSettings();
+    const updatedPlans = settings.plans.map(p => ({
+      ...p,
+      commissionRate: commissions[p.id as keyof CommissionSettings] ?? p.commissionRate,
+    }));
+    await updatePlatformSetting("plans_config", JSON.stringify(updatedPlans));
+  } catch {}
+
+  return true;
+}
+
+export async function updatePlansConfig(plans: PlanConfigItem[]): Promise<boolean> {
+  await updatePlatformSetting("plans_config", JSON.stringify(plans));
+
+  // Sinkronkan juga individual setting komisi
+  const freePlan = plans.find(p => p.id === "free");
+  const plusPlan = plans.find(p => p.id === "plus");
+  const proPlan = plans.find(p => p.id === "pro");
+  const primePlan = plans.find(p => p.id === "prime");
+  if (freePlan) await updatePlatformSetting("commission_free", String(freePlan.commissionRate));
+  if (plusPlan) await updatePlatformSetting("commission_plus", String(plusPlan.commissionRate));
+  if (proPlan) await updatePlatformSetting("commission_pro", String(proPlan.commissionRate));
+  if (primePlan) await updatePlatformSetting("commission_prime", String(primePlan.commissionRate));
+
   return true;
 }
 

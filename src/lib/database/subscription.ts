@@ -49,7 +49,7 @@ export async function getShopSubscription(shopId: string): Promise<ShopSubscript
     if (res.rows.length > 0) {
       const row = res.rows[0];
       const plan = (row.planId || "free") as "free" | "plus" | "pro" | "prime";
-      const rate = settings?.commissions?.[plan] ?? (plan === "prime" ? 0 : plan === "pro" ? 1.5 : plan === "plus" ? 3.0 : 5.0);
+      const rate = settings?.commissions?.[plan] ?? (plan === "prime" ? 2.0 : plan === "pro" ? 3.5 : plan === "plus" ? 5.0 : 7.0);
       return {
         ...row,
         maxProducts: Number(row.maxProducts),
@@ -61,7 +61,7 @@ export async function getShopSubscription(shopId: string): Promise<ShopSubscript
   }
 
   // Default fallback
-  const defaultRate = settings?.commissions?.free ?? 5.0;
+  const defaultRate = settings?.commissions?.free ?? 7.0;
   return {
     shopId,
     planId: "free",
@@ -112,12 +112,12 @@ export async function updateShopSubscription(
   const res = await query(sql, [shopId, planId, planName, billingCycle, maxProducts, expiresAt.toISOString()]);
   const row = res.rows[0];
 
-  let rate = 5.0;
+  let rate = 7.0;
   try {
     const settings = await getPlatformSettings();
-    rate = settings.commissions[planId] ?? (planId === "prime" ? 0 : planId === "pro" ? 1.5 : 3.0);
+    rate = settings.commissions[planId] ?? (planId === "prime" ? 2.0 : planId === "pro" ? 3.5 : 5.0);
   } catch {
-    rate = planId === "prime" ? 0 : planId === "pro" ? 1.5 : 3.0;
+    rate = planId === "prime" ? 2.0 : planId === "pro" ? 3.5 : 5.0;
   }
 
   return {
@@ -125,4 +125,48 @@ export async function updateShopSubscription(
     maxProducts: Number(row.maxProducts),
     commissionRate: rate,
   };
+}
+
+export async function getAllShopSubscriptions(): Promise<ShopSubscription[]> {
+  try {
+    await initDatabaseSchema();
+    const settings = await getPlatformSettings();
+    const sql = `
+      SELECT 
+        shop_id as "shopId", plan_id as "planId", plan_name as "planName",
+        billing_cycle as "billingCycle", max_products as "maxProducts",
+        status, subscribed_at as "subscribedAt", expires_at as "expiresAt"
+      FROM shop_subscriptions
+      ORDER BY subscribed_at DESC
+    `;
+    const res = await query(sql);
+    return res.rows.map(row => {
+      const plan = (row.planId || "free") as "free" | "plus" | "pro" | "prime";
+      const rate = settings.commissions[plan] ?? (plan === "prime" ? 2.0 : plan === "pro" ? 3.5 : plan === "plus" ? 5.0 : 7.0);
+      return {
+        ...row,
+        maxProducts: Number(row.maxProducts),
+        commissionRate: rate,
+      };
+    });
+  } catch (err) {
+    console.error("[GET ALL SUBSCRIPTIONS ERROR]", err);
+    return [];
+  }
+}
+
+export async function adminCancelShopSubscription(shopId: string): Promise<boolean> {
+  try {
+    await initDatabaseSchema();
+    const sql = `
+      UPDATE shop_subscriptions
+      SET status = 'CANCELLED'
+      WHERE shop_id = $1
+    `;
+    const res = await query(sql, [shopId]);
+    return (res.rowCount || 0) > 0;
+  } catch (err) {
+    console.error("[ADMIN CANCEL SUBSCRIPTION ERROR]", err);
+    return false;
+  }
 }

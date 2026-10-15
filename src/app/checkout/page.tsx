@@ -277,10 +277,10 @@ function CheckoutContent() {
   }, [sellerShopId]);
 
   const DEFAULT_TIER_RATES: Record<string, number> = {
-    free: 5.0,
-    plus: 3.0,
-    pro: 1.5,
-    prime: 0.0,
+    free: 7.0,
+    plus: 5.0,
+    pro: 3.5,
+    prime: 2.0,
   };
 
   const sellerPlanId = (sellerSubscription?.planId || shopData?.subscription?.planId || "free").toLowerCase();
@@ -776,7 +776,7 @@ function CheckoutContent() {
             const sTier = (invoiceData?.shopTier || sellerPlanId || "free").toLowerCase();
             const sRate = typeof invoiceData?.platformFeeRate === "number"
               ? invoiceData.platformFeeRate
-              : (typeof sellerCommissionRate === "number" ? sellerCommissionRate : (DEFAULT_TIER_RATES[sTier] ?? 5.0));
+              : (typeof sellerCommissionRate === "number" ? sellerCommissionRate : (DEFAULT_TIER_RATES[sTier] ?? 7.0));
 
             // Komisi platform yang dipungut
             const platformFee = typeof invoiceData?.platformFee === "number"
