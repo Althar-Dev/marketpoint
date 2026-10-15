@@ -24,7 +24,8 @@ import {
   UserCog,
   ChevronsUpDown,
   Check,
-  Lock
+  Lock,
+  Bot
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -85,6 +86,7 @@ export function MerchantSidebar() {
       case "/my-shop/chat":
       case "/my-shop/disputes":
       case "/my-shop/customers":
+      case "/my-shop/telegram-bot":
         return !!staffPermissions?.chat;
       case "/my-shop/reviews":
         return !!staffPermissions?.products || !!staffPermissions?.chat;
@@ -128,6 +130,7 @@ export function MerchantSidebar() {
       items: [
         { label: "Staff", icon: UserCog, href: "/my-shop/staff" },
         { label: "Pelanggan", icon: Users, href: "/my-shop/customers" },
+        { label: "Bot Telegram", icon: Bot, href: "/my-shop/telegram-bot" },
         { label: "Produk Saya", icon: Package, href: "/my-shop/products" },
         { label: "Pesanan", icon: ShoppingBag, href: "/my-shop/orders" },
       ]
@@ -283,7 +286,9 @@ export function MerchantSidebar() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-foreground truncate">{s.name}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-xs font-bold text-foreground truncate">{s.name}</p>
+                          </div>
                           <p className="text-[10px] text-muted-foreground font-medium">
                             {s.roleLabel} • @{s.slug}
                           </p>
