@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function MerchantTelegramBotPage() {
   const { user, loading: authLoading } = useUser();
