@@ -78,7 +78,7 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
         ...def,
         ...p,
         commissionRate: commissions[p.id as keyof CommissionSettings] ?? p.commissionRate,
-        maxProducts: p.maxProducts !== undefined ? p.maxProducts : (def?.maxProducts ?? 10),
+        maxProducts: p.maxProducts !== undefined ? p.maxProducts : (def?.maxProducts ?? 5),
         maxVouchers: p.maxVouchers !== undefined ? p.maxVouchers : (def?.maxVouchers ?? 0),
         maxFlashSaleProducts: p.maxFlashSaleProducts !== undefined ? p.maxFlashSaleProducts : (def?.maxFlashSaleProducts ?? 0),
         features: {

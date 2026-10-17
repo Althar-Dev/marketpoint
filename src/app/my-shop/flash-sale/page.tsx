@@ -39,15 +39,18 @@ import {
   AlertCircle,
   Percent,
   Coins,
-  Sparkles,
   ShoppingBag,
   Loader2,
   Check,
   ChevronRight,
   Eye,
+  Crown,
 } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { MerchantPlanLock } from "@/components/merchant-plan-lock";
+import { useMerchantShop } from "@/context/merchant-context";
 
 export interface FlashSaleProductItem {
   productId: string;
@@ -108,42 +111,18 @@ export default function MerchantFlashSalePage() {
   }, [db, user]);
   const { data: shop, loading: shopLoading } = useDoc(shopRef);
 
-  // Subscription Info
-  const [subInfo, setSubInfo] = useState<{
-    planId: string;
-    planName: string;
-    maxFlashSaleProducts: number;
-    flashSaleAllowed: boolean;
-  }>({
-    planId: "free",
-    planName: "Gratis",
-    maxFlashSaleProducts: 0,
-    flashSaleAllowed: false,
-  });
+  const { effectiveFeatures, isAdmin } = useMerchantShop();
 
-  useEffect(() => {
-    if (!user?.uid) return;
-    fetch(`/api/subscription?shopId=${encodeURIComponent(user.uid)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.success) {
-          const sub = data.subscription;
-          const planId = sub?.planId || "free";
-          const plansList = data.plans || [];
-          const activePlan = plansList.find((p: any) => p.id === planId);
-          const maxFlashSaleProducts = activePlan?.maxFlashSaleProducts ?? (planId === "prime" ? -1 : planId === "pro" ? 10 : planId === "plus" ? 3 : 0);
-          const flashSaleAllowed = activePlan?.features?.flashSale ?? (planId !== "free");
-
-          setSubInfo({
-            planId,
-            planName: sub?.planName || (planId === "prime" ? "Prime" : planId === "pro" ? "Pro" : planId === "plus" ? "Plus" : "Gratis"),
-            maxFlashSaleProducts,
-            flashSaleAllowed,
-          });
-        }
-      })
-      .catch((e) => console.warn("Gagal memuat info subscription flash sale:", e));
-  }, [user?.uid]);
+  // Subscription Info derived dynamically from Merchant Context
+  const subInfo = useMemo(
+    () => ({
+      planId: effectiveFeatures.planId,
+      planName: effectiveFeatures.planName,
+      maxFlashSaleProducts: effectiveFeatures.maxFlashSaleProducts,
+      flashSaleAllowed: effectiveFeatures.flashSale,
+    }),
+    [effectiveFeatures]
+  );
 
   // Shop Products (for selecting in Flash Sale)
   const [shopProducts, setShopProducts] = useState<any[]>([]);
@@ -291,6 +270,10 @@ export default function MerchantFlashSalePage() {
   // Detail Modal State (View products in session)
   const [viewingSession, setViewingSession] = useState<FlashSaleSession | null>(null);
 
+  // Upgrade Modal State
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeModalMsg, setUpgradeModalMsg] = useState("");
+
   // Helper to format ISO to datetime-local input string
   const toLocalInput = (d: Date) => {
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -305,11 +288,10 @@ export default function MerchantFlashSalePage() {
   // Open Create Modal
   const handleOpenCreate = () => {
     if (!subInfo.flashSaleAllowed || subInfo.maxFlashSaleProducts === 0) {
-      toast({
-        variant: "destructive",
-        title: "Fitur Belum Tersedia",
-        description: `Paket ${subInfo.planName} belum mendukung fitur Flash Sale Toko. Silakan upgrade paket langganan Anda!`,
-      });
+      setUpgradeModalMsg(
+        `Paket ${subInfo.planName} belum mengaktifkan fitur Flash Sale Toko. Upgrade ke paket Plus, Pro, atau Prime untuk mulai membuat promo flash sale produk.`
+      );
+      setShowUpgradeModal(true);
       return;
     }
 
@@ -353,11 +335,10 @@ export default function MerchantFlashSalePage() {
         subInfo.maxFlashSaleProducts !== -1 &&
         selectedProducts.length >= subInfo.maxFlashSaleProducts
       ) {
-        toast({
-          variant: "destructive",
-          title: "Batas Produk Flash Sale Tercapai",
-          description: `Paket ${subInfo.planName} Anda dibatasi maksimal ${subInfo.maxFlashSaleProducts} produk per event flash sale. Upgrade paket untuk kuota lebih besar!`,
-        });
+        setUpgradeModalMsg(
+          `Paket ${subInfo.planName} Anda dibatasi maksimal ${subInfo.maxFlashSaleProducts} produk per event flash sale. Tingkatkan paket toko Anda (Pro atau Prime) untuk menambahkan lebih banyak produk flash sale.`
+        );
+        setShowUpgradeModal(true);
         return;
       }
 
@@ -450,6 +431,24 @@ export default function MerchantFlashSalePage() {
         variant: "destructive",
         title: "Pilih Minimal 1 Produk",
         description: "Pilih minimal 1 produk toko untuk diikutsertakan dalam Flash Sale.",
+      });
+      return;
+    }
+
+    if (!subInfo.flashSaleAllowed || subInfo.maxFlashSaleProducts === 0) {
+      toast({
+        variant: "destructive",
+        title: "Fitur Belum Tersedia",
+        description: `Paket ${subInfo.planName} belum mendukung fitur Flash Sale Toko.`,
+      });
+      return;
+    }
+
+    if (subInfo.maxFlashSaleProducts !== -1 && selectedProducts.length > subInfo.maxFlashSaleProducts) {
+      toast({
+        variant: "destructive",
+        title: "Melebihi Batas Produk Flash Sale",
+        description: `Paket ${subInfo.planName} maksimal mengizinkan ${subInfo.maxFlashSaleProducts} produk per event flash sale.`,
       });
       return;
     }
@@ -579,6 +578,26 @@ export default function MerchantFlashSalePage() {
     );
   }
 
+  // Jika paket tidak mengizinkan flash sale (misal paket Free atau kuota 0)
+  if (!subInfo.flashSaleAllowed || subInfo.maxFlashSaleProducts === 0) {
+    return (
+      <MerchantPlanLock
+        title="Fitur Flash Sale Toko Terkunci"
+        featureName="Flash Sale Toko"
+        description="Fitur Flash Sale Toko belum aktif pada paket langganan toko Anda saat ini. Tingkatkan paket toko Anda untuk mulai menjadwalkan promo harga coret waktu terbatas."
+        currentPlan={subInfo.planName}
+        requiredPlans="Plus, Pro, atau Prime"
+        icon={Zap}
+        benefits={[
+          "Jadwalkan promo diskon harga coret otomatis dengan hitung mundur",
+          "Atur alokasi kuota stok promo khusus per produk",
+          "Mendongkrak traffic pengunjung dan penjualan kilat toko Anda",
+          "Tampil menonjol di etalase toko dengan badge flash sale eksklusif",
+        ]}
+      />
+    );
+  }
+
   return (
     <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F9FAFB] min-h-screen">
       <div className="max-w-screen-xl mx-auto space-y-6">
@@ -600,7 +619,9 @@ export default function MerchantFlashSalePage() {
               <span className="font-extrabold text-[#00AA5B]">
                 {subInfo.maxFlashSaleProducts === -1
                   ? "Unlimited"
-                  : `${subInfo.maxFlashSaleProducts} Produk / Sesi`}
+                  : subInfo.maxFlashSaleProducts === 0
+                    ? "Nonaktif (Paket Free)"
+                    : `${subInfo.maxFlashSaleProducts} Produk / Sesi`}
               </span>
             </div>
 
@@ -626,7 +647,7 @@ export default function MerchantFlashSalePage() {
               href="/my-shop/subscription"
               className="shrink-0 font-bold text-amber-800 hover:underline flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-amber-200 shadow-2xs"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Upgrade Paket
+              <Crown className="w-3.5 h-3.5 text-amber-600" /> Upgrade Plan
             </a>
           </div>
         )}
@@ -986,10 +1007,10 @@ export default function MerchantFlashSalePage() {
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                     <Package className="w-3.5 h-3.5 text-[#00AA5B]" />
-                    Pilih Produk Flash Sale ({selectedProducts.length} dipilih)
+                    Pilih Produk Flash Sale ({selectedProducts.length} / {subInfo.maxFlashSaleProducts === -1 ? "Unlimited" : subInfo.maxFlashSaleProducts} dipilih)
                   </label>
                   <span className="text-[10px] text-muted-foreground font-semibold">
-                    Minimal 1 produk
+                    Minimal 1 produk (Paket {subInfo.planName})
                   </span>
                 </div>
 
@@ -1033,7 +1054,7 @@ export default function MerchantFlashSalePage() {
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => {}}
+                            onChange={() => { }}
                             className="w-3.5 h-3.5 rounded text-[#00AA5B] accent-[#00AA5B] shrink-0 pointer-events-none"
                           />
                           <div className="w-8 h-8 rounded-md bg-slate-100 overflow-hidden shrink-0 relative border border-border/50">
@@ -1297,6 +1318,42 @@ export default function MerchantFlashSalePage() {
               {isDeleting ? "Menghapus..." : "Ya, Hapus"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Peringatan Batas Produk Flash Sale / Upgrade */}
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent className="max-w-md rounded-2xl p-6 bg-white">
+          <DialogHeader className="space-y-2">
+            <div className="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+              <Crown className="w-6 h-6 text-amber-600" />
+            </div>
+            <DialogTitle className="text-base font-black text-[#212121]">
+              {!subInfo.flashSaleAllowed || subInfo.maxFlashSaleProducts === 0
+                ? "Fitur Flash Sale Belum Tersedia"
+                : "Batas Produk Flash Sale Tercapai"}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground font-medium leading-relaxed">
+              {upgradeModalMsg}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t mt-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowUpgradeModal(false)}
+              className="rounded-xl text-xs font-bold h-9"
+            >
+              Nanti Saja
+            </Button>
+            <Link href="/my-shop/subscription" onClick={() => setShowUpgradeModal(false)}>
+              <Button
+                className="w-full sm:w-auto rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs gap-1.5 shadow-sm h-9"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                Upgrade Plan Toko
+              </Button>
+            </Link>
+          </div>
         </DialogContent>
       </Dialog>
     </main>

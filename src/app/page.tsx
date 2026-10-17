@@ -218,8 +218,8 @@ export default function MarketPage() {
                 ...p,
                 shopName: realName || fallbackName,
                 shopLogoUrl: shop?.logoUrl || shop?.logo || shop?.avatar || shop?.photoUrl || p.shopLogoUrl || "",
-                shopIsVerified: Boolean(shop?.isVerified ?? shop?.verified ?? shop?.is_verified ?? p.shopIsVerified ?? false),
-                shopIsOfficial: Boolean(shop?.isOfficial ?? shop?.official ?? shop?.is_official ?? (shop?.slug === "marketpoint" || p.shopSlug === "marketpoint") ?? p.shopIsOfficial ?? false),
+                shopIsVerified: Boolean(shop?.verified || shop?.isVerified || shop?.is_verified || shop?.subscription?.planId === "pro" || shop?.subscription?.planId === "prime" || shop?.subscription?.planId === "admin" || p.shopIsVerified),
+                shopIsOfficial: Boolean(shop?.official || shop?.isOfficial || shop?.is_official || shop?.subscription?.planId === "prime" || shop?.subscription?.planId === "admin" || shop?.slug === "marketpoint" || p.shopSlug === "marketpoint" || p.shopIsOfficial),
                 shopCity: rawCity,
                 shopFlashSales: Array.isArray(shop?.flashSales) ? shop.flashSales : [],
               };

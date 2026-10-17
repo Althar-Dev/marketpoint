@@ -21,10 +21,8 @@ export async function GET(req: Request) {
       transactions = await getDbTransactionsByShopId(shopId);
     } else if (userId) {
       transactions = await getDbTransactionsByUserId(userId);
-    }
-    
-    // Jika filter spesifik kosong atau tanpa filter, ambil seluruh transaksi
-    if (transactions.length === 0) {
+    } else {
+      // Hanya jika tidak ada parameter shopId maupun userId, ambil transaksi umum
       transactions = await getAllDbTransactions(100);
     }
     

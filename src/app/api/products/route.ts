@@ -70,7 +70,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { shopId, categoryId, title, price, shortDescription, description, images, files, stockType, stockCount, demoUrl, licenseKeys, attributes } = body;
+    const { shopId, categoryId, title, price, shortDescription, description, images, files, stockType, stockCount, demoUrl, licenseKeys, attributes, isAdmin } = body;
 
     if (!shopId || !categoryId || !title || price === undefined) {
       return NextResponse.json(
@@ -83,22 +83,26 @@ export async function POST(req: Request) {
     const existingProducts = await getProductsByShop(shopId);
 
     // Fetch shop subscription maxProducts limit from PostgreSQL
-    let maxProducts = 10;
-    try {
-      const { getShopSubscription } = await import("@/lib/database/subscription");
-      const sub = await getShopSubscription(shopId);
-      if (sub?.maxProducts !== undefined) {
-        maxProducts = sub.maxProducts;
+    let maxProducts = 5;
+    if (isAdmin === true) {
+      maxProducts = -1;
+    } else {
+      try {
+        const { getShopSubscription } = await import("@/lib/database/subscription");
+        const sub = await getShopSubscription(shopId);
+        if (sub?.maxProducts !== undefined) {
+          maxProducts = sub.maxProducts;
+        }
+      } catch (e) {
+        // Ignore fallback to default
       }
-    } catch (e) {
-      // Ignore fallback to default
     }
 
     if (maxProducts !== -1 && existingProducts.length >= maxProducts) {
       return NextResponse.json(
         {
           success: false,
-          error: `Batas kuota produk untuk paket berlangganan Anda telah tercapai (Maksimal ${maxProducts} produk). Silakan tingkatkan ke Paket Plus (50), Pro (100), atau Prime (Unlimited) di menu Subscription.`,
+          error: `Batas kuota produk untuk paket berlangganan Anda telah tercapai (Maksimal ${maxProducts} produk). Silakan tingkatkan ke Plan Plus (50), Pro (100), atau Prime (Unlimited) di menu Subscription.`,
         },
         { status: 400 }
       );

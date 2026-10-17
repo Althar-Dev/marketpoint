@@ -92,21 +92,7 @@ export default function AdminSubscriptionPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         if (data.settings?.plans && Array.isArray(data.settings.plans) && data.settings.plans.length > 0) {
-          const mergedPlans = data.settings.plans.map((p: any) => {
-            const def = DEFAULT_PLANS_CONFIG.find((d) => d.id === p.id);
-            return {
-              ...def,
-              ...p,
-              maxProducts: p.maxProducts !== undefined ? p.maxProducts : (def?.maxProducts ?? 10),
-              maxVouchers: p.maxVouchers !== undefined ? p.maxVouchers : (def?.maxVouchers ?? 0),
-              maxFlashSaleProducts: p.maxFlashSaleProducts !== undefined ? p.maxFlashSaleProducts : (def?.maxFlashSaleProducts ?? 0),
-              features: {
-                ...def?.features,
-                ...p.features,
-              },
-            };
-          });
-          setPlans(mergedPlans);
+          setPlans(data.settings.plans);
         } else {
           setPlans(DEFAULT_PLANS_CONFIG);
         }
@@ -278,7 +264,7 @@ export default function AdminSubscriptionPage() {
       if (res.ok && data.success) {
         toast({
           title: "Berhasil Disimpan",
-          description: `Konfigurasi paket ${editingPlan.name} berhasil diperbarui!`,
+          description: `Konfigurasi plan ${editingPlan.name} berhasil diperbarui!`,
         });
         if (data.settings?.plans) {
           setPlans(data.settings.plans);
@@ -319,7 +305,7 @@ export default function AdminSubscriptionPage() {
       if (res.ok && data.success) {
         toast({
           title: "Berhasil Disimpan",
-          description: "Pengaturan paket langganan dan tarif komisi berhasil diperbarui!",
+          description: "Pengaturan plan langganan dan tarif komisi berhasil diperbarui!",
         });
         if (data.settings?.plans) {
           setPlans(data.settings.plans);
@@ -344,7 +330,7 @@ export default function AdminSubscriptionPage() {
 
   // Reset to Default
   const handleReset = () => {
-    if (confirm("Apakah Anda yakin ingin mengembalikan seluruh paket ke pengaturan standar sistem?")) {
+    if (confirm("Apakah Anda yakin ingin mengembalikan seluruh plan ke pengaturan standar sistem?")) {
       setPlans(DEFAULT_PLANS_CONFIG);
       toast({
         title: "Reset Berhasil",
@@ -401,10 +387,10 @@ export default function AdminSubscriptionPage() {
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-[#212121] flex items-center gap-2">
             <Crown className="w-5 h-5 text-amber-500" />
-            Manajemen Paket & Komisi Toko
+            Manajemen Plan & Komisi Toko
           </h1>
           <p className="text-xs text-muted-foreground font-medium mt-0.5">
-            Atur tarif komisi, batas produk, harga paket, dan fitur eksklusif untuk setiap level toko.
+            Atur tarif komisi, batas produk, harga plan, dan fitur eksklusif untuk setiap level toko.
           </p>
         </div>
 
@@ -447,7 +433,7 @@ export default function AdminSubscriptionPage() {
       <Tabs value={activeTab} onValueChange={(val: any) => setActiveTab(val)} className="space-y-5">
         <TabsList className="bg-white border border-border/60 p-1 rounded-xl shadow-2xs h-auto">
           <TabsTrigger value="plans" className="rounded-lg text-xs font-bold data-[state=active]:bg-[#00AA5B] data-[state=active]:text-white gap-2 py-1.5 px-3">
-            <Layers className="w-3.5 h-3.5" /> Konfigurasi 4 Paket
+            <Layers className="w-3.5 h-3.5" /> Konfigurasi 4 Plan
           </TabsTrigger>
           <TabsTrigger value="subscriptions" className="rounded-lg text-xs font-bold data-[state=active]:bg-[#00AA5B] data-[state=active]:text-white gap-2 py-1.5 px-3">
             <Users className="w-3.5 h-3.5" /> Toko Berlangganan
@@ -484,7 +470,7 @@ export default function AdminSubscriptionPage() {
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Paket Plus</p>
+                  <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Plan Plus</p>
                   <p className="text-sm font-bold text-blue-950 mt-0.5">
                     {plans.find((p) => p.id === "plus")?.commissionRate ?? 5}% Komisi
                   </p>
@@ -498,7 +484,7 @@ export default function AdminSubscriptionPage() {
                   <Rocket className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Paket Pro</p>
+                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Plan Pro</p>
                   <p className="text-sm font-bold text-emerald-950 mt-0.5">
                     {plans.find((p) => p.id === "pro")?.commissionRate ?? 3.5}% Komisi
                   </p>
@@ -512,7 +498,7 @@ export default function AdminSubscriptionPage() {
                   <Crown className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wider">Paket Prime</p>
+                  <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wider">Plan Prime</p>
                   <p className="text-sm font-bold text-amber-950 mt-0.5">
                     {plans.find((p) => p.id === "prime")?.commissionRate ?? 2}% Komisi
                   </p>
@@ -607,7 +593,7 @@ export default function AdminSubscriptionPage() {
                         {isFree ? (
                           <div>
                             <div className="flex items-baseline gap-1.5">
-                              <span className="text-xl font-extrabold text-[#212121]">Gratis</span>
+                              <span className="text-xl font-extrabold text-[#212121]">Free</span>
                               <span className="text-xs text-muted-foreground font-medium">Selamanya</span>
                             </div>
                             <div className="text-[11px] text-muted-foreground font-medium mt-0.5">
@@ -768,7 +754,7 @@ export default function AdminSubscriptionPage() {
                       variant="outline"
                       className="w-full h-9 rounded-xl border-border/80 hover:border-[#00AA5B] hover:bg-[#00AA5B]/5 hover:text-[#00AA5B] font-bold text-xs gap-1.5 transition-all shadow-2xs"
                     >
-                      <Edit3 className="w-3.5 h-3.5 text-[#00AA5B]" /> Edit Paket
+                      <Edit3 className="w-3.5 h-3.5 text-[#00AA5B]" /> Edit Plan
                     </Button>
                   </div>
                 </Card>
@@ -776,7 +762,7 @@ export default function AdminSubscriptionPage() {
             })}
           </div>
 
-          {/* ── MODAL EDIT KONFIGURASI PAKET ───────────────────────────────── */}
+          {/* ── MODAL EDIT KONFIGURASI PLAN ───────────────────────────────── */}
           <Dialog open={isModalOpen} onOpenChange={(open) => {
             if (!open) {
               setIsModalOpen(false);
@@ -810,7 +796,7 @@ export default function AdminSubscriptionPage() {
                       </div>
                     </div>
                     <DialogTitle className="text-lg font-extrabold text-[#212121] mt-1.5">
-                      Edit Konfigurasi Paket: {editingPlan.name}
+                      Edit Konfigurasi Plan: {editingPlan.name}
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
                       Sesuaikan nama, tarif komisi, batas produk, harga, fitur khusus, dan poin tampilan kartu.
@@ -826,7 +812,7 @@ export default function AdminSubscriptionPage() {
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-700">Nama Paket</Label>
+                          <Label className="text-xs font-semibold text-slate-700">Nama Plan</Label>
                           <Input
                             value={editingPlan.name}
                             onChange={(e) => handleModalFieldChange("name", e.target.value)}
@@ -1104,7 +1090,7 @@ export default function AdminSubscriptionPage() {
                             <Layers className="w-3.5 h-3.5 text-[#00AA5B]" /> 5. Poin Tampilan Kartu
                           </h4>
                           <p className="text-[11px] text-muted-foreground mt-0.5">
-                            Daftar poin yang tampil di kartu penawaran paket calon merchant.
+                            Daftar poin yang tampil di kartu penawaran Plan calon merchant.
                           </p>
                         </div>
                         <Button
@@ -1125,7 +1111,7 @@ export default function AdminSubscriptionPage() {
                               value={feat}
                               onChange={(e) => handleUpdateModalCustomFeature(idx, e.target.value)}
                               className="h-8 text-xs rounded-lg"
-                              placeholder="Poin keunggulan paket..."
+                              placeholder="Poin keunggulan Plan..."
                             />
                             <button
                               type="button"
@@ -1203,10 +1189,10 @@ export default function AdminSubscriptionPage() {
                 onChange={(e) => setFilterPlan(e.target.value)}
                 className="h-8 px-2.5 text-xs font-bold rounded-lg border border-border/60 bg-white"
               >
-                <option value="all">Semua Paket</option>
-                <option value="plus">Paket Plus</option>
-                <option value="pro">Paket Pro</option>
-                <option value="prime">Paket Prime</option>
+                <option value="all">Semua Plan</option>
+                <option value="plus">Plan Plus</option>
+                <option value="pro">Plan Pro</option>
+                <option value="prime">Plan Prime</option>
               </select>
             </div>
 
@@ -1349,7 +1335,7 @@ export default function AdminSubscriptionPage() {
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-[#212121]">Paket {p.name}</span>
+                        <span className="text-xs font-bold text-[#212121]">Plan {p.name}</span>
                         <Badge variant="outline" className="text-[9px] font-bold py-0 h-4">
                           {p.commissionRate}%
                         </Badge>

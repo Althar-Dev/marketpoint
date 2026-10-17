@@ -295,7 +295,7 @@ export default function ProfilePage() {
             </Link>
           </Button>
           <Button variant="outline" className="h-8 rounded-xl justify-between px-3.5 font-bold text-[10px] border-border hover:bg-muted/50">
-            <span>Daftar Affiliate</span>
+            <span>Daftar Buyer</span>
             <ChevronRight className="w-3 h-3 opacity-40" />
           </Button>
         </div>

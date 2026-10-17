@@ -65,10 +65,10 @@ export default function OfficialPage() {
         rawProducts = rawProducts.map((p: any) => {
           const shop = sMap[p.shopId];
           const isVerified = Boolean(
-            shop?.isVerified ?? shop?.verified ?? shop?.is_verified ?? p.shopIsVerified ?? false
+            shop?.verified || shop?.isVerified || shop?.is_verified || shop?.subscription?.planId === "pro" || shop?.subscription?.planId === "prime" || shop?.subscription?.planId === "admin" || p.shopIsVerified
           );
           const isOfficial = Boolean(
-            shop?.isOfficial ?? shop?.official ?? shop?.is_official ?? (shop?.slug === "marketpoint" || p.shopSlug === "marketpoint") ?? p.shopIsOfficial ?? false
+            shop?.official || shop?.isOfficial || shop?.is_official || shop?.subscription?.planId === "prime" || shop?.subscription?.planId === "admin" || shop?.slug === "marketpoint" || p.shopSlug === "marketpoint" || p.shopIsOfficial
           );
           return {
             ...p,

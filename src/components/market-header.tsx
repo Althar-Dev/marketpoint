@@ -105,8 +105,8 @@ export function MarketHeader() {
               slug: data.slug || docSnap.id,
               city: rawCity || "Jakarta Pusat",
               logo: data.logoUrl || data.photoURL || data.logo,
-              isVerified: Boolean(data.isVerified ?? data.verified ?? data.is_verified ?? true),
-              isOfficial: Boolean(data.isOfficial ?? data.official ?? data.is_official ?? data.isOfficialStore ?? (data.slug === "marketpoint" || docSnap.id === "marketpoint" || true)),
+              isVerified: Boolean(data.verified || data.isVerified || data.is_verified || data.subscription?.planId === "pro" || data.subscription?.planId === "prime" || data.subscription?.planId === "admin"),
+              isOfficial: Boolean(data.official || data.isOfficial || data.is_official || data.isOfficialStore || data.subscription?.planId === "prime" || data.subscription?.planId === "admin" || data.slug === "marketpoint" || docSnap.id === "marketpoint"),
               ratingAvg: data.ratingAvg || data.rating || 0,
             };
           });

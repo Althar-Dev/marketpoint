@@ -454,8 +454,23 @@ export default function ShopProfilePage() {
     }
   };
 
-  const isVerified = Boolean(shop.isVerified ?? shop.verified ?? shop.is_verified);
-  const isOfficial = Boolean(shop.isOfficial ?? shop.official ?? shop.is_official);
+  const isVerified = Boolean(
+    shop.verified || 
+    shop.isVerified || 
+    shop.is_verified || 
+    shop?.subscription?.planId === "pro" || 
+    shop?.subscription?.planId === "prime" ||
+    shop?.subscription?.planId === "admin"
+  );
+  const isOfficial = Boolean(
+    shop.official || 
+    shop.isOfficial || 
+    shop.is_official || 
+    shop?.subscription?.planId === "prime" ||
+    shop?.subscription?.planId === "admin" ||
+    shop?.slug === "marketpoint" || 
+    shop?.id === "marketpoint"
+  );
 
   const handleShare = () => {
     if (typeof window !== 'undefined' && navigator.share) {

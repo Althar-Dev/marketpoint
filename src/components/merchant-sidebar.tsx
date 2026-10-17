@@ -25,8 +25,17 @@ import {
   ChevronsUpDown,
   Check,
   Lock,
-  Bot
+  Bot,
+  Crown
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,10 +74,14 @@ export function MerchantSidebar() {
     staffRoleLabel,
     staffPermissions,
     availableShops,
-    switchShop
+    switchShop,
+    isAdmin,
+    isFullAdminUnlock,
+    effectiveFeatures,
   } = useMerchantShop();
 
   const checkItemAccess = (href: string) => {
+    if (isAdmin) return true;
     if (isOwner || staffRole === "CO_OWNER") return true;
 
     switch (href) {
@@ -97,6 +110,58 @@ export function MerchantSidebar() {
         return false;
       default:
         return true;
+    }
+  };
+
+  const [showUpgradeModal, setShowUpgradeModal] = React.useState(false);
+  const [upgradeTarget, setUpgradeTarget] = React.useState<{
+    label: string;
+    href: string;
+    description: string;
+    requiredPlans: string;
+  } | null>(null);
+
+  const isPlanFeatureLocked = (href: string) => {
+    if (href === "/my-shop/vouchers") return !effectiveFeatures.voucherToko;
+    if (href === "/my-shop/flash-sale") return !effectiveFeatures.flashSale;
+    if (href === "/my-shop/telegram-bot") return !effectiveFeatures.telegramBot;
+    return false;
+  };
+
+  const getLockedFeatureDetails = (item: { label: string; href: string }) => {
+    switch (item.href) {
+      case "/my-shop/vouchers":
+        return {
+          label: "Voucher Toko",
+          href: item.href,
+          description:
+            "Buat kode voucher promo diskon dan potongan harga khusus toko Anda untuk memikat calon pembeli dan meningkatkan omset.",
+          requiredPlans: "Plus, Pro, atau Prime",
+        };
+      case "/my-shop/flash-sale":
+        return {
+          label: "Flash Sale Toko",
+          href: item.href,
+          description:
+            "Jadwalkan promo diskon harga coret dengan hitung mundur waktu terbatas untuk mempercepat perputaran produk toko Anda.",
+          requiredPlans: "Plus, Pro, atau Prime",
+        };
+      case "/my-shop/telegram-bot":
+        return {
+          label: "Bot Telegram Toko",
+          href: item.href,
+          description:
+            "Koneksikan bot Telegram resmi toko untuk menerima notifikasi pesanan baru, pembayaran lunas, dan kendala komplain seketika di ponsel Anda.",
+          requiredPlans: "Pro atau Prime",
+        };
+      default:
+        return {
+          label: item.label,
+          href: item.href,
+          description:
+            "Fitur ini memerlukan paket langganan yang lebih tinggi untuk dapat digunakan pada toko Anda.",
+          requiredPlans: "Plus, Pro, atau Prime",
+        };
     }
   };
 
@@ -195,15 +260,57 @@ export function MerchantSidebar() {
                     );
                   }
 
+                  const isLockedByPlan = isPlanFeatureLocked(item.href);
+
+                  if (isLockedByPlan) {
+                    return (
+                      <SidebarMenuItem key={item.label}>
+                        <SidebarMenuButton
+                          tooltip={`${item.label} (Terkunci - Klik untuk Upgrade)`}
+                          onClick={() => {
+                            setUpgradeTarget(getLockedFeatureDetails(item));
+                            setShowUpgradeModal(true);
+                          }}
+                          className={cn(
+                            "flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer group/item hover:bg-amber-50/50",
+                            isActive ? "text-[#00AA5B] bg-[#00AA5B]/5" : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <item.icon className="h-4 w-4 shrink-0 text-muted-foreground group-hover/item:text-foreground transition-colors" />
+                            <span className="text-[11px] font-semibold truncate">{item.label}</span>
+                          </div>
+                          {state !== "collapsed" && (
+                            <span
+                              title="Terkunci - Klik untuk Upgrade Plan"
+                              className="flex items-center justify-center w-4 h-4 rounded-md bg-amber-50 border border-amber-200/80 text-amber-600 shrink-0 shadow-2xs group-hover/item:border-amber-300 group-hover/item:scale-105 transition-transform"
+                            >
+                              <Lock className="w-2.5 h-2.5 stroke-[2.5]" />
+                            </span>
+                          )}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  }
+
                   return (
                     <SidebarMenuItem key={item.label}>
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                        <Link href={item.href} className={cn(
-                          "flex items-center gap-2.5 px-3 py-1.5 transition-colors",
-                          isActive ? "text-[#00AA5B] bg-[#00AA5B]/5" : "text-muted-foreground hover:text-foreground"
-                        )}>
-                          <item.icon className={cn("h-4 w-4", isActive && "text-[#00AA5B]")} />
-                          <span className="text-[11px] font-semibold">{item.label}</span>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.label}
+                      >
+                        <Link
+                          href={item.href}
+                          className={cn(
+                            "flex items-center justify-between px-3 py-1.5 transition-colors group/item",
+                            isActive ? "text-[#00AA5B] bg-[#00AA5B]/5" : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <item.icon className={cn("h-4 w-4 shrink-0", isActive && "text-[#00AA5B]")} />
+                            <span className="text-[11px] font-semibold truncate">{item.label}</span>
+                          </div>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -322,6 +429,58 @@ export function MerchantSidebar() {
           )
         )}
       </SidebarFooter>
+
+      {/* Modal Dialog Upgrade Plan saat menu terkunci ditekan */}
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent className="max-w-md rounded-2xl p-6 bg-white border border-border shadow-xl">
+          <DialogHeader className="space-y-2">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-600 shadow-2xs">
+              <Crown className="w-6 h-6 text-amber-600" />
+            </div>
+            <DialogTitle className="text-base font-extrabold text-[#212121]">
+              Fitur {upgradeTarget?.label || "Ini"} Terkunci
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground font-medium leading-relaxed">
+              {upgradeTarget?.description || "Fitur ini memerlukan paket langganan yang lebih tinggi untuk dapat digunakan pada toko Anda."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 text-xs space-y-2 my-1">
+            <div className="flex items-center justify-between text-slate-600">
+              <span className="font-medium">Plan Toko Saat Ini:</span>
+              <span className="font-extrabold text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+                {effectiveFeatures.planName}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-slate-600">
+              <span className="font-medium">Mulai Tersedia Pada:</span>
+              <span className="font-extrabold text-amber-700 bg-amber-50/80 px-2 py-0.5 rounded-md border border-amber-200 shadow-2xs">
+                Paket {upgradeTarget?.requiredPlans}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t mt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowUpgradeModal(false)}
+              className="rounded-xl text-xs font-bold h-9 px-4"
+            >
+              Nanti Saja
+            </Button>
+            <Link href="/my-shop/subscription" onClick={() => setShowUpgradeModal(false)}>
+              <Button
+                type="button"
+                className="w-full sm:w-auto rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-extrabold text-xs gap-1.5 shadow-md shadow-[#00AA5B]/20 h-9 px-4"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                Upgrade Plan Toko
+              </Button>
+            </Link>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Sidebar>
   );
 }

@@ -269,8 +269,23 @@ export default function ProductDetailPage() {
     return getProductActiveFlashSale(product.id, shop.flashSales, nowTime);
   }, [product?.id, shop?.flashSales, nowTime]);
 
-  const isVerified = Boolean(shop?.isVerified ?? shop?.verified ?? shop?.is_verified);
-  const isOfficial = Boolean(shop?.isOfficial ?? shop?.official ?? shop?.is_official);
+  const isVerified = Boolean(
+    shop?.verified || 
+    shop?.isVerified || 
+    shop?.is_verified || 
+    shop?.subscription?.planId === "pro" || 
+    shop?.subscription?.planId === "prime" ||
+    shop?.subscription?.planId === "admin"
+  );
+  const isOfficial = Boolean(
+    shop?.official || 
+    shop?.isOfficial || 
+    shop?.is_official || 
+    shop?.subscription?.planId === "prime" ||
+    shop?.subscription?.planId === "admin" ||
+    shop?.slug === "marketpoint" || 
+    shop?.id === "marketpoint"
+  );
 
   const handleShare = async () => {
     if (typeof window === "undefined") return;

@@ -17,7 +17,6 @@ import {
   Loader2,
   Check,
   X,
-  Sparkles,
   ChevronLeft,
   CreditCard,
   Wallet,
@@ -33,6 +32,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useMerchantShop } from "@/context/merchant-context";
 
 export interface PlanFeatureItem {
   label: string;
@@ -97,8 +97,8 @@ function buildPlanFeatureItems(
     (vouchers === -1
       ? "Unlimited Voucher toko"
       : vouchers > 0
-      ? `Max ${vouchers} Voucher toko`
-      : "Voucher diskon toko");
+        ? `Max ${vouchers} Voucher toko`
+        : "Voucher diskon toko");
   const voucherIncluded = vouchers !== 0 && (featConfig.voucherToko ?? true);
 
   // 4. Core metric: Flash Sale
@@ -107,18 +107,18 @@ function buildPlanFeatureItems(
     (flash === -1
       ? "Unlimited Flash sale"
       : flash > 0
-      ? `Max ${flash} Flash sale`
-      : "Flash sale");
+        ? `Max ${flash} Flash sale`
+        : "Flash sale");
   const flashIncluded = flash !== 0 && (featConfig.flashSale ?? true);
 
   // 5. Core metric: Statistik
   const statistikLabel =
     findCustom("statistik") ||
     (p.id === "prime"
-      ? "Statistik Lengkap & Ekspor Laporan"
+      ? "Statistik Semua Waktu & Ekspor Laporan (CSV, Excel, Word, PDF)"
       : p.id === "pro"
-      ? "Statistik Lanjutan"
-      : "Statistik dasar & Produk terlaris");
+        ? "Statistik Riwayat 30 Hari & Tren"
+        : "Statistik Dasar 7 Hari");
 
   const coreItems: PlanFeatureItem[] = [
     { label: komisiLabel, included: true },
@@ -341,7 +341,7 @@ function getPlans(commissions: Record<string, number>): PlanItem[] {
         "Max 3 Flash sale",
         "Badge verified",
         "Bot Telegram",
-        "Statistik Lanjutan",
+        "Statistik riwayat 30 hari & tren",
       ],
     },
     {
@@ -438,6 +438,7 @@ export default function MerchantSubscriptionPage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const { isAdmin, activePlanId, isFullAdminUnlock, switchShopPlan, shopId: contextShopId } = useMerchantShop();
 
   const [mounted, setMounted] = useState(false);
   const [view, setView] = useState<"plans" | "checkout">("plans");
@@ -484,7 +485,7 @@ export default function MerchantSubscriptionPage() {
 
   const activeSubscription = dbSubscription || shop?.subscription || {
     planId: "free",
-    planName: "Gratis",
+    planName: "Free",
     billingCycle: "monthly",
     maxProducts: 10,
     commissionRate: commissions.free ?? 7.0,
@@ -547,11 +548,12 @@ export default function MerchantSubscriptionPage() {
 
     setIsSubmitting(true);
     try {
+      const targetShopId = contextShopId || user.uid;
       const res = await fetch("/api/subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          shopId: user.uid,
+          shopId: targetShopId,
           planId: selectedPlan.id,
           billingCycle,
         }),
@@ -563,9 +565,18 @@ export default function MerchantSubscriptionPage() {
       }
 
       if (data.subscription) {
+        await switchShopPlan(selectedPlan.id);
         setDbSubscription(data.subscription);
         if (db && user) {
-          updateDoc(doc(db, "shops", user.uid), {
+          const targetShopId = contextShopId || user.uid;
+          const isVerified = selectedPlan.id === "pro" || selectedPlan.id === "prime";
+          const isOfficial = selectedPlan.id === "prime";
+
+          updateDoc(doc(db, "shops", targetShopId), {
+            verified: isVerified,
+            isVerified: isVerified,
+            official: isOfficial,
+            isOfficial: isOfficial,
             subscription: {
               planId: data.subscription.planId,
               planName: data.subscription.planName,
@@ -575,7 +586,7 @@ export default function MerchantSubscriptionPage() {
               status: "ACTIVE",
               expiresAt: data.subscription.expiresAt,
             }
-          }).catch(() => { });
+          }).catch((err) => console.warn("Failed to sync badges to Firestore:", err));
         }
       }
 
@@ -765,10 +776,50 @@ export default function MerchantSubscriptionPage() {
     <main className="p-3 md:p-6 lg:p-8 space-y-5 md:space-y-6 bg-[#F9FAFB] min-h-screen">
       <div className="max-w-5xl mx-auto space-y-6">
 
+        {/* Administrator Access Banner */}
+        {isAdmin && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 flex items-start sm:items-center justify-between gap-4 shadow-2xs">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-amber-950 flex items-center gap-2">
+                  Hak Akses Administrator Toko
+                  <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500 text-white font-black uppercase shadow-2xs">
+                    {activePlanId === "admin" ? "Admin Full Unlock" : `Paket: ${activePlanId.toUpperCase()}`}
+                  </span>
+                </p>
+                <p className="text-[11px] text-amber-900/80 font-medium mt-0.5">
+                  {activePlanId === "admin"
+                    ? "Akun Anda memiliki hak Administrator (Full Unlock) ke seluruh fitur dan kuota toko langsung di database. Anda juga dapat memilih salah satu paket di bawah untuk langsung mengubah data paket toko secara nyata."
+                    : `Paket aktif saat ini adalah ${activePlanId.toUpperCase()}. Kuota dan akses fitur toko berjalan sesuai paket ini.`}
+                </p>
+              </div>
+            </div>
+            {activePlanId !== "admin" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  await switchShopPlan("admin");
+                  toast({
+                    title: "Paket Diperbarui",
+                    description: "Paket toko berhasil dikembalikan ke Admin Full Unlock di database.",
+                  });
+                }}
+                className="shrink-0 h-8 text-xs font-bold border-amber-400/60 bg-amber-500/10 hover:bg-amber-500/20 text-amber-950 rounded-xl cursor-pointer"
+              >
+                Reset ke Admin Full Unlock
+              </Button>
+            )}
+          </div>
+        )}
+
         {/* Hero Header & Period Toggle */}
         <div className="text-center space-y-2.5 max-w-xl mx-auto">
           <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/80 text-[#00AA5B] font-semibold text-[10px] md:text-[11px] px-3 py-0.5 rounded-full shadow-2xs">
-            <Sparkles className="w-3 h-3 text-[#00AA5B]" />
+            <Crown className="w-3 h-3 text-[#00AA5B]" />
             Paket Berlangganan & Fitur Toko
           </div>
           <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#212121]">
@@ -818,25 +869,25 @@ export default function MerchantSubscriptionPage() {
         <div className="bg-white border border-slate-200/80 rounded-xl p-3.5 md:p-4 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 max-w-2xl mx-auto">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-emerald-50 text-[#00AA5B] flex items-center justify-center shrink-0 border border-emerald-100">
-              <Zap className="w-4 h-4" />
+              <Crown className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-800">
-                  Paket Aktif: Paket {activeSubscription.planName || "Gratis"}
+                  Paket Aktif: {activePlanId === "admin" ? "Admin Full Unlock" : `Paket ${(activeSubscription.planName || activePlanId).toUpperCase()}`}
                 </span>
                 <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold px-2 py-0.2 rounded-full">
-                  <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" /> Aktif
+                  <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" /> Aktif di Database
                 </span>
               </div>
               <p className="text-[11px] text-muted-foreground font-medium mt-0.5">
-                Tarif komisi platform: <span className="font-bold text-[#00AA5B]">{activeSubscription.commissionRate ?? (commissions[activeSubscription.planId] ?? commissions.free ?? 7)}%</span> • Batas produk: <span className="font-semibold text-slate-800">{activeSubscription.maxProducts === -1 ? "Unlimited" : `${activeSubscription.maxProducts} produk`}</span>
+                Tarif komisi platform: <span className="font-bold text-[#00AA5B]">{activePlanId === "admin" ? "0%" : `${activeSubscription.commissionRate ?? (commissions[activePlanId] ?? 7)}%`}</span> • Batas produk: <span className="font-semibold text-slate-800">{activePlanId === "admin" || activeSubscription.maxProducts === -1 ? "Unlimited" : `${activeSubscription.maxProducts} produk`}</span>
               </p>
             </div>
           </div>
-          {activeSubscription.planId === "free" && (
+          {activePlanId === "free" && (
             <div className="text-[11px] text-muted-foreground bg-slate-50 border border-slate-200/60 px-2.5 py-1 rounded-md font-medium shrink-0">
-              Upgrade untuk fitur promo & otomatisasi
+              Tingkatkan paket untuk fitur promo & otomatisasi
             </div>
           )}
         </div>
@@ -844,7 +895,7 @@ export default function MerchantSubscriptionPage() {
         {/* 3 Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 items-stretch pt-2">
           {plans.map((plan) => {
-            const isActive = activeSubscription.planId === plan.id;
+            const isActive = activePlanId === plan.id;
             const priceDisplay = billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
             const perMonthEquivalent = billingCycle === "yearly" ? Math.round(plan.yearlyPrice / 12) : plan.monthlyPrice;
             const monthlyCostTotal = plan.monthlyPrice * 12;
@@ -995,32 +1046,67 @@ export default function MerchantSubscriptionPage() {
 
                 {/* Footer Action */}
                 <div className="p-5 md:p-6 pt-0 mt-auto">
-                  <Button
-                    onClick={() => handleSelectPlan(plan)}
-                    disabled={isActive}
-                    className={cn(
-                      "w-full h-9 rounded-lg font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5",
-                      isActive
-                        ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed hover:bg-slate-100 shadow-none"
-                        : isPro
-                          ? "bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white shadow-xs"
-                          : isPrime
-                            ? "bg-amber-600 hover:bg-amber-700 text-white shadow-xs"
-                            : "bg-slate-900 hover:bg-slate-800 text-white shadow-xs"
-                    )}
-                  >
-                    {isActive ? (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Paket Toko Aktif</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Pilih Paket {plan.name}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </>
-                    )}
-                  </Button>
+                  {isAdmin ? (
+                    <Button
+                      onClick={async () => {
+                        await switchShopPlan(plan.id);
+                        toast({
+                          title: `Paket ${plan.name} Diaktifkan`,
+                          description: `Paket toko di database berhasil diubah ke ${plan.name}.`,
+                        });
+                      }}
+                      disabled={isActive}
+                      className={cn(
+                        "w-full h-9 rounded-lg font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer",
+                        isActive
+                          ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed hover:bg-slate-100 shadow-none"
+                          : isPro
+                            ? "bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white shadow-xs"
+                            : isPrime
+                              ? "bg-amber-600 hover:bg-amber-700 text-white shadow-xs"
+                              : "bg-slate-900 hover:bg-slate-800 text-white shadow-xs"
+                      )}
+                    >
+                      {isActive ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Paket Aktif</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Aktifkan Paket {plan.name}</span>
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => handleSelectPlan(plan)}
+                      disabled={isActive}
+                      className={cn(
+                        "w-full h-9 rounded-lg font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer",
+                        isActive
+                          ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed hover:bg-slate-100 shadow-none"
+                          : isPro
+                            ? "bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white shadow-xs"
+                            : isPrime
+                              ? "bg-amber-600 hover:bg-amber-700 text-white shadow-xs"
+                              : "bg-slate-900 hover:bg-slate-800 text-white shadow-xs"
+                      )}
+                    >
+                      {isActive ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Paket Aktif</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Pilih Paket {plan.name}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
             );

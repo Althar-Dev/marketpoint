@@ -43,8 +43,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Trash2, Globe, FileText, Image as ImageIcon, CheckCircle2, Repeat, Key, Sparkles, Layers, X, Upload, MoreVertical, Pencil } from "lucide-react";
+import { Loader2, Plus, Trash2, Globe, FileText, Image as ImageIcon, CheckCircle2, Repeat, Key, Award, Layers, X, Upload, MoreVertical, Pencil, Crown, AlertCircle } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface ProductCategory {
   id: number;
@@ -105,10 +106,19 @@ export default function MerchantProductsPage() {
 
   // Modal State
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showQuotaExceededDialog, setShowQuotaExceededDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const [productToDelete, setProductToDelete] = useState<ProductItem | null>(null);
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
+
+  // Subscription & Quota State
+  const [shopSubscription, setShopSubscription] = useState<{
+    planId: "free" | "plus" | "pro" | "prime";
+    planName: string;
+    maxProducts: number;
+    commissionRate?: number;
+  } | null>(null);
 
   // Form State
   const [formTitle, setFormTitle] = useState("");
@@ -158,6 +168,9 @@ export default function MerchantProductsPage() {
     isStaff,
     staffRole,
     staffPermissions,
+    isAdmin,
+    isFullAdminUnlock,
+    effectiveFeatures,
   } = useMerchantShop();
   const activeShopId = shopId || user?.uid;
 
@@ -177,12 +190,25 @@ export default function MerchantProductsPage() {
     fetchCategories();
   }, []);
 
-  // Fetch Products when activeShopId is available
+  // Fetch Products & Subscription when activeShopId is available
   useEffect(() => {
     if (activeShopId) {
       fetchProducts(activeShopId);
+      fetchSubscription(activeShopId);
     }
   }, [activeShopId]);
+
+  const fetchSubscription = async (sid: string) => {
+    try {
+      const res = await fetch(`/api/subscription?shopId=${sid}`);
+      const data = await res.json();
+      if (res.ok && data.subscription) {
+        setShopSubscription(data.subscription);
+      }
+    } catch (err) {
+      console.warn("Gagal mengambil status langganan toko:", err);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -493,6 +519,7 @@ export default function MerchantProductsPage() {
           ...(editingProduct?.attributes || {}),
           variants: validVariants,
         },
+        isAdmin: isFullAdminUnlock,
       };
 
       if (isEditMode && editingProduct) {
@@ -587,6 +614,25 @@ export default function MerchantProductsPage() {
   const outOfStockCount = products.filter((p) => p.stockType === "SINGLE_USE" && p.stockCount === 0).length;
   const totalSalesCount = products.reduce((sum, p) => sum + Number(p.salesCount || 0), 0);
 
+  // Quota & Plan details dynamically sourced from Merchant Context
+  const activePlanId = (effectiveFeatures.planId || "free") as "free" | "plus" | "pro" | "prime";
+  const activePlanName = effectiveFeatures.planName;
+  const maxProductsLimit = effectiveFeatures.maxProducts;
+
+  const totalProductsCount = products.length;
+  const isUnlimited = maxProductsLimit === -1;
+  const isQuotaFull = !isUnlimited && totalProductsCount >= maxProductsLimit;
+  const quotaPercentage = isUnlimited ? 0 : Math.min(100, Math.round((totalProductsCount / maxProductsLimit) * 100));
+
+  const handleOpenAddProduct = () => {
+    if (isQuotaFull) {
+      setShowQuotaExceededDialog(true);
+      return;
+    }
+    resetForm();
+    setShowAddDialog(true);
+  };
+
   if (!mounted || authLoading || shopLoading) {
     return (
       <div className="p-4 md:p-6 lg:p-8 space-y-6">
@@ -615,8 +661,13 @@ export default function MerchantProductsPage() {
           <div className="flex gap-2">
             {canManageProducts ? (
               <Button
-                onClick={() => setShowAddDialog(true)}
-                className="h-10 px-5 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-bold text-white text-xs gap-2 shadow-md shadow-[#00AA5B]/10 active:scale-[0.98] transition-all"
+                onClick={handleOpenAddProduct}
+                className={cn(
+                  "h-10 px-5 rounded-xl font-bold text-white text-xs gap-2 shadow-md active:scale-[0.98] transition-all",
+                  isQuotaFull
+                    ? "bg-amber-600 hover:bg-amber-700 shadow-amber-600/15"
+                    : "bg-[#00AA5B] hover:bg-[#00AA5B]/90 shadow-[#00AA5B]/10"
+                )}
               >
                 <Plus className="w-4 h-4" /> Tambah Produk
               </Button>
@@ -627,6 +678,111 @@ export default function MerchantProductsPage() {
             )}
           </div>
         </div>
+
+        {/* Product Quota & Plan Status Card */}
+        <Card className={cn(
+          "border-[1.5px] rounded-2xl overflow-hidden transition-all shadow-sm",
+          isQuotaFull
+            ? "border-rose-300 bg-gradient-to-r from-rose-50/70 via-white to-rose-50/40"
+            : quotaPercentage >= 80
+              ? "border-amber-300 bg-gradient-to-r from-amber-50/70 via-white to-amber-50/40"
+              : "border-border bg-white"
+        )}>
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className={cn(
+                  "p-2.5 rounded-xl shrink-0 flex items-center justify-center",
+                  activePlanId === "prime"
+                    ? "bg-amber-100 text-amber-700"
+                    : activePlanId === "pro"
+                      ? "bg-purple-100 text-purple-700"
+                      : activePlanId === "plus"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-700"
+                )}>
+                  {activePlanId === "prime" ? (
+                    <Crown className="w-5 h-5 text-amber-600 fill-amber-600" />
+                  ) : activePlanId === "pro" ? (
+                    <Award className="w-5 h-5 text-purple-600" />
+                  ) : (
+                    <Layers className="w-5 h-5 text-blue-600" />
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-black text-[#212121] tracking-tight">
+                      Kuota Produk Toko
+                    </span>
+                    <Badge className={cn(
+                      "text-[10px] font-bold px-2 py-0.5 rounded-full border-none",
+                      activePlanId === "prime"
+                        ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white"
+                        : activePlanId === "pro"
+                          ? "bg-purple-600 text-white"
+                          : activePlanId === "plus"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200 text-gray-700"
+                    )}>
+                      Paket {activePlanName}
+                    </Badge>
+                    {isQuotaFull && (
+                      <Badge variant="destructive" className="text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+                        Kuota Penuh
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {isUnlimited ? (
+                      <span>Toko Anda memiliki kuota produk <strong>tanpa batas</strong> (Unlimited) untuk memaksimalkan seluruh katalog.</span>
+                    ) : (
+                      <span>
+                        Telah digunakan <strong>{totalProductsCount}</strong> dari <strong>{maxProductsLimit}</strong> produk maksimal ({quotaPercentage}%).
+                        {isQuotaFull ? " Toko tidak dapat menambah produk baru sampai paket di-upgrade." : ""}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                {!isUnlimited && (
+                  <div className="w-full sm:w-44 space-y-1.5">
+                    <div className="flex justify-between text-[11px] font-bold text-muted-foreground">
+                      <span>Kapasitas</span>
+                      <span className={cn(isQuotaFull ? "text-rose-600" : quotaPercentage >= 80 ? "text-amber-600" : "text-[#00AA5B]")}>
+                        {totalProductsCount} / {maxProductsLimit}
+                      </span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-muted/60 overflow-hidden">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all duration-500",
+                          isQuotaFull ? "bg-rose-500" : quotaPercentage >= 80 ? "bg-amber-500" : "bg-[#00AA5B]"
+                        )}
+                        style={{ width: `${quotaPercentage}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <Link href="/my-shop/subscription">
+                  <Button
+                    variant={isQuotaFull ? "destructive" : "outline"}
+                    size="sm"
+                    className={cn(
+                      "w-full sm:w-auto h-9 px-3.5 rounded-xl text-xs font-bold gap-1.5 transition-all shadow-2xs",
+                      !isQuotaFull && "hover:border-[#00AA5B] hover:text-[#00AA5B] bg-white"
+                    )}
+                  >
+                    <Icon icon="ph:arrow-up-right-bold" className="w-3.5 h-3.5" />
+                    {isQuotaFull ? "Upgrade Plan" : activePlanId === "prime" ? "Detail Langganan" : "Tingkatkan Kuota"}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats Grid - 4 Columns */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1096,6 +1252,45 @@ export default function MerchantProductsPage() {
               {isDeletingProduct ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
               Hapus Produk
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Peringatan Kuota Produk Penuh */}
+      <Dialog
+        open={showQuotaExceededDialog}
+        onOpenChange={setShowQuotaExceededDialog}
+      >
+        <DialogContent className="max-w-md rounded-2xl p-6 bg-white">
+          <DialogHeader className="space-y-2">
+            <div className="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+              <AlertCircle className="w-6 h-6 text-amber-600" />
+            </div>
+            <DialogTitle className="text-base font-black text-[#212121]">
+              Batas Kuota Produk Tercapai
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground font-medium leading-relaxed">
+              Toko Anda saat ini telah mencapai batas maksimal <strong className="text-[#212121]">{maxProductsLimit} produk</strong> pada <strong className="text-[#212121]">Paket {activePlanName}</strong> ({totalProductsCount}/{maxProductsLimit} produk).
+              <br /><br />
+              Tingkatkan paket toko Anda ke paket lebih tinggi untuk menambah produk tanpa kendala, menikmati biaya komisi lebih rendah, dan fitur eksklusif lainnya.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t mt-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowQuotaExceededDialog(false)}
+              className="rounded-xl text-xs font-bold h-9"
+            >
+              Nanti Saja
+            </Button>
+            <Link href="/my-shop/subscription" onClick={() => setShowQuotaExceededDialog(false)}>
+              <Button
+                className="w-full sm:w-auto rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs gap-1.5 shadow-sm h-9"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                Upgrade Plan Toko
+              </Button>
+            </Link>
           </div>
         </DialogContent>
       </Dialog>

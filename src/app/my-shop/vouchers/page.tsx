@@ -50,13 +50,16 @@ import {
   AlertCircle,
   Search,
   Check,
-  Sparkles,
   ShoppingBag,
   Store,
   Package,
+  Crown,
 } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { MerchantPlanLock } from "@/components/merchant-plan-lock";
+import { useMerchantShop } from "@/context/merchant-context";
 
 export interface VoucherItem {
   id: string;
@@ -124,6 +127,10 @@ export default function MerchantVouchersPage() {
   // Copied indicator
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Upgrade Modal State
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeModalMsg, setUpgradeModalMsg] = useState("");
+
   useEffect(() => {
     setMounted(true);
     // Default expiry 30 days from now
@@ -132,42 +139,18 @@ export default function MerchantVouchersPage() {
     setFormExpiry(d.toISOString().split("T")[0]);
   }, []);
 
-  // Subscription Info
-  const [subInfo, setSubInfo] = useState<{
-    planId: string;
-    planName: string;
-    maxVouchers: number;
-    voucherAllowed: boolean;
-  }>({
-    planId: "free",
-    planName: "Gratis",
-    maxVouchers: 0,
-    voucherAllowed: false,
-  });
+  const { effectiveFeatures, isAdmin } = useMerchantShop();
 
-  useEffect(() => {
-    if (!user?.uid) return;
-    fetch(`/api/subscription?shopId=${encodeURIComponent(user.uid)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.success) {
-          const sub = data.subscription;
-          const planId = sub?.planId || "free";
-          const plansList = data.plans || [];
-          const activePlan = plansList.find((p: any) => p.id === planId);
-          const maxVouchers = activePlan?.maxVouchers ?? (planId === "prime" ? -1 : planId === "pro" ? 20 : planId === "plus" ? 5 : 0);
-          const voucherAllowed = activePlan?.features?.voucherToko ?? (planId !== "free");
-
-          setSubInfo({
-            planId,
-            planName: sub?.planName || (planId === "prime" ? "Prime" : planId === "pro" ? "Pro" : planId === "plus" ? "Plus" : "Gratis"),
-            maxVouchers,
-            voucherAllowed,
-          });
-        }
-      })
-      .catch((e) => console.warn("Gagal memuat info subscription voucher:", e));
-  }, [user?.uid]);
+  // Subscription Info derived dynamically from Merchant Context
+  const subInfo = useMemo(
+    () => ({
+      planId: effectiveFeatures.planId,
+      planName: effectiveFeatures.planName,
+      maxVouchers: effectiveFeatures.maxVouchers,
+      voucherAllowed: effectiveFeatures.voucherToko,
+    }),
+    [effectiveFeatures]
+  );
 
   // Fetch shop products when user is loaded
   useEffect(() => {
@@ -313,20 +296,18 @@ export default function MerchantVouchersPage() {
   // Open Create Modal
   const handleOpenCreate = () => {
     if (!subInfo.voucherAllowed || subInfo.maxVouchers === 0) {
-      toast({
-        variant: "destructive",
-        title: "Fitur Belum Tersedia",
-        description: `Paket ${subInfo.planName} belum mengaktifkan fitur Voucher Toko. Silakan upgrade paket langganan Anda!`,
-      });
+      setUpgradeModalMsg(
+        `Paket ${subInfo.planName} belum mengaktifkan fitur Voucher Toko. Upgrade Plan toko Anda (Plus, Pro, atau Prime) untuk mulai membuat kode kupon promosi menarik.`
+      );
+      setShowUpgradeModal(true);
       return;
     }
 
     if (subInfo.maxVouchers !== -1 && vouchers.length >= subInfo.maxVouchers) {
-      toast({
-        variant: "destructive",
-        title: "Batas Kuota Voucher Tercapai",
-        description: `Toko Anda telah mencapai batas maksimal (${subInfo.maxVouchers} voucher) pada paket ${subInfo.planName}. Upgrade ke paket yang lebih tinggi untuk menambah kuota voucher.`,
-      });
+      setUpgradeModalMsg(
+        `Toko Anda telah mencapai batas maksimal kuota ${subInfo.maxVouchers} voucher pada paket ${subInfo.planName}. Tingkatkan ke paket yang lebih tinggi untuk menambah kuota voucher.`
+      );
+      setShowUpgradeModal(true);
       return;
     }
 
@@ -420,6 +401,15 @@ export default function MerchantVouchersPage() {
     const selectedProductNames = shopProducts
       .filter((p) => selectedProductIds.includes(String(p.id)))
       .map((p) => p.title);
+
+    if (!editingVoucher && subInfo.maxVouchers !== -1 && vouchers.length >= subInfo.maxVouchers) {
+      toast({
+        variant: "destructive",
+        title: "Batas Kuota Voucher Tercapai",
+        description: `Toko Anda telah mencapai batas maksimal (${subInfo.maxVouchers} voucher) pada paket ${subInfo.planName}.`,
+      });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -606,6 +596,26 @@ export default function MerchantVouchersPage() {
     );
   }
 
+  // Jika paket tidak mengizinkan voucher toko (misal paket Free atau kuota 0)
+  if (!subInfo.voucherAllowed || subInfo.maxVouchers === 0) {
+    return (
+      <MerchantPlanLock
+        title="Fitur Voucher Toko Terkunci"
+        featureName="Voucher Toko"
+        description="Fitur pembuatan voucher promo toko belum aktif pada paket langganan toko Anda saat ini. Tingkatkan paket toko Anda untuk mulai membagikan diskon belanja dan memikat pembeli."
+        currentPlan={subInfo.planName}
+        requiredPlans="Plus, Pro, atau Prime"
+        icon={Ticket}
+        benefits={[
+          "Buat voucher diskon persentase (%) atau potongan nominal tetap (Rp)",
+          "Bisa berlaku untuk semua produk atau produk pilihan tertentu",
+          "Atur batas kuota pemakaian dan masa aktif promo secara fleksibel",
+          "Meningkatkan konversi checkout dan repeat order pembeli",
+        ]}
+      />
+    );
+  }
+
   return (
     <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F9FAFB] min-h-screen">
       <div className="max-w-screen-xl mx-auto space-y-6">
@@ -627,7 +637,9 @@ export default function MerchantVouchersPage() {
               <span className="font-extrabold text-[#00AA5B]">
                 {subInfo.maxVouchers === -1
                   ? `${vouchers.length} / Unlimited`
-                  : `${vouchers.length} / ${subInfo.maxVouchers}`}
+                  : subInfo.maxVouchers === 0
+                    ? "Nonaktif (Paket Free)"
+                    : `${vouchers.length} / ${subInfo.maxVouchers}`}
               </span>
             </div>
 
@@ -653,7 +665,7 @@ export default function MerchantVouchersPage() {
               href="/my-shop/subscription"
               className="shrink-0 font-bold text-amber-800 hover:underline flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-amber-200 shadow-2xs"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Upgrade Paket
+              <Crown className="w-3.5 h-3.5 text-amber-600" /> Upgrade Plan
             </a>
           </div>
         )}
@@ -1297,7 +1309,7 @@ export default function MerchantVouchersPage() {
                                 <input
                                   type="checkbox"
                                   checked={isChecked}
-                                  onChange={() => {}}
+                                  onChange={() => { }}
                                   className="w-3.5 h-3.5 rounded text-[#00AA5B] accent-[#00AA5B] shrink-0 pointer-events-none"
                                 />
                                 <div className="w-8 h-8 rounded-md bg-slate-100 overflow-hidden shrink-0 relative border border-border/50">
@@ -1351,7 +1363,7 @@ export default function MerchantVouchersPage() {
               <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200/60 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-emerald-700 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-[#00AA5B]" /> Pratinjau Tampilan Voucher:
+                    <Ticket className="w-3 h-3 text-[#00AA5B]" /> Pratinjau Tampilan Voucher:
                   </span>
                   <Badge className="bg-[#00AA5B] text-white text-[9px] px-2 py-0 border-none">
                     {formCode.trim().toUpperCase() || "KODE"}
@@ -1453,6 +1465,40 @@ export default function MerchantVouchersPage() {
               Hapus
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Peringatan Kuota Voucher / Upgrade */}
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent className="max-w-md rounded-2xl p-6 bg-white">
+          <DialogHeader className="space-y-2">
+            <div className="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+              <Crown className="w-6 h-6 text-amber-600" />
+            </div>
+            <DialogTitle className="text-base font-black text-[#212121]">
+              {!subInfo.voucherAllowed || subInfo.maxVouchers === 0 ? "Fitur Voucher Belum Tersedia" : "Batas Kuota Voucher Tercapai"}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground font-medium leading-relaxed">
+              {upgradeModalMsg}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t mt-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowUpgradeModal(false)}
+              className="rounded-xl text-xs font-bold h-9"
+            >
+              Nanti Saja
+            </Button>
+            <Link href="/my-shop/subscription" onClick={() => setShowUpgradeModal(false)}>
+              <Button
+                className="w-full sm:w-auto rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 text-white font-bold text-xs gap-1.5 shadow-sm h-9"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                Upgrade Plan Toko
+              </Button>
+            </Link>
+          </div>
         </DialogContent>
       </Dialog>
     </main>

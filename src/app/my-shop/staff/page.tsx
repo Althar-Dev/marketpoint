@@ -339,7 +339,7 @@ export default function MerchantAdminsPage() {
               avatar: staffAvatar,
               ...(staffName && !raw.name ? { name: staffName } : {}),
               ...(staffPhone && !raw.phone ? { phone: staffPhone } : {})
-            }).catch(() => {});
+            }).catch(() => { });
           }
 
           staffList.push({
@@ -431,7 +431,7 @@ export default function MerchantAdminsPage() {
     if (admins.length >= 10) {
       toast({
         title: "Batas Kuota Tercapai",
-        description: "Tokomu telah mencapai batas maksimal 10 admin. Silakan upgrade paket toko di tab Kuota.",
+        description: "Tokomu telah mencapai batas maksimal 10 admin. Silakan Upgrade Plan toko di tab Kuota.",
         variant: "destructive",
       });
       return;
@@ -512,7 +512,7 @@ export default function MerchantAdminsPage() {
               updatedAt: serverTimestamp(),
             });
           }
-        } catch (_) {}
+        } catch (_) { }
 
         const logsCol = collection(db, "shops", activeShopId, "audit_logs");
         await addDoc(logsCol, {
@@ -636,7 +636,7 @@ export default function MerchantAdminsPage() {
             if (!uSnap.empty) {
               initialAvatar = uSnap.docs[0].data()?.photoURL || "";
             }
-          } catch (_) {}
+          } catch (_) { }
 
           initialAvatar = resolveStaffAvatar(initialAvatar, formEmail.trim(), "");
 
@@ -1615,7 +1615,7 @@ export default function MerchantAdminsPage() {
                       </div>
                       <Progress value={(totalAdminCount / 10) * 100} className="h-2 bg-muted" />
                       <p className="text-[10px] text-muted-foreground pt-0.5">
-                        Sisa {10 - totalAdminCount} slot admin pada paket saat ini.
+                        Sisa {10 - totalAdminCount} slot admin pada plan saat ini.
                       </p>
                     </div>
 
@@ -1623,7 +1623,7 @@ export default function MerchantAdminsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                       <div className="p-3 rounded-xl border border-border bg-background space-y-1">
                         <span className="text-[10px] font-bold text-muted-foreground">Toko Reguler</span>
-                        <p className="text-base font-bold text-foreground">Gratis</p>
+                        <p className="text-base font-bold text-foreground">Free</p>
                         <p className="text-[10px] text-muted-foreground leading-tight">• Maksimal 2 Admin</p>
                       </div>
 

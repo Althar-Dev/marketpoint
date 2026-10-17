@@ -31,7 +31,7 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
     monthlyPrice: 0,
     yearlyPrice: 0,
     commissionRate: 7.0,
-    maxProducts: 10,
+    maxProducts: 5,
     maxVouchers: 0,
     maxFlashSaleProducts: 0,
     features: {
@@ -43,7 +43,7 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
       resellerApi: false,
       prioritySupport: false,
     },
-    customFeatures: ["Hingga 10 produk", "Komisi 7.0%", "Fitur dasar toko"]
+    customFeatures: ["Komisi 7.0%", "Max 5 Produk", "Statistik dasar toko"]
   },
   {
     id: "plus",
@@ -52,9 +52,9 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
     monthlyPrice: 29000,
     yearlyPrice: 290000,
     commissionRate: 5.0,
-    maxProducts: 30,
-    maxVouchers: 5,
-    maxFlashSaleProducts: 3,
+    maxProducts: 15,
+    maxVouchers: 2,
+    maxFlashSaleProducts: 1,
     features: {
       voucherToko: true,
       flashSale: true,
@@ -64,7 +64,7 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
       resellerApi: false,
       prioritySupport: false,
     },
-    customFeatures: ["Hingga 30 produk", "Komisi 5.0%", "Hingga 5 voucher toko", "Hingga 3 produk flash sale"]
+    customFeatures: ["Komisi 5.0%", "Max 15 Produk", "Max 2 Voucher toko", "Max 1 Flash sale", "Statistik dasar & Produk terlaris"]
   },
   {
     id: "pro",
@@ -73,9 +73,9 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
     monthlyPrice: 49000,
     yearlyPrice: 490000,
     commissionRate: 3.5,
-    maxProducts: 60,
-    maxVouchers: 20,
-    maxFlashSaleProducts: 10,
+    maxProducts: 40,
+    maxVouchers: 5,
+    maxFlashSaleProducts: 3,
     popular: true,
     features: {
       voucherToko: true,
@@ -86,7 +86,7 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
       resellerApi: false,
       prioritySupport: false,
     },
-    customFeatures: ["Hingga 60 produk", "Komisi 3.5%", "Hingga 20 voucher toko", "Hingga 10 produk flash sale", "Badge verified", "Bot Telegram"]
+    customFeatures: ["Komisi 3.5%", "Max 40 Produk", "Max 5 Voucher toko", "Max 3 Flash sale", "Badge verified", "Bot Telegram", "Statistik riwayat 30 hari & Tren"]
   },
   {
     id: "prime",
@@ -96,8 +96,8 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
     yearlyPrice: 2490000,
     commissionRate: 2.0,
     maxProducts: -1,
-    maxVouchers: -1,
-    maxFlashSaleProducts: -1,
+    maxVouchers: 15,
+    maxFlashSaleProducts: 10,
     features: {
       voucherToko: true,
       flashSale: true,
@@ -107,6 +107,46 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
       resellerApi: true,
       prioritySupport: true,
     },
-    customFeatures: ["Unlimited produk", "Komisi 2.0%", "Unlimited voucher toko", "Unlimited flash sale", "Badge official", "Bot Telegram", "API reseller", "Prioritas support"]
+    customFeatures: ["Komisi 2.0%", "Unlimited produk", "Max 15 Voucher toko", "Max 10 Flash sale", "Badge official", "Bot Telegram", "Statistik lengkap semua waktu & Ekspor laporan", "API Reseller / Public Provider", "Prioritas support"]
   }
 ];
+
+/**
+ * Mengambil daftar konfigurasi paket langganan secara dinamis dari database (platform_settings).
+ * - Sisi Server (Node / Next.js Server Components / API Route): langsung membaca dari PostgreSQL platform_settings.
+ * - Sisi Klien (Browser / Client Components): mengambil via endpoint /api/subscription.
+ * Database selalu menjadi sumber kebenaran (source of truth) utama, bukan data statis.
+ */
+export async function getSubscriptionPlans(): Promise<PlanConfigItem[]> {
+  if (typeof window === "undefined") {
+    try {
+      const { getPlatformSettings } = await import("@/lib/database/settings");
+      const settings = await getPlatformSettings();
+      if (settings?.plans && Array.isArray(settings.plans) && settings.plans.length > 0) {
+        return settings.plans;
+      }
+    } catch (e) {
+      console.warn("[SUBSCRIPTION PLANS] Gagal query platform_settings:", e);
+    }
+  } else {
+    try {
+      const res = await fetch("/api/subscription");
+      const data = await res.json();
+      if (data.success && Array.isArray(data.plans) && data.plans.length > 0) {
+        return data.plans;
+      }
+    } catch (e) {
+      console.warn("[SUBSCRIPTION PLANS] Gagal fetch /api/subscription:", e);
+    }
+  }
+  return DEFAULT_PLANS_CONFIG;
+}
+
+/**
+ * Mengambil satu paket langganan spesifik berdasarkan id ("free" | "plus" | "pro" | "prime") dari database.
+ */
+export async function getPlanConfig(planId: string): Promise<PlanConfigItem | undefined> {
+  const plans = await getSubscriptionPlans();
+  return plans.find((p) => p.id === planId);
+}
+

@@ -70,7 +70,7 @@ export async function POST(req: Request) {
       const subscription = await updateShopSubscription(shopId, planId, billingCycle || "monthly");
       return NextResponse.json({
         success: true,
-        message: `Paket toko berhasil diperbarui ke ${subscription.planName}.`,
+        message: `Plan toko berhasil diperbarui ke ${subscription.planName}.`,
         subscription,
       });
     }

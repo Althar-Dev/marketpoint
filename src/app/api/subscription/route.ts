@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Field shopId dan planId wajib diisi." }, { status: 400 });
     }
 
-    const validPlanIds = ["plus", "pro", "prime"];
+    const validPlanIds = ["free", "plus", "pro", "prime", "admin"];
     if (!validPlanIds.includes(planId)) {
       return NextResponse.json({ success: false, error: "Paket berlangganan tidak valid." }, { status: 400 });
     }
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Berhasil berlangganan Paket ${subscription.planName} (${cycle === "yearly" ? "Tahunan" : "Bulanan"}).`,
+      message: `Berhasil mengubah paket toko ke ${subscription.planName}.`,
       subscription,
     });
   } catch (error: any) {

@@ -30,6 +30,38 @@ export interface AvailableShop {
   shopData: any;
 }
 
+export type ShopPlanTier = "admin" | "free" | "plus" | "pro" | "prime";
+
+export interface EffectiveFeatures {
+  planId: string;
+  planName: string;
+  maxProducts: number;
+  maxVouchers: number;
+  maxFlashSaleProducts: number;
+  voucherToko: boolean;
+  flashSale: boolean;
+  telegramBot: boolean;
+  hasAdvancedStats: boolean;
+  has30DaysStats: boolean;
+  hasAllTimeStats: boolean;
+  commissionRate: number;
+}
+
+export const DEFAULT_EFFECTIVE_FEATURES: EffectiveFeatures = {
+  planId: "free",
+  planName: "Free",
+  maxProducts: 5,
+  maxVouchers: 0,
+  maxFlashSaleProducts: 0,
+  voucherToko: false,
+  flashSale: false,
+  telegramBot: false,
+  hasAdvancedStats: false,
+  has30DaysStats: false,
+  hasAllTimeStats: false,
+  commissionRate: 7.0,
+};
+
 export interface MerchantContextValue {
   shopId: string | null;
   shop: any | null;
@@ -42,6 +74,11 @@ export interface MerchantContextValue {
   availableShops: AvailableShop[];
   switchShop: (targetShopId: string) => Promise<void>;
   refreshShop: () => Promise<void>;
+  isAdmin: boolean;
+  isFullAdminUnlock: boolean;
+  activePlanId: ShopPlanTier;
+  switchShopPlan: (targetPlan: ShopPlanTier) => Promise<void>;
+  effectiveFeatures: EffectiveFeatures;
 }
 
 const MerchantContext = createContext<MerchantContextValue>({
@@ -56,6 +93,11 @@ const MerchantContext = createContext<MerchantContextValue>({
   availableShops: [],
   switchShop: async () => {},
   refreshShop: async () => {},
+  isAdmin: false,
+  isFullAdminUnlock: false,
+  activePlanId: "free",
+  switchShopPlan: async () => {},
+  effectiveFeatures: DEFAULT_EFFECTIVE_FEATURES,
 });
 
 export function MerchantProvider({ children }: { children: React.ReactNode }) {
@@ -72,6 +114,119 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
   const [staffPermissions, setStaffPermissions] = useState<StaffPermissions | null>(null);
   const [availableShops, setAvailableShops] = useState<AvailableShop[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Admin & Real Subscription State
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [actualSubscription, setActualSubscription] = useState<any>(null);
+  const [plansList, setPlansList] = useState<any[]>([]);
+
+  // Function to actually switch the shop plan in PostgreSQL database
+  const switchShopPlan = useCallback(
+    async (targetPlan: ShopPlanTier) => {
+      const targetId = shopId || user?.uid;
+      if (!targetId) return;
+
+      try {
+        const res = await fetch("/api/subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            shopId: targetId,
+            planId: targetPlan,
+            billingCycle: "monthly",
+          }),
+        });
+        const data = await res.json();
+        if (data.success && data.subscription) {
+          setActualSubscription(data.subscription);
+        }
+
+        if (db) {
+          const isVerified = targetPlan === "pro" || targetPlan === "prime" || targetPlan === "admin";
+          const isOfficial = targetPlan === "prime" || targetPlan === "admin";
+          updateDoc(doc(db, "shops", targetId), {
+            verified: isVerified,
+            isVerified: isVerified,
+            official: isOfficial,
+            isOfficial: isOfficial,
+            "subscription.planId": targetPlan,
+            "subscription.planName": data?.subscription?.planName || (targetPlan === "prime" ? "Prime" : targetPlan === "pro" ? "Pro" : targetPlan === "plus" ? "Plus" : targetPlan === "admin" ? "Admin Full Unlock" : "Free"),
+            "subscription.status": "ACTIVE",
+          }).catch((err) => console.warn("Failed to sync plan badges to Firestore:", err));
+        }
+      } catch (err) {
+        console.error("Gagal mengubah paket toko di database:", err);
+      }
+    },
+    [shopId, user?.uid, db]
+  );
+
+  // Listen to user document for admin: true
+  useEffect(() => {
+    if (!user || !db) {
+      setIsAdmin(false);
+      return;
+    }
+    const unsub = onSnapshot(
+      doc(db, "users", user.uid),
+      (snap) => {
+        if (snap.exists()) {
+          const uData = snap.data();
+          setIsAdmin(uData?.admin === true);
+        } else {
+          setIsAdmin(false);
+        }
+      },
+      (err) => {
+        console.warn("Error listening to user admin status:", err);
+      }
+    );
+    return () => unsub();
+  }, [user, db]);
+
+  // Load shop subscription & available plans for dynamic limit resolution
+  useEffect(() => {
+    const targetId = shopId || user?.uid;
+    if (!targetId) return;
+    fetch(`/api/subscription?shopId=${encodeURIComponent(targetId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success) {
+          setActualSubscription(data.subscription);
+          if (Array.isArray(data.plans)) {
+            setPlansList(data.plans);
+          }
+        }
+      })
+      .catch((e) => console.warn("Error fetching merchant subscription context:", e));
+  }, [shopId, user?.uid]);
+
+  // Auto-sync Firestore verified & official fields with active plan in PostgreSQL
+  useEffect(() => {
+    if (!db || !user || !actualSubscription?.planId) return;
+    const targetId = shopId || user.uid;
+    const currentPlan = actualSubscription.planId;
+    const isVerified = currentPlan === "pro" || currentPlan === "prime" || currentPlan === "admin";
+    const isOfficial = currentPlan === "prime" || currentPlan === "admin";
+
+    if (
+      shop &&
+      (Boolean(shop.verified) !== isVerified ||
+       Boolean(shop.isVerified) !== isVerified ||
+       Boolean(shop.official) !== isOfficial ||
+       Boolean(shop.isOfficial) !== isOfficial)
+    ) {
+      updateDoc(doc(db, "shops", targetId), {
+        verified: isVerified,
+        isVerified: isVerified,
+        official: isOfficial,
+        isOfficial: isOfficial,
+        "subscription.planId": currentPlan,
+        "subscription.planName": actualSubscription.planName || (currentPlan === "prime" ? "Prime" : currentPlan === "pro" ? "Pro" : currentPlan === "plus" ? "Plus" : currentPlan === "admin" ? "Admin Full Unlock" : "Free"),
+        "subscription.status": "ACTIVE",
+      }).catch((err) => console.warn("Auto-sync shop badges to Firestore warning:", err));
+    }
+  }, [db, user, shopId, shop, actualSubscription]);
 
   const resolveMerchant = useCallback(
     async (overrideShopId?: string) => {
@@ -305,6 +460,72 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user, db, resolveMerchant]);
 
+  const rawPlanId = actualSubscription?.planId;
+  const isFullAdminUnlock = isAdmin && (!rawPlanId || rawPlanId === "admin");
+  const activePlanId = (rawPlanId || (isAdmin ? "admin" : "free")) as ShopPlanTier;
+
+  const effectiveFeatures = useMemo<EffectiveFeatures>(() => {
+    if (activePlanId === "admin" || (isAdmin && !rawPlanId)) {
+      return {
+        planId: "admin",
+        planName: "Admin Full Unlock",
+        maxProducts: -1,
+        maxVouchers: -1,
+        maxFlashSaleProducts: -1,
+        voucherToko: true,
+        flashSale: true,
+        telegramBot: true,
+        hasAdvancedStats: true,
+        has30DaysStats: true,
+        hasAllTimeStats: true,
+        commissionRate: 0.0,
+      };
+    }
+
+    const targetPlanConfig = plansList.find((p) => p.id === activePlanId);
+    const isPrime = activePlanId === "prime";
+    const isPro = activePlanId === "pro";
+    const isPlus = activePlanId === "plus";
+    const isFree = activePlanId === "free";
+
+    const maxProducts = typeof targetPlanConfig?.maxProducts === "number"
+      ? targetPlanConfig.maxProducts
+      : (typeof actualSubscription?.maxProducts === "number" ? actualSubscription.maxProducts : (isPrime ? -1 : isPro ? 40 : isPlus ? 15 : 5));
+
+    const maxVouchers = typeof targetPlanConfig?.maxVouchers === "number"
+      ? targetPlanConfig.maxVouchers
+      : (isPrime ? 15 : isPro ? 5 : isPlus ? 2 : 0);
+
+    const maxFlashSaleProducts = typeof targetPlanConfig?.maxFlashSaleProducts === "number"
+      ? targetPlanConfig.maxFlashSaleProducts
+      : (isPrime ? 10 : isPro ? 3 : isPlus ? 1 : 0);
+
+    const voucherToko = targetPlanConfig?.features?.voucherToko ?? (!isFree && maxVouchers > 0);
+    const flashSale = targetPlanConfig?.features?.flashSale ?? (!isFree && maxFlashSaleProducts > 0);
+    const telegramBot = targetPlanConfig?.features?.telegramBot ?? (isPro || isPrime);
+    const has30DaysStats = isPro || isPrime;
+    const hasAllTimeStats = isPrime;
+    const hasAdvancedStats = isPro || isPrime;
+    const commissionRate = typeof targetPlanConfig?.commissionRate === "number"
+      ? targetPlanConfig.commissionRate
+      : (actualSubscription?.commissionRate ?? (isPrime ? 2.0 : isPro ? 3.5 : isPlus ? 5.0 : 7.0));
+
+    return {
+      planId: activePlanId,
+      planName: targetPlanConfig?.name || actualSubscription?.planName || (isPrime ? "Prime" : isPro ? "Pro" : isPlus ? "Plus" : "Free"),
+      maxProducts,
+      maxVouchers,
+      maxFlashSaleProducts,
+      voucherToko,
+      flashSale,
+      telegramBot,
+      hasAdvancedStats,
+      has30DaysStats,
+      hasAllTimeStats,
+      commissionRate,
+    };
+  }, [isAdmin, rawPlanId, activePlanId, actualSubscription, plansList]);
+
   const value = useMemo(
     () => ({
       shopId,
@@ -320,6 +541,11 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
       refreshShop: async () => {
         await resolveMerchant();
       },
+      isAdmin,
+      isFullAdminUnlock,
+      activePlanId,
+      switchShopPlan,
+      effectiveFeatures,
     }),
     [
       shopId,
@@ -334,6 +560,11 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
       availableShops,
       switchShop,
       resolveMerchant,
+      isAdmin,
+      isFullAdminUnlock,
+      activePlanId,
+      switchShopPlan,
+      effectiveFeatures,
     ]
   );
 
