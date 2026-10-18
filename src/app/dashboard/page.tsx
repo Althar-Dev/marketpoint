@@ -24,7 +24,8 @@ import {
   History,
   MessageCircle,
   Package,
-  ChevronRight
+  ChevronRight,
+  Store
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
