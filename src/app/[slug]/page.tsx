@@ -288,36 +288,6 @@ export default function ShopProfilePage() {
     }
   }, [shop?.id, shop?.ownerId, slug, shopReviewSort]);
 
-  // Auto-sync real photoURL from Firestore into reviews in PostgreSQL if duck was previously stored
-  useEffect(() => {
-    if (!user || !userData?.photoURL || userData.photoURL.includes("duck") || shopReviews.length === 0) return;
-    const userReview = shopReviews.find(
-      (r) =>
-        !r.isAnonymous &&
-        (r.userId === user.uid || r.userId === user.email || r.userName === userData.displayName) &&
-        (!r.userAvatar || r.userAvatar.includes("duck") || r.userAvatar !== userData.photoURL)
-    );
-    if (userReview) {
-      fetch("/api/reviews", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          transactionId: userReview.transactionId || userReview.invoiceNumber || userReview.id,
-          userAvatar: userData.photoURL,
-          userName: userData.displayName || undefined,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            setShopReviews((prev) =>
-              prev.map((r) => (r.id === userReview.id ? { ...r, userAvatar: userData.photoURL } : r))
-            );
-          }
-        })
-        .catch(() => {});
-    }
-  }, [user, userData?.photoURL, userData?.displayName, shopReviews]);
 
   // Vouchers dari Firestore subcollection
   const vouchersColRef = useMemoFirebase(() => {
@@ -1007,35 +977,18 @@ export default function ShopProfilePage() {
                             <div className="flex justify-between items-start">
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-10 w-10 rounded-xl border border-border shadow-sm">
-                                  {(() => {
-                                    const isCurrentUser =
-                                      user &&
-                                      (review.userId === user.uid ||
-                                        review.userId === user.email ||
-                                        review.userName === userData?.displayName);
-                                    const resolvedAvatar =
-                                      isCurrentUser && userData?.photoURL && !userData.photoURL.includes("duck")
-                                        ? userData.photoURL
-                                        : review.userAvatar && !review.userAvatar.includes("duck")
-                                        ? review.userAvatar
-                                        : null;
-
-                                    if (resolvedAvatar) {
-                                      return (
-                                        <img
-                                          src={resolvedAvatar}
-                                          alt={review.userName}
-                                          className="w-full h-full object-cover"
-                                          referrerPolicy="no-referrer"
-                                        />
-                                      );
-                                    }
-                                    return (
-                                      <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-black">
-                                        {review.userName ? review.userName.substring(0, 1).toUpperCase() : "U"}
-                                      </AvatarFallback>
-                                    );
-                                  })()}
+                                  {review.userAvatar && !review.userAvatar.includes("duck") && !review.isAnonymous ? (
+                                    <img
+                                      src={review.userAvatar}
+                                      alt={review.userName}
+                                      className="w-full h-full object-cover"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  ) : (
+                                    <AvatarFallback className="bg-[#00AA5B]/5 text-[#00AA5B] text-xs font-black">
+                                      {review.userName ? review.userName.substring(0, 1).toUpperCase() : "U"}
+                                    </AvatarFallback>
+                                  )}
                                 </Avatar>
                                 <div>
                                   <p className="text-[12px] font-black">{review.userName || "Pembeli MarketPointID"}</p>

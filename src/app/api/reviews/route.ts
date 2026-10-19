@@ -122,7 +122,7 @@ export async function POST(req: Request) {
       productId: productId || tx?.productId || "general",
       productName: productName || tx?.productTitle || "",
       shopId: shopId || tx?.shopId || "",
-      userId: userId || tx?.userId || "guest",
+      userId: userId || tx?.buyerEmail || tx?.userId || "guest",
       userName: finalUserName,
       userAvatar: isAnonymous ? null : userAvatar,
       rating: Number(rating),

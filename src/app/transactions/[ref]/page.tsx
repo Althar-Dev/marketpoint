@@ -298,30 +298,6 @@ export default function TransactionDetailPage() {
     }
   };
 
-  // Auto-sync real photoURL from Firestore to existing review in database if previously duck or mismatched
-  useEffect(() => {
-    if (!existingReview || existingReview.isAnonymous || !userData?.photoURL) return;
-    const currentAvatar = existingReview.userAvatar;
-    if (userData.photoURL && (!currentAvatar || currentAvatar.includes("duck") || currentAvatar !== userData.photoURL)) {
-      fetch("/api/reviews", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          transactionId: existingReview.transactionId || existingReview.invoiceNumber,
-          userAvatar: userData.photoURL,
-          userName: userData.displayName || undefined,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            setExistingReview((prev: any) => (prev ? { ...prev, userAvatar: userData.photoURL } : prev));
-          }
-        })
-        .catch(() => {});
-    }
-  }, [existingReview?.id, userData?.photoURL, existingReview?.userAvatar, existingReview?.isAnonymous]);
-
   const fetchTransaction = async (silent = false) => {
     if (!silent) setLoading(true);
     else setRefreshing(true);
@@ -348,12 +324,11 @@ export default function TransactionDetailPage() {
     try {
       setSubmittingReview(true);
 
-      const rawAvatar = userData?.photoURL || user?.photoURL || null;
-      // Do not use duck avatar fallback
+      const rawAvatar = (!isAnonymous && userData?.photoURL && !userData.photoURL.includes("duck")) ? userData.photoURL : (user?.photoURL && !user.photoURL.includes("duck") ? user.photoURL : null);
       const realAvatar = isAnonymous ? null : rawAvatar;
       const realUserName = isAnonymous
         ? null
-        : (userData?.displayName || userData?.name || user?.displayName || transaction.buyerName || "Pembeli MarketPointID");
+        : (transaction.buyerName || userData?.displayName || userData?.name || user?.displayName || "Pembeli MarketPointID");
 
       const res = await fetch("/api/reviews", {
         method: "POST",
@@ -364,7 +339,7 @@ export default function TransactionDetailPage() {
           productId: transaction.productId || "general",
           productName: transaction.productTitle,
           shopId: (transaction as any).shopId || "",
-          userId: user?.uid || (transaction as any).userId || transaction.buyerEmail || "buyer",
+          userId: transaction.buyerEmail || (transaction as any).userId || user?.email || user?.uid || "buyer",
           userName: realUserName,
           userAvatar: realAvatar,
           rating: selectedRating,
