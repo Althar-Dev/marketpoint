@@ -16,9 +16,11 @@ import {
   Code2,
   Terminal,
   Eye,
-  EyeOff
+  EyeOff,
+  ArrowRight
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 export default function DashboardApiKeyPage() {
   const { user } = useUser();
