@@ -72,7 +72,7 @@ export function DashboardSidebar() {
       label: "Reseller Access",
       items: [
         { label: "API Key", icon: Key, href: "/dashboard/api-key" },
-        { label: "Documentations", icon: FileText, href: "/dashboard/docs" },
+        { label: "Documentations", icon: FileText, href: "/documentations" },
       ]
     }
   ];

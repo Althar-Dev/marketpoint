@@ -137,7 +137,7 @@ export default function DashboardApiKeyPage() {
                    <p className="ml-4">-H "Authorization: Bearer {showKey ? apiKey : "..."}"</p>
                  </div>
                  <div className="flex justify-center">
-                    <Link href="/dashboard/docs">
+                    <Link href="/documentations">
                       <Button variant="link" className="text-[#00AA5B] font-bold text-xs">Lihat Dokumentasi Lengkap <ArrowRight className="w-3 h-3 ml-1" /></Button>
                     </Link>
                  </div>
