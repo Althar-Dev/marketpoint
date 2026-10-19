@@ -25,6 +25,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarGroupContent,
   useSidebar
 } from "@/components/ui/sidebar";
@@ -46,14 +47,34 @@ export function DashboardSidebar() {
     }
   };
 
-  const menuItems = [
-    { label: "Overview", icon: LayoutDashboard, href: "/dashboard" },
-    { label: "Balance", icon: Wallet, href: "/dashboard/balance" },
-    { label: "Transactions", icon: History, href: "/dashboard/transactions" },
-    { label: "Product", icon: Package, href: "/dashboard/products" },
-    { label: "Seller", icon: Store, href: "/dashboard/seller" },
-    { label: "API Key", icon: Key, href: "/dashboard/api-key" },
-    { label: "Documentations", icon: FileText, href: "/dashboard/docs" },
+  const menuGroups = [
+    {
+      label: "Dashboard",
+      items: [
+        { label: "Overview", icon: LayoutDashboard, href: "/dashboard" },
+      ]
+    },
+    {
+      label: "Finance",
+      items: [
+        { label: "Balance", icon: Wallet, href: "/dashboard/balance" },
+        { label: "Transactions", icon: History, href: "/dashboard/transactions" },
+      ]
+    },
+    {
+      label: "Marketplace",
+      items: [
+        { label: "Explore Product", icon: Package, href: "/dashboard/products" },
+        { label: "Seller Center", icon: Store, href: "/dashboard/seller" },
+      ]
+    },
+    {
+      label: "Reseller Access",
+      items: [
+        { label: "API Key", icon: Key, href: "/dashboard/api-key" },
+        { label: "Documentations", icon: FileText, href: "/dashboard/docs" },
+      ]
+    }
   ];
 
   return (
@@ -73,28 +94,35 @@ export function DashboardSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="gap-0 no-scrollbar">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <SidebarMenuItem key={item.label}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                      <Link href={item.href} className={cn(
-                        "flex items-center gap-2.5 px-3 py-2 transition-all duration-200",
-                        isActive ? "text-[#00AA5B] bg-[#00AA5B]/5 font-bold" : "text-slate-600 hover:text-slate-950 hover:bg-slate-50"
-                      )}>
-                        <item.icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#00AA5B]" : "text-slate-400")} />
-                        <span className="text-xs truncate">{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {menuGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            {state !== "collapsed" && (
+              <SidebarGroupLabel className="px-3 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider mt-2">
+                {group.label}
+              </SidebarGroupLabel>
+            )}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <SidebarMenuItem key={item.label}>
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
+                        <Link href={item.href} className={cn(
+                          "flex items-center gap-2.5 px-3 py-2 transition-all duration-200",
+                          isActive ? "text-[#00AA5B] bg-[#00AA5B]/5 font-bold" : "text-slate-600 hover:text-slate-950 hover:bg-slate-50"
+                        )}>
+                          <item.icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#00AA5B]" : "text-slate-400")} />
+                          <span className="text-xs truncate">{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="p-3 border-t border-border">
