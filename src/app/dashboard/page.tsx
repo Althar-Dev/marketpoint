@@ -125,9 +125,9 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Saldo Aktif</p>
-              <h3 className="text-xl font-black text-slate-900 mt-0.5">
+              <div className="text-xl font-black text-slate-900 mt-0.5">
                 {walletLoading ? <Skeleton className="h-6 w-32" /> : `Rp ${(wallet?.balance || 0).toLocaleString("id-ID")}`}
-              </h3>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -143,7 +143,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">MCoins Poin</p>
-              <h3 className="text-xl font-black text-slate-900 mt-0.5">0 Poin</h3>
+              <div className="text-xl font-black text-slate-900 mt-0.5">0 Poin</div>
             </div>
           </CardContent>
         </Card>
@@ -159,7 +159,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Total Pesanan</p>
-              <h3 className="text-xl font-black text-slate-900 mt-0.5">{stats.totalOrders} Order</h3>
+              <div className="text-xl font-black text-slate-900 mt-0.5">{stats.totalOrders} Order</div>
             </div>
           </CardContent>
         </Card>
@@ -175,9 +175,9 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Total Belanja</p>
-              <h3 className="text-xl font-black text-slate-900 mt-0.5">
+              <div className="text-xl font-black text-slate-900 mt-0.5">
                 Rp {stats.totalSpent.toLocaleString("id-ID")}
-              </h3>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -190,7 +190,7 @@ export default function UserDashboardPage() {
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
               <History className="w-4 h-4 text-[#00AA5B]" /> Transaksi Terakhir
             </h3>
-            <Link href="/transactions" className="text-xs font-bold text-[#00AA5B] hover:underline flex items-center gap-1">
+            <Link href="/dashboard/transactions" className="text-xs font-bold text-[#00AA5B] hover:underline flex items-center gap-1">
               Lihat Semua <ChevronRight className="w-4 h-4" />
             </Link>
           </div>

@@ -68,9 +68,9 @@ export default function DashboardBalancePage() {
               <span className="text-[10px] font-bold tracking-widest opacity-80 uppercase">Total Saldo Aktif</span>
               <div className="flex items-baseline gap-2">
                 <span className="text-lg font-bold opacity-80">Rp</span>
-                <p className="text-4xl font-black tracking-tighter">
+                <div className="text-4xl font-black tracking-tighter">
                   {walletLoading ? <Skeleton className="h-10 w-32 bg-white/20" /> : (wallet?.balance || 0).toLocaleString('id-ID')}
-                </p>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-4 mt-6">
