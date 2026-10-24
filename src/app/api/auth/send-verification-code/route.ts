@@ -48,8 +48,8 @@ export async function POST(req: Request) {
 
     const isAddEmail = type === "add_email";
     const subject = isAddEmail
-      ? `[MarketPointID] Kode Verifikasi Penambahan Email: ${code}`
-      : `[MarketPointID] Kode Verifikasi Ubah Kata Sandi: ${code}`;
+      ? `Kode Verifikasi Penambahan Email`
+      : `Kode Verifikasi Ubah Kata Sandi`;
 
     // Send email using MarketPoint's mailer
     const sendResult = await sendOutgoingEmail({

@@ -352,7 +352,22 @@ export default function ProfileIdentityPage() {
       if (field === "username") setUsername(value);
       if (field === "birthDate") setBirthDate(value);
       if (field === "gender") setGender(value);
-      if (field === "phoneNumber" || field === "phone") setPhoneNumber(value);
+      if (field === "phoneNumber" || field === "phone") {
+        setPhoneNumber(value);
+        const targetEmail = userData?.email || user.email;
+        if (targetEmail) {
+          fetch("/api/auth/send-security-alert", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: targetEmail,
+              displayName: userData?.displayName || user.displayName || "Pengguna",
+              eventType: "phone_changed",
+              newValue: value,
+            }),
+          }).catch((err) => console.warn("Failed to dispatch phone change alert:", err));
+        }
+      }
 
       toast({
         title: "Perubahan Disimpan",

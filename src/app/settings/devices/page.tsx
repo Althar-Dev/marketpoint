@@ -35,6 +35,8 @@ import {
   getOrCreateDeviceId,
   parseClientDevice,
   formatLastActive,
+  getDeviceSignature,
+  groupAndDeduplicateOtherDevices,
   DeviceSession,
 } from "@/lib/device-service";
 
@@ -91,7 +93,10 @@ export default function DevicesPage() {
   const { data: devicesList, loading: devicesLoading } = useCollection<DeviceSession>(devicesQuery as any);
 
   const fallbackDevice = parseClientDevice();
-  const currentDeviceData = devicesList?.find((d) => d.id === currentDeviceId) || {
+  const currentDeviceSig = getDeviceSignature(fallbackDevice);
+  const currentDeviceData = devicesList?.find(
+    (d) => d.id === currentDeviceId || getDeviceSignature(d) === currentDeviceSig
+  ) || {
     id: currentDeviceId,
     name: fallbackDevice.name,
     browser: fallbackDevice.browser,
@@ -101,13 +106,15 @@ export default function DevicesPage() {
     lastActiveAt: new Date(),
   };
 
-  const otherDevices = (devicesList || []).filter(
-    (d) => d.id !== currentDeviceId && d.status !== "revoked"
+  const otherDevices = groupAndDeduplicateOtherDevices(
+    devicesList || [],
+    currentDeviceId,
+    fallbackDevice
   );
 
   const handleLogoutOtherDevices = async () => {
     if (!user) return;
-    const ok = await revokeAllOtherDevices(db, user.uid, currentDeviceId);
+    const ok = await revokeAllOtherDevices(db, user.uid, currentDeviceId, fallbackDevice);
     setIsLogoutOtherDialogOpen(false);
     if (ok) {
       toast({
@@ -119,7 +126,7 @@ export default function DevicesPage() {
 
   const handleLogoutSingleDevice = async (device: DeviceSession) => {
     if (!user) return;
-    const ok = await revokeDevice(db, user.uid, device.id);
+    const ok = await revokeDevice(db, user.uid, device.allIds || device.id);
     setSelectedDeviceToLogout(null);
     if (ok) {
       toast({

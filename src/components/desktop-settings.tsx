@@ -68,6 +68,8 @@ import {
   getOrCreateDeviceId,
   parseClientDevice,
   formatLastActive,
+  getDeviceSignature,
+  groupAndDeduplicateOtherDevices,
   DeviceSession,
 } from "@/lib/device-service";
 
@@ -231,7 +233,10 @@ export function DesktopSettings({
   const { data: devicesList, loading: devicesLoading } = useCollection<DeviceSession>(devicesQuery as any);
 
   const fallbackDevice = parseClientDevice();
-  const currentDeviceData = devicesList?.find((d) => d.id === currentDeviceId) || {
+  const currentDeviceSig = getDeviceSignature(fallbackDevice);
+  const currentDeviceData = devicesList?.find(
+    (d) => d.id === currentDeviceId || getDeviceSignature(d) === currentDeviceSig
+  ) || {
     id: currentDeviceId,
     name: fallbackDevice.name,
     browser: fallbackDevice.browser,
@@ -241,14 +246,16 @@ export function DesktopSettings({
     lastActiveAt: new Date(),
   };
 
-  const otherSessions = (devicesList || []).filter(
-    (d) => d.id !== currentDeviceId && d.status !== "revoked"
+  const otherSessions = groupAndDeduplicateOtherDevices(
+    devicesList || [],
+    currentDeviceId,
+    fallbackDevice
   );
   const [isLogoutOtherDialogOpen, setIsLogoutOtherDialogOpen] = useState(false);
 
-  const handleRevokeSingle = async (deviceId: string, deviceName: string) => {
+  const handleRevokeSingle = async (deviceIdOrIds: string | string[], deviceName: string) => {
     if (!user) return;
-    const ok = await revokeDevice(db, user.uid, deviceId);
+    const ok = await revokeDevice(db, user.uid, deviceIdOrIds);
     if (ok) {
       toast({
         title: "Perangkat Dikeluarkan",
@@ -259,7 +266,7 @@ export function DesktopSettings({
 
   const handleRevokeAllOther = async () => {
     if (!user) return;
-    const ok = await revokeAllOtherDevices(db, user.uid, currentDeviceId);
+    const ok = await revokeAllOtherDevices(db, user.uid, currentDeviceId, fallbackDevice);
     setIsLogoutOtherDialogOpen(false);
     if (ok) {
       toast({
@@ -472,6 +479,24 @@ export function DesktopSettings({
         [field]: value,
         updatedAt: new Date().toISOString(),
       });
+
+      // Kirim email notifikasi keamanan jika nomor telepon diubah/baru
+      if (field === "phoneNumber" || field === "phone") {
+        const targetEmail = userData?.email || user.email;
+        if (targetEmail) {
+          fetch("/api/auth/send-security-alert", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: targetEmail,
+              displayName: userData?.displayName || user.displayName || "Pengguna",
+              eventType: "phone_changed",
+              newValue: value,
+            }),
+          }).catch((err) => console.warn("Failed to dispatch phone change alert:", err));
+        }
+      }
+
       toast({
         title: "Perubahan Disimpan",
         description: "Informasi profil berhasil diperbarui.",
@@ -538,6 +563,20 @@ export function DesktopSettings({
           hasPin: true,
           pinUpdatedAt: new Date().toISOString(),
         });
+
+        // Kirim email notifikasi keamanan PIN via no-reply@marketpoint.id
+        const targetEmail = userData?.email || user.email;
+        if (targetEmail) {
+          fetch("/api/auth/send-security-alert", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: targetEmail,
+              displayName: userData?.displayName || user.displayName || "Pengguna",
+              eventType: "pin_changed",
+            }),
+          }).catch((err) => console.warn("Failed to dispatch PIN change alert:", err));
+        }
       }
       toast({
         title: "PIN Berhasil Disimpan",
@@ -1179,7 +1218,7 @@ export function DesktopSettings({
                             type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleRevokeSingle(session.id, session.name)}
+                            onClick={() => handleRevokeSingle(session.allIds || session.id, session.name)}
                             className="text-[11px] font-bold text-red-600 hover:bg-red-50 rounded-xl h-8 px-3"
                           >
                             Keluarkan

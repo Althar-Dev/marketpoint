@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import Script from "next/script";
+import { registerOrUpdateDevice } from "@/lib/device-service";
 
 declare global {
   interface Window {
@@ -80,6 +81,9 @@ function SignInContent() {
           userId: user.uid,
         }, { merge: true });
       }
+
+      // Daftarkan sesi perangkat & kirim notifikasi jika perangkat baru
+      await registerOrUpdateDevice(db, user);
 
       toast({
         title: "Berhasil Masuk",
@@ -165,6 +169,9 @@ function SignInContent() {
           userId: user.uid,
         }, { merge: true });
       }
+
+      // Daftarkan sesi perangkat & kirim notifikasi jika perangkat baru
+      await registerOrUpdateDevice(db, user);
 
       toast({
         title: "Berhasil Masuk",
@@ -286,6 +293,9 @@ function SignInContent() {
         await updateProfile(user, { photoURL: currentPhoto });
       }
 
+      // Daftarkan sesi perangkat & kirim notifikasi jika perangkat baru
+      await registerOrUpdateDevice(db, user);
+
       toast({
         title: "Berhasil Masuk",
         description: "Anda telah masuk ke dashboard MarketPointID.",
@@ -304,7 +314,17 @@ function SignInContent() {
   };
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex bg-white font-body">
+    <div className="h-screen max-h-screen overflow-hidden flex bg-white font-body relative">
+      {/* Brand Header di Pojok Kiri Atas */}
+      <Link
+        href="/"
+        className="absolute top-4 left-4 sm:top-6 sm:left-6 md:top-7 md:left-8 z-30 flex items-center gap-2 hover:opacity-85 transition-opacity"
+      >
+        <img src="/assets/img/logo.png" alt="MarketPointID Logo" className="h-7 w-auto object-contain" />
+        <div className="h-4 w-px bg-border mx-0.5" />
+        <span className="text-[11px] font-black tracking-widest text-muted-foreground/60 uppercase">MASUK</span>
+      </Link>
+
       <Script
         src="https://accounts.google.com/gsi/client"
         onLoad={initializeGoogleAuth}
@@ -331,12 +351,7 @@ function SignInContent() {
 
       <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-white overflow-y-auto">
         <div className="w-full max-w-[380px] my-auto space-y-4 py-3">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 mb-3">
-              <img src="/assets/img/logo.png" alt="MarketPointID Logo" className="h-7 w-auto" />
-              <div className="h-4 w-px bg-border mx-1" />
-              <span className="text-[10px] font-black tracking-widest text-muted-foreground/50">MASUK</span>
-            </div>
+          <div className="space-y-1.5 pt-4 sm:pt-0">
             <h1 className="text-2xl font-bold font-headline tracking-tight text-foreground">Login</h1>
             <p className="text-muted-foreground text-xs font-medium">Masuk ke dashboard MarketPointID Anda sekarang.</p>
           </div>

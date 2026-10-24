@@ -211,6 +211,20 @@ export default function ChangePasswordPage() {
       }
 
       setStep("success");
+
+      // Kirim email notifikasi keamanan kata sandi via no-reply@marketpoint.id
+      fetch("/api/auth/send-security-alert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          displayName: user?.displayName || "Pengguna",
+          eventType: "password_changed",
+        }),
+      }).catch((alertErr) => {
+        console.warn("Could not dispatch password change alert email:", alertErr);
+      });
+
       toast({
         title: "Kata Sandi Berhasil Diperbarui",
         description: "Kata sandi akun MarketPointID Anda telah berhasil diganti.",

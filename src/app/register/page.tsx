@@ -305,7 +305,17 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex bg-white font-body">
+    <div className="h-screen max-h-screen overflow-hidden flex bg-white font-body relative">
+      {/* Brand logo & badge in top-left corner */}
+      <Link
+        href="/"
+        className="absolute top-4 left-4 sm:top-6 sm:left-6 md:top-7 md:left-8 z-30 flex items-center gap-2 hover:opacity-85 transition-opacity"
+      >
+        <img src="/assets/img/logo.png" alt="MarketPointID Logo" className="h-7 w-auto object-contain" />
+        <div className="h-4 w-px bg-border mx-0.5" />
+        <span className="text-[11px] font-black tracking-widest text-muted-foreground/60 uppercase">DAFTAR</span>
+      </Link>
+
       <Script
         src="https://accounts.google.com/gsi/client"
         onLoad={initializeGoogleAuth}
@@ -332,12 +342,7 @@ export default function SignUpPage() {
 
       <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-white overflow-y-auto">
         <div className="w-full max-w-[380px] my-auto space-y-3.5 py-3">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 mb-2.5">
-              <img src="/assets/img/logo.png" alt="MarketPointID Logo" className="h-7 w-auto" />
-              <div className="h-4 w-px bg-border mx-1" />
-              <span className="text-[10px] font-black tracking-widest text-muted-foreground/50">DAFTAR</span>
-            </div>
+          <div className="space-y-1.5 pt-4 sm:pt-0">
             <h1 className="text-2xl font-bold font-headline tracking-tight text-foreground">Register</h1>
             <p className="text-muted-foreground text-xs font-medium">Buat akun MarketPointID sekarang secara gratis.</p>
           </div>

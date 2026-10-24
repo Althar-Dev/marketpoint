@@ -124,6 +124,20 @@ export default function SecurityPage() {
           hasPin: true,
           pinUpdatedAt: new Date().toISOString(),
         });
+
+        // Kirim email notifikasi keamanan PIN via no-reply@marketpoint.id
+        const targetEmail = userData?.email || user?.email;
+        if (targetEmail) {
+          fetch("/api/auth/send-security-alert", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: targetEmail,
+              displayName: userData?.displayName || user?.displayName || "Pengguna",
+              eventType: "pin_changed",
+            }),
+          }).catch((err) => console.warn("Failed to dispatch PIN change alert:", err));
+        }
       }
 
       toast({
