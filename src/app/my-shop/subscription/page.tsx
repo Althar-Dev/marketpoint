@@ -163,16 +163,17 @@ function buildPlanFeatureItems(
           )),
     },
     {
-      key: "resellerApi",
-      label: "API Reseller / Public Provider",
+      key: "staffManagement",
+      label: "Kelola Staff & Multi-Admin",
       check: (plan: any) =>
-        Boolean(plan.features?.resellerApi) ||
+        Boolean(plan.features?.staffManagement) ||
         (Array.isArray(plan.customFeatures) &&
           plan.customFeatures.some(
             (f: string) =>
-              f.toLowerCase().includes("api") ||
-              f.toLowerCase().includes("reseller")
-          )),
+              f.toLowerCase().includes("staff") ||
+              f.toLowerCase().includes("multi-admin")
+          )) ||
+        plan.id === "prime",
     },
     {
       key: "prioritySupport",
@@ -198,6 +199,8 @@ function buildPlanFeatureItems(
     "official",
     "api",
     "reseller",
+    "staff",
+    "multi-admin",
     "support",
     "prioritas",
     "vip",
@@ -251,7 +254,7 @@ function buildPlanFeatureItems(
             if (addon.key === "badgeVerified") return low.includes("verified");
             if (addon.key === "telegramBot") return low.includes("telegram") || low.includes("bot");
             if (addon.key === "badgeOfficial") return low.includes("official");
-            if (addon.key === "resellerApi") return low.includes("reseller") || low.includes("api");
+            if (addon.key === "staffManagement") return low.includes("staff") || low.includes("multi-admin");
             if (addon.key === "prioritySupport") return low.includes("support") || low.includes("prioritas");
             return false;
           });
@@ -298,7 +301,7 @@ function getPlans(commissions: Record<string, number>): PlanItem[] {
         badgeVerified: false,
         badgeOfficial: false,
         telegramBot: false,
-        resellerApi: false,
+        staffManagement: false,
         prioritySupport: false,
       },
       customFeatures: [
@@ -331,8 +334,8 @@ function getPlans(commissions: Record<string, number>): PlanItem[] {
         badgeVerified: true,
         badgeOfficial: false,
         telegramBot: true,
-        resellerApi: false,
         prioritySupport: false,
+        staffManagement: false,
       },
       customFeatures: [
         `Komisi ${commissions.pro ?? 3.5}%`,
@@ -348,7 +351,7 @@ function getPlans(commissions: Record<string, number>): PlanItem[] {
       id: "prime",
       name: "Prime",
       badgeTag: "Ultimate Enterprise",
-      description: "Solusi tanpa batas untuk merchant skala besar, API reseller dan prioritas support.",
+      description: "Solusi tanpa batas untuk merchant skala besar, kelola staf multi-admin, dan prioritas support.",
       monthlyPrice: 249000,
       yearlyPrice: 2490000,
       commissionRate: commissions.prime ?? 2.0,
@@ -365,8 +368,8 @@ function getPlans(commissions: Record<string, number>): PlanItem[] {
         badgeVerified: true,
         badgeOfficial: true,
         telegramBot: true,
-        resellerApi: true,
         prioritySupport: true,
+        staffManagement: true,
       },
       customFeatures: [
         `Komisi ${commissions.prime ?? 2.0}%`,
@@ -375,8 +378,8 @@ function getPlans(commissions: Record<string, number>): PlanItem[] {
         "Max 10 Flash sale",
         "Badge official",
         "Bot Telegram",
+        "Kelola Staff & Multi-Admin",
         "Statistik Lengkap & Ekspor Laporan",
-        "API Reseller / Public Provider",
         "Prioritas support",
       ],
     },
@@ -826,7 +829,7 @@ export default function MerchantSubscriptionPage() {
             Pilih Paket Fitur Toko Anda
           </h2>
           <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-            Tingkatkan kuota produk, voucher diskon toko, flash sale, hingga otomatisasi bot Telegram dan API reseller.
+            Tingkatkan kuota produk, voucher diskon toko, flash sale, otomatisasi bot Telegram, hingga kelola staf toko.
           </p>
 
           <div className="flex items-center justify-center pt-1.5">

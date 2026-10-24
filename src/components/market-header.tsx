@@ -503,11 +503,18 @@ export function MarketHeader() {
                       Profil Saya
                     </Link>
                   </DropdownMenuItem>
-                  {hasShop && (
+                  {hasShop ? (
                     <DropdownMenuItem asChild className="rounded-lg py-2 cursor-pointer focus:bg-muted">
                       <Link href="/my-shop" className="flex items-center gap-2 text-xs font-bold">
                         <Store className="w-3.5 h-3.5 text-[#00AA5B]" />
                         Toko Saya
+                      </Link>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem asChild className="rounded-lg py-2 cursor-pointer focus:bg-muted">
+                      <Link href="/my-shop/setup" className="flex items-center gap-2 text-xs font-bold">
+                        <Store className="w-3.5 h-3.5 text-[#00AA5B]" />
+                        Buka Toko
                       </Link>
                     </DropdownMenuItem>
                   )}

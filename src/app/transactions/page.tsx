@@ -28,14 +28,19 @@ import {
   Filter,
   ChevronLeft,
   Loader2,
-  ShieldCheck
+  ShieldCheck,
+  Package,
+  CreditCard,
+  Copy,
+  Check,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 const STATUS_TABS = [
   { id: "all", label: "Semua", icon: ReceiptText },
-  { id: "pending", label: "Menunggu", icon: Clock },
+  { id: "pending", label: "Menunggu Pembayaran", icon: Clock },
   { id: "success", label: "Berhasil", icon: CheckCircle2 },
   { id: "failed", label: "Gagal/Batal", icon: XCircle },
 ];
@@ -49,10 +54,30 @@ function TransactionsContent() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
+  const [copiedInvoice, setCopiedInvoice] = useState<string | null>(null);
 
   const initialStatus = searchParams.get("status") || "all";
   const [activeTab, setActiveTab] = useState(initialStatus);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Sync activeTab whenever URL query ?status= changes (e.g. from sidebar navigation)
+  useEffect(() => {
+    const statusParam = searchParams.get("status");
+    if (statusParam && ["pending", "success", "failed", "all"].includes(statusParam)) {
+      setActiveTab(statusParam);
+    } else if (!statusParam) {
+      setActiveTab("all");
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    if (tabId === "all") {
+      router.push("/transactions", { scroll: false });
+    } else {
+      router.push(`/transactions?status=${tabId}`, { scroll: false });
+    }
+  };
 
   // PostgreSQL State
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -113,10 +138,11 @@ function TransactionsContent() {
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t: any) => {
-      // 1. Status Filter
-      if (activeTab === "pending" && t.status !== "PENDING") return false;
-      if (activeTab === "success" && !["PAID", "SETTLED", "SUCCESS"].includes(t.status)) return false;
-      if (activeTab === "failed" && !["FAILED", "CANCELLED", "EXPIRED"].includes(t.status)) return false;
+      // 1. Status Filter (case-insensitive & supports aliases)
+      const statusUpper = String(t.status || "").toUpperCase();
+      if (activeTab === "pending" && !["PENDING", "UNPAID", "WAITING", "MENUNGGU"].includes(statusUpper)) return false;
+      if (activeTab === "success" && !["PAID", "SETTLED", "SUCCESS", "COMPLETED", "BERHASIL"].includes(statusUpper)) return false;
+      if (activeTab === "failed" && !["FAILED", "CANCELLED", "EXPIRED", "BATAL", "GAGAL"].includes(statusUpper)) return false;
 
       // 2. Search Filter
       if (searchQuery.trim()) {
@@ -129,21 +155,53 @@ function TransactionsContent() {
     });
   }, [transactions, activeTab, searchQuery]);
 
+  const handleCopyInvoice = (e: React.MouseEvent, invoice: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(invoice);
+    setCopiedInvoice(invoice);
+    toast({
+      title: "Invoice Disalin",
+      description: `Nomor invoice ${invoice} berhasil disalin.`,
+    });
+    setTimeout(() => setCopiedInvoice(null), 2000);
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PAID":
       case "SETTLED":
       case "SUCCESS":
-        return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px] font-bold">Berhasil</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 bg-emerald-50 text-[#00AA5B] border border-emerald-200/80 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <CheckCircle2 className="w-3 h-3 text-[#00AA5B]" /> Berhasil
+          </span>
+        );
       case "PENDING":
-        return <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[9px] font-bold">Menunggu</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200/80 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <Clock className="w-3 h-3 text-amber-600" /> Menunggu Pembayaran
+          </span>
+        );
       case "CANCELLED":
       case "FAILED":
-        return <Badge className="bg-red-50 text-red-700 border-red-200 text-[9px] font-bold">Dibatalkan</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200/80 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <XCircle className="w-3 h-3 text-rose-600" /> Dibatalkan
+          </span>
+        );
       case "EXPIRED":
-        return <Badge className="bg-slate-50 text-slate-600 border-slate-200 text-[9px] font-bold">Kedaluwarsa</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <Clock className="w-3 h-3 text-slate-500" /> Kedaluwarsa
+          </span>
+        );
       default:
-        return <Badge className="bg-slate-100 text-slate-700 text-[9px] font-bold">{status}</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            {status}
+          </span>
+        );
     }
   };
 
@@ -178,7 +236,7 @@ function TransactionsContent() {
                 wallet={wallet}
                 hasShop={hasShop}
                 displayName={user.displayName || ""}
-                activeItem="pembelian-transactions"
+                activeItem={activeTab === "pending" ? "pembelian-pending" : "pembelian-transactions"}
                 handleLogout={handleLogout}
               />
             )}
@@ -214,7 +272,7 @@ function TransactionsContent() {
                       key={tab.id}
                       size="sm"
                       variant={activeTab === tab.id ? "default" : "outline"}
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => handleTabChange(tab.id)}
                       className={cn(
                         "h-8 px-4 rounded-xl text-xs font-bold transition-all shrink-0",
                         activeTab === tab.id
@@ -228,69 +286,174 @@ function TransactionsContent() {
                 </div>
 
                 {/* Transactions List */}
-                <div className="mt-5 space-y-3.5">
+                <div className="mt-4 space-y-3">
                   {transLoading ? (
                     <div className="space-y-3">
-                      {[1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full rounded-2xl" />)}
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 bg-white space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <Skeleton className="h-3.5 w-40 rounded-md" />
+                            <Skeleton className="h-4 w-16 rounded-full" />
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl shrink-0" />
+                            <div className="space-y-1.5 flex-1">
+                              <Skeleton className="h-3.5 w-1/2 rounded-md" />
+                              <Skeleton className="h-3 w-1/4 rounded-md" />
+                            </div>
+                            <Skeleton className="hidden sm:block h-7.5 w-24 rounded-lg shrink-0" />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ) : filteredTransactions.length === 0 ? (
-                    <div className="text-center py-20 px-4 space-y-3">
-                      <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto text-slate-300 border border-border/60">
-                        <ShoppingBag className="w-8 h-8" />
+                    <div className="text-center py-16 px-4 space-y-3">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto text-slate-300 border border-border/60">
+                        <ShoppingBag className="w-7 h-7" />
                       </div>
                       <h3 className="text-sm font-bold text-slate-900">Tidak Ada Transaksi</h3>
                       <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed">
                         {searchQuery ? "Hasil pencarian tidak ditemukan." : "Kamu belum pernah melakukan transaksi di MarketPointID."}
                       </p>
                       {!searchQuery && (
-                        <Button asChild size="sm" className="bg-[#00AA5B] hover:bg-[#009650] text-white rounded-xl text-xs font-bold mt-2">
+                        <Button asChild size="sm" className="bg-[#00AA5B] hover:bg-[#009650] text-white rounded-lg text-xs font-bold mt-1 shadow-2xs h-8 px-3">
                           <Link href="/">Mulai Belanja</Link>
                         </Button>
                       )}
                     </div>
                   ) : (
-                    filteredTransactions.map((t: any) => (
-                      <Link key={t.id} href={`/transactions/${encodeURIComponent(t.invoiceNumber || t.id)}`}>
-                        <div className="p-4 rounded-2xl border border-border/60 bg-white hover:border-[#00AA5B]/40 hover:shadow-sm transition-all group flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                          <div className="flex items-start gap-4 min-w-0">
-                            <div className="w-12 h-12 rounded-xl bg-slate-100 border border-border/60 shrink-0 overflow-hidden relative">
-                              {t.productImage ? (
-                                <Image src={t.productImage} alt="" fill className="object-cover" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                                  <ShoppingBag className="w-5 h-5" />
-                                </div>
-                              )}
+                    filteredTransactions.map((t: any) => {
+                      const formattedDate = t.createdAt
+                        ? new Date(t.createdAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "Baru saja";
+
+                      const totalAmountNum = Number(t.totalAmount) || 0;
+                      const unitPriceNum = Number(t.unitPrice) || totalAmountNum;
+                      const quantityNum = Number(t.quantity) || 1;
+                      const invNumber = t.invoiceNumber || t.id;
+
+                      return (
+                        <div
+                          key={t.id}
+                          className="p-3 sm:p-3.5 rounded-xl border border-slate-200/90 bg-white hover:border-[#00AA5B]/40 hover:shadow-xs transition-all duration-150 group flex flex-col gap-2.5"
+                        >
+                          {/* 1. Header Bar: Belanja Info, Tanggal, Invoice, Status */}
+                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                            <div className="flex items-center gap-1.5 flex-wrap text-xs">
+                              <div className="inline-flex items-center gap-1 font-bold text-slate-800 text-[11px]">
+                                <span className="p-0.5 rounded-md bg-emerald-50 text-[#00AA5B]">
+                                  <ShoppingBag className="w-3 h-3" />
+                                </span>
+                                <span>Belanja</span>
+                              </div>
+
+                              <span className="text-slate-300">•</span>
+                              <span className="text-slate-500 font-medium text-[10px] sm:text-[11px]">
+                                {formattedDate}
+                              </span>
+
+                              <span className="text-slate-300">•</span>
+                              <button
+                                type="button"
+                                onClick={(e) => handleCopyInvoice(e, invNumber)}
+                                className="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 px-1.5 py-0.5 rounded transition-colors cursor-pointer group/copy"
+                                title="Klik untuk salin invoice"
+                              >
+                                <span>{invNumber}</span>
+                                {copiedInvoice === invNumber ? (
+                                  <Check className="w-2.5 h-2.5 text-emerald-600" />
+                                ) : (
+                                  <Copy className="w-2.5 h-2.5 text-slate-400 group-hover/copy:text-slate-600" />
+                                )}
+                              </button>
                             </div>
-                            <div className="min-w-0 space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t.createdAt ? new Date(t.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Baru saja'}</span>
-                                {getStatusBadge(t.status)}
-                                <span className="text-[10px] font-mono text-muted-foreground/60">{t.invoiceNumber}</span>
-                              </div>
-                              <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate group-hover:text-[#00AA5B] transition-colors">
-                                {t.productTitle || "Produk Digital"}
-                              </h4>
-                              <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
-                                <span>{t.quantity} Barang</span>
-                                <span>•</span>
-                                <span className="font-bold text-slate-800">Rp {(Number(t.totalAmount) || 0).toLocaleString('id-ID')}</span>
-                              </div>
+
+                            <div>
+                              {getStatusBadge(t.status)}
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t sm:border-0 border-border/40">
-                            <div className="sm:hidden">
-                              <p className="text-[10px] text-muted-foreground">Total Bayar</p>
-                              <p className="text-xs font-black">Rp {(Number(t.totalAmount) || 0).toLocaleString('id-ID')}</p>
+                          {/* 2. Main Content: Thumbnail, Product Info, Total Belanja, Actions */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            {/* Left: Product Thumbnail & Info */}
+                            <Link
+                              href={`/transactions/${encodeURIComponent(invNumber)}`}
+                              className="flex items-start gap-3 min-w-0 flex-1 group/item"
+                            >
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-slate-50 border border-slate-200/80 shrink-0 overflow-hidden relative shadow-2xs group-hover/item:border-[#00AA5B]/40 transition-colors">
+                                {t.productImage ? (
+                                  <Image
+                                    src={t.productImage}
+                                    alt={t.productTitle || "Produk"}
+                                    fill
+                                    className="object-cover group-hover/item:scale-105 transition-transform duration-200"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-emerald-50/60 to-slate-100 flex items-center justify-center text-[#00AA5B]/70">
+                                    <Package className="w-6 h-6" />
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="min-w-0 space-y-0.5">
+                                <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate group-hover/item:text-[#00AA5B] transition-colors leading-tight">
+                                  {t.productTitle || "Produk Digital"}
+                                </h4>
+
+                                {t.variant && (
+                                  <p className="text-[10px] text-slate-500 font-medium">
+                                    Variasi: <span className="font-semibold text-slate-700">{t.variant}</span>
+                                  </p>
+                                )}
+
+                                <p className="text-[11px] text-slate-500 font-medium">
+                                  {quantityNum} barang × Rp {unitPriceNum.toLocaleString("id-ID")}
+                                </p>
+
+                                <div className="flex items-center gap-1.5 pt-0.5">
+                                  <span className="text-[9px] font-medium text-slate-600 bg-slate-100 border border-slate-200/60 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                    <CreditCard className="w-2.5 h-2.5 text-slate-400" /> {t.paymentMethodName || t.paymentMethod || "QRIS"}
+                                  </span>
+                                  {Boolean(t.licenseKey || (t.licenseKeys && t.licenseKeys.length > 0)) && (
+                                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                      <Sparkles className="w-2 h-2 text-emerald-600" /> Lisensi Siap
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </Link>
+
+                            {/* Right: Total Belanja & Action Button */}
+                            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1.5 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 sm:border-l sm:pl-4 sm:min-w-[145px]">
+                              <div className="text-left sm:text-right">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                                  Total Belanja
+                                </p>
+                                <p className="text-xs sm:text-sm font-black text-slate-900 tracking-tight">
+                                  Rp {totalAmountNum.toLocaleString("id-ID")}
+                                </p>
+                              </div>
+
+                              <Link
+                                href={`/transactions/${encodeURIComponent(invNumber)}`}
+                                className="inline-flex"
+                              >
+                                <Button
+                                  size="sm"
+                                  className="h-7.5 px-3 rounded-lg text-[11px] font-bold bg-[#00AA5B] hover:bg-[#009650] text-white shadow-2xs gap-1 transition-all"
+                                >
+                                  Lihat Detail <ChevronRight className="w-3 h-3" />
+                                </Button>
+                              </Link>
                             </div>
-                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-lg text-[10px] font-bold text-[#00AA5B] hover:bg-emerald-50 gap-1">
-                              Detail <ChevronRight className="w-3 h-3" />
-                            </Button>
                           </div>
                         </div>
-                      </Link>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </Card>

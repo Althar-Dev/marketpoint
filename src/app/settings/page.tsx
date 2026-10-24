@@ -19,21 +19,20 @@ import { DesktopProfileSkeleton } from "@/components/desktop-profile-skeleton";
 import { 
   ChevronLeft, 
   ChevronRight,
-  Menu,
-  Pencil,
-  MapPinned,
-  Building2,
-  CreditCard,
   Shield,
   Bell,
-  Sun,
   LogOut,
   Info,
   FileText,
   Lock,
-  Loader2
+  Loader2,
+  UserCheck,
+  Smartphone,
+  Sliders,
+  Link2
 } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import {
   Accordion,
   AccordionContent,
@@ -68,6 +67,8 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+
+
 
   const userRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -180,41 +181,41 @@ export default function SettingsPage() {
   };
 
   if (!mounted || authLoading || (user && (userLoading || walletLoading || shopLoading))) {
-    if (!isMobile) {
-      return <DesktopProfileSkeleton />;
-    }
-
     return (
-      <div className="min-h-screen bg-white flex flex-col font-body">
-        <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
-          <div className="px-4 py-1.5 flex items-center justify-between">
-            <Skeleton className="h-4 w-4 rounded-full" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-4 rounded-full" />
-          </div>
-          <div className="px-4 py-3 space-y-4">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-12 w-12 rounded-full" />
-              <div className="space-y-1">
-                <Skeleton className="h-3 w-28" />
-                <Skeleton className="h-2 w-20" />
-                <Skeleton className="h-2 w-32" />
+      <>
+        <div className="hidden md:block">
+          <DesktopProfileSkeleton />
+        </div>
+        <div className="block md:hidden min-h-screen bg-white flex flex-col font-body">
+          <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
+            <div className="px-4 py-1.5 flex items-center gap-3">
+              <Skeleton className="h-4 w-4 rounded-full" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+            <div className="px-4 py-3 space-y-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-1">
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-2 w-20" />
+                  <Skeleton className="h-2 w-32" />
+                </div>
+              </div>
+              <div className="space-y-2 mt-4">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="flex gap-4 items-center h-10 px-1">
+                    <Skeleton className="h-5 w-5 rounded-md" />
+                    <div className="flex-1 space-y-1">
+                      <Skeleton className="h-3 w-32" />
+                      <Skeleton className="h-2 w-48" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="space-y-2 mt-4">
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="flex gap-4 items-center h-10 px-1">
-                  <Skeleton className="h-5 w-5 rounded-md" />
-                  <div className="flex-1 space-y-1">
-                    <Skeleton className="h-3 w-32" />
-                    <Skeleton className="h-2 w-48" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </main>
-      </div>
+          </main>
+        </div>
+      </>
     );
   }
 
@@ -226,13 +227,14 @@ export default function SettingsPage() {
   const hasPassword = providers.includes('password');
   const canCreatePassword = isGoogleUser && !hasPassword;
 
-  if (!isMobile) {
-    return (
-      <div className="flex flex-col min-h-screen">
+  return (
+    <>
+      <div className="hidden md:flex flex-col min-h-screen">
         <MarketHeader />
         <main className="flex-1 pt-16 bg-[#F8FAFC]">
           <DesktopSettings 
             user={user}
+            userData={userData}
             wallet={wallet}
             hasShop={hasShop}
             displayName={displayName}
@@ -246,22 +248,16 @@ export default function SettingsPage() {
         </main>
         <MarketFooter />
       </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-white flex flex-col font-body text-[#212121]">
+      <div className="block md:hidden min-h-screen bg-white flex flex-col font-body text-[#212121]">
       <main className="flex-1 w-full pb-24 max-w-2xl mx-auto bg-white min-h-screen">
-        <div className="px-4 py-1.5 flex items-center justify-between bg-white sticky top-0 z-30 border-b border-border/50">
+        <div className="px-4 py-1.5 flex items-center bg-white sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <Link href="/profile" className="p-1 hover:bg-muted rounded-full transition-colors text-foreground">
               <ChevronLeft className="w-5 h-5" />
             </Link>
             <h1 className="text-base font-bold">Akun Saya</h1>
           </div>
-          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-            <Menu className="w-5 h-5" />
-          </Button>
         </div>
 
         <section className="px-4 py-3 relative">
@@ -293,24 +289,18 @@ export default function SettingsPage() {
                 ) : (
                   <h2 className="text-[14px] font-bold text-[#2E3137]">{displayName || "Pengguna Baru"}</h2>
                 )}
-                <p className="text-[10px] text-[#6C727C]">6288976577650</p>
+                {(userData?.phoneNumber || userData?.phone || user.phoneNumber) && (
+                  <p className="text-[10px] text-[#6C727C]">{userData?.phoneNumber || userData?.phone || user.phoneNumber}</p>
+                )}
                 <p className="text-[10px] text-[#6C727C]">{user.email}</p>
               </div>
             </div>
-            {!isEditing && (
-              <button 
-                onClick={() => setIsEditing(true)}
-                className="p-1.5 hover:bg-muted rounded-full border border-border shadow-sm transition-all text-[#6C727C]"
-              >
-                <Pencil className="w-3 h-3" />
-              </button>
-            )}
           </div>
         </section>
 
         <section className="pb-1">
           <h3 className="px-4 text-[11px] font-bold text-[#2E3137] mb-2">Pengaturan Akun</h3>
-          <div className="divide-y divide-border/50">
+          <div className="space-y-0.5">
             {canCreatePassword && (
               <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
                 <DialogTrigger asChild>
@@ -367,30 +357,88 @@ export default function SettingsPage() {
             )}
 
             {[
-              { title: "Daftar Alamat", desc: "Atur alamat pengiriman belanjaan", icon: MapPinned },
-              { title: "Rekening Bank", desc: "Tarik Saldo MarketPointID ke rekening tujuan", icon: Building2 },
-              { title: "Pembayaran Instan", desc: "E-Wallet, kartu kredit, & debit instan terdaftar", icon: CreditCard },
-              { title: "Keamanan Akun", desc: "Kata sandi, PIN, & verifikasi data diri", icon: Shield },
-              { title: "Notifikasi", desc: "Atur segala jenis pesan notifikasi", icon: Bell },
-              { title: "Mode Tampilan", desc: "Aktifkan tampilan buta warna di MarketPointID", icon: Sun },
-            ].map((menu, idx) => (
+              {
+                id: "profile",
+                title: "Profil & Identitas",
+                desc: "Biodata diri, nama lengkap, dan info kontak",
+                icon: UserCheck,
+                onClick: () => {
+                  router.push("/settings/profile");
+                }
+              },
+              {
+                id: "security",
+                title: "Keamanan Akun",
+                desc: "Kata sandi, PIN, & autentikasi keamanan",
+                icon: Shield,
+                onClick: () => {
+                  router.push("/settings/security");
+                }
+              },
+              {
+                id: "notifications",
+                title: "Notifikasi",
+                desc: "Atur email, push notifikasi, dan pesan aktivitas",
+                icon: Bell,
+                onClick: () => {
+                  router.push("/settings/notifications");
+                }
+              },
+              {
+                id: "devices",
+                title: "Perangkat & Sesi",
+                desc: "Kelola sesi masuk dan riwayat perangkat",
+                icon: Smartphone,
+                onClick: () => {
+                  router.push("/settings/devices");
+                }
+              },
+              {
+                id: "preferences",
+                title: "Preferensi",
+                desc: "Pilih tema aplikasi: Sistem, Light Mode, Dark Mode",
+                icon: Sliders,
+                onClick: () => {
+                  router.push("/settings/preferences");
+                }
+              },
+              {
+                id: "connected",
+                title: "Akun Terhubung",
+                desc: "Kelola akun Google & layanan pihak ketiga",
+                icon: Link2,
+                onClick: () => {
+                  router.push("/settings/connected");
+                }
+              },
+            ].map((menu) => (
               <button 
-                key={idx}
+                key={menu.id}
+                onClick={menu.onClick}
                 className="w-full px-5 py-2.5 flex items-center gap-4 hover:bg-muted/30 transition-all text-left active:bg-muted/50 group"
               >
                 <div className="flex-shrink-0">
-                  <menu.icon className="w-4.5 h-4.5 text-[#2E3137] opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <menu.icon className={cn("w-4.5 h-4.5 opacity-80 group-hover:opacity-100 transition-opacity", (menu as any).color || "text-[#2E3137]")} />
                 </div>
-                <div className="flex-1">
-                  <p className="text-[12px] font-bold text-[#2E3137] leading-tight">{menu.title}</p>
-                  <p className="text-[9px] text-[#6C727C] mt-0.5">{menu.desc}</p>
+                <div className="flex-1 min-w-0">
+                  <p className={cn("text-[12px] font-bold leading-tight", (menu as any).color || "text-[#2E3137]")}>{menu.title}</p>
+                  <p className="text-[9px] text-[#6C727C] mt-0.5 truncate">{menu.desc}</p>
                 </div>
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-30 group-hover:opacity-70 transition-opacity shrink-0" />
               </button>
             ))}
           </div>
         </section>
 
-        <section className="border-t border-border mt-1 px-4">
+
+
+
+
+
+
+
+
+        <section className="mt-1 px-4">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="seputar" className="border-none">
               <AccordionTrigger className="hover:no-underline py-3 text-[11px] font-bold text-[#2E3137] focus:outline-none">
@@ -418,7 +466,7 @@ export default function SettingsPage() {
           </Accordion>
         </section>
 
-        <section className="border-t border-border mt-0.5">
+        <section className="mt-0.5">
           <button 
             onClick={handleLogout}
             className="w-full px-5 py-3 flex items-center gap-4 hover:bg-destructive/5 transition-all text-left active:bg-destructive/10"
@@ -434,5 +482,6 @@ export default function SettingsPage() {
         </section>
       </main>
     </div>
+    </>
   );
 }

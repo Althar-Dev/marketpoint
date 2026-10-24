@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms Of Service',
+  title: 'Syarat & Ketentuan',
   description: 'Pedoman lengkap Ketentuan Layanan (Terms of Service), aturan transaksi produk digital, dan kebijakan perlindungan pengguna di MarketPointID.',
   alternates: {
     canonical: '/terms',

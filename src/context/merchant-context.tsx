@@ -41,6 +41,7 @@ export interface EffectiveFeatures {
   voucherToko: boolean;
   flashSale: boolean;
   telegramBot: boolean;
+  staffManagement: boolean;
   hasAdvancedStats: boolean;
   has30DaysStats: boolean;
   hasAllTimeStats: boolean;
@@ -56,6 +57,7 @@ export const DEFAULT_EFFECTIVE_FEATURES: EffectiveFeatures = {
   voucherToko: false,
   flashSale: false,
   telegramBot: false,
+  staffManagement: false,
   hasAdvancedStats: false,
   has30DaysStats: false,
   hasAllTimeStats: false,
@@ -460,9 +462,9 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user, db, resolveMerchant]);
 
-  const rawPlanId = actualSubscription?.planId;
+  const rawPlanId = actualSubscription?.planId || shop?.subscription?.planId;
   const isFullAdminUnlock = isAdmin && (!rawPlanId || rawPlanId === "admin");
-  const activePlanId = (rawPlanId || (isAdmin ? "admin" : "free")) as ShopPlanTier;
+  const activePlanId = (rawPlanId || (isAdmin && !shop?.subscription?.planId ? "admin" : "free")) as ShopPlanTier;
 
   const effectiveFeatures = useMemo<EffectiveFeatures>(() => {
     if (activePlanId === "admin" || (isAdmin && !rawPlanId)) {
@@ -475,6 +477,7 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
         voucherToko: true,
         flashSale: true,
         telegramBot: true,
+        staffManagement: true,
         hasAdvancedStats: true,
         has30DaysStats: true,
         hasAllTimeStats: true,
@@ -503,6 +506,7 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
     const voucherToko = targetPlanConfig?.features?.voucherToko ?? (!isFree && maxVouchers > 0);
     const flashSale = targetPlanConfig?.features?.flashSale ?? (!isFree && maxFlashSaleProducts > 0);
     const telegramBot = targetPlanConfig?.features?.telegramBot ?? (isPro || isPrime);
+    const staffManagement = targetPlanConfig?.features?.staffManagement ?? isPrime;
     const has30DaysStats = isPro || isPrime;
     const hasAllTimeStats = isPrime;
     const hasAdvancedStats = isPro || isPrime;
@@ -519,6 +523,7 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
       voucherToko,
       flashSale,
       telegramBot,
+      staffManagement,
       hasAdvancedStats,
       has30DaysStats,
       hasAllTimeStats,

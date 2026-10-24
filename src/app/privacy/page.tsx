@@ -209,7 +209,7 @@ export default function PrivacyPage() {
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground max-w-2xl mx-auto leading-tight">
-              Kebijakan Privasi & Perlindungan Data Pribadi
+              Kebijakan Privasi
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">

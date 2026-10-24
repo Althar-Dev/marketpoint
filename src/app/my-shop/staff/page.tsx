@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { useMerchantShop } from "@/context/merchant-context";
+import { MerchantPlanLock } from "@/components/merchant-plan-lock";
 import {
   collection,
   doc,
@@ -223,6 +224,8 @@ export default function MerchantAdminsPage() {
     isOwner,
     isStaff,
     staffRole: currentStaffRole,
+    effectiveFeatures,
+    isAdmin,
   } = useMerchantShop();
   const activeShopId = shopId || user?.uid;
 
@@ -427,7 +430,20 @@ export default function MerchantAdminsPage() {
     setFormPermissions(ROLE_PRESETS[newRole].permissions);
   };
 
+  const isStaffAllowed = Boolean(
+    effectiveFeatures?.staffManagement ||
+    effectiveFeatures?.planId === "prime"
+  );
+
   const handleOpenAddModal = () => {
+    if (!isStaffAllowed) {
+      toast({
+        title: "Fitur Khusus Plan Prime",
+        description: "Fitur kelola staf dan tambah admin toko hanya tersedia untuk merchant dengan Plan Prime.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (admins.length >= 10) {
       toast({
         title: "Batas Kuota Tercapai",
@@ -543,6 +559,14 @@ export default function MerchantAdminsPage() {
   // Save new / edited admin
   const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isStaffAllowed) {
+      toast({
+        title: "Fitur Khusus Plan Prime",
+        description: "Hanya toko dengan paket Prime yang dapat mengundang dan mengelola staf toko.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (!formEmail.trim()) {
       toast({
         title: "Email wajib diisi",
@@ -873,7 +897,7 @@ export default function MerchantAdminsPage() {
     });
   }, [auditLogs, logSearchQuery, logModuleFilter, logStaffFilter]);
 
-  if (!mounted || authLoading || (shopLoading && !shop)) {
+  if (!mounted || authLoading || merchantLoading || (shopLoading && !shop)) {
     return (
       <div className="p-3 sm:p-5 lg:p-6 space-y-4 max-w-6xl mx-auto">
         <div className="flex justify-between items-center">
@@ -887,6 +911,26 @@ export default function MerchantAdminsPage() {
         </div>
         <Skeleton className="h-64 w-full rounded-xl" />
       </div>
+    );
+  }
+
+  // Subscription Plan Guard: Staff Management is exclusively for Prime plan
+  if (!isStaffAllowed) {
+    return (
+      <MerchantPlanLock
+        title="Fitur Kelola Staff Terkunci"
+        featureName="Manajemen Staff Toko"
+        description="Fitur Manajemen Multi-Admin & Staf Toko khusus tersedia untuk toko dengan paket Prime. Tingkatkan paket toko Anda ke Prime untuk mengundang staf, mengatur hak akses divisi, dan memantau log aktivitas toko."
+        currentPlan={effectiveFeatures?.planName || "Free"}
+        requiredPlans="Prime"
+        icon={UserCog}
+        benefits={[
+          "Undang staf toko untuk membantu operasional harian",
+          "Atur hak akses divisi fleksibel (Keuangan, Produk, Customer Service, Co-Owner)",
+          "Monitor log audit aktivitas setiap staf secara transparan dan aman",
+          "Tingkatkan kecepatan pelayanan pelanggan dengan pembagian tim kerja",
+        ]}
+      />
     );
   }
 

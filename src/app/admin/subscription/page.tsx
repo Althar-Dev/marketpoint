@@ -707,9 +707,9 @@ export default function AdminSubscriptionPage() {
                               <Bot className="w-3 h-3 text-sky-500" /> Bot WA/TG
                             </span>
                           )}
-                          {plan.features?.resellerApi && (
+                          {plan.features?.staffManagement && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200/60 px-2 py-0.5 rounded-md">
-                              <Code2 className="w-3 h-3 text-purple-500" /> API Reseller
+                              <Users className="w-3 h-3 text-purple-500" /> Kelola Staff
                             </span>
                           )}
                           {plan.features?.prioritySupport && (
@@ -1054,15 +1054,15 @@ export default function AdminSubscriptionPage() {
 
                         <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
                           <div className="flex items-center gap-2">
-                            <Code2 className="w-4 h-4 text-purple-500 shrink-0" />
+                            <Users className="w-4 h-4 text-purple-500 shrink-0" />
                             <div>
-                              <p className="text-xs font-bold text-slate-800">API Reseller</p>
-                              <p className="text-[10px] text-muted-foreground">Integrasi API untuk reseller</p>
+                              <p className="text-xs font-bold text-slate-800">Kelola Staff</p>
+                              <p className="text-[10px] text-muted-foreground">Multi-admin & akses staf</p>
                             </div>
                           </div>
                           <Switch
-                            checked={Boolean(editingPlan.features?.resellerApi)}
-                            onCheckedChange={(val) => handleModalFeatureToggle("resellerApi", val)}
+                            checked={Boolean(editingPlan.features?.staffManagement)}
+                            onCheckedChange={(val) => handleModalFeatureToggle("staffManagement", val)}
                           />
                         </div>
 

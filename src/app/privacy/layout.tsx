@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description: 'Kebijakan Privasi (Privacy Policy) dan Perlindungan Data Pribadi MarketPointID. Pelajari bagaimana kami mengumpulkan, mengamankan, dan memproses data Anda sesuai UU PDP.',
+  title: 'Kebijakan Privasi',
+  description: 'Kebijakan Privasi dan Perlindungan Data Pribadi MarketPointID. Pelajari bagaimana kami mengumpulkan, mengamankan, dan memproses data Anda sesuai UU PDP.',
   alternates: {
     canonical: '/privacy',
   },
   openGraph: {
-    title: 'Kebijakan Privasi | MarketPointID Indonesia',
+    title: 'Kebijakan Privasi | MarketPointID',
     description: 'Komitmen perlindungan data pribadi pengguna, pembeli, dan mitra merchant di ekosistem MarketPointID.',
     url: '/privacy',
     type: 'website',

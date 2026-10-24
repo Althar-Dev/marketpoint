@@ -4,7 +4,8 @@ export interface PlanFeaturesConfig {
   badgeVerified: boolean;
   badgeOfficial: boolean;
   telegramBot: boolean;
-  resellerApi: boolean;
+  staffManagement?: boolean;
+  resellerApi?: boolean;
   prioritySupport: boolean;
 }
 
@@ -40,7 +41,7 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
       badgeVerified: false,
       badgeOfficial: false,
       telegramBot: false,
-      resellerApi: false,
+      staffManagement: false,
       prioritySupport: false,
     },
     customFeatures: ["Komisi 7.0%", "Max 5 Produk", "Statistik dasar toko"]
@@ -61,7 +62,7 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
       badgeVerified: false,
       badgeOfficial: false,
       telegramBot: false,
-      resellerApi: false,
+      staffManagement: false,
       prioritySupport: false,
     },
     customFeatures: ["Komisi 5.0%", "Max 15 Produk", "Max 2 Voucher toko", "Max 1 Flash sale", "Statistik dasar & Produk terlaris"]
@@ -83,7 +84,7 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
       badgeVerified: true,
       badgeOfficial: false,
       telegramBot: true,
-      resellerApi: false,
+      staffManagement: false,
       prioritySupport: false,
     },
     customFeatures: ["Komisi 3.5%", "Max 40 Produk", "Max 5 Voucher toko", "Max 3 Flash sale", "Badge verified", "Bot Telegram", "Statistik riwayat 30 hari & Tren"]
@@ -91,7 +92,7 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
   {
     id: "prime",
     name: "Prime",
-    description: "Solusi tanpa batas untuk merchant skala besar, API reseller dan prioritas support.",
+    description: "Solusi tanpa batas untuk merchant skala besar, kelola staf multi-admin, dan prioritas support.",
     monthlyPrice: 249000,
     yearlyPrice: 2490000,
     commissionRate: 2.0,
@@ -104,10 +105,10 @@ export const DEFAULT_PLANS_CONFIG: PlanConfigItem[] = [
       badgeVerified: true,
       badgeOfficial: true,
       telegramBot: true,
-      resellerApi: true,
+      staffManagement: true,
       prioritySupport: true,
     },
-    customFeatures: ["Komisi 2.0%", "Unlimited produk", "Max 15 Voucher toko", "Max 10 Flash sale", "Badge official", "Bot Telegram", "Statistik lengkap semua waktu & Ekspor laporan", "API Reseller / Public Provider", "Prioritas support"]
+    customFeatures: ["Komisi 2.0%", "Unlimited produk", "Max 15 Voucher toko", "Max 10 Flash sale", "Badge official", "Bot Telegram", "Kelola Staff & Multi-Admin", "Statistik lengkap semua waktu & Ekspor laporan", "Prioritas support"]
   }
 ];
 

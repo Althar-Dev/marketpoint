@@ -125,6 +125,7 @@ export function MerchantSidebar() {
     if (href === "/my-shop/vouchers") return !effectiveFeatures.voucherToko;
     if (href === "/my-shop/flash-sale") return !effectiveFeatures.flashSale;
     if (href === "/my-shop/telegram-bot") return !effectiveFeatures.telegramBot;
+    if (href === "/my-shop/staff") return !effectiveFeatures.staffManagement;
     return false;
   };
 
@@ -153,6 +154,14 @@ export function MerchantSidebar() {
           description:
             "Koneksikan bot Telegram resmi toko untuk menerima notifikasi pesanan baru, pembayaran lunas, dan kendala komplain seketika di ponsel Anda.",
           requiredPlans: "Pro atau Prime",
+        };
+      case "/my-shop/staff":
+        return {
+          label: "Staff Toko",
+          href: item.href,
+          description:
+            "Undang staf dan admin toko untuk membantu operasional, pengelolaan produk, keuangan, dan chat pembeli secara aman dengan pembagian hak akses terstruktur.",
+          requiredPlans: "Prime",
         };
       default:
         return {

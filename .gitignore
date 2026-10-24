@@ -11,6 +11,7 @@
 !.yarn/versions
 /bot-session
 /.idx
+/api-test
 
 # testing
 /coverage
@@ -45,3 +46,4 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+certificates

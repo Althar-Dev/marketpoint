@@ -6,6 +6,7 @@ import Script from 'next/script';
 import { Toaster } from "@/components/ui/toaster";
 import { MarketBottomNav } from "@/components/market-bottom-nav";
 import { MaintenanceGuard } from "@/components/maintenance-guard";
+import { DeviceSessionTracker } from "@/components/device-session-tracker";
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://marketpoint.id';
 
@@ -204,6 +205,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background text-foreground overflow-x-hidden">
         <FirebaseClientProvider>
+          <DeviceSessionTracker />
           <MaintenanceGuard>
             {children}
             <Toaster />
