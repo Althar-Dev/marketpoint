@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       );
     }
 
-    let subject = "[Pemberitahuan Keamanan] Perubahan Pada Akun MarketPointID";
+    let subject = "Perubahan Pada Akun MarketPointID";
     if (eventType === "password_changed") {
       subject = "Kata Sandi Akun MarketPointID Anda Berhasil Diubah";
     } else if (eventType === "pin_changed") {
@@ -51,11 +51,11 @@ export async function POST(req: Request) {
       newValue,
     });
 
-    const text = `Halo ${displayName},\n\nKami menginformasikan bahwa telah terjadi perubahan keamanan pada akun MarketPointID Anda (${email}):\n- Jenis: ${subject}\n${newValue ? `- Rincian: ${newValue}\n` : ""}\nJika ini BUKAN Anda yang melakukan perubahan, segera amankan akun Anda di https://marketpoint.id/settings/security\n\nSalam,\nTim Keamanan MarketPointID (no-reply@marketpoint.id)`;
+    const text = `Halo ${displayName},\n\nKami menginformasikan bahwa telah terjadi perubahan keamanan pada akun MarketPointID Anda (${email}):\n- Jenis: ${subject}\n${newValue ? `- Rincian: ${newValue}\n` : ""}\nJika ini BUKAN Anda yang melakukan perubahan, segera amankan akun Anda di https://marketpoint.id/settings/security\n\nSalam,\nTim MarketPointID`;
 
     // Send email using MarketPoint's official mailer
     const sendResult = await sendOutgoingEmail({
-      from: `"MarketPointID Security" <no-reply@marketpoint.id>`,
+      from: `"MarketPointID" <no-reply@marketpoint.id>`,
       to: email,
       subject,
       text,
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Pemberitahuan keamanan telah dikirimkan ke ${email} melalui no-reply@marketpoint.id`,
+      message: `Pemberitahuan keamanan telah dikirimkan ke ${email}`,
     });
   } catch (error: any) {
     console.error("[API SEND SECURITY ALERT ERROR]", error);

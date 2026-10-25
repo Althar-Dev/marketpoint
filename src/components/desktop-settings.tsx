@@ -354,7 +354,8 @@ export function DesktopSettings({
   }, [emailCountdown]);
 
   const handleOpenEmailDialog = () => {
-    setEmailInput(userData?.email || user?.email || "");
+    if (userData?.email || user?.email) return;
+    setEmailInput("");
     setEmailVerificationCode("");
     setEmailStep("input");
     setEmailCountdown(0);
@@ -393,7 +394,7 @@ export function DesktopSettings({
       setEmailCountdown(60);
       toast({
         title: "Kode Verifikasi Terkirim",
-        description: `Kode 6 digit telah dikirimkan dari no-reply@marketpoint.id ke ${cleanEmail}.`,
+        description: `Kode 6 digit telah dikirimkan ke ${cleanEmail}.`,
       });
     } catch (err: any) {
       toast({
@@ -859,13 +860,15 @@ export function DesktopSettings({
                                 <div className="bg-amber-100 text-amber-800 text-[9px] font-bold px-1.5 py-0.5 rounded">Belum Terdaftar</div>
                               )}
                             </div>
-                            <button
-                              type="button"
-                              onClick={handleOpenEmailDialog}
-                              className="text-[11px] font-bold text-[#00AA5B] hover:underline transition-all"
-                            >
-                              {userData?.email || user?.email ? "Ubah" : "Tambah"}
-                            </button>
+                            {!(userData?.email || user?.email) && (
+                              <button
+                                type="button"
+                                onClick={handleOpenEmailDialog}
+                                className="text-[11px] font-bold text-[#00AA5B] hover:underline transition-all"
+                              >
+                                Tambah
+                              </button>
+                            )}
                           </div>
                         </div>
                         <div className="grid grid-cols-12 items-center gap-3">
@@ -982,19 +985,21 @@ export function DesktopSettings({
                             Terverifikasi
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                            Belum Ada
-                          </span>
+                          <>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                              Belum Ada
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleOpenEmailDialog}
+                              className="h-8 px-2.5 text-xs font-bold text-[#00AA5B] hover:bg-[#00AA5B]/10 hover:text-[#00AA5B]"
+                            >
+                              Tambah
+                            </Button>
+                          </>
                         )}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleOpenEmailDialog}
-                          className="h-8 px-2.5 text-xs font-bold text-[#00AA5B] hover:bg-[#00AA5B]/10 hover:text-[#00AA5B]"
-                        >
-                          {userData?.email || user?.email ? "Ubah" : "Tambah"}
-                        </Button>
                       </div>
                     </div>
 
@@ -1761,14 +1766,12 @@ export function DesktopSettings({
               <Mail className="w-5 h-5" />
             </div>
             <DialogTitle className="text-base font-bold text-[#212121]">
-              {emailStep === "input"
-                ? (userData?.email || user?.email ? "Ubah Alamat Email" : "Tambah Alamat Email")
-                : "Verifikasi Kode Email"}
+              {emailStep === "input" ? "Tambah Alamat Email" : "Verifikasi Kode Email"}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
               {emailStep === "input"
-                ? "Email wajib diverifikasi. Kami akan mengirimkan kode 6 digit melalui no-reply@marketpoint.id untuk memastikan kepemilikan akun Anda."
-                : `Masukkan 6 digit kode keamanan yang telah dikirimkan oleh no-reply@marketpoint.id ke ${emailInput}.`}
+                ? "Email wajib diverifikasi. Kami akan mengirimkan kode 6 digit untuk memastikan kepemilikan akun Anda."
+                : `Masukkan 6 digit kode keamanan yang telah dikirimkan ke ${emailInput}.`}
             </DialogDescription>
           </DialogHeader>
 

@@ -50,12 +50,12 @@ export async function POST(req: Request) {
       ipAddress: detectedIp,
     });
 
-    const subject = `[Pemberitahuan Keamanan] Login Terdeteksi di Perangkat Baru`;
-    const text = `Halo ${displayName},\n\nKami mendeteksi aktivitas login ke akun MarketPointID Anda menggunakan perangkat baru:\n\n- Perangkat: ${deviceName}\n- Browser: ${browser}\n- Sistem Operasi: ${os}\n- Lokasi: ${location}\n${detectedIp ? `- Alamat IP: ${detectedIp}\n` : ""}\nJika ini BUKAN Anda, segera putuskan perangkat asing ini dan ubah kata sandi akun Anda melalui tautan berikut:\nhttps://marketpoint.id/settings/devices\nhttps://marketpoint.id/settings/security/change-password\n\nSalam,\nTim Keamanan MarketPointID (no-reply@marketpoint.id)`;
+    const subject = `Login Terdeteksi di Perangkat Baru`;
+    const text = `Halo ${displayName},\n\nKami mendeteksi aktivitas login ke akun MarketPointID Anda menggunakan perangkat baru:\n\n- Perangkat: ${deviceName}\n- Browser: ${browser}\n- Sistem Operasi: ${os}\n- Lokasi: ${location}\n${detectedIp ? `- Alamat IP: ${detectedIp}\n` : ""}\nJika ini BUKAN Anda, segera putuskan perangkat asing ini dan ubah kata sandi akun Anda melalui tautan berikut:\nhttps://marketpoint.id/settings/devices\nhttps://marketpoint.id/settings/security/change-password\n\nSalam,\nTim MarketPointID`;
 
     // Send email using MarketPoint's official mailer
     const sendResult = await sendOutgoingEmail({
-      from: `"MarketPointID Security" <no-reply@marketpoint.id>`,
+      from: `"MarketPointID" <no-reply@marketpoint.id>`,
       to: email,
       subject,
       text,
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Pemberitahuan login perangkat baru telah dikirimkan ke ${email} melalui no-reply@marketpoint.id`,
+      message: `Pemberitahuan login perangkat baru telah dikirimkan ke ${email}`,
     });
   } catch (error: any) {
     console.error("[API SEND NEW DEVICE ALERT ERROR]", error);

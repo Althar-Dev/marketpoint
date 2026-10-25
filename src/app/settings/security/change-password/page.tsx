@@ -119,7 +119,7 @@ export default function ChangePasswordPage() {
 
       toast({
         title: "Kode Verifikasi Terkirim",
-        description: `Kode keamanan telah dikirimkan ke ${cleanEmail} oleh no-reply@marketpoint.id`,
+        description: `Kode keamanan telah dikirimkan ke ${cleanEmail}.`,
       });
     } catch (err: any) {
       console.error(err);
@@ -348,7 +348,7 @@ export default function ChangePasswordPage() {
                 </div>
                 <h1 className="text-lg font-bold text-foreground">Ubah Kata Sandi</h1>
                 <p className="text-xs text-muted-foreground mt-1 mb-6 leading-relaxed">
-                  Masukkan alamat email akun MarketPointID Anda. Kami akan memeriksa ketersediaan akun dan mengirimkan kode verifikasi 6 digit melalui <strong className="text-foreground">no-reply@marketpoint.id</strong>.
+                  Masukkan alamat email akun MarketPointID Anda. Kami akan memeriksa ketersediaan akun dan mengirimkan kode verifikasi 6 digit.
                 </p>
 
                 <form onSubmit={handleSendCode} className="space-y-4">
@@ -400,7 +400,6 @@ export default function ChangePasswordPage() {
                 </p>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-foreground mb-6">
                   <span>{email}</span>
-                  <span className="text-[10px] text-muted-foreground">• dari no-reply@marketpoint.id</span>
                 </div>
 
                 <form onSubmit={handleVerifyCode} className="space-y-4">

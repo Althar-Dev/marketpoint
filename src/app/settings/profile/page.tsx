@@ -142,7 +142,8 @@ export default function ProfileIdentityPage() {
   }, [emailCountdown]);
 
   const handleOpenEmailDialog = () => {
-    setEmailInput(userData?.email || user?.email || "");
+    if (userData?.email || user?.email) return;
+    setEmailInput("");
     setEmailVerificationCode("");
     setEmailStep("input");
     setEmailCountdown(0);
@@ -181,7 +182,7 @@ export default function ProfileIdentityPage() {
       setEmailCountdown(60);
       toast({
         title: "Kode Verifikasi Terkirim",
-        description: `Kode 6 digit telah dikirimkan dari no-reply@marketpoint.id ke ${cleanEmail}.`,
+        description: `Kode 6 digit telah dikirimkan ke ${cleanEmail}.`,
       });
     } catch (err: any) {
       toast({
@@ -592,22 +593,29 @@ export default function ProfileIdentityPage() {
               </div>
 
               {/* Row: Email */}
-              <button
-                type="button"
-                onClick={handleOpenEmailDialog}
-                className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-slate-50/70 active:bg-slate-100/70 transition-colors"
-              >
-                <span className="w-28 text-[13px] text-[#6C727C]">Email</span>
-                <span
-                  className={cn(
-                    "flex-1 text-[13px] truncate pr-2 font-normal",
-                    (userData?.email || user.email) ? "text-[#212121]" : "text-[#8D96A0]"
-                  )}
+              {(userData?.email || user.email) ? (
+                <div className="w-full px-5 py-3 flex items-center justify-between text-left">
+                  <span className="w-28 text-[13px] text-[#6C727C]">Email</span>
+                  <span className="flex-1 text-[13px] truncate pr-2 font-normal text-[#212121]">
+                    {userData?.email || user.email}
+                  </span>
+                  <span className="text-[10px] font-bold text-[#059669] bg-[#D1FAE5] px-1.5 py-0.5 rounded">
+                    Terverifikasi
+                  </span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleOpenEmailDialog}
+                  className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-slate-50/70 active:bg-slate-100/70 transition-colors"
                 >
-                  {userData?.email || user.email || "Tambah Email"}
-                </span>
-                <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
-              </button>
+                  <span className="w-28 text-[13px] text-[#6C727C]">Email</span>
+                  <span className="flex-1 text-[13px] truncate pr-2 font-semibold text-[#00AA5B]">
+                    Tambah Email
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+                </button>
+              )}
 
               {/* Row: Nomor HP */}
               <button
@@ -794,14 +802,12 @@ export default function ProfileIdentityPage() {
                 <Mail className="w-4.5 h-4.5" />
               </div>
               <DialogTitle className="text-base font-bold text-[#212121]">
-                {emailStep === "input"
-                  ? (userData?.email || user.email ? "Ubah Alamat Email" : "Tambah Alamat Email")
-                  : "Verifikasi Kode Email"}
+                {emailStep === "input" ? "Tambah Alamat Email" : "Verifikasi Kode Email"}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
                 {emailStep === "input"
-                  ? "Email wajib diverifikasi menggunakan kode 6 digit yang dikirimkan via no-reply@marketpoint.id."
-                  : `Masukkan 6 digit kode keamanan yang dikirimkan dari no-reply@marketpoint.id ke ${emailInput}.`}
+                  ? "Email wajib diverifikasi. Kami akan mengirimkan kode 6 digit untuk memastikan kepemilikan akun Anda."
+                  : `Masukkan 6 digit kode keamanan yang telah dikirimkan ke ${emailInput}.`}
               </DialogDescription>
             </DialogHeader>
 

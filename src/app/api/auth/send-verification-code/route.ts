@@ -53,10 +53,10 @@ export async function POST(req: Request) {
 
     // Send email using MarketPoint's mailer
     const sendResult = await sendOutgoingEmail({
-      from: `"MarketPointID Security" <no-reply@marketpoint.id>`,
+      from: `"MarketPointID" <no-reply@marketpoint.id>`,
       to: email,
       subject,
-      text: `Kode verifikasi keamanan akun MarketPointID Anda adalah: ${code}. Kode ini berlaku selama 10 menit. Jangan berikan kode ini kepada siapa pun.`,
+      text: `Kode verifikasi akun MarketPointID Anda adalah: ${code}. Kode ini berlaku selama 10 menit. Jangan berikan kode ini kepada siapa pun.`,
       html,
     });
 
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Kode verifikasi telah dikirimkan ke ${email} melalui no-reply@marketpoint.id`,
+      message: `Kode verifikasi telah dikirimkan ke ${email}`,
       token,
       expiresAt,
     });

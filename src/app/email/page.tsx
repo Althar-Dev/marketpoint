@@ -83,6 +83,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { renderDeliveryEmailHtml, parsePlainTextDeliveryEmail } from "@/lib/email-template";
+import { EmailTemplatePreview } from "@/components/email-template-preview";
 
 interface Account {
   email: string;
@@ -255,7 +256,7 @@ export default function EmailManagementPage() {
   const { toast } = useToast();
 
   // Navigation & View States
-  const [viewMode, setViewMode] = useState<"inbox" | "accounts" | "delivery" | "settings">("inbox");
+  const [viewMode, setViewMode] = useState<"inbox" | "accounts" | "delivery" | "settings" | "preview">("inbox");
   const [activeFolder, setActiveFolder] = useState<"inbox" | "sent" | "drafts" | "trash">("inbox");
   const [selectedEmail, setSelectedEmail] = useState<EmailItem | null>(null);
   const [showEmailTechDetails, setShowEmailTechDetails] = useState(false);
@@ -442,7 +443,7 @@ export default function EmailManagementPage() {
     setIsMobileSidebarOpen(false);
   };
 
-  const handleViewChange = (mode: "accounts" | "delivery" | "settings") => {
+  const handleViewChange = (mode: "accounts" | "delivery" | "settings" | "preview") => {
     setViewMode(mode);
     setSelectedEmail(null);
     setSelectedMailIds([]);
@@ -1882,6 +1883,21 @@ export default function EmailManagementPage() {
               </button>
 
               <button
+                onClick={() => handleViewChange("preview")}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all",
+                  viewMode === "preview"
+                    ? "bg-white text-[#00AA5B] shadow-xs border border-border/80"
+                    : "text-muted-foreground hover:bg-slate-200/50"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Eye className="w-4 h-4 text-emerald-600" /> Preview Template
+                </div>
+                <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-md font-bold">Live</span>
+              </button>
+
+              <button
                 onClick={() => handleViewChange("accounts")}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all",
@@ -2699,6 +2715,12 @@ export default function EmailManagementPage() {
 
                 </div>
               </div>
+            </div>
+
+            /* VIEW MODE 2c: PREVIEW TEMPLATE EMAIL */
+          ) : viewMode === "preview" ? (
+            <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-200">
+              <EmailTemplatePreview />
             </div>
 
             /* VIEW MODE 3: DETAIL EMAIL TERPILIH */
