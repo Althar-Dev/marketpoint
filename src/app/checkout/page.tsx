@@ -40,6 +40,7 @@ import {
   LogIn
 } from "lucide-react";
 import { getProductActiveFlashSale, sanitizeForFirestore } from "@/lib/flash-sale";
+import { canShopUseFlashSale, canShopUseVouchers } from "@/lib/subscription-plans";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -254,11 +255,16 @@ function CheckoutContent() {
   );
   const { data: shopData } = useDoc(shopDocRef);
 
-  // Active Flash Sale check
+  // Active Flash Sale check (only if shop plan supports Flash Sale and is active)
   const activeFlashSale = useMemo(() => {
     if (!product?.id || !shopData?.flashSales) return null;
+    const planId = sellerSubscription?.planId || shopData?.subscription?.planId;
+    const status = sellerSubscription?.status || shopData?.subscription?.status;
+    const expiresAt = sellerSubscription?.expiresAt || shopData?.subscription?.expiresAt;
+    const hasFlashSale = canShopUseFlashSale(planId, status, expiresAt);
+    if (!hasFlashSale) return null;
     return getProductActiveFlashSale(product.id, shopData.flashSales);
-  }, [product?.id, shopData?.flashSales]);
+  }, [product?.id, shopData?.flashSales, shopData?.subscription, sellerSubscription]);
 
   // Seller Subscription Tier & Platform Fee Rate
   const [sellerSubscription, setSellerSubscription] = useState<any>(null);
@@ -273,7 +279,7 @@ function CheckoutContent() {
           setSellerSubscription(data.subscription);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [sellerShopId]);
 
   const DEFAULT_TIER_RATES: Record<string, number> = {
@@ -495,12 +501,18 @@ function CheckoutContent() {
           const shopDocSnap = await getDoc(doc(db, "shops", sId));
           if (shopDocSnap.exists()) {
             const sData = shopDocSnap.data();
+            const planId = sData?.subscription?.planId;
+            const status = sData?.subscription?.status;
+            const expiresAt = sData?.subscription?.expiresAt;
+            const hasVoucherPermission = canShopUseVouchers(planId, status, expiresAt);
             const shopVouchers = Array.isArray(sData?.vouchers) ? sData.vouchers : [];
             const found = shopVouchers.find((v: any) => v.code?.toUpperCase() === code);
             if (found) {
               matchedVoucher = {
                 ...found,
                 shopName: sData?.name || sData?.shopName || "Toko Penjual",
+                hasVoucherPermission,
+                shopPlanName: sData?.subscription?.planName || (planId ? planId.toUpperCase() : "FREE"),
               };
             }
           }
@@ -528,6 +540,15 @@ function CheckoutContent() {
 
       // 2. Validate matched shop voucher
       if (matchedVoucher) {
+        if (matchedVoucher.hasVoucherPermission === false) {
+          toast({
+            variant: "destructive",
+            title: "Voucher Tidak Berlaku",
+            description: `Toko penjual saat ini menggunakan paket ${matchedVoucher.shopPlanName || "Free"} yang tidak mendukung promo voucher atau masa aktif langganan toko telah berakhir.`,
+          });
+          return;
+        }
+
         if (matchedVoucher.status !== "ACTIVE") {
           toast({
             variant: "destructive",
@@ -743,15 +764,15 @@ function CheckoutContent() {
           const updates = { status: "PAID", deliveredBy: "delivery@marketpoint.id", updatedAt: serverTimestamp() };
           const invNum = invoiceData?.invoiceNumber;
           if (invNum) {
-            setDoc(doc(db, "transactions", invNum), updates, { merge: true }).catch(() => {});
+            setDoc(doc(db, "transactions", invNum), updates, { merge: true }).catch(() => { });
           }
           if (user?.uid && invoiceData?.userOrderId) {
-            updateDoc(doc(db, "users", user.uid, "transactions", invoiceData.userOrderId), updates).catch(() => {});
+            updateDoc(doc(db, "users", user.uid, "transactions", invoiceData.userOrderId), updates).catch(() => { });
           }
           const sId = product?.shopId || product?.shop_id;
           if (sId) {
             if (invoiceData?.shopOrderId) {
-              updateDoc(doc(db, "shops", sId, "orders", invoiceData.shopOrderId), updates).catch(() => {});
+              updateDoc(doc(db, "shops", sId, "orders", invoiceData.shopOrderId), updates).catch(() => { });
             }
 
             // Hitung pendapatan bersih toko (Net Sales):
@@ -838,7 +859,7 @@ function CheckoutContent() {
                     shopTier: sTier,
                     netAmount: netSalesAmount,
                   }),
-                }).catch(() => {});
+                }).catch(() => { });
               }
 
               // Catat / update data pembeli ke koleksi pelanggan toko

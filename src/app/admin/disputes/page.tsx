@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/firebase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type DisputeStatus =
@@ -125,6 +126,7 @@ function formatRupiah(amount?: number | null) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function AdminDisputesPage() {
+  const { user } = useUser();
   const { toast } = useToast();
 
   const [disputes, setDisputes] = useState<DisputeRecord[]>([]);
@@ -149,11 +151,18 @@ export default function AdminDisputesPage() {
 
   // ─── Fetch ────────────────────────────────────────────────────────────────
   const fetchDisputes = useCallback(async (silent = false) => {
+    if (!user) return;
     if (!silent) setIsLoading(true);
     else setRefreshing(true);
     try {
+      const token = await user.getIdToken();
       const res = await fetch(
-        `/api/disputes?admin=1&status=${statusFilter}&limit=100`
+        `/api/disputes?admin=1&status=${statusFilter}&limit=100`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       const data = await res.json();
       if (data.success) setDisputes(data.disputes || []);
@@ -163,11 +172,13 @@ export default function AdminDisputesPage() {
       setIsLoading(false);
       setRefreshing(false);
     }
-  }, [statusFilter]);
+  }, [user, statusFilter]);
 
   useEffect(() => {
-    fetchDisputes();
-  }, [fetchDisputes]);
+    if (user) {
+      fetchDisputes();
+    }
+  }, [user, fetchDisputes]);
 
   // ─── Stats ────────────────────────────────────────────────────────────────
   const stats = useMemo(() => ({
@@ -208,12 +219,16 @@ export default function AdminDisputesPage() {
   };
 
   const handleSubmitResolve = async () => {
-    if (!selectedDispute) return;
+    if (!selectedDispute || !user) return;
     setSubmitting(true);
     try {
+      const token = await user.getIdToken();
       const res = await fetch("/api/disputes", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           id: selectedDispute.id,
           action: "admin_resolve",
@@ -242,10 +257,15 @@ export default function AdminDisputesPage() {
   };
 
   const handleEscalate = async (dispute: DisputeRecord) => {
+    if (!user) return;
     try {
+      const token = await user.getIdToken();
       const res = await fetch("/api/disputes", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ id: dispute.id, action: "admin_review" }),
       });
       const data = await res.json();

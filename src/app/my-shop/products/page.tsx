@@ -526,9 +526,13 @@ export default function MerchantProductsPage() {
         payload.id = editingProduct.id;
       }
 
+      const token = user ? await user.getIdToken() : "";
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
 
@@ -564,8 +568,12 @@ export default function MerchantProductsPage() {
     if (!user || !productToDelete) return;
     setIsDeletingProduct(true);
     try {
+      const token = user ? await user.getIdToken() : "";
       const res = await fetch(`/api/products?id=${productToDelete.id}&shopId=${activeShopId}`, {
         method: "DELETE",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
 
       if (res.ok) {

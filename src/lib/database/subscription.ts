@@ -54,10 +54,36 @@ export async function getShopSubscription(shopId: string): Promise<ShopSubscript
     const res = await query(sql, [shopId]);
     if (res.rows.length > 0) {
       const row = res.rows[0];
+      const now = Date.now();
+
+      // AUTO-EXPIRE CHECK: Jika tanggal kedaluwarsa sudah lewat, otomatis downgrade ke status EXPIRED & plan Free
+      const isExpired = Boolean(
+        row.expiresAt &&
+        new Date(row.expiresAt).getTime() < now &&
+        row.planId !== "free" &&
+        row.planId !== "admin"
+      );
+
+      if (isExpired) {
+        try {
+          await query(
+            `UPDATE shop_subscriptions 
+             SET status = 'EXPIRED', plan_id = 'free', plan_name = 'Free' 
+             WHERE shop_id = $1`,
+            [shopId]
+          );
+        } catch (updateErr) {
+          console.warn("[AUTO-EXPIRE SUBSCRIPTION DB WARN]", updateErr);
+        }
+        row.status = "EXPIRED";
+        row.planId = "free";
+        row.planName = freePlanConfig?.name || "Free";
+      }
+
       const plan = (row.planId || "free") as "free" | "plus" | "pro" | "prime" | "admin";
       const rate = plan === "admin" ? 0.0 : (settings?.commissions?.[plan] ?? (plan === "prime" ? 2.0 : plan === "pro" ? 3.5 : plan === "plus" ? 5.0 : 7.0));
       const planConfig = settings?.plans?.find((p: any) => p.id === plan);
-      const activeMaxProducts = plan === "admin" ? -1 : (typeof planConfig?.maxProducts === "number" ? planConfig.maxProducts : Number(row.maxProducts));
+      const activeMaxProducts = plan === "admin" ? -1 : (typeof planConfig?.maxProducts === "number" ? planConfig.maxProducts : (plan === "free" ? defaultFreeLimit : Number(row.maxProducts)));
       return {
         ...row,
         maxProducts: activeMaxProducts,
@@ -161,11 +187,22 @@ export async function getAllShopSubscriptions(): Promise<ShopSubscription[]> {
       ORDER BY subscribed_at DESC
     `;
     const res = await query(sql);
+    const now = Date.now();
     return res.rows.map(row => {
-      const plan = (row.planId || "free") as "free" | "plus" | "pro" | "prime";
+      const isExpired = Boolean(
+        row.expiresAt &&
+        new Date(row.expiresAt).getTime() < now &&
+        row.planId !== "free" &&
+        row.planId !== "admin"
+      );
+      const plan = (isExpired ? "free" : (row.planId || "free")) as "free" | "plus" | "pro" | "prime";
+      const status = isExpired ? "EXPIRED" : row.status;
       const rate = settings.commissions[plan] ?? (plan === "prime" ? 2.0 : plan === "pro" ? 3.5 : plan === "plus" ? 5.0 : 7.0);
       return {
         ...row,
+        status,
+        planId: plan,
+        planName: isExpired ? `${row.planName} (Kedaluwarsa)` : row.planName,
         maxProducts: Number(row.maxProducts),
         commissionRate: rate,
       };

@@ -13,11 +13,8 @@ import {
   Wallet,
   Home,
   ShieldCheck,
-  Search,
-  XCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +26,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { useUserBalance } from "@/hooks/use-user-balance";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -42,8 +40,6 @@ export function DashboardHeader() {
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
 
-  const [search, setSearch] = React.useState("");
-
   const userDocRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "users", user.uid);
@@ -51,13 +47,14 @@ export function DashboardHeader() {
   const { data: userData } = useDoc(userDocRef);
 
   const rawPhoto = userData?.photoURL || user?.photoURL;
-  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (rawPhoto || undefined);
+  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.png" : (rawPhoto || undefined);
 
   const walletRef = useMemoFirebase(() => {
     if (!user) return null;
     return doc(db, "users", user.uid, "wallet", "info");
   }, [db, user]);
   const { data: wallet } = useDoc(walletRef);
+  const { balance: pgBalance } = useUserBalance();
 
   const handleLogout = async () => {
     try {
@@ -70,7 +67,13 @@ export function DashboardHeader() {
 
   const getBreadcrumb = (path: string) => {
     switch (path) {
-      case "/dashboard": return "Ringkasan Akun";
+      case "/dashboard": return "Ringkasan";
+      case "/dashboard/balance": return "Saldo & Keuangan";
+      case "/dashboard/transactions": return "Riwayat Transaksi";
+      case "/dashboard/products": return "Katalog Produk";
+      case "/dashboard/products/add": return "Tambah Produk";
+      case "/dashboard/services": return "Layanan PPOB";
+      case "/dashboard/api-key": return "API Key";
       case "/transactions": return "Riwayat Pesanan";
       case "/wallet": return "Saldo & Keuangan";
       case "/wishlist": return "Wishlist Saya";
@@ -99,45 +102,29 @@ export function DashboardHeader() {
             {getBreadcrumb(pathname)}
           </h1>
         </div>
-
-        {/* Global Search in Dashboard */}
-        <div className="relative flex-1 max-w-md hidden md:block ml-2">
-           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-           <Input 
-             placeholder="Cari produk digital atau pesanan..."
-             value={search}
-             onChange={(e) => setSearch(e.target.value)}
-             className="h-9 pl-9 rounded-xl bg-slate-50/50 border-border focus:bg-white transition-all text-xs"
-           />
-           {search && (
-             <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-                <XCircle className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-foreground" />
-             </button>
-           )}
-        </div>
       </div>
 
       <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
         {/* Wallet Mini Display */}
         <Link href="/wallet" className="hidden lg:flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-border bg-slate-50/50 hover:bg-slate-100 transition-all cursor-pointer">
-           <div className="h-7 w-7 rounded-lg bg-green-50 text-[#00AA5B] flex items-center justify-center shrink-0 shadow-2xs border border-green-100">
-              <Wallet className="w-3.5 h-3.5" />
-           </div>
-           <div className="flex flex-col leading-none">
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Saldo Belanja</span>
-              <span className="text-xs font-black text-slate-900 mt-0.5">
-                 Rp {(wallet?.balance || 0).toLocaleString("id-ID")}
-              </span>
-           </div>
+          <div className="h-7 w-7 rounded-lg bg-green-50 text-[#00AA5B] flex items-center justify-center shrink-0 shadow-2xs border border-green-100">
+            <Wallet className="w-3.5 h-3.5" />
+          </div>
+          <div className="flex flex-col leading-none">
+            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Saldo Belanja</span>
+            <span className="text-xs font-black text-slate-900 mt-0.5">
+              Rp {(typeof pgBalance === "number" ? pgBalance : (wallet?.balance || 0)).toLocaleString("id-ID")}
+            </span>
+          </div>
         </Link>
 
         <div className="flex items-center gap-1">
-           <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50 transition-all" title="Notifikasi">
-             <Bell className="w-4.5 h-4.5" />
-           </Button>
-           <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50 transition-all" title="Bantuan">
-             <MessageCircle className="w-4.5 h-4.5" />
-           </Button>
+          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50 transition-all" title="Notifikasi">
+            <Bell className="w-4.5 h-4.5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-[#00AA5B] hover:bg-green-50 transition-all" title="Bantuan">
+            <MessageCircle className="w-4.5 h-4.5" />
+          </Button>
         </div>
 
         <DropdownMenu>

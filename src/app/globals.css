@@ -195,3 +195,10 @@
   background-color: hsl(var(--primary));
   animation: loading-progress 1.5s infinite ease-in-out;
 }
+
+
+/* Hide mobile footer navigation when mobile search overlay is active */
+body[data-search-open="true"] nav.pb-safe,
+body:has([data-mobile-search-overlay="true"]) nav.pb-safe {
+  display: none !important;
+}

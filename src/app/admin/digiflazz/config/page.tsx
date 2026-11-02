@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useFirestore, useDoc, useMemoFirebase, useUser } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 export default function DigiFlazzConfigPage() {
+  const { user } = useUser();
   const { toast } = useToast();
   const db = useFirestore();
   const [mounted, setMounted] = useState(false);
@@ -115,7 +116,10 @@ export default function DigiFlazzConfigPage() {
 
   const fetchInitialConfig = async () => {
     try {
-      const res = await fetch("/api/admin/integrations");
+      const token = await user?.getIdToken();
+      const res = await fetch("/api/admin/integrations", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await res.json();
       if (data.settings?.digiflazz) {
         setUsername((prev) => prev || data.settings.digiflazz.username || "");
@@ -129,6 +133,12 @@ export default function DigiFlazzConfigPage() {
       console.warn("Gagal memuat status integrasi DigiFlazz:", e);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchInitialConfig();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (digiflazzData) {
@@ -156,9 +166,13 @@ export default function DigiFlazzConfigPage() {
         updatedAt: serverTimestamp(),
       }, { merge: true });
 
+      const token = await user?.getIdToken();
       await fetch("/api/admin/integrations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           action: "update_digiflazz",
           digiflazz: { username, apiKey, mode, webhookSecret },
@@ -181,9 +195,13 @@ export default function DigiFlazzConfigPage() {
 
     setCheckingDigiFlazz(true);
     try {
+      const token = await user?.getIdToken();
       const res = await fetch("/api/admin/integrations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           action: "check_digiflazz_balance",
           username: targetUser,
@@ -482,7 +500,7 @@ export default function DigiFlazzConfigPage() {
               <CardContent className="p-4 flex flex-col justify-between h-full space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                    <Wallet className="w-3.5 h-3.5 text-[#00AA5B] shrink-0" /> Saldo Deposit
+                    <Wallet className="w-3.5 h-3.5 text-[#00AA5B] shrink-0" /> Saldo Aktif
                   </span>
                   <Button
                     variant="ghost"

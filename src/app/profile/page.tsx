@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUserBalance } from "@/hooks/use-user-balance";
 import { DesktopSettings } from "@/components/desktop-settings";
 import { DesktopProfileSkeleton } from "@/components/desktop-profile-skeleton";
 import Link from "next/link";
@@ -65,6 +66,7 @@ export default function ProfilePage() {
   const { data: userData, loading: userLoading } = useDoc(userRef);
   const { data: shop, loading: shopLoading } = useDoc(shopRef);
   const { data: wallet, loading: walletLoading } = useDoc(walletRef);
+  const { balance: pgBalance } = useUserBalance();
 
   useEffect(() => {
     setMounted(true);
@@ -171,11 +173,10 @@ export default function ProfilePage() {
         </div>
         <div className="block md:hidden min-h-screen bg-white flex flex-col font-body">
           <main className="flex-1 w-full pb-24 max-w-2xl mx-auto">
-            <div className="px-4 py-1.5 flex items-center justify-between">
-              <Skeleton className="h-4 w-4 rounded-full" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-4 rounded-full" />
-            </div>
+            <header className="px-4 py-3.5 flex items-center justify-between bg-white">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-5 w-5 rounded-full" />
+            </header>
             <div className="px-4 py-2 flex items-center gap-3">
               <Skeleton className="h-12 w-12 rounded-full" />
               <div className="flex-1 space-y-1">
@@ -234,18 +235,21 @@ export default function ProfilePage() {
 
       <div className="block md:hidden min-h-screen bg-white flex flex-col font-body text-[#212121]">
         <main className="flex-1 w-full pb-24 lg:pb-16 max-w-2xl mx-auto">
-          <div className="px-4 py-1.5 flex items-center justify-between bg-white sticky top-0 z-30">
-            <h1 className="text-base font-bold">Akun</h1>
-            <Link href="/settings" className="p-1.5 hover:bg-muted rounded-full transition-colors text-foreground">
-              <Settings className="w-4.5 h-4.5" />
+          <header className="px-4 py-3.5 flex items-center justify-between bg-white sticky top-0 z-30">
+            <h1 className="text-[17px] font-bold text-[#212121] tracking-tight">Akun</h1>
+            <Link
+              href="/settings"
+              className="p-1 -mr-1 hover:bg-muted/50 rounded-full transition-colors text-foreground active:scale-95"
+            >
+              <Settings className="w-5 h-5 text-[#212121]" />
             </Link>
-          </div>
+          </header>
 
           <div className="px-4 py-3 flex items-center gap-3">
             <div className="relative cursor-pointer" onClick={() => mobileFileInputRef.current?.click()}>
               <Avatar className="h-14 w-14 border-none shadow-sm ring-2 ring-muted/20 relative">
                 <AvatarImage
-                  src={userData?.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (userData?.photoURL || (user?.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : user?.photoURL) || undefined)}
+                  src={userData?.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.png" : (userData?.photoURL || (user?.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.png" : user?.photoURL) || undefined)}
                   referrerPolicy="no-referrer"
                 />
                 <AvatarFallback className="bg-[#00AA5B] text-white text-lg font-bold">
@@ -272,7 +276,7 @@ export default function ProfilePage() {
                   <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
                     <img src="/assets/icon/wallets.png" className="w-full h-full object-contain" alt="Wallet" />
                   </div>
-                  <span className="text-[11px] font-bold text-[#212121]">Rp {wallet?.balance?.toLocaleString('id-ID') || 0}</span>
+                  <span className="text-[11px] font-bold text-[#212121]">Rp {(typeof pgBalance === "number" ? pgBalance : (wallet?.balance || 0)).toLocaleString('id-ID')}</span>
                   <ChevronRight className="w-2.5 h-2.5 text-muted-foreground" />
                 </div>
                 <div className="flex items-center gap-2">
@@ -305,7 +309,6 @@ export default function ProfilePage() {
 
           <div className="py-1">
             {[
-              { label: "Daftar Transaksi", icon: ReceiptText, href: "/transactions" },
               { label: "Ulasan", icon: Star, href: "/inbox/reviews" },
               { label: "Update Toko", icon: BellRing, href: "/inbox/updates" },
               { label: "Wishlist", icon: Heart, href: "/wishlist" },

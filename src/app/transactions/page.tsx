@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { MarketHeader } from "@/components/market-header";
@@ -14,18 +15,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search,
-  ReceiptText,
   ChevronRight,
   ShoppingBag,
+  Wallet,
   Clock,
   CheckCircle2,
   XCircle,
-  Filter,
   ChevronLeft,
   Loader2,
   ShieldCheck,
@@ -33,16 +32,18 @@ import {
   CreditCard,
   Copy,
   Check,
-  Sparkles
+  Sparkles,
+  Tag,
+  ArrowRight,
+  X
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
+import { cn, cleanProductTitle, cleanPaymentMethodName, getPaymentLogo } from "@/lib/utils";
 
 const STATUS_TABS = [
-  { id: "all", label: "Semua", icon: ReceiptText },
-  { id: "pending", label: "Menunggu Pembayaran", icon: Clock },
-  { id: "success", label: "Berhasil", icon: CheckCircle2 },
-  { id: "failed", label: "Gagal/Batal", icon: XCircle },
+  { id: "all", label: "Semua" },
+  { id: "pending", label: "Menunggu Pembayaran" },
+  { id: "success", label: "Berhasil" },
+  { id: "failed", label: "Gagal / Batal" },
 ];
 
 function TransactionsContent() {
@@ -59,6 +60,7 @@ function TransactionsContent() {
   const initialStatus = searchParams.get("status") || "all";
   const [activeTab, setActiveTab] = useState(initialStatus);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   // Sync activeTab whenever URL query ?status= changes (e.g. from sidebar navigation)
   useEffect(() => {
@@ -136,9 +138,39 @@ function TransactionsContent() {
     }
   };
 
+  // Metrics summary counts
+  const stats = useMemo(() => {
+    let successCount = 0;
+    let pendingCount = 0;
+    let failedCount = 0;
+    let totalSpend = 0;
+
+    for (const t of transactions) {
+      const statusUpper = String(t.status || "").toUpperCase();
+      const amount = Number(t.totalAmount) || 0;
+
+      if (["PAID", "SETTLED", "SUCCESS", "COMPLETED", "BERHASIL"].includes(statusUpper)) {
+        successCount++;
+        totalSpend += amount;
+      } else if (["PENDING", "UNPAID", "WAITING", "MENUNGGU"].includes(statusUpper)) {
+        pendingCount++;
+      } else if (["FAILED", "CANCELLED", "EXPIRED", "BATAL", "GAGAL"].includes(statusUpper)) {
+        failedCount++;
+      }
+    }
+
+    return {
+      total: transactions.length,
+      successCount,
+      pendingCount,
+      failedCount,
+      totalSpend,
+    };
+  }, [transactions]);
+
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t: any) => {
-      // 1. Status Filter (case-insensitive & supports aliases)
+      // 1. Status Filter
       const statusUpper = String(t.status || "").toUpperCase();
       if (activeTab === "pending" && !["PENDING", "UNPAID", "WAITING", "MENUNGGU"].includes(statusUpper)) return false;
       if (activeTab === "success" && !["PAID", "SETTLED", "SUCCESS", "COMPLETED", "BERHASIL"].includes(statusUpper)) return false;
@@ -146,10 +178,11 @@ function TransactionsContent() {
 
       // 2. Search Filter
       if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+        const q = searchQuery.toLowerCase().trim();
         const matchInvoice = t.invoiceNumber?.toLowerCase().includes(q);
         const matchTitle = t.productTitle?.toLowerCase().includes(q);
-        if (!matchInvoice && !matchTitle) return false;
+        const matchVoucher = t.voucherCode?.toLowerCase().includes(q);
+        if (!matchInvoice && !matchTitle && !matchVoucher) return false;
       }
       return true;
     });
@@ -162,52 +195,59 @@ function TransactionsContent() {
     setCopiedInvoice(invoice);
     toast({
       title: "Invoice Disalin",
-      description: `Nomor invoice ${invoice} berhasil disalin.`,
+      description: `Nomor invoice ${invoice} berhasil disalin ke clipboard.`,
     });
     setTimeout(() => setCopiedInvoice(null), 2000);
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "PAID":
-      case "SETTLED":
-      case "SUCCESS":
-        return (
-          <span className="inline-flex items-center gap-1 bg-emerald-50 text-[#00AA5B] border border-emerald-200/80 text-[10px] font-bold px-2 py-0.5 rounded-full">
-            <CheckCircle2 className="w-3 h-3 text-[#00AA5B]" /> Berhasil
-          </span>
-        );
-      case "PENDING":
-        return (
-          <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200/80 text-[10px] font-bold px-2 py-0.5 rounded-full">
-            <Clock className="w-3 h-3 text-amber-600" /> Menunggu Pembayaran
-          </span>
-        );
-      case "CANCELLED":
-      case "FAILED":
-        return (
-          <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200/80 text-[10px] font-bold px-2 py-0.5 rounded-full">
-            <XCircle className="w-3 h-3 text-rose-600" /> Dibatalkan
-          </span>
-        );
-      case "EXPIRED":
-        return (
-          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
-            <Clock className="w-3 h-3 text-slate-500" /> Kedaluwarsa
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
-            {status}
-          </span>
-        );
+    const s = String(status || "").toUpperCase();
+    if (["PAID", "SETTLED", "SUCCESS", "COMPLETED", "BERHASIL"].includes(s)) {
+      return (
+        <span className="inline-flex items-center gap-1 bg-emerald-50 text-[#00AA5B] border border-emerald-200/70 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-md">
+          <CheckCircle2 className="w-3 h-3 text-[#00AA5B] shrink-0" />
+          <span>Berhasil</span>
+        </span>
+      );
     }
+    if (["PENDING", "UNPAID", "WAITING", "MENUNGGU"].includes(s)) {
+      return (
+        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200/70 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-md">
+          <Clock className="w-3 h-3 text-amber-600 shrink-0" />
+          <span>Menunggu Bayar</span>
+        </span>
+      );
+    }
+    if (["CANCELLED", "FAILED", "BATAL", "GAGAL"].includes(s)) {
+      return (
+        <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200/70 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-md">
+          <XCircle className="w-3 h-3 text-rose-600 shrink-0" />
+          <span>Dibatalkan</span>
+        </span>
+      );
+    }
+    if (["EXPIRED", "KEDALUWARSA"].includes(s)) {
+      return (
+        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 border border-slate-200 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-md">
+          <Clock className="w-3 h-3 text-slate-500 shrink-0" />
+          <span>Kedaluwarsa</span>
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 border border-slate-200 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-md">
+        {status}
+      </span>
+    );
   };
 
   if (!mounted || authLoading) {
     if (!isMobile) return <DesktopProfileSkeleton />;
-    return <div className="h-screen flex items-center justify-center bg-white"><Loader2 className="w-6 h-6 animate-spin text-[#00AA5B]" /></div>;
+    return (
+      <div className="h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-6 h-6 animate-spin text-[#00AA5B]" />
+      </div>
+    );
   }
 
   if (!user) return null;
@@ -218,17 +258,111 @@ function TransactionsContent() {
     <div className="min-h-screen bg-[#F8FAFC] font-body text-[#212121] flex flex-col">
       {!isMobile && <MarketHeader />}
 
+      {/* Mobile Top Header + Fixed Tabs */}
       {isMobile && (
-        <header className="sticky top-0 z-40 bg-white border-b border-border/60 px-4 h-14 flex items-center gap-3 shadow-xs">
-          <Link href="/profile" className="p-1 -ml-1 rounded-full hover:bg-muted text-foreground transition-colors">
-            <ChevronLeft className="w-5 h-5" />
-          </Link>
-          <h1 className="text-sm font-bold">Daftar Transaksi</h1>
-        </header>
+        <div className="sticky top-0 z-40 bg-white border-b border-slate-200/80 shadow-2xs">
+          {isMobileSearchOpen ? (
+            <header className="px-3 h-12 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileSearchOpen(false);
+                  setSearchQuery("");
+                }}
+                className="p-1.5 -ml-1 rounded-full hover:bg-slate-100 text-slate-700 transition-colors shrink-0"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              <div className="relative flex-1">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 pointer-events-none" />
+                <Input
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari invoice, judul, voucher..."
+                  className="h-9 pl-9 pr-8 rounded-lg border-slate-200 bg-slate-50/90 text-xs focus-visible:ring-1 focus-visible:ring-[#00AA5B] focus-visible:border-[#00AA5B]"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </header>
+          ) : (
+            <header className="px-3.5 h-12 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="p-1 -ml-1 rounded-full hover:bg-slate-100 text-slate-700 transition-colors shrink-0 cursor-pointer"
+                  title="Kembali"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <h1 className="text-sm font-bold text-slate-900 truncate">Riwayat Transaksi</h1>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsMobileSearchOpen(true)}
+                className="p-1.5 -mr-1 rounded-full hover:bg-slate-100 text-slate-600 transition-colors shrink-0"
+                title="Cari transaksi"
+              >
+                <Search className="w-4.5 h-4.5" />
+              </button>
+            </header>
+          )}
+
+          {/* Fixed Tabs under Header on Mobile */}
+          <div className="flex items-center gap-4 px-3.5 pt-1 overflow-x-auto no-scrollbar">
+            {STATUS_TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              let tabCount: number | null = null;
+              if (tab.id === "all") tabCount = stats.total;
+              if (tab.id === "pending") tabCount = stats.pendingCount;
+              if (tab.id === "success") tabCount = stats.successCount;
+              if (tab.id === "failed") tabCount = stats.failedCount;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => handleTabChange(tab.id)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 pb-2.5 pt-1 px-0.5 text-xs font-semibold transition-all shrink-0 cursor-pointer border-b-2",
+                    isActive
+                      ? "border-[#00AA5B] text-[#00AA5B] font-bold"
+                      : "border-transparent text-slate-500 hover:text-slate-800"
+                  )}
+                >
+                  <span>{tab.label}</span>
+                  {tabCount !== null && (
+                    <span
+                      className={cn(
+                        "text-[10px] px-1.5 py-0.2 rounded-full font-bold transition-colors",
+                        isActive
+                          ? "bg-[#00AA5B]/10 text-[#00AA5B]"
+                          : "bg-slate-100 text-slate-500"
+                      )}
+                    >
+                      {tabCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       <div className="flex-1 w-full pt-0 md:pt-16">
-        <main className="max-w-screen-xl mx-auto w-full p-3 sm:p-6 pb-20 md:pb-12">
+        <main className="max-w-screen-xl mx-auto w-full p-3 sm:p-6 pb-24 md:pb-12">
           <div className="flex gap-6 items-start">
             {!isMobile && (
               <DesktopAccountSidebar
@@ -242,82 +376,150 @@ function TransactionsContent() {
             )}
 
             <div className="flex-1 min-w-0 space-y-4">
-              <Card className="border border-border/50 shadow-xs bg-white rounded-2xl overflow-hidden p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
-                  <div className="space-y-0.5">
-                    <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-                      <ReceiptText className="w-5 h-5 text-[#00AA5B]" />
-                      Riwayat Pembelian
-                    </h2>
-                    <p className="text-[11px] text-muted-foreground font-medium">
-                      Pantau status pesanan dan ambil lisensi produk digitalmu.
+              {/* Main Transactions Container */}
+              <div className="bg-transparent md:bg-white rounded-none md:rounded-2xl border-0 md:border md:border-slate-200/80 shadow-none md:shadow-xs p-0 md:p-5">
+                {/* Header & Search Bar (Desktop only) */}
+                <div className="hidden md:flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                  <div className="hidden sm:block space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-bold text-slate-900">
+                        Riwayat Transaksi
+                      </h2>
+                      <span className="text-[10px] font-bold text-[#00AA5B] bg-[#00AA5B]/10 px-2 py-0.5 rounded-full">
+                        {filteredTransactions.length} Pesanan
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground font-medium">
+                      Pantau status pesanan, pembayaran, dan ambil lisensi produk digital Anda.
                     </p>
                   </div>
 
-                  <div className="relative w-full sm:w-64">
-                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  {/* Search Bar */}
+                  <div className="relative w-full sm:w-64 md:w-72">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 pointer-events-none" />
                     <Input
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Cari invoice atau produk..."
-                      className="h-9 pl-9 rounded-xl border-border/70 bg-[#F8FAFC] text-xs focus-visible:ring-[#00AA5B]/20"
+                      placeholder="Cari invoice, judul, voucher..."
+                      className="h-9 pl-9 pr-8 rounded-lg border-slate-200 bg-slate-50/70 text-xs focus-visible:ring-1 focus-visible:ring-[#00AA5B] focus-visible:border-[#00AA5B]"
                     />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Tabs Filter */}
-                <div className="flex items-center gap-1.5 pt-4 pb-2 border-b border-border/50 overflow-x-auto no-scrollbar">
-                  {STATUS_TABS.map((tab) => (
-                    <Button
-                      key={tab.id}
-                      size="sm"
-                      variant={activeTab === tab.id ? "default" : "outline"}
-                      onClick={() => handleTabChange(tab.id)}
-                      className={cn(
-                        "h-8 px-4 rounded-xl text-xs font-bold transition-all shrink-0",
-                        activeTab === tab.id
-                          ? "bg-[#00AA5B] text-white hover:bg-[#009650] shadow-sm"
-                          : "border-border/80 text-muted-foreground hover:text-foreground bg-white"
-                      )}
-                    >
-                      {tab.label}
-                    </Button>
-                  ))}
+                {/* Tabs Filter (Desktop only) */}
+                <div className="hidden md:flex items-center gap-6 pt-1 border-b border-slate-100 overflow-x-auto no-scrollbar">
+                  {STATUS_TABS.map((tab) => {
+                    const isActive = activeTab === tab.id;
+                    let tabCount: number | null = null;
+                    if (tab.id === "all") tabCount = stats.total;
+                    if (tab.id === "pending") tabCount = stats.pendingCount;
+                    if (tab.id === "success") tabCount = stats.successCount;
+                    if (tab.id === "failed") tabCount = stats.failedCount;
+
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => handleTabChange(tab.id)}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 pb-2.5 pt-1 px-0.5 text-xs font-semibold transition-all shrink-0 cursor-pointer border-b-2",
+                          isActive
+                            ? "border-[#00AA5B] text-[#00AA5B] font-bold"
+                            : "border-transparent text-slate-500 hover:text-slate-800"
+                        )}
+                      >
+                        <span>{tab.label}</span>
+                        {tabCount !== null && (
+                          <span
+                            className={cn(
+                              "text-[10px] px-1.5 py-0.2 rounded-full font-bold transition-colors",
+                              isActive
+                                ? "bg-[#00AA5B]/10 text-[#00AA5B]"
+                                : "bg-slate-100 text-slate-500"
+                            )}
+                          >
+                            {tabCount}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Transactions List */}
-                <div className="mt-4 space-y-3">
+                <div className="md:mt-4 space-y-2.5 sm:space-y-3">
                   {transLoading ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2.5 sm:space-y-3">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 bg-white space-y-2.5">
+                        <div
+                          key={i}
+                          className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 bg-white space-y-2.5"
+                        >
                           <div className="flex items-center justify-between">
-                            <Skeleton className="h-3.5 w-40 rounded-md" />
-                            <Skeleton className="h-4 w-16 rounded-full" />
+                            <div className="flex items-center gap-2">
+                              <Skeleton className="h-3.5 w-24 rounded-md" />
+                              <Skeleton className="h-3.5 w-16 rounded-md" />
+                            </div>
+                            <Skeleton className="h-4.5 w-20 rounded-md" />
                           </div>
-                          <div className="flex items-center gap-3">
-                            <Skeleton className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl shrink-0" />
+                          <div className="flex items-center gap-2.5 sm:gap-3">
+                            <Skeleton className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg shrink-0" />
                             <div className="space-y-1.5 flex-1">
-                              <Skeleton className="h-3.5 w-1/2 rounded-md" />
+                              <Skeleton className="h-3.5 w-2/3 rounded-md" />
+                              <Skeleton className="h-3 w-1/3 rounded-md" />
                               <Skeleton className="h-3 w-1/4 rounded-md" />
                             </div>
-                            <Skeleton className="hidden sm:block h-7.5 w-24 rounded-lg shrink-0" />
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                            <div className="flex items-center gap-2">
+                              <Skeleton className="h-6 w-12 rounded-lg" />
+                              <Skeleton className="h-4 w-20 rounded-md" />
+                            </div>
+                            <Skeleton className="h-7 w-20 rounded-lg" />
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : filteredTransactions.length === 0 ? (
-                    <div className="text-center py-16 px-4 space-y-3">
-                      <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto text-slate-300 border border-border/60">
-                        <ShoppingBag className="w-7 h-7" />
+                    <div className="text-center py-12 px-4 space-y-3 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                      <div className="w-12 h-12 rounded-xl bg-white shadow-2xs flex items-center justify-center mx-auto text-slate-400 border border-slate-200/80">
+                        <ShoppingBag className="w-5 h-5 text-slate-400" />
                       </div>
-                      <h3 className="text-sm font-bold text-slate-900">Tidak Ada Transaksi</h3>
-                      <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                        {searchQuery ? "Hasil pencarian tidak ditemukan." : "Kamu belum pernah melakukan transaksi di MarketPointID."}
-                      </p>
-                      {!searchQuery && (
-                        <Button asChild size="sm" className="bg-[#00AA5B] hover:bg-[#009650] text-white rounded-lg text-xs font-bold mt-1 shadow-2xs h-8 px-3">
-                          <Link href="/">Mulai Belanja</Link>
+                      <div className="space-y-0.5">
+                        <h3 className="text-xs sm:text-sm font-bold text-slate-900">
+                          {searchQuery ? "Transaksi Tidak Ditemukan" : "Belum Ada Transaksi"}
+                        </h3>
+                        <p className="text-[11px] sm:text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                          {searchQuery
+                            ? `Tidak ditemukan transaksi dengan kata kunci "${searchQuery}". Coba periksa nomor invoice atau judul produk.`
+                            : "Kamu belum pernah melakukan pembelian produk digital di MarketPointID."}
+                        </p>
+                      </div>
+                      {searchQuery ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSearchQuery("")}
+                          className="rounded-lg text-xs font-semibold h-7.5 px-3"
+                        >
+                          Reset Pencarian
+                        </Button>
+                      ) : (
+                        <Button
+                          asChild
+                          size="sm"
+                          className="bg-[#00AA5B] hover:bg-[#009650] text-white rounded-lg text-xs font-semibold shadow-2xs h-8 px-3.5"
+                        >
+                          <Link href="/">Mulai Belanja Sekarang</Link>
                         </Button>
                       )}
                     </div>
@@ -325,146 +527,169 @@ function TransactionsContent() {
                     filteredTransactions.map((t: any) => {
                       const formattedDate = t.createdAt
                         ? new Date(t.createdAt).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
                         : "Baru saja";
 
                       const totalAmountNum = Number(t.totalAmount) || 0;
                       const unitPriceNum = Number(t.unitPrice) || totalAmountNum;
                       const quantityNum = Number(t.quantity) || 1;
+                      const discountNum = Number(t.discount) || 0;
                       const invNumber = t.invoiceNumber || t.id;
+                      const isPending = ["PENDING", "UNPAID", "WAITING", "MENUNGGU"].includes(String(t.status || "").toUpperCase());
+                      const hasLicense = Boolean(t.licenseKey || (Array.isArray(t.licenseKeys) && t.licenseKeys.length > 0));
+                      const isTopUp = Boolean((t.productTitle && t.productTitle.toLowerCase().includes("top up")) || (t.invoiceNumber && t.invoiceNumber.startsWith("TOPUP-")));
 
                       return (
                         <div
                           key={t.id}
-                          className="p-3 sm:p-3.5 rounded-xl border border-slate-200/90 bg-white hover:border-[#00AA5B]/40 hover:shadow-xs transition-all duration-150 group flex flex-col gap-2.5"
+                          className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 bg-white hover:border-[#00AA5B]/40 hover:shadow-xs transition-all duration-150 flex flex-col gap-2.5"
                         >
-                          {/* 1. Header Bar: Belanja Info, Tanggal, Invoice, Status */}
-                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
-                            <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                              <div className="inline-flex items-center gap-1 font-bold text-slate-800 text-[11px]">
-                                <span className="p-0.5 rounded-md bg-emerald-50 text-[#00AA5B]">
-                                  <ShoppingBag className="w-3 h-3" />
-                                </span>
-                                <span>Belanja</span>
-                              </div>
-
-                              <span className="text-slate-300">•</span>
-                              <span className="text-slate-500 font-medium text-[10px] sm:text-[11px]">
-                                {formattedDate}
+                          {/* Top Meta Bar */}
+                          <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 text-xs">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="p-1 rounded bg-emerald-50 text-[#00AA5B] shrink-0">
+                                {isTopUp ? <Wallet className="w-3 h-3" /> : <ShoppingBag className="w-3 h-3" />}
                               </span>
-
+                              <span className="text-[11px] font-bold text-slate-700 shrink-0">
+                                {isTopUp ? "Isi Saldo" : "Pembayaran"}
+                              </span>
                               <span className="text-slate-300">•</span>
                               <button
                                 type="button"
                                 onClick={(e) => handleCopyInvoice(e, invNumber)}
-                                className="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 px-1.5 py-0.5 rounded transition-colors cursor-pointer group/copy"
+                                className="inline-flex items-center gap-1 text-[10px] font-mono text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200/70 px-1.5 py-0.5 rounded transition-colors cursor-pointer truncate max-w-[130px] sm:max-w-none"
                                 title="Klik untuk salin invoice"
                               >
-                                <span>{invNumber}</span>
+                                <span className="truncate">{invNumber}</span>
                                 {copiedInvoice === invNumber ? (
-                                  <Check className="w-2.5 h-2.5 text-emerald-600" />
+                                  <Check className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
                                 ) : (
-                                  <Copy className="w-2.5 h-2.5 text-slate-400 group-hover/copy:text-slate-600" />
+                                  <Copy className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                                 )}
                               </button>
                             </div>
 
-                            <div>
+                            <div className="shrink-0">
                               {getStatusBadge(t.status)}
                             </div>
                           </div>
 
-                          {/* 2. Main Content: Thumbnail, Product Info, Total Belanja, Actions */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            {/* Left: Product Thumbnail & Info */}
-                            <Link
-                              href={`/transactions/${encodeURIComponent(invNumber)}`}
-                              className="flex items-start gap-3 min-w-0 flex-1 group/item"
-                            >
-                              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-slate-50 border border-slate-200/80 shrink-0 overflow-hidden relative shadow-2xs group-hover/item:border-[#00AA5B]/40 transition-colors">
-                                {t.productImage ? (
-                                  <Image
-                                    src={t.productImage}
-                                    alt={t.productTitle || "Produk"}
-                                    fill
-                                    className="object-cover group-hover/item:scale-105 transition-transform duration-200"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-emerald-50/60 to-slate-100 flex items-center justify-center text-[#00AA5B]/70">
-                                    <Package className="w-6 h-6" />
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="min-w-0 space-y-0.5">
-                                <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate group-hover/item:text-[#00AA5B] transition-colors leading-tight">
-                                  {t.productTitle || "Produk Digital"}
-                                </h4>
-
-                                {t.variant && (
-                                  <p className="text-[10px] text-slate-500 font-medium">
-                                    Variasi: <span className="font-semibold text-slate-700">{t.variant}</span>
-                                  </p>
-                                )}
-
-                                <p className="text-[11px] text-slate-500 font-medium">
-                                  {quantityNum} barang × Rp {unitPriceNum.toLocaleString("id-ID")}
-                                </p>
-
-                                <div className="flex items-center gap-1.5 pt-0.5">
-                                  <span className="text-[9px] font-medium text-slate-600 bg-slate-100 border border-slate-200/60 px-1.5 py-0.5 rounded flex items-center gap-1">
-                                    <CreditCard className="w-2.5 h-2.5 text-slate-400" /> {t.paymentMethodName || t.paymentMethod || "QRIS"}
-                                  </span>
-                                  {Boolean(t.licenseKey || (t.licenseKeys && t.licenseKeys.length > 0)) && (
-                                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded flex items-center gap-1">
-                                      <Sparkles className="w-2 h-2 text-emerald-600" /> Lisensi Siap
-                                    </span>
-                                  )}
+                          {/* Main Row: Thumbnail & Info */}
+                          <Link
+                            href={`/transactions/${encodeURIComponent(invNumber)}`}
+                            className="flex items-start gap-2.5 sm:gap-3 group/item"
+                          >
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-slate-50 border border-slate-200/80 shrink-0 overflow-hidden relative shadow-2xs group-hover/item:border-[#00AA5B]/40 transition-colors">
+                              {t.productImage ? (
+                                <Image
+                                  src={t.productImage}
+                                  alt={t.productTitle || "Produk"}
+                                  fill
+                                  className="object-cover group-hover/item:scale-105 transition-transform duration-200"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-emerald-50/60 to-slate-100 flex items-center justify-center text-[#00AA5B]/70">
+                                  <Package className="w-5 h-5" />
                                 </div>
-                              </div>
-                            </Link>
+                              )}
+                            </div>
 
-                            {/* Right: Total Belanja & Action Button */}
-                            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1.5 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 sm:border-l sm:pl-4 sm:min-w-[145px]">
-                              <div className="text-left sm:text-right">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                                  Total Belanja
-                                </p>
-                                <p className="text-xs sm:text-sm font-black text-slate-900 tracking-tight">
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <h4 className="text-xs sm:text-sm font-semibold text-slate-900 line-clamp-1 group-hover/item:text-[#00AA5B] transition-colors leading-tight">
+                                {cleanProductTitle(t.productTitle)}
+                              </h4>
+
+                              <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-slate-500 font-medium">
+                                {t.variant && (
+                                  <span className="bg-slate-100 text-slate-700 font-semibold px-1.5 py-0.2 rounded text-[10px]">
+                                    {t.variant}
+                                  </span>
+                                )}
+                                <span>
+                                  {quantityNum} × Rp {unitPriceNum.toLocaleString("id-ID")}
+                                </span>
+                                {discountNum > 0 && (
+                                  <span className="text-emerald-600 font-semibold flex items-center gap-0.5 text-[10px]">
+                                    <Tag className="w-2.5 h-2.5" /> -Rp {discountNum.toLocaleString("id-ID")}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-2 pt-0.5 flex-wrap">
+                                <span className="text-[11px] text-slate-400 font-medium">
+                                  {formattedDate}
+                                </span>
+
+                                {hasLicense && (
+                                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                    <Sparkles className="w-2.5 h-2.5 text-emerald-600" /> Lisensi Siap
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+
+                          {/* Bottom Row: Total Belanja & Actions */}
+                          <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100">
+                            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                              <div
+                                className="h-7 px-2 rounded-md bg-white border border-slate-200/90 shadow-2xs flex items-center justify-center shrink-0"
+                                title={cleanPaymentMethodName(t.paymentMethodName || t.paymentMethod)}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={getPaymentLogo(t.paymentMethodName || t.paymentMethod)}
+                                  alt={cleanPaymentMethodName(t.paymentMethodName || t.paymentMethod)}
+                                  className="h-2.5 sm:h-3 w-auto max-w-[50px] object-contain"
+                                />
+                              </div>
+
+                              <div className="min-w-0">
+                                <p className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight">
                                   Rp {totalAmountNum.toLocaleString("id-ID")}
                                 </p>
                               </div>
-
-                              <Link
-                                href={`/transactions/${encodeURIComponent(invNumber)}`}
-                                className="inline-flex"
-                              >
-                                <Button
-                                  size="sm"
-                                  className="h-7.5 px-3 rounded-lg text-[11px] font-bold bg-[#00AA5B] hover:bg-[#009650] text-white shadow-2xs gap-1 transition-all"
-                                >
-                                  Lihat Detail <ChevronRight className="w-3 h-3" />
-                                </Button>
-                              </Link>
                             </div>
+
+                            <Link
+                              href={`/transactions/${encodeURIComponent(invNumber)}`}
+                              className="inline-flex shrink-0"
+                            >
+                              <Button
+                                size="sm"
+                                className={cn(
+                                  "h-7 sm:h-8 px-2.5 sm:px-3 rounded-lg text-[11px] sm:text-xs font-semibold gap-1 transition-all shadow-2xs",
+                                  isPending
+                                    ? "bg-[#00AA5B] hover:bg-[#009650] text-white"
+                                    : "bg-slate-900 hover:bg-slate-800 text-white"
+                                )}
+                              >
+                                <span>{isPending ? "Bayar Sekarang" : "Lihat Detail"}</span>
+                                <ChevronRight className="w-3 h-3" />
+                              </Button>
+                            </Link>
                           </div>
                         </div>
                       );
                     })
                   )}
                 </div>
-              </Card>
+              </div>
 
-              {/* Security Hint */}
-              <div className="p-4 rounded-2xl border border-dashed border-border/80 bg-white flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-[#00AA5B] shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <h4 className="text-[11px] font-bold text-slate-900">Jaminan Keamanan Transaksi</h4>
+              {/* Security Banner Footer */}
+              <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 bg-white/90 shadow-2xs flex items-center gap-2.5">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 text-[#00AA5B]">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.2 min-w-0">
+                  <h4 className="text-[11px] sm:text-xs font-bold text-slate-900 truncate">Jaminan Keamanan Rekening Bersama (Escrow)</h4>
                   <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
-                    Semua pembayaran diproteksi oleh sistem Rekening Bersama (Escrow) MarketPointID. Penjual hanya akan menerima dana setelah Anda mendapatkan produk digital yang valid.
+                    Setiap transaksi diproteksi otomatis oleh sistem Escrow MarketPointID.
                   </p>
                 </div>
               </div>
@@ -495,4 +720,3 @@ export default function TransactionsPage() {
     </Suspense>
   );
 }
-

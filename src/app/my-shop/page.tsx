@@ -176,23 +176,51 @@ export default function MerchantDashboard() {
       }
     }
 
-    // 3. Pendapatan Hari Ini
+    // 3. Pendapatan Bulan Ini & Hari Ini
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    const todayPaidOrders = paidOrders.filter((o) => {
-      const ts = o.updatedAt?.toDate ? o.updatedAt.toDate() : (o.createdAt?.toDate ? o.createdAt.toDate() : (o.timestamp ? new Date(o.timestamp) : null));
-      return ts ? ts >= today : true;
-    });
+    const parseOrderDate = (o: any) => {
+      if (o.updatedAt?.toDate) return o.updatedAt.toDate();
+      if (o.createdAt?.toDate) return o.createdAt.toDate();
+      if (o.updatedAt) {
+        const d = new Date(o.updatedAt);
+        if (!isNaN(d.getTime())) return d;
+      }
+      if (o.createdAt) {
+        const d = new Date(o.createdAt);
+        if (!isNaN(d.getTime())) return d;
+      }
+      if (o.timestamp) {
+        const d = new Date(o.timestamp);
+        if (!isNaN(d.getTime())) return d;
+      }
+      return null;
+    };
 
-    const todayRevenue = todayPaidOrders.reduce((acc, o) => {
+    const getOrderNet = (o: any) => {
       const sub = Number(o.itemsSubtotal || (Number(o.unitPrice || 0) * Number(o.quantity || 1)) || o.totalAmount || 0);
       const disc = Number(o.discount || 0) + Number(o.voucherDiscount || 0) + Number(o.flashSaleDiscount || 0);
       const fee = Number(o.platformFee || o.platform_fee || 0);
       const parsedNet = Number(o.netAmount);
-      const net = (!isNaN(parsedNet) && parsedNet > 0) ? parsedNet : Math.max(0, sub - disc - fee);
-      return acc + net;
-    }, 0);
+      return (!isNaN(parsedNet) && parsedNet > 0) ? parsedNet : Math.max(0, sub - disc - fee);
+    };
+
+    const todayPaidOrders = paidOrders.filter((o) => {
+      const ts = parseOrderDate(o);
+      return ts ? ts >= today : false;
+    });
+
+    const monthPaidOrders = paidOrders.filter((o) => {
+      const ts = parseOrderDate(o);
+      return ts ? ts >= firstDayOfMonth : false;
+    });
+
+    const todayRevenue = todayPaidOrders.reduce((acc, o) => acc + getOrderNet(o), 0);
+    const monthRevenue = monthPaidOrders.reduce((acc, o) => acc + getOrderNet(o), 0);
+    const displayRevenue = todayRevenue > 0 ? todayRevenue : monthRevenue;
+    const revenueSub = todayRevenue > 0 ? "Hari ini" : "Bulan ini";
 
     // 4. Total Transaksi Selesai / Terkirim
     const completedCount = paidOrders.length;
@@ -211,6 +239,9 @@ export default function MerchantDashboard() {
       heldBalance,
       availableBalance,
       todayRevenue,
+      monthRevenue,
+      displayRevenue,
+      revenueSub,
       completedCount,
       totalRevenue: totalNetRevenue,
     };
@@ -378,58 +409,79 @@ export default function MerchantDashboard() {
                 {
                   label: "Pesanan Baru",
                   value: statsData.newOrdersCount.toString(),
-                  color: "text-foreground",
+                  color: "text-blue-950",
                   sub: "Menunggu diproses",
                   icon: ShoppingBag,
-                  iconBg: "bg-blue-50 text-blue-600",
+                  cardBg: "bg-gradient-to-br from-blue-50/80 via-white to-blue-50/30 border-blue-200/80 hover:border-blue-400 hover:shadow-blue-500/10",
+                  iconBg: "bg-blue-600 text-white shadow-xs shadow-blue-500/30",
+                  subBg: "bg-blue-100/80 text-blue-700 border-blue-200/60",
+                  watermarkColor: "text-blue-600",
                   href: "/my-shop/orders?tab=pending"
                 },
                 {
                   label: "Saldo Tertahan",
                   value: `Rp ${statsData.heldBalance.toLocaleString('id-ID')}`,
-                  color: "text-amber-600",
+                  color: "text-amber-700",
                   sub: "Settlement 3 hari",
                   icon: Clock,
-                  iconBg: "bg-amber-50 text-amber-600",
+                  cardBg: "bg-gradient-to-br from-amber-50/80 via-white to-amber-50/30 border-amber-200/80 hover:border-amber-400 hover:shadow-amber-500/10",
+                  iconBg: "bg-amber-500 text-white shadow-xs shadow-amber-500/30",
+                  subBg: "bg-amber-100/80 text-amber-800 border-amber-200/60",
+                  watermarkColor: "text-amber-500",
                   href: "/my-shop/wallet"
                 },
                 {
                   label: "Pendapatan",
-                  value: `Rp ${statsData.todayRevenue.toLocaleString('id-ID')}`,
+                  value: `Rp ${(statsData.displayRevenue ?? statsData.todayRevenue).toLocaleString('id-ID')}`,
                   color: "text-[#00AA5B]",
-                  sub: "Hari ini",
+                  sub: statsData.revenueSub || "Hari ini",
                   icon: TrendingUp,
-                  iconBg: "bg-emerald-50 text-[#00AA5B]",
+                  cardBg: "bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/30 border-emerald-200/80 hover:border-[#00AA5B] hover:shadow-emerald-500/10",
+                  iconBg: "bg-[#00AA5B] text-white shadow-xs shadow-emerald-500/30",
+                  subBg: "bg-emerald-100/80 text-[#00AA5B] border-emerald-200/60 font-bold",
+                  watermarkColor: "text-[#00AA5B]",
                   href: "/my-shop/wallet"
                 },
                 {
                   label: "Pesanan Selesai",
                   value: statsData.completedCount.toString(),
-                  color: "text-foreground",
+                  color: "text-purple-950",
                   sub: "Trafik & transaksi",
                   icon: CheckCircle2,
-                  iconBg: "bg-slate-100 text-slate-700",
+                  cardBg: "bg-gradient-to-br from-purple-50/80 via-white to-purple-50/30 border-purple-200/80 hover:border-purple-400 hover:shadow-purple-500/10",
+                  iconBg: "bg-purple-600 text-white shadow-xs shadow-purple-500/30",
+                  subBg: "bg-purple-100/80 text-purple-700 border-purple-200/60",
+                  watermarkColor: "text-purple-600",
                   href: "/my-shop/orders?tab=completed"
                 },
               ].map((stat, idx) => (
                 <Link
                   key={idx}
                   href={stat.href}
-                  className="p-3.5 sm:p-4 rounded-xl bg-white border-[1.5px] border-border hover:border-[#00AA5B] transition-all cursor-pointer shadow-xs group flex flex-col justify-between"
+                  className={cn(
+                    "relative overflow-hidden p-3.5 sm:p-4 rounded-2xl border-[1.5px] transition-all duration-300 cursor-pointer shadow-xs hover:shadow-md group flex flex-col justify-between",
+                    stat.cardBg
+                  )}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", stat.iconBg)}>
-                      <stat.icon className="w-3.5 h-3.5" />
+                  {/* Decorative Background Watermark Icon */}
+                  <div className={cn("absolute -right-2 -bottom-2 opacity-[0.07] group-hover:opacity-[0.14] group-hover:scale-110 transition-all duration-500 pointer-events-none", stat.watermarkColor)}>
+                    <stat.icon className="w-16 h-16 sm:w-20 sm:h-20" />
+                  </div>
+
+                  <div className="flex items-center justify-between relative z-10">
+                    <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300", stat.iconBg)}>
+                      <stat.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
-                    <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium">
+                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border leading-tight", stat.subBg)}>
                       {stat.sub}
                     </span>
                   </div>
-                  <div className="mt-2.5">
-                    <p className={cn("text-base sm:text-lg font-bold tracking-tight", stat.color)}>
+
+                  <div className="mt-2.5 sm:mt-3 relative z-10">
+                    <p className={cn("text-base sm:text-xl font-black tracking-tight", stat.color)}>
                       {stat.value}
                     </p>
-                    <p className="text-[11px] sm:text-xs font-semibold text-[#2E3137] mt-0.5">
+                    <p className="text-[11px] sm:text-xs font-bold text-slate-700 mt-0.5">
                       {stat.label}
                     </p>
                   </div>

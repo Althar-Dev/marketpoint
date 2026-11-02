@@ -54,13 +54,13 @@ function SignInContent() {
       const userDoc = await getDoc(userDocRef);
 
       // Logika Avatar Acak jika belum ada
-      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
       const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
       const existingData = userDoc.exists() ? userDoc.data() : null;
       let finalDisplayName = existingData?.displayName || user.displayName || "Pengguna";
       let finalPhotoURL = existingData?.photoURL || user.photoURL || randomAvatar;
-      if (finalPhotoURL === "/assets/avatar/duck.png") finalPhotoURL = "/assets/avatar/duck.jpg";
+      if (finalPhotoURL === "/assets/avatar/duck.png") finalPhotoURL = "/assets/avatar/duck.png";
 
       await setDoc(userDocRef, {
         uid: user.uid,
@@ -131,13 +131,13 @@ function SignInContent() {
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
-      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
       const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
       const existingData = userDoc.exists() ? userDoc.data() : null;
       let finalDisplayName = existingData?.displayName || user.displayName || "Pengguna";
       let finalPhotoURL = existingData?.photoURL || user.photoURL || randomAvatar;
-      if (finalPhotoURL === "/assets/avatar/duck.png") finalPhotoURL = "/assets/avatar/duck.jpg";
+      if (finalPhotoURL === "/assets/avatar/duck.png") finalPhotoURL = "/assets/avatar/duck.png";
 
       // Ekstraksi email secara menyeluruh dari semua sumber provider Firebase Auth
       const providerEmail = user.providerData?.find((p) => p.email)?.email;
@@ -270,7 +270,7 @@ function SignInContent() {
 
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
-      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
 
       let currentPhoto = user.photoURL;
       if (userDocSnap.exists()) {
@@ -281,7 +281,7 @@ function SignInContent() {
       if (!currentPhoto || currentPhoto === "/assets/avatar/duck.png") {
         currentPhoto = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
       } else if (currentPhoto === "/assets/avatar/duck.png") {
-        currentPhoto = "/assets/avatar/duck.jpg";
+        currentPhoto = "/assets/avatar/duck.png";
       }
 
       await setDoc(userDocRef, {

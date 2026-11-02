@@ -150,10 +150,10 @@ const ROLE_PRESETS = {
 
 function resolveStaffAvatar(photo?: string, email?: string, name?: string): string {
   if (photo && photo.trim()) {
-    return photo === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : photo;
+    return photo === "/assets/avatar/duck.png" ? "/assets/avatar/duck.png" : photo;
   }
   const seed = (email || name || "staff").trim().toLowerCase();
-  const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
+  const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
   const charSum = seed.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   return defaultAvatars[charSum % defaultAvatars.length];
 }
@@ -246,7 +246,7 @@ export default function MerchantAdminsPage() {
   const rawOwnerPhoto = userData?.photoURL || user?.photoURL || "";
   const ownerAvatar =
     rawOwnerPhoto === "/assets/avatar/duck.png"
-      ? "/assets/avatar/duck.jpg"
+      ? "/assets/avatar/duck.png"
       : rawOwnerPhoto;
 
   const ownerPhone =

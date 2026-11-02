@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyXenditCallbackToken } from "@/lib/xendit";
 import { deliverProductLicense } from "@/lib/delivery";
+import { updateDbTransactionStatus } from "@/lib/database/transaction-db";
 
 export async function POST(req: Request) {
   try {
@@ -21,6 +22,17 @@ export async function POST(req: Request) {
     if (isPaid && external_id) {
       console.log(`[XENDIT PAYMENT PAID] Invoice ID: ${id}, External ID: ${external_id}`);
       
+      // Update transaction status to PAID in PostgreSQL
+      try {
+        await updateDbTransactionStatus(external_id, "PAID", {
+          deliveredBy: "webhook@xendit.marketpoint.id",
+          deliveredAt: new Date(),
+          paymentInfo: payload,
+        });
+      } catch (txErr) {
+        console.warn("[XENDIT WEBHOOK DB UPDATE WARN]", txErr);
+      }
+
       const recipientEmail = payer_email || customer?.email || payload.email;
       if (recipientEmail) {
         try {

@@ -2,18 +2,44 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
 
 export function MarketBottomNav() {
   const pathname = usePathname();
+  const [isSearchActive, setIsSearchActive] = useState(false);
+
+  // Monitor if a mobile search overlay is active anywhere on the page
+  useEffect(() => {
+    const checkSearch = () => {
+      const active = Boolean(
+        document.body.hasAttribute("data-search-open") ||
+        document.body.classList.contains("search-open") ||
+        document.querySelector('[data-mobile-search-overlay="true"]')
+      );
+      setIsSearchActive(active);
+    };
+
+    checkSearch();
+
+    const observer = new MutationObserver(checkSearch);
+    observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+
+    window.addEventListener("search-overlay-change", checkSearch);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("search-overlay-change", checkSearch);
+    };
+  }, []);
 
   // Logika untuk menyembunyikan bottom nav di rute tertentu (termasuk halaman detail produk ala Tokopedia /[shop]/[product] dan detail topup)
-  const hideOnPaths = ['/login', '/register', '/my-shop', '/products', '/topup/', '/admin', '/checkout', '/email', '/settings'];
+  const hideOnPaths = ['/login', '/register', '/my-shop', '/products', '/topup/', '/admin', '/checkout', '/email', '/settings', '/wallet', '/transactions/', '/wishlist', '/favorites', '/inbox'];
+  const isTransactionDetailPage = Boolean(pathname && pathname.startsWith('/transactions/') && pathname !== '/transactions');
   const segments = pathname ? pathname.split('/').filter(Boolean) : [];
   const isTokopediaProductPage = segments.length === 2 && !['admin', 'deals', 'official', 'transactions', 'profile', 'my-shop', 'login', 'register', 'checkout', 'api'].includes(segments[0]);
 
-  const shouldHide = hideOnPaths.some(path => pathname?.startsWith(path)) || isTokopediaProductPage;
+  const shouldHide = hideOnPaths.some(path => pathname?.startsWith(path)) || isTokopediaProductPage || isTransactionDetailPage || isSearchActive;
 
   if (shouldHide) return null;
 
@@ -51,7 +77,7 @@ export function MarketBottomNav() {
   ];
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border px-2 h-16 flex items-center justify-around pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border px-2 h-16 flex items-center justify-around pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         return (

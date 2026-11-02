@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useFirestore, useDoc, useMemoFirebase, useUser } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -68,6 +69,7 @@ interface DigiFlazzItem {
 }
 
 export default function DigiFlazzCatalogPage() {
+  const { user } = useUser();
   const { toast } = useToast();
   const db = useFirestore();
   const [mounted, setMounted] = useState(false);
@@ -144,9 +146,13 @@ export default function DigiFlazzCatalogPage() {
 
     setSyncingProducts(true);
     try {
+      const token = await user?.getIdToken();
       const resPrepaid = await fetch("/api/admin/integrations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           action: "get_digiflazz_pricelist",
           username,
@@ -158,7 +164,10 @@ export default function DigiFlazzCatalogPage() {
 
       const resPasca = await fetch("/api/admin/integrations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           action: "get_digiflazz_pricelist",
           username,
@@ -758,9 +767,39 @@ export default function DigiFlazzCatalogPage() {
 
         <CardContent className="p-0">
           {loadingProducts ? (
-            <div className="py-16 px-4 flex flex-col items-center justify-center text-center space-y-3">
-              <Loader2 className="w-8 h-8 animate-spin text-[#00AA5B]" />
-              <p className="text-xs font-semibold text-slate-600">Memuat katalog produk dari database catalog.db...</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse whitespace-nowrap">
+                <thead>
+                  <tr className="border-b border-border/50 bg-slate-50/80 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                    <th className="py-3 px-3 text-center w-10"><Skeleton className="h-4 w-4 rounded mx-auto" /></th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Tipe</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Seller</th>
+                    <th className="py-3 px-4 whitespace-nowrap">SKU</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Nama</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Kategori</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Brand</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Modal</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Jual</th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40 text-xs">
+                  {Array.from({ length: 6 }).map((_, idx) => (
+                    <tr key={idx} className="border-b border-slate-100">
+                      <td className="py-3 px-3 text-center"><Skeleton className="h-4 w-4 rounded mx-auto" /></td>
+                      <td className="py-3 px-4 text-center"><Skeleton className="h-5 w-14 rounded-md mx-auto" /></td>
+                      <td className="py-3 px-4"><Skeleton className="h-4 w-20 rounded-md" /></td>
+                      <td className="py-3 px-4"><Skeleton className="h-4 w-24 rounded-md" /></td>
+                      <td className="py-3 px-4"><Skeleton className="h-4 w-40 rounded-md" /></td>
+                      <td className="py-3 px-4"><Skeleton className="h-4 w-24 rounded-md" /></td>
+                      <td className="py-3 px-4"><Skeleton className="h-4 w-20 rounded-md" /></td>
+                      <td className="py-3 px-4 text-right"><Skeleton className="h-4 w-20 rounded-md ml-auto" /></td>
+                      <td className="py-3 px-4 text-right"><Skeleton className="h-4 w-20 rounded-md ml-auto" /></td>
+                      <td className="py-3 px-4 text-center"><Skeleton className="h-5 w-16 rounded-md mx-auto" /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : productsList.length === 0 ? (
             <div className="py-16 px-4 flex flex-col items-center justify-center text-center space-y-4">

@@ -123,16 +123,16 @@ function InviteContent() {
           if (userDoc.exists() && userDoc.data()?.photoURL) {
             userAvatar = userDoc.data().photoURL;
           }
-        } catch (_) {}
+        } catch (_) { }
       }
       if (!userAvatar && inviteData?.email) {
         const seed = inviteData.email.trim().toLowerCase();
-        const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
+        const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
         const charSum = seed.split("").reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0);
         userAvatar = defaultAvatars[charSum % defaultAvatars.length];
       }
       if (userAvatar === "/assets/avatar/duck.png") {
-        userAvatar = "/assets/avatar/duck.jpg";
+        userAvatar = "/assets/avatar/duck.png";
       }
 
       const adminRef = doc(db, "shops", shopId, "admins", adminId);
@@ -161,7 +161,7 @@ function InviteContent() {
             staffPermissions: inviteData?.permissions || null,
             updatedAt: serverTimestamp(),
           });
-        } catch (_) {}
+        } catch (_) { }
       }
 
       // Write Audit Log to shop
@@ -263,7 +263,7 @@ function InviteContent() {
                     activeShopId: shopId,
                     updatedAt: serverTimestamp(),
                   });
-                } catch (_) {}
+                } catch (_) { }
               }
               router.push("/my-shop");
             }}

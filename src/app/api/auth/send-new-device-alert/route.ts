@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       ipAddress: detectedIp,
     });
 
-    const subject = `Login Terdeteksi di Perangkat Baru`;
+    const subject = `Login di Perangkat Baru Terdeteksi`;
     const text = `Halo ${displayName},\n\nKami mendeteksi aktivitas login ke akun MarketPointID Anda menggunakan perangkat baru:\n\n- Perangkat: ${deviceName}\n- Browser: ${browser}\n- Sistem Operasi: ${os}\n- Lokasi: ${location}\n${detectedIp ? `- Alamat IP: ${detectedIp}\n` : ""}\nJika ini BUKAN Anda, segera putuskan perangkat asing ini dan ubah kata sandi akun Anda melalui tautan berikut:\nhttps://marketpoint.id/settings/devices\nhttps://marketpoint.id/settings/security/change-password\n\nSalam,\nTim MarketPointID`;
 
     // Send email using MarketPoint's official mailer

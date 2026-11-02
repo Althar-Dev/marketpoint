@@ -2,50 +2,185 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
     function isAdmin() {
-      return request.auth != null && 
+      return isAuthenticated() && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
     }
 
+    // Platform settings: Public read, Admin write
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
     }
     
+    // User root document & subcollections (Public profile read, locked subcollections)
     match /users/{userId} {
-      allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
-      
-      match /{allPaths=**} {
-        allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+      allow read: if true;
+      // Only admin can promote someone to admin; users cannot grant themselves admin: true
+      allow create: if isOwner(userId)
+        && (!('admin' in request.resource.data) || request.resource.data.admin == false);
+      allow update: if isAdmin() || (
+        isOwner(userId)
+        && (!('admin' in request.resource.data) || request.resource.data.admin == resource.data.admin)
+      );
+      allow delete: if isAdmin();
+
+      // Wallet: Protected financial document
+      match /wallet/{docId} {
+        allow read: if isOwner(userId) || isAdmin();
+        // Client can only create an initial wallet with 0 balance
+        allow create: if isOwner(userId)
+          && (!('balance' in request.resource.data) || request.resource.data.balance == 0)
+          && (!('pendingBalance' in request.resource.data) || request.resource.data.pendingBalance == 0)
+          && (!('mcoins' in request.resource.data) || request.resource.data.mcoins == 0);
+        // Client cannot modify wallet balance directly
+        allow update, delete: if isAdmin();
+      }
+
+      // User transactions: History
+      match /transactions/{transId} {
+        allow read: if isOwner(userId) || isAdmin();
+        // Buyer can create initial PENDING transaction at checkout
+        allow create: if isOwner(userId);
+        // Cannot alter transaction status directly to PAID from client
+        allow update, delete: if isAdmin();
+      }
+
+      // Safe user subcollections (devices, wishlist, followedShops)
+      match /devices/{deviceId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /wishlist/{itemId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /followedShops/{shopId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /claimedVouchers/{voucherId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /readUpdates/{updateId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /flashSaleReminders/{reminderId} {
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
     
+    // Shop root document & subcollections
     match /shops/{shopId} {
       allow read: if true;
-      allow write: if (request.auth != null && request.auth.uid == shopId) || isAdmin();
+      // Normal sellers cannot mark their own shop as official/verified; only admin can
+      allow create: if isOwner(shopId)
+        && (!('isOfficial' in request.resource.data) || request.resource.data.isOfficial == false)
+        && (!('isOfficialStore' in request.resource.data) || request.resource.data.isOfficialStore == false)
+        && (!('isVerified' in request.resource.data) || request.resource.data.isVerified == false)
+        && (!('verified' in request.resource.data) || request.resource.data.verified == false);
+      allow update: if isAdmin() || (
+        isOwner(shopId)
+        && (!('isOfficial' in request.resource.data) || request.resource.data.isOfficial == resource.data.isOfficial)
+        && (!('isOfficialStore' in request.resource.data) || request.resource.data.isOfficialStore == resource.data.isOfficialStore)
+        && (!('isVerified' in request.resource.data) || request.resource.data.isVerified == resource.data.isVerified)
+        && (!('verified' in request.resource.data) || request.resource.data.verified == resource.data.verified)
+      );
+      allow delete: if isAdmin();
 
+      // Vouchers: Only shop owner or admin can create/edit/delete
       match /vouchers/{voucherId} {
         allow read: if true;
-        allow write: if request.auth != null || isAdmin();
+        allow write: if isOwner(shopId) || isAdmin();
       }
 
-      match /{allPaths=**} {
-        allow read: if true;
-        allow write: if (request.auth != null && request.auth.uid == shopId) || isAdmin();
+      // Orders: Buyers can place orders (create); only shop owner/admin can update/delete
+      match /orders/{orderId} {
+        allow read: if isOwner(shopId) || isAdmin() || (isAuthenticated() && resource.data.buyerId == request.auth.uid);
+        allow create: if isAuthenticated();
+        allow update, delete: if isOwner(shopId) || isAdmin();
+      }
+
+      // Shop internal management
+      match /customers/{customerId} {
+        allow read, write: if isOwner(shopId) || isAdmin();
+      }
+
+      // Staff management: Owner, Admin, or staff accessing their own record
+      match /admins/{adminId} {
+        allow read: if isOwner(shopId) || isAdmin() || (
+          isAuthenticated() && (
+            resource.data.email == request.auth.token.email ||
+            resource.data.userId == request.auth.uid
+          )
+        );
+        allow create, delete: if isOwner(shopId) || isAdmin();
+        allow update: if isOwner(shopId) || isAdmin() || (
+          isAuthenticated() && (
+            resource.data.email == request.auth.token.email ||
+            resource.data.userId == request.auth.uid
+          )
+        );
+      }
+
+      match /audit_logs/{logId} {
+        allow read: if isOwner(shopId) || isAdmin();
+        allow create: if isOwner(shopId) || isAdmin() || isAuthenticated();
+        allow update, delete: if isOwner(shopId) || isAdmin();
       }
     }
     
+    // Chats: Only participants (buyer or shop owner) or admin
     match /chats/{chatId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isAuthenticated() && (
+        resource == null ||
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.shopId == request.auth.uid ||
+        request.resource.data.buyerId == request.auth.uid ||
+        request.resource.data.shopId == request.auth.uid ||
+        isAdmin()
+      );
       
-      match /{allPaths=**} {
-        allow read, write: if request.auth != null;
+      match /messages/{messageId} {
+        allow read, write: if isAuthenticated() && (
+          get(/databases/$(database)/documents/chats/$(chatId)).data.buyerId == request.auth.uid ||
+          get(/databases/$(database)/documents/chats/$(chatId)).data.shopId == request.auth.uid ||
+          isAdmin()
+        );
       }
     }
 
+    // Root transactions: Used for invoice checkout and payment tracking
+    match /transactions/{invoiceNumber} {
+      allow read: if true;
+      allow create: if isAuthenticated() || (request.resource.data.userId == null);
+      allow update: if isAdmin() || (
+        isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.status == "CANCELLED"
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Reviews: Public read, authenticated create, author/admin update/delete
     match /reviews/{reviewId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+    }
+
+    // Platform Announcements: Public read, Admin write
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

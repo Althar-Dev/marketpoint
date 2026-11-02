@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useFirestore, useDoc, useMemoFirebase, useUser } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 export default function AdminXenditConfigPage() {
+  const { user } = useUser();
   const { toast } = useToast();
   const db = useFirestore();
   const [mounted, setMounted] = useState(false);
@@ -75,12 +76,16 @@ export default function AdminXenditConfigPage() {
   };
 
   const handleTestXendit = async () => {
-    if (!secretKey) return;
+    if (!secretKey || !user) return;
     setTestingXendit(true);
     try {
+      const token = await user.getIdToken();
       const res = await fetch("/api/admin/integrations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           action: "test_xendit",
           secretKey: secretKey,

@@ -35,7 +35,7 @@ export default function ShopProductRoute() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-body text-[#212121]">
+    <div className="min-h-screen bg-background flex flex-col font-body text-[#212121]">
       <div className="hidden lg:block">
         <MarketHeader />
       </div>

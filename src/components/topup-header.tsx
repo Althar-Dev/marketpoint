@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Store, ChevronLeft, Home } from "lucide-react";
 import { useUser } from "@/firebase";
@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function TopUpHeader() {
   const pathname = usePathname() || "";
+  const router = useRouter();
   const { user } = useUser();
   const segments = pathname.split("/").filter(Boolean);
   const isDetailPage = pathname.startsWith("/topup/") && segments.length >= 3;
@@ -23,12 +24,16 @@ export function TopUpHeader() {
         <div className="flex items-center gap-2 sm:gap-3">
           {isDetailPage ? (
             <div className="flex items-center gap-2">
-              <Link href="/topup">
-                <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900 text-xs font-semibold gap-1 rounded-xl px-2 sm:px-2.5">
-                  <ChevronLeft className="h-4 w-4 text-[#00AA5B]" />
-                  <span>Katalog</span>
-                </Button>
-              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.back()}
+                className="text-slate-600 hover:text-slate-900 text-xs font-semibold gap-1 rounded-xl px-2 sm:px-2.5 cursor-pointer"
+                title="Kembali"
+              >
+                <ChevronLeft className="h-4 w-4 text-[#00AA5B]" />
+                <span>Kembali</span>
+              </Button>
               <div className="h-4 w-[1px] bg-slate-200" />
               <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight capitalize">
                 {brandTitle}

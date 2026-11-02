@@ -1,4 +1,4 @@
-declare module "@starvale-sdk/wa-socket" {
+declare module "eltherpro" {
   const makeWASocket: any;
   export const useMultiFileAuthState: any;
   export const DisconnectReason: any;

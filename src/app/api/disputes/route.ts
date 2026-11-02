@@ -14,6 +14,7 @@ import {
   type DisputeResolution,
   type DisputeStatus,
 } from "@/lib/database/dispute-db";
+import { verifyAdminRequest } from "@/lib/server-auth";
 
 // ─── GET: Fetch disputes ───────────────────────────────────────────────────────
 // ?id=DSP-xxx              → single dispute by ID
@@ -62,6 +63,13 @@ export async function GET(req: NextRequest) {
     }
 
     if (isAdmin) {
+      const auth = await verifyAdminRequest(req);
+      if (!auth.authorized) {
+        return NextResponse.json(
+          { success: false, error: auth.error || "Akses admin ditolak." },
+          { status: 403 }
+        );
+      }
       const disputes = await getAllDisputes({ status, limit, offset });
       return NextResponse.json({ success: true, disputes });
     }
@@ -178,6 +186,13 @@ export async function PATCH(req: NextRequest) {
       }
       dispute = await sellerRespondToDispute(id, response.trim());
     } else if (action === "admin_resolve") {
+      const auth = await verifyAdminRequest(req);
+      if (!auth.authorized) {
+        return NextResponse.json(
+          { success: false, error: auth.error || "Akses admin ditolak." },
+          { status: 403 }
+        );
+      }
       const { resolution, adminNote, refundAmount, resolvedBy, status } = body;
       if (!resolution) {
         return NextResponse.json(
@@ -189,10 +204,17 @@ export async function PATCH(req: NextRequest) {
         resolution: resolution as DisputeResolution,
         adminNote,
         refundAmount: refundAmount ? Number(refundAmount) : undefined,
-        resolvedBy,
+        resolvedBy: resolvedBy || auth.uid || "Admin",
         status: (status as DisputeStatus) || "RESOLVED",
       });
     } else if (action === "admin_review") {
+      const auth = await verifyAdminRequest(req);
+      if (!auth.authorized) {
+        return NextResponse.json(
+          { success: false, error: auth.error || "Akses admin ditolak." },
+          { status: 403 }
+        );
+      }
       dispute = await escalateToAdminReview(id);
     } else if (action === "cancel") {
       const { buyerId } = body;

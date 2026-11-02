@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useFirestore, useDoc, useMemoFirebase, useUser } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -261,6 +261,7 @@ const CATEGORIES = [
 ];
 
 export default function AdminXenditChannelsPage() {
+  const { user } = useUser();
   const { toast } = useToast();
   const db = useFirestore();
   const [mounted, setMounted] = useState(false);
@@ -461,9 +462,13 @@ export default function AdminXenditChannelsPage() {
 
     setSyncing(true);
     try {
+      const token = await user?.getIdToken();
       const res = await fetch("/api/admin/integrations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           action: "get_xendit_channels",
           secretKey,

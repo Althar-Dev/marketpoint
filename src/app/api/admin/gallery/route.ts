@@ -5,6 +5,7 @@ import {
   deleteGalleryItem,
   getGalleryDbFileSize
 } from "@/lib/database/gallery-db";
+import { verifyAdminRequest } from "@/lib/server-auth";
 
 export async function GET(req: Request) {
   try {
@@ -28,6 +29,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const auth = await verifyAdminRequest(req);
+    if (!auth.authorized) {
+      return NextResponse.json({ success: false, error: auth.error || "Akses ditolak." }, { status: 403 });
+    }
+
     const body = await req.json();
     const { name, url, category, folder, size, type } = body;
 
@@ -62,6 +68,11 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const auth = await verifyAdminRequest(req);
+    if (!auth.authorized) {
+      return NextResponse.json({ success: false, error: auth.error || "Akses ditolak." }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

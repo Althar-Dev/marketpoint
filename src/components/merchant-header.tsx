@@ -59,7 +59,7 @@ export function MerchantHeader() {
   const { data: userData } = useDoc(userDocRef);
 
   const rawPhoto = userData?.photoURL || user?.photoURL;
-  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (rawPhoto || undefined);
+  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.png" : (rawPhoto || undefined);
 
   const handleLogout = async () => {
     try {
@@ -240,8 +240,8 @@ export function MerchantHeader() {
           </DropdownMenu>
         )}
 
-          {/* Toko Switcher Dropdown */}
-          {availableShops.length > 0 && (
+        {/* Toko Switcher Dropdown */}
+        {availableShops.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 border border-border bg-muted/20 hover:bg-muted/50 px-2.5 py-1.5 rounded-xl transition-all outline-none group cursor-pointer max-w-[210px] shadow-2xs">

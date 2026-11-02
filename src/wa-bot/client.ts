@@ -1,5 +1,5 @@
 /**
- * WhatsApp Bot Client Singleton using @starvale-sdk/wa-socket
+ * WhatsApp Bot Client Singleton using eltherpro
  * Supports Pairing Code authentication (no QR code)
  */
 
@@ -10,7 +10,7 @@ import makeWASocket, {
   generateWAMessageFromContent,
   prepareWAMessageMedia,
   proto,
-} from "@starvale-sdk/wa-socket";
+} from "eltherpro";
 import pino from "pino";
 import fs from "fs";
 import path from "path";

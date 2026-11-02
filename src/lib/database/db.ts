@@ -323,6 +323,42 @@ export async function initDatabaseSchema(force = false) {
         CREATE INDEX IF NOT EXISTS idx_reviews_shop ON reviews(shop_id);
         CREATE INDEX IF NOT EXISTS idx_reviews_transaction ON reviews(transaction_id);
         CREATE INDEX IF NOT EXISTS idx_reviews_user ON reviews(user_id);
+
+        -- 13. Create reseller_products table (Katalog kustom buyer/reseller untuk transaksi API)
+        CREATE TABLE IF NOT EXISTS reseller_products (
+          id BIGSERIAL PRIMARY KEY,
+          user_id VARCHAR(128) NOT NULL,
+          buyer_sku VARCHAR(64),
+          product_id VARCHAR(64) NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+          custom_name VARCHAR(255),
+          selling_price NUMERIC(12, 2),
+          status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Ensure schema allows empty/null buyer_sku and prevents duplicate product additions
+        ALTER TABLE reseller_products ALTER COLUMN buyer_sku DROP NOT NULL;
+        ALTER TABLE reseller_products DROP CONSTRAINT IF EXISTS uq_reseller_buyer_sku;
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_reseller_user_product ON reseller_products (user_id, product_id);
+        CREATE UNIQUE INDEX IF NOT EXISTS uq_reseller_buyer_sku ON reseller_products (user_id, buyer_sku) WHERE buyer_sku IS NOT NULL AND buyer_sku != '';
+        CREATE INDEX IF NOT EXISTS idx_reseller_api_lookup ON reseller_products(user_id, buyer_sku);
+        CREATE INDEX IF NOT EXISTS idx_reseller_user ON reseller_products(user_id);
+        CREATE INDEX IF NOT EXISTS idx_reseller_product ON reseller_products(product_id);
+
+        -- 14. Create user_api_keys table (Kunci API H2H Reseller / Buyer)
+        CREATE TABLE IF NOT EXISTS user_api_keys (
+          id BIGSERIAL PRIMARY KEY,
+          user_id VARCHAR(128) NOT NULL UNIQUE,
+          api_key VARCHAR(128) NOT NULL UNIQUE,
+          status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+          last_used_at TIMESTAMPTZ,
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_user_api_keys_lookup ON user_api_keys(api_key);
+        CREATE INDEX IF NOT EXISTS idx_user_api_keys_user ON user_api_keys(user_id);
       `;
 
       await query(initSql);

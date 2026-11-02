@@ -67,7 +67,7 @@ export function renderVerificationCodeEmailHtml({
     }
   </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; line-height: 1.5;">
+<body style="margin: 0; padding: 0; background-color: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; line-height: 1.5;">
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff;">
     <tr>
@@ -211,7 +211,7 @@ export function renderNewDeviceAlertEmailHtml({
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login Terdeteksi di Perangkat Baru - MarketPointID</title>
+  <title>Login di Perangkat Baru Terdeteksi - MarketPointID</title>
   <style type="text/css">
     body, table, td, p, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
     table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
@@ -267,7 +267,7 @@ export function renderNewDeviceAlertEmailHtml({
           <tr>
             <td style="padding-top: 22px;">
               <h1 style="margin: 0 0 12px; font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.4;">
-                Login Terdeteksi di Perangkat Baru
+                Login di Perangkat Baru Terdeteksi
               </h1>
 
               <p style="margin: 0 0 16px; font-size: 13px; color: #475569; line-height: 1.55;">

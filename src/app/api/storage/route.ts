@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { S3Client, ListObjectsV2Command, type ListObjectsV2CommandOutput } from "@aws-sdk/client-s3";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+
+export const dynamic = "force-dynamic";
 
 // Cache in-memory sederhana untuk menghemat Class B API R2 (TTL 60 detik)
 let cachedStorageData: {
@@ -20,6 +23,15 @@ function formatBytes(bytes: number, decimals = 1): string {
 
 export async function GET(req: Request) {
   try {
+    const ip = getClientIp(req);
+    const rateCheck = checkRateLimit(`storage_${ip}`, { maxRequests: 10, intervalMs: 60 * 1000 });
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { success: false, error: "Terlalu banyak permintaan kapasitas penyimpanan. Silakan tunggu 1 menit." },
+        { status: 429 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const forceRefresh = searchParams.get("force") === "true";
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUserBalance } from "@/hooks/use-user-balance";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +35,7 @@ interface DesktopAccountSidebarProps {
   displayName?: string;
   activeItem?: "inbox-chat" | "inbox-reviews" | "inbox-updates" | "pembelian-pending" | "pembelian-transactions" | "profile-settings" | "profile-wishlist" | "profile-favorites";
   handleLogout: () => void;
+  className?: string;
 }
 
 export function DesktopAccountSidebar({
@@ -43,9 +45,12 @@ export function DesktopAccountSidebar({
   displayName,
   activeItem = "profile-settings",
   handleLogout,
+  className,
 }: DesktopAccountSidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { balance: pgBalance } = useUserBalance();
+  const displayBalance = typeof pgBalance === "number" ? pgBalance : (wallet?.balance || 0);
   const currentStatus = searchParams?.get("status");
 
   const isPendingActive = activeItem === "pembelian-pending" || (pathname === "/transactions" && currentStatus === "pending");
@@ -59,10 +64,10 @@ export function DesktopAccountSidebar({
       : "profil";
 
   const rawPhoto = user?.photoURL;
-  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (rawPhoto || undefined);
+  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.png" : (rawPhoto || undefined);
 
   return (
-    <aside className="w-[260px] shrink-0 space-y-4 sticky top-20">
+    <aside className={cn("hidden md:block w-[260px] shrink-0 space-y-4 sticky top-20 self-start", className)}>
       <Card className="border border-border/50 shadow-sm bg-white rounded-xl overflow-hidden p-4 h-auto">
         {/* User Mini Profile Header */}
         <div className="flex items-center gap-3 mb-5">
@@ -118,7 +123,7 @@ export function DesktopAccountSidebar({
         </div>
 
         {/* Saldo & MCoins */}
-        <div className="py-2.5 border-t border-border/50">
+        <div className="py-2.5 border-y border-border/50">
           <Link
             href="/wallet"
             className="flex items-center justify-between group cursor-pointer hover:bg-muted/30 p-1 -mx-1 rounded-lg transition-colors"
@@ -129,12 +134,12 @@ export function DesktopAccountSidebar({
               </div>
               <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">Saldo & MCoins</span>
             </div>
-            <span className="text-[11px] font-bold">Rp {wallet?.balance?.toLocaleString('id-ID') || 0}</span>
+            <span className="text-[11px] font-bold">Rp {displayBalance.toLocaleString('id-ID')}</span>
           </Link>
         </div>
 
         {/* Accordion Menu Group */}
-        <div className="mt-4 pt-3 border-t border-border/50">
+        <div className="pt-2">
           <Accordion type="single" collapsible defaultValue={defaultAccordion} className="w-full">
 
             {/* KOTAK MASUK */}

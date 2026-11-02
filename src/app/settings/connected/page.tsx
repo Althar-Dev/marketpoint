@@ -7,6 +7,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { initializeApp, deleteApp } from "firebase/app";
 import {
   FacebookAuthProvider,
+  GoogleAuthProvider,
   linkWithPopup,
   unlink,
   getAuth,
@@ -102,8 +103,8 @@ export default function ConnectedAccountsPage() {
     if (user) {
       const isGoogle =
         user.providerData?.some(
-          (p) => p.providerId === "google.com" || p.providerId === "firebase"
-        ) || !!user.email;
+          (p) => p.providerId === "google.com"
+        ) || !!userData?.connectedAccounts?.google;
 
       const isFacebook =
         user.providerData?.some((p) => p.providerId === "facebook.com") ||
@@ -129,7 +130,114 @@ export default function ConnectedAccountsPage() {
     setIsLoadingAction(true);
 
     try {
-      if (selectedAccount.id === "facebook") {
+      if (selectedAccount.id === "google") {
+        if (actionType === "connect") {
+          if (!isGoogleLoginEnabled) {
+            toast({
+              variant: "destructive",
+              title: "Metode Dinonaktifkan",
+              description: "Penghubungan akun Google sedang dinonaktifkan oleh Administrator.",
+            });
+            setIsLoadingAction(false);
+            setSelectedAccount(null);
+            return;
+          }
+
+          const provider = new GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: "select_account" });
+
+          let googleDisplayName: string | null = null;
+          let googleEmail: string | null = null;
+
+          try {
+            const result = await linkWithPopup(user, provider);
+            const gUser = result.user;
+            const gData = gUser.providerData.find((p) => p.providerId === "google.com");
+            googleDisplayName = gData?.displayName || gUser.displayName || null;
+            googleEmail = gData?.email || gUser.email || null;
+          } catch (linkError: any) {
+            console.warn("Direct linkWithPopup Google caught:", linkError);
+            if (
+              linkError.code === "auth/credential-already-in-use" ||
+              linkError.code === "auth/email-already-in-use"
+            ) {
+              throw new Error("Akun Google ini sudah terhubung ke akun MarketPoint lain.");
+            } else if (linkError.code === "auth/popup-closed-by-user") {
+              setIsLoadingAction(false);
+              setSelectedAccount(null);
+              return;
+            } else if (linkError.code === "auth/unauthorized-domain") {
+              throw new Error("Domain ini belum diizinkan di Firebase Authentication (Authorized Domains).");
+            } else {
+              throw linkError;
+            }
+          }
+
+          const updated = {
+            ...connectedState,
+            google: true,
+          };
+          setConnectedState(updated);
+
+          if (userRef) {
+            await updateDoc(userRef, {
+              "connectedAccounts.google": true,
+              googleEmail: googleEmail || user.email || null,
+              googleName: googleDisplayName || user.displayName || null,
+              updatedAt: new Date().toISOString(),
+            });
+          }
+
+          toast({
+            title: "Google Berhasil Terhubung",
+            description: "Akun Google berhasil ditautkan ke akun MarketPointID Anda.",
+          });
+        } else {
+          // Unlink Google Provider
+          const hasOtherProvider =
+            user.providerData.some((p) => p.providerId !== "google.com") ||
+            !!userData?.hasPassword ||
+            !!userData?.connectedAccounts?.facebook;
+
+          if (!hasOtherProvider && user.providerData.length <= 1) {
+            toast({
+              variant: "destructive",
+              title: "Tidak Dapat Memutuskan",
+              description:
+                "Anda harus memiliki metode login lain (seperti Kata Sandi atau Akun Facebook) sebelum memutuskan Google.",
+            });
+            setIsLoadingAction(false);
+            setSelectedAccount(null);
+            return;
+          }
+
+          try {
+            await unlink(user, "google.com");
+          } catch (e: any) {
+            console.warn("Unlink Google provider warning:", e);
+          }
+
+          const updated = {
+            ...connectedState,
+            google: false,
+          };
+          setConnectedState(updated);
+
+          if (userRef) {
+            await updateDoc(userRef, {
+              "connectedAccounts.google": false,
+              googleEmail: null,
+              googleName: null,
+              updatedAt: new Date().toISOString(),
+            });
+          }
+
+          toast({
+            title: "Koneksi Google Diputuskan",
+            description: "Akun Google berhasil diputuskan dari MarketPointID Anda.",
+          });
+        }
+      } else if (selectedAccount.id === "facebook") {
         if (actionType === "connect") {
           if (!isFacebookLoginEnabled) {
             toast({
@@ -288,11 +396,13 @@ export default function ConnectedAccountsPage() {
       console.error("Action account error:", error);
       let errorMsg = "Terjadi gangguan saat memproses akun. Silakan coba lagi.";
       if (error.code === "auth/credential-already-in-use") {
-        errorMsg = "Akun Facebook ini sudah terhubung ke akun MarketPoint lain.";
+        errorMsg = `Akun ${selectedAccount?.name || "ini"} sudah terhubung ke akun MarketPoint lain.`;
       } else if (error.code === "auth/popup-closed-by-user") {
         errorMsg = "Jendela penghubungan ditutup sebelum selesai.";
       } else if (error.code === "auth/provider-already-linked") {
-        errorMsg = "Akun Facebook ini sudah terhubung sebelumnya.";
+        errorMsg = `Akun ${selectedAccount?.name || "ini"} sudah terhubung sebelumnya.`;
+      } else if (error.code === "auth/unauthorized-domain") {
+        errorMsg = "Domain ini belum diizinkan di Firebase Authentication (Authorized Domains).";
       } else if (error.message) {
         errorMsg = error.message;
       }
@@ -357,16 +467,22 @@ export default function ConnectedAccountsPage() {
     userData?.facebookEmail ||
     "Akun Facebook terhubung";
 
+  const googleIdentifier =
+    userData?.googleEmail ||
+    user.providerData?.find((p) => p.providerId === "google.com")?.email ||
+    (connectedState.google ? user.email : null) ||
+    "Akun Google terhubung";
+
   const socialAccounts: ConnectedAccount[] = [
     {
       id: "google",
       name: "Google",
       description: connectedState.google
-        ? user.email || "Akun Google terhubung"
+        ? googleIdentifier
         : !isGoogleLoginEnabled
         ? "Metode Google dinonaktifkan oleh Admin"
         : "Masuk lebih cepat dengan sekali klik",
-      connectedIdentifier: user.email || undefined,
+      connectedIdentifier: connectedState.google ? googleIdentifier : undefined,
       isConnected: !!connectedState.google,
       canDisconnect: true,
       isDisabled: !connectedState.google && !isGoogleLoginEnabled,

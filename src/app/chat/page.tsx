@@ -72,9 +72,9 @@ export default function ChatIndexPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => router.push("/")}
-                className="h-7 w-7 rounded-full hover:bg-white text-muted-foreground"
-                title="Kembali ke Beranda"
+                onClick={() => router.back()}
+                className="h-7 w-7 rounded-full hover:bg-white text-muted-foreground cursor-pointer"
+                title="Kembali"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>

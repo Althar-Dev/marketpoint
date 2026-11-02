@@ -434,13 +434,14 @@ export default function MarketPage() {
                       Cek Sekarang
                     </Button>
                   </div>
-                  <div className="absolute right-0 bottom-0 w-2/5 h-full opacity-40 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
+                  <div className="absolute right-0 bottom-0 w-1/2 md:w-2/5 h-full group-hover:scale-105 transition-transform duration-500 pointer-events-none">
                     <div className="w-full h-full relative">
                       <Image
-                        src="https://picsum.photos/seed/promo/400/400"
-                        alt="Promo"
+                        src="/assets/img/cate.png"
+                        alt="Kategori Populer"
                         fill
                         className="object-contain object-right-bottom"
+                        priority
                       />
                     </div>
                   </div>
@@ -479,6 +480,11 @@ export default function MarketPage() {
             </div>
           </Card>
         </section>
+
+        {/* Tokopedia-style Section Divider */}
+        <div className="w-full pt-3 pb-5" aria-hidden="true">
+          <div className="w-full h-[6px] bg-[#F2F4F7]" />
+        </div>
 
         {/* Section: Trending Products */}
         <section className="px-4 md:px-12 lg:px-20 max-w-screen-2xl mx-auto w-full">

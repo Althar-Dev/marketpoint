@@ -39,7 +39,7 @@ export function AdminHeader() {
   const { data: userData } = useDoc(userDocRef);
 
   const rawPhoto = userData?.photoURL || user?.photoURL;
-  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (rawPhoto || undefined);
+  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.png" : (rawPhoto || undefined);
 
   const handleLogout = async () => {
     try {

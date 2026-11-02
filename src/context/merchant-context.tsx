@@ -129,9 +129,13 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
       if (!targetId) return;
 
       try {
+        const token = user ? await user.getIdToken() : "";
         const res = await fetch("/api/subscription", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify({
             shopId: targetId,
             planId: targetPlan,
@@ -463,8 +467,44 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
   }, [user, db, resolveMerchant]);
 
   const rawPlanId = actualSubscription?.planId || shop?.subscription?.planId;
+  const rawExpiresAt = actualSubscription?.expiresAt || shop?.subscription?.expiresAt;
+
+  // DETEKSI KEDALUWARSA: Cek apakah tanggal masa aktif langganan toko sudah lewat
+  const isSubscriptionExpired = Boolean(
+    rawExpiresAt &&
+    new Date(rawExpiresAt).getTime() < Date.now() &&
+    rawPlanId !== "admin" &&
+    rawPlanId !== "free"
+  );
+
   const isFullAdminUnlock = isAdmin && (!rawPlanId || rawPlanId === "admin");
-  const activePlanId = (rawPlanId || (isAdmin && !shop?.subscription?.planId ? "admin" : "free")) as ShopPlanTier;
+  const activePlanId = (isSubscriptionExpired
+    ? "free"
+    : (rawPlanId || (isAdmin && !shop?.subscription?.planId ? "admin" : "free"))) as ShopPlanTier;
+
+  // DEAKTIVASI OTOMATIS: Jika langganan kedaluwarsa, nonaktifkan seluruh Flash Sale & Voucher di Firestore
+  useEffect(() => {
+    if (!db || !shopId || !isOwner || !isSubscriptionExpired) return;
+
+    const hasActiveFlashSales = Array.isArray(shop?.flashSales) && shop.flashSales.some((s: any) => s.status === "ACTIVE");
+    const hasActiveVouchers = Array.isArray(shop?.vouchers) && shop.vouchers.some((v: any) => v.status === "ACTIVE");
+    const isDocActive = shop?.subscription?.status === "ACTIVE";
+
+    if (hasActiveFlashSales || hasActiveVouchers || isDocActive || shop?.isVerified) {
+      const updatedFlashSales = (shop?.flashSales || []).map((s: any) => ({ ...s, status: "INACTIVE" }));
+      const updatedVouchers = (shop?.vouchers || []).map((v: any) => ({ ...v, status: "INACTIVE" }));
+
+      updateDoc(doc(db, "shops", shopId), {
+        flashSales: updatedFlashSales,
+        vouchers: updatedVouchers,
+        "subscription.status": "EXPIRED",
+        "subscription.planId": "free",
+        "subscription.planName": "Free",
+        isVerified: false,
+        verified: false,
+      }).catch((err) => console.warn("Gagal auto-deaktivasi promo toko kedaluwarsa:", err));
+    }
+  }, [db, shopId, isOwner, isSubscriptionExpired, shop]);
 
   const effectiveFeatures = useMemo<EffectiveFeatures>(() => {
     if (activePlanId === "admin" || (isAdmin && !rawPlanId)) {
@@ -507,7 +547,7 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
     const flashSale = targetPlanConfig?.features?.flashSale ?? (!isFree && maxFlashSaleProducts > 0);
     const telegramBot = targetPlanConfig?.features?.telegramBot ?? (isPro || isPrime);
     const staffManagement = targetPlanConfig?.features?.staffManagement ?? isPrime;
-    const has30DaysStats = isPro || isPrime;
+    const has30DaysStats = true; // Seluruh merchant dapat mengakses statistik 30 hari & bulan ini
     const hasAllTimeStats = isPrime;
     const hasAdvancedStats = isPro || isPrime;
     const commissionRate = typeof targetPlanConfig?.commissionRate === "number"

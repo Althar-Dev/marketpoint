@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getXenditPaymentRequest } from "@/lib/xendit";
 import { deliverProductLicense } from "@/lib/delivery";
+import { updateDbTransactionStatus } from "@/lib/database/transaction-db";
 
 export async function POST(req: Request) {
   try {
@@ -44,6 +45,19 @@ export async function POST(req: Request) {
     if (isPaid) {
       const oId = orderId || order_details?.orderId || pr.reference_id;
       const email = recipientEmail || order_details?.recipientEmail || order_details?.buyerEmail;
+
+      if (oId) {
+        try {
+          await updateDbTransactionStatus(oId, "PAID", {
+            deliveredBy: "xendit@marketpoint.id",
+            deliveredAt: new Date(),
+            paymentInfo: pr,
+          });
+        } catch (dbErr) {
+          console.warn("[STATUS UPDATE TRANSACTION DB WARN]", dbErr);
+        }
+      }
+
       if (oId && email) {
         try {
           deliveryResult = await deliverProductLicense({

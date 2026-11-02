@@ -9,9 +9,15 @@ import {
   updateShopSubscription,
   adminCancelShopSubscription,
 } from "@/lib/database/subscription";
+import { verifyAdminRequest } from "@/lib/server-auth";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const auth = await verifyAdminRequest(req);
+    if (!auth.authorized) {
+      return NextResponse.json({ success: false, error: auth.error || "Akses ditolak." }, { status: 403 });
+    }
+
     const settings = await getPlatformSettings();
     const subscriptions = await getAllShopSubscriptions();
 
@@ -31,6 +37,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const auth = await verifyAdminRequest(req);
+    if (!auth.authorized) {
+      return NextResponse.json({ success: false, error: auth.error || "Akses ditolak." }, { status: 403 });
+    }
+
     const body = await req.json();
     const { action } = body;
 

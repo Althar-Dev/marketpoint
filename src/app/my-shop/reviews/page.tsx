@@ -283,9 +283,13 @@ export default function MerchantReviewsPage() {
     const revId = selectedReview.id;
 
     try {
+      const token = user ? await user.getIdToken() : "";
       const res = await fetch("/api/reviews", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           reviewId: revId,
           sellerReply: cleanReply,
@@ -329,9 +333,13 @@ export default function MerchantReviewsPage() {
     const revId = reviewToDeleteReply.id;
 
     try {
+      const token = user ? await user.getIdToken() : "";
       const res = await fetch("/api/reviews", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           reviewId: revId,
           sellerReply: null,

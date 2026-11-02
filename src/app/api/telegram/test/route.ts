@@ -1,7 +1,22 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    const ip = getClientIp(req);
+    const rateCheck = checkRateLimit(`tg_test_${ip}`, { maxRequests: 5, intervalMs: 60 * 1000 });
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Terlalu banyak permintaan uji bot Telegram. Silakan coba lagi dalam 1 menit.",
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { token, chatId, shopName } = body;
 

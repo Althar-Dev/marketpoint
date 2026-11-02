@@ -29,7 +29,8 @@ import {
   Palette,
   TrendingUp,
   Mail,
-  Crown
+  Crown,
+  Wallet
 } from "lucide-react";
 import {
   Sidebar,
@@ -72,6 +73,7 @@ export function AdminSidebar() {
     {
       label: "Finance & Integrations",
       items: [
+        { label: "Verifikasi Top Up", icon: Wallet, href: "/admin/topup" },
         { label: "Semua Transaksi", icon: ShoppingBag, href: "/admin/transactions" },
         { label: "Paket & Komisi", icon: Crown, href: "/admin/subscription" },
       ]

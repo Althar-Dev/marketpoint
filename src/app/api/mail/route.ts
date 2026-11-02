@@ -33,13 +33,18 @@ export async function GET() {
       getSmtpSettings(),
     ]);
 
+    const safeSmtpSettings = smtpSettings ? {
+      ...smtpSettings,
+      pass: smtpSettings.pass ? "••••••••" : "",
+    } : null;
+
     return NextResponse.json({
       success: true,
       data: {
         accounts,
         messages,
         deliveryLogs,
-        smtpSettings,
+        smtpSettings: safeSmtpSettings,
       },
     });
   } catch (error: any) {

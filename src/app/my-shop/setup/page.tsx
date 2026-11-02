@@ -478,9 +478,14 @@ export default function MerchantSetupPage() {
       <header className="bg-white border-b border-border/50 sticky top-0 z-30 px-4 md:px-8 py-3.5">
         <div className="max-w-screen-md mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/profile" className="p-1.5 hover:bg-muted rounded-full transition-colors text-foreground">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="p-1.5 hover:bg-muted rounded-full transition-colors text-foreground cursor-pointer"
+              title="Kembali"
+            >
               <ChevronLeft className="w-5 h-5" />
-            </Link>
+            </button>
             <div className="flex items-center gap-2">
               <div className="h-7 w-7 rounded-lg bg-[#00AA5B] flex items-center justify-center text-white">
                 <Store className="w-4 h-4" />

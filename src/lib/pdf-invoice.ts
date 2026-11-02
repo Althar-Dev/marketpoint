@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { cleanPaymentMethodName, cleanProductTitle } from "@/lib/utils";
 
 export interface TransactionInvoiceData {
   invoiceNumber: string;
@@ -62,31 +63,35 @@ async function loadLogoBase64(): Promise<string | null> {
   }
 }
 
-export async function generateTransactionPdf(tx: TransactionInvoiceData): Promise<void> {
-  // A4 size: 210mm x 297mm
+/**
+ * ============================================================================
+ * 1. GENERATOR PDF KHUSUS ISI SALDO (TOP UP)
+ * Desain struk mutasi finansial/dompet digital yang bersih, elegan, dan profesional.
+ * ============================================================================
+ */
+async function generateTopUpPdf(tx: TransactionInvoiceData): Promise<void> {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
     format: "a4",
   });
 
-  const primaryColor = [0, 170, 91] as const; // #00AA5B (MarketPointID Green)
+  const primaryColor = [0, 170, 91] as const; // #00AA5B
   const darkColor = [30, 41, 59] as const; // Slate 800
   const grayColor = [100, 116, 139] as const; // Slate 500
   const lightBg = [248, 250, 252] as const; // Slate 50
   const borderLight = [226, 232, 240] as const; // Slate 200
 
-  // 1. Top Decorative Green Accent Bar
+  // 1. Top Decorative Accent Bar
   doc.setFillColor(...primaryColor);
   doc.rect(0, 0, 210, 4, "F");
 
-  // 2. Header: Logo & Brand + Invoice Details
+  // 2. Header
   const logoBase64 = await loadLogoBase64();
   let brandTextX = 15;
 
   if (logoBase64) {
     try {
-      // Draw 14mm x 14mm logo
       doc.addImage(logoBase64, "PNG", 15, 10, 14, 14);
       brandTextX = 32;
     } catch (e) {
@@ -94,7 +99,328 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
     }
   }
 
-  // Brand Name & Tagline (clean title case, no all-caps)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(...primaryColor);
+  doc.text("MarketPointID", brandTextX, 17);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...grayColor);
+  doc.text("Layanan Dompet & Saldo Digital Resmi", brandTextX, 21.5);
+  doc.text("support@marketpoint.id • marketpoint.id", brandTextX, 25.5);
+
+  // Metadata di kanan atas
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(...darkColor);
+  doc.text("Bukti Top Up Saldo", 195, 16, { align: "right" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...grayColor);
+  doc.text(`No. Referensi: ${tx.invoiceNumber}`, 195, 21, { align: "right" });
+  doc.text(`Waktu: ${formatDatePdf(tx.createdAt)}`, 195, 25.5, { align: "right" });
+
+  // 3. Hero Status & Nominal Box
+  let y = 33;
+  const isPaid = tx.status === "PAID" || tx.status === "SETTLED";
+
+  if (isPaid) {
+    doc.setFillColor(240, 253, 244); // Emerald 50
+    doc.setDrawColor(187, 247, 208); // Emerald 200
+    doc.roundedRect(15, y, 180, 26, 2, 2, "FD");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...primaryColor);
+    doc.text("Pengisian Saldo Berhasil", 20, y + 6.5);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(...darkColor);
+    doc.text(formatRupiahPdf(tx.totalAmount), 20, y + 14.5);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(21, 128, 61);
+    doc.text("Saldo telah berhasil ditambahkan ke saldo dompet akun Anda.", 20, y + 20.5);
+  } else {
+    doc.setFillColor(254, 243, 199); // Amber 50
+    doc.setDrawColor(245, 158, 11);
+    doc.roundedRect(15, y, 180, 26, 2, 2, "FD");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(180, 83, 9);
+    doc.text(`STATUS: ${tx.status === "PENDING" ? "MENUNGGU PEMBAYARAN" : tx.status}`, 20, y + 6.5);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(...darkColor);
+    doc.text(formatRupiahPdf(tx.totalAmount), 20, y + 14.5);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(180, 83, 9);
+    doc.text("Silakan selesaikan pembayaran sesuai instruksi metode yang dipilih.", 20, y + 20.5);
+  }
+
+  // 4. Section: Informasi Akun & Saluran Pembayaran (2 Kolom berdampingan)
+  y = 66;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(...darkColor);
+  doc.text("Rincian Transaksi Saldo", 15, y);
+
+  const cardY = y + 2.5;
+  const cardHeight = 28;
+  const cardWidth = 88;
+
+  // Sub-Card 1: Akun Dompet (Kiri)
+  doc.setFillColor(...lightBg);
+  doc.setDrawColor(...borderLight);
+  doc.roundedRect(15, cardY, cardWidth, cardHeight, 2, 2, "FD");
+
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(15, cardY, cardWidth, 6, 2, 2, "F");
+  doc.rect(15, cardY + 3.5, cardWidth, 2.5, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(71, 85, 105);
+  doc.text("Akun Penerima Saldo", 19, cardY + 4.2);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...grayColor);
+  doc.text("Nama Akun:", 19, cardY + 11.5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...darkColor);
+  doc.text(tx.buyerName || "Pelanggan Terdaftar", 37, cardY + 11.5);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...grayColor);
+  doc.text("Email Akun:", 19, cardY + 17.5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...darkColor);
+  doc.text(tx.buyerEmail || "-", 37, cardY + 17.5);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...grayColor);
+  doc.text("Jenis:", 19, cardY + 23.5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...primaryColor);
+  doc.text("Top Up Saldo Dompet", 37, cardY + 23.5);
+
+  // Sub-Card 2: Detail Pembayaran (Kanan)
+  const rightCardX = 107;
+  doc.setFillColor(...lightBg);
+  doc.setDrawColor(...borderLight);
+  doc.roundedRect(rightCardX, cardY, cardWidth, cardHeight, 2, 2, "FD");
+
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(rightCardX, cardY, cardWidth, 6, 2, 2, "F");
+  doc.rect(rightCardX, cardY + 3.5, cardWidth, 2.5, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(71, 85, 105);
+  doc.text("Metode Pembayaran", rightCardX + 4, cardY + 4.2);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...grayColor);
+  doc.text("Kanal:", rightCardX + 4, cardY + 11.5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...darkColor);
+  doc.text(cleanPaymentMethodName(tx.paymentMethodName || tx.paymentMethod), rightCardX + 22, cardY + 11.5);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...grayColor);
+  doc.text("Saluran:", rightCardX + 4, cardY + 17.5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...darkColor);
+  doc.text(tx.channelCode || tx.paymentMethod || "QRIS", rightCardX + 22, cardY + 17.5);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...grayColor);
+  doc.text("Status:", rightCardX + 4, cardY + 23.5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(isPaid ? 5 : 180, isPaid ? 150 : 83, isPaid ? 105 : 9);
+  doc.text(isPaid ? "Lunas & Terverifikasi" : "Menunggu Pembayaran", rightCardX + 22, cardY + 23.5);
+
+  // 5. Section: Tabel Rincian Biaya Saldo
+  y = cardY + cardHeight + 8;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(...darkColor);
+  doc.text("Rincian Pengisian Saldo", 15, y);
+
+  y += 2.5;
+  doc.setFillColor(...lightBg);
+  doc.setDrawColor(...borderLight);
+  doc.rect(15, y, 180, 7.5, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...grayColor);
+  doc.text("Deskripsi Transaksi", 20, y + 5);
+  doc.text("Jumlah", 190, y + 5, { align: "right" });
+
+  // Baris 1: Nominal Top Up
+  y += 7.5;
+  doc.setFillColor(255, 255, 255);
+  doc.rect(15, y, 180, 10, "FD");
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...darkColor);
+  doc.text("Nominal Pengisian Saldo Dompet Akun", 20, y + 6.5);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatRupiahPdf(tx.itemsSubtotal || tx.totalAmount), 190, y + 6.5, { align: "right" });
+
+  // Baris 2: Biaya Layanan
+  y += 10;
+  doc.setFillColor(255, 255, 255);
+  doc.rect(15, y, 180, 10, "FD");
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...darkColor);
+  doc.text("Biaya Layanan & Administrasi", 20, y + 6.5);
+  doc.setFont("helvetica", "bold");
+  doc.text(tx.paymentFee > 0 ? formatRupiahPdf(tx.paymentFee) : "Rp 0 (Gratis)", 190, y + 6.5, { align: "right" });
+
+  // Baris 3: Total Pembayaran
+  y += 10;
+  doc.setFillColor(240, 253, 244);
+  doc.setDrawColor(...primaryColor);
+  doc.rect(15, y, 180, 12, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(...darkColor);
+  doc.text("Total Pembayaran Top Up", 20, y + 7.5);
+
+  doc.setFontSize(12);
+  doc.setTextColor(...primaryColor);
+  doc.text(formatRupiahPdf(tx.totalAmount), 190, y + 7.5, { align: "right" });
+
+  // 6. Petunjuk & Informasi Penggunaan Saldo
+  y += 18;
+  doc.setDrawColor(...borderLight);
+  doc.setFillColor(...lightBg);
+  doc.roundedRect(15, y, 180, 32, 2, 2, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...darkColor);
+  doc.text("Ketentuan & Informasi Saldo Dompet", 20, y + 6);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...grayColor);
+  const infoLines = [
+    "• Saldo yang telah berhasil diisi dapat langsung digunakan untuk pembelian semua produk di MarketPointID.",
+    "• Riwayat mutasi saldo terperinci dapat dipantau secara real-time pada menu Saldo / Dompet Saya.",
+    "• Pengisian saldo ini sah dan dijamin keamanannya oleh infrastruktur escrow MarketPointID.",
+    "• Simpan dokumen ini sebagai tanda bukti pembayaran yang sah apabila sewaktu-waktu dibutuhkan konfirmasi.",
+  ];
+  let iY = y + 11.5;
+  infoLines.forEach((line) => {
+    doc.text(line, 20, iY);
+    iY += 4.5;
+  });
+
+  // 7. Security Banner
+  y += 38;
+  doc.setFillColor(240, 253, 244);
+  doc.setDrawColor(187, 247, 208);
+  doc.roundedRect(15, y, 180, 11, 2, 2, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(22, 101, 52);
+  doc.text("Mutasi Saldo Resmi & Dilindungi Sistem MarketPointID", 20, y + 5);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(21, 128, 61);
+  doc.text(
+    "Setiap penambahan saldo diverifikasi otomatis dan tercatat pada buku besar (ledger) dompet pengguna.",
+    20,
+    y + 8.5
+  );
+
+  // 8. Footer
+  const footerY = 282;
+  doc.setDrawColor(...borderLight);
+  doc.line(15, footerY - 4, 195, footerY - 4);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(...grayColor);
+  doc.text(
+    "Dokumen bukti top up ini diterbitkan secara elektronik oleh MarketPointID dan sah tanpa tanda tangan basah.",
+    105,
+    footerY,
+    { align: "center" }
+  );
+  doc.text(
+    `Waktu Cetak: ${new Date().toLocaleString("id-ID", { dateStyle: "long", timeStyle: "medium" })} • Halaman 1 dari 1`,
+    105,
+    footerY + 3.8,
+    { align: "center" }
+  );
+
+  doc.save(`MarketPointID-Bukti-TopUp-${tx.invoiceNumber}.pdf`);
+}
+
+/**
+ * ============================================================================
+ * 2. GENERATOR PDF KHUSUS BELANJA PRODUK DIGITAL
+ * Memuat detail produk, lisensi & serial key resmi, serta petunjuk pengiriman.
+ * ============================================================================
+ */
+async function generatePurchasePdf(tx: TransactionInvoiceData): Promise<void> {
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  const primaryColor = [0, 170, 91] as const;
+  const darkColor = [30, 41, 59] as const;
+  const grayColor = [100, 116, 139] as const;
+  const lightBg = [248, 250, 252] as const;
+  const borderLight = [226, 232, 240] as const;
+
+  // 1. Top Decorative Green Accent Bar
+  doc.setFillColor(...primaryColor);
+  doc.rect(0, 0, 210, 4, "F");
+
+  // 2. Header
+  const logoBase64 = await loadLogoBase64();
+  let brandTextX = 15;
+
+  if (logoBase64) {
+    try {
+      doc.addImage(logoBase64, "PNG", 15, 10, 14, 14);
+      brandTextX = 32;
+    } catch (e) {
+      console.warn("Could not add logo to PDF:", e);
+    }
+  }
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(17);
   doc.setTextColor(...primaryColor);
@@ -106,7 +432,7 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.text("Platform Produk Digital Terpercaya", brandTextX, 21.5);
   doc.text("delivery@marketpoint.id • marketpoint.id", brandTextX, 25.5);
 
-  // Document Title & Metadata on the Right
+  // Metadata di kanan atas
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor(...darkColor);
@@ -116,13 +442,13 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setFontSize(8.5);
   doc.setTextColor(...grayColor);
   doc.text(`No. Invoice: ${tx.invoiceNumber}`, 195, 21, { align: "right" });
-  doc.text(`Waktu Transaksi: ${formatDatePdf(tx.createdAt)}`, 195, 25.5, { align: "right" });
+  doc.text(`Waktu: ${formatDatePdf(tx.createdAt)}`, 195, 25.5, { align: "right" });
 
   // 3. Status Bar
   let y = 32;
   const isPaid = tx.status === "PAID" || tx.status === "SETTLED";
   if (isPaid) {
-    doc.setFillColor(240, 253, 244); // Emerald 50
+    doc.setFillColor(240, 253, 244);
     doc.setDrawColor(...primaryColor);
     doc.roundedRect(15, y, 180, 10, 2, 2, "FD");
 
@@ -146,12 +472,11 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
     doc.text(`Status: ${tx.status}`, 20, y + 6.5);
   }
 
-  // Extract License Keys early
+  // Extract License Keys
   const rawLicense = tx.licenseKey || (tx.licenseKeys && tx.licenseKeys.length > 0 ? tx.licenseKeys.join("\n") : null);
   const keysList = tx.licenseKeys && tx.licenseKeys.length > 0
     ? tx.licenseKeys
     : rawLicense ? rawLicense.split("\n").filter(Boolean) : [];
-  const primaryKey = keysList[0] || tx.licenseKey || "Terkirim ke Email";
 
   // 4. Section: Informasi Pembeli & Pembayaran
   y = 47;
@@ -164,13 +489,12 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   const cardHeight = 26;
   const cardWidth = 88;
 
-  // --- Sub-Card 1: Detail Pembeli (Kiri) ---
+  // Sub-Card 1: Detail Pembeli (Kiri)
   doc.setFillColor(...lightBg);
   doc.setDrawColor(...borderLight);
   doc.roundedRect(15, cardY, cardWidth, cardHeight, 2, 2, "FD");
 
-  // Header Bar Kiri
-  doc.setFillColor(241, 245, 249); // Slate 100
+  doc.setFillColor(241, 245, 249);
   doc.roundedRect(15, cardY, cardWidth, 6, 2, 2, "F");
   doc.rect(15, cardY + 3.5, cardWidth, 2.5, "F");
   doc.setFont("helvetica", "bold");
@@ -178,7 +502,6 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setTextColor(71, 85, 105);
   doc.text("Penerima Pesanan", 19, cardY + 4.2);
 
-  // Content Kiri
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(...grayColor);
@@ -206,14 +529,13 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setTextColor(5, 150, 105);
   doc.text("Otomatis via Email (Instan)", 36, cardY + 22.2);
 
-  // --- Sub-Card 2: Detail Pembayaran & Transaksi (Kanan) ---
+  // Sub-Card 2: Detail Pembayaran (Kanan)
   const rightCardX = 107;
   doc.setFillColor(...lightBg);
   doc.setDrawColor(...borderLight);
   doc.roundedRect(rightCardX, cardY, cardWidth, cardHeight, 2, 2, "FD");
 
-  // Header Bar Kanan
-  doc.setFillColor(241, 245, 249); // Slate 100
+  doc.setFillColor(241, 245, 249);
   doc.roundedRect(rightCardX, cardY, cardWidth, 6, 2, 2, "F");
   doc.rect(rightCardX, cardY + 3.5, cardWidth, 2.5, "F");
   doc.setFont("helvetica", "bold");
@@ -221,7 +543,6 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setTextColor(71, 85, 105);
   doc.text("Rincian Pembayaran", rightCardX + 4, cardY + 4.2);
 
-  // Content Kanan
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(...grayColor);
@@ -229,7 +550,7 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8.5);
   doc.setTextColor(...darkColor);
-  doc.text(tx.paymentMethodName || tx.paymentCategory || "QRIS", rightCardX + 22, cardY + 11.2);
+  doc.text(cleanPaymentMethodName(tx.paymentMethodName || tx.paymentMethod), rightCardX + 22, cardY + 11.2);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
@@ -249,12 +570,12 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setTextColor(5, 150, 105);
   doc.text("Lunas (Terverifikasi Escrow)", rightCardX + 22, cardY + 22.2);
 
-  // 5. Section: Data Lisensi & Akses Produk (Dynamic Y)
+  // 5. Section: Data Lisensi & Akses Produk (Hanya jika ada)
   y = cardY + cardHeight + 6;
 
   if (keysList.length > 0) {
     const boxHeight = Math.max(22, 14 + keysList.length * 8.5);
-    doc.setFillColor(240, 253, 244); // Emerald 50
+    doc.setFillColor(240, 253, 244);
     doc.setDrawColor(...primaryColor);
     doc.roundedRect(15, y, 180, boxHeight, 2, 2, "FD");
 
@@ -270,7 +591,6 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
 
     let kY = y + 17.5;
     keysList.forEach((key) => {
-      // Small pill box for key
       doc.setFillColor(255, 255, 255);
       doc.setDrawColor(187, 247, 208);
       doc.roundedRect(20, kY - 4.8, 170, 7.2, 1.5, 1.5, "FD");
@@ -290,7 +610,6 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
 
     y += boxHeight + 7;
   } else {
-    // If license key not generated yet
     doc.setFillColor(...lightBg);
     doc.setDrawColor(...borderLight);
     doc.roundedRect(15, y, 180, 14, 2, 2, "FD");
@@ -318,7 +637,6 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setTextColor(...darkColor);
   doc.text("Rincian Produk", 15, y);
 
-  // Table Header
   y += 2.5;
   doc.setFillColor(...lightBg);
   doc.setDrawColor(...borderLight);
@@ -333,7 +651,6 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.text("Harga Satuan", 155, y + 5, { align: "right" });
   doc.text("Subtotal", 190, y + 5, { align: "right" });
 
-  // Table Row
   y += 7.5;
   doc.setFillColor(255, 255, 255);
   doc.rect(15, y, 180, 14, "FD");
@@ -344,7 +661,7 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.text("1", 20, y + 6);
 
   doc.setFont("helvetica", "bold");
-  doc.text(tx.productTitle.slice(0, 52), 33, y + 6);
+  doc.text(cleanProductTitle(tx.productTitle).slice(0, 52), 33, y + 6);
 
   if (tx.variant) {
     doc.setFont("helvetica", "normal");
@@ -367,7 +684,6 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   const summaryBoxX = 110;
   const summaryBoxWidth = 85;
 
-  // Right Side: Summary Box
   doc.setDrawColor(...borderLight);
   doc.setFillColor(...lightBg);
   doc.roundedRect(summaryBoxX, y, summaryBoxWidth, 44, 2, 2, "FD");
@@ -395,12 +711,10 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
     doc.text(`+ ${formatRupiahPdf(tx.paymentFee)}`, summaryBoxX + summaryBoxWidth - 5, rY, { align: "right" });
   }
 
-  // Divider inside summary
   rY += 3.5;
   doc.setDrawColor(...borderLight);
   doc.line(summaryBoxX + 5, rY, summaryBoxX + summaryBoxWidth - 5, rY);
 
-  // Total Row
   rY += 6;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
@@ -411,12 +725,11 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
   doc.setTextColor(...primaryColor);
   doc.text(formatRupiahPdf(tx.totalAmount), summaryBoxX + summaryBoxWidth - 5, rY, { align: "right" });
 
-  // Payment Method Row
   rY += 6;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(...grayColor);
-  doc.text(`Metode: ${tx.paymentMethodName || tx.paymentMethod || "QRIS"}`, summaryBoxX + 5, rY);
+  doc.text(`Metode: ${cleanPaymentMethodName(tx.paymentMethodName || tx.paymentMethod)}`, summaryBoxX + 5, rY);
 
   // Left Side: Notes & Instructions
   doc.setDrawColor(...borderLight);
@@ -491,6 +804,22 @@ export async function generateTransactionPdf(tx: TransactionInvoiceData): Promis
     { align: "center" }
   );
 
-  // Trigger direct download in browser
-  doc.save(`MarketPointID-Bukti-Transaksi-${tx.invoiceNumber}.pdf`);
+  doc.save(`MarketPointID-Invoice-${tx.invoiceNumber}.pdf`);
+}
+
+/**
+ * Main entry point: otomatis mendeteksi apakah transaksi adalah Top Up Saldo atau Belanja Produk.
+ */
+export async function generateTransactionPdf(tx: TransactionInvoiceData): Promise<void> {
+  const isTopUp = Boolean(
+    (tx.productTitle && tx.productTitle.toLowerCase().includes("top up")) ||
+    (tx.invoiceNumber && tx.invoiceNumber.startsWith("TOPUP-")) ||
+    (tx.paymentCategory === "TOPUP")
+  );
+
+  if (isTopUp) {
+    return generateTopUpPdf(tx);
+  } else {
+    return generatePurchasePdf(tx);
+  }
 }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { doc, collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { useMerchantShop } from "@/context/merchant-context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -138,7 +138,7 @@ export default function MerchantStatsPage() {
   const { shopId: contextShopId, shop: contextShop, effectiveFeatures, isAdmin } = useMerchantShop();
 
   const [mounted, setMounted] = useState(false);
-  const [period, setPeriod] = useState<"7days" | "30days" | "this_month" | "all">("7days");
+  const [period, setPeriod] = useState<"7days" | "30days" | "this_month" | "all">("this_month");
   const [chartMetric, setChartMetric] = useState<"revenue" | "orders">("revenue");
 
   // Real data states
@@ -204,11 +204,9 @@ export default function MerchantStatsPage() {
   // Sync period state with plan tier permissions
   useEffect(() => {
     if (!canAccessAllTime && period === "all") {
-      setPeriod(canAccess30Days ? "30days" : "7days");
-    } else if (!canAccess30Days && (period === "30days" || period === "this_month")) {
-      setPeriod("7days");
+      setPeriod("this_month");
     }
-  }, [canAccess30Days, canAccessAllTime, period]);
+  }, [canAccessAllTime, period]);
 
   useEffect(() => {
     setMounted(true);
@@ -224,6 +222,20 @@ export default function MerchantStatsPage() {
 
   const { data: firestoreShop, loading: shopLoading } = useDoc(shopRef);
   const shop = contextShop || firestoreShop;
+
+  // Helper to parse dates robustly from both PostgreSQL (string/Date) and Firestore (Timestamp/Date)
+  const parseTxDate = useCallback((tx: any): Date | null => {
+    if (!tx) return null;
+    const raw = tx.createdAt || tx.created_at || tx.paidAt || tx.updatedAt || tx.timestamp;
+    if (!raw) return null;
+    if (typeof raw?.toDate === "function") return raw.toDate();
+    if (typeof raw === "number") return new Date(raw);
+    if (typeof raw === "string") {
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) return d;
+    }
+    return null;
+  }, []);
 
   // Fetch all business statistics
   const fetchAllStats = useCallback(async (showToast = false) => {
@@ -248,9 +260,28 @@ export default function MerchantStatsPage() {
 
       const [txData, prodData, revData] = await Promise.all([txPromise, prodPromise, revPromise]);
 
-      if (txData.success && Array.isArray(txData.transactions)) {
-        setTransactions(txData.transactions);
+      let txList: any[] = [];
+      if (txData.success && Array.isArray(txData.transactions) && txData.transactions.length > 0) {
+        txList = txData.transactions;
+      } else if (db && activeShopId) {
+        // Fallback: check Firestore orders collection if PostgreSQL has no records for this shop yet
+        try {
+          const ordersRef = collection(db, "orders");
+          const q = query(ordersRef, orderBy("createdAt", "desc"), limit(200));
+          const snap = await getDocs(q);
+          const fsOrders: any[] = [];
+          snap.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (data.shopId === activeShopId || data.merchantId === activeShopId) {
+              fsOrders.push({ id: docSnap.id, ...data });
+            }
+          });
+          if (fsOrders.length > 0) txList = fsOrders;
+        } catch {
+          // Ignore fallback errors
+        }
       }
+      setTransactions(txList);
 
       if (prodData.success && Array.isArray(prodData.products)) {
         setProducts(prodData.products);
@@ -272,7 +303,7 @@ export default function MerchantStatsPage() {
       setIsLoadingData(false);
       setIsRefreshing(false);
     }
-  }, [activeShopId, toast]);
+  }, [activeShopId, db, toast]);
 
   useEffect(() => {
     if (activeShopId) {
@@ -290,8 +321,8 @@ export default function MerchantStatsPage() {
     const now = new Date();
     return transactions.filter((tx) => {
       if (period === "all") return true;
-      const txDate = tx.createdAt ? new Date(tx.createdAt) : null;
-      if (!txDate || isNaN(txDate.getTime())) return true;
+      const txDate = parseTxDate(tx);
+      if (!txDate) return true;
 
       const diffDays = (now.getTime() - txDate.getTime()) / (1000 * 60 * 60 * 24);
 
@@ -305,12 +336,12 @@ export default function MerchantStatsPage() {
       }
       return true;
     });
-  }, [transactions, period]);
+  }, [transactions, period, parseTxDate]);
 
   // Aggregate Key Metrics
   const metrics = useMemo(() => {
     const paidTxs = filteredTransactions.filter(
-      (tx) => tx.status === "PAID" || tx.status === "SETTLED"
+      (tx) => tx.status === "PAID" || tx.status === "SETTLED" || tx.status === "COMPLETED"
     );
 
     const pendingTxs = filteredTransactions.filter((tx) => tx.status === "PENDING");
@@ -319,7 +350,7 @@ export default function MerchantStatsPage() {
     );
 
     const totalRevenue = paidTxs.reduce(
-      (sum, tx) => sum + (Number(tx.netAmount ?? tx.totalAmount) || 0),
+      (sum, tx) => sum + (Number(tx.netAmount ?? tx.totalAmount ?? tx.amount) || 0),
       0
     );
 
@@ -336,15 +367,15 @@ export default function MerchantStatsPage() {
     const periodDays = period === "7days" ? 7 : period === "30days" ? 30 : 30;
     const prevPeriodTransactions = transactions.filter((tx) => {
       if (period === "all") return false;
-      const txDate = tx.createdAt ? new Date(tx.createdAt) : null;
-      if (!txDate || isNaN(txDate.getTime())) return false;
+      const txDate = parseTxDate(tx);
+      if (!txDate) return false;
       const diffDays = (now.getTime() - txDate.getTime()) / (1000 * 60 * 60 * 24);
       return diffDays > periodDays && diffDays <= periodDays * 2;
     });
 
     const prevRevenue = prevPeriodTransactions
-      .filter((tx) => tx.status === "PAID" || tx.status === "SETTLED")
-      .reduce((sum, tx) => sum + (Number(tx.netAmount ?? tx.totalAmount) || 0), 0);
+      .filter((tx) => tx.status === "PAID" || tx.status === "SETTLED" || tx.status === "COMPLETED")
+      .reduce((sum, tx) => sum + (Number(tx.netAmount ?? tx.totalAmount ?? tx.amount) || 0), 0);
 
     let growthPct = 0;
     if (prevRevenue > 0) {
@@ -417,7 +448,14 @@ export default function MerchantStatsPage() {
   // Generate Daily Trend Data for Recharts
   const chartData = useMemo(() => {
     const now = new Date();
-    const daysCount = period === "7days" ? 7 : period === "30days" ? 30 : 14;
+    const daysCount =
+      period === "7days"
+        ? 7
+        : period === "30days"
+          ? 30
+          : period === "this_month"
+            ? Math.max(7, now.getDate())
+            : 14;
 
     const dateBuckets: { [key: string]: { label: string; revenue: number; orders: number } } = {};
 
@@ -435,19 +473,19 @@ export default function MerchantStatsPage() {
 
     // Populate with real transactions
     for (const tx of filteredTransactions) {
-      if (tx.status !== "PAID" && tx.status !== "SETTLED") continue;
-      const txDate = tx.createdAt ? new Date(tx.createdAt) : null;
-      if (!txDate || isNaN(txDate.getTime())) continue;
+      if (tx.status !== "PAID" && tx.status !== "SETTLED" && tx.status !== "COMPLETED") continue;
+      const txDate = parseTxDate(tx);
+      if (!txDate) continue;
 
       const dateKey = txDate.toISOString().split("T")[0];
       if (dateBuckets[dateKey]) {
-        dateBuckets[dateKey].revenue += Number(tx.netAmount ?? tx.totalAmount) || 0;
+        dateBuckets[dateKey].revenue += Number(tx.netAmount ?? tx.totalAmount ?? tx.amount) || 0;
         dateBuckets[dateKey].orders += 1;
       }
     }
 
     return Object.values(dateBuckets);
-  }, [filteredTransactions, period]);
+  }, [filteredTransactions, period, parseTxDate]);
 
   // Group Top Products from Transactions
   const topProducts = useMemo(() => {
@@ -464,21 +502,40 @@ export default function MerchantStatsPage() {
 
     // Calculate from paid transactions
     for (const tx of transactions) {
-      if (tx.status !== "PAID" && tx.status !== "SETTLED") continue;
-      const pId = tx.productId || tx.productTitle || "general";
-      if (!productSalesMap[pId]) {
-        productSalesMap[pId] = {
-          productId: pId,
-          title: tx.productTitle || "Produk Digital",
-          image: tx.productImage,
-          unitsSold: 0,
-          revenue: 0,
-          ordersCount: 0,
-        };
+      if (tx.status !== "PAID" && tx.status !== "SETTLED" && tx.status !== "COMPLETED") continue;
+      if (Array.isArray(tx.items) && tx.items.length > 0) {
+        for (const item of tx.items) {
+          const pId = item.id || item.productId || item.title || "general";
+          if (!productSalesMap[pId]) {
+            productSalesMap[pId] = {
+              productId: pId,
+              title: item.title || item.name || "Produk Digital",
+              image: item.image || item.imageUrl,
+              unitsSold: 0,
+              revenue: 0,
+              ordersCount: 0,
+            };
+          }
+          productSalesMap[pId].unitsSold += Number(item.quantity) || 1;
+          productSalesMap[pId].revenue += Number(item.price ? item.price * (item.quantity || 1) : 0);
+          productSalesMap[pId].ordersCount += 1;
+        }
+      } else {
+        const pId = tx.productId || tx.productTitle || "general";
+        if (!productSalesMap[pId]) {
+          productSalesMap[pId] = {
+            productId: pId,
+            title: tx.productTitle || tx.productName || "Produk Digital",
+            image: tx.productImage,
+            unitsSold: 0,
+            revenue: 0,
+            ordersCount: 0,
+          };
+        }
+        productSalesMap[pId].unitsSold += Number(tx.quantity) || 1;
+        productSalesMap[pId].revenue += Number(tx.netAmount ?? tx.totalAmount ?? tx.amount) || 0;
+        productSalesMap[pId].ordersCount += 1;
       }
-      productSalesMap[pId].unitsSold += Number(tx.quantity) || 1;
-      productSalesMap[pId].revenue += Number(tx.netAmount ?? tx.totalAmount) || 0;
-      productSalesMap[pId].ordersCount += 1;
     }
 
     const sortedFromTx = Object.values(productSalesMap)
@@ -1082,10 +1139,7 @@ export default function MerchantStatsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div className="hidden sm:flex flex-col">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-[#00AA5B]/10 text-[#00AA5B] flex items-center justify-center">
-                <TrendingUp className="w-4 h-4" />
-              </div>
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+              <h1 className="text-xl font-bold tracking-tight text-slate-900">
                 Statistik & Analisis Bisnis
               </h1>
             </div>

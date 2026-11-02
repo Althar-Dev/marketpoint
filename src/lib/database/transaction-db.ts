@@ -211,6 +211,7 @@ export async function updateDbTransactionStatus(
   extra?: {
     deliveredBy?: string;
     deliveredAt?: Date | string;
+    notes?: string;
     paymentInfo?: any;
     platformFee?: number;
     platformFeeRate?: number;
@@ -231,6 +232,11 @@ export async function updateDbTransactionStatus(
   if (extra?.deliveredAt) {
     params.push(extra.deliveredAt);
     updates.push(`delivered_at = $${params.length}`);
+  }
+
+  if (extra?.notes !== undefined) {
+    params.push(extra.notes);
+    updates.push(`notes = $${params.length}`);
   }
 
   if (extra?.paymentInfo) {
@@ -267,7 +273,27 @@ export async function updateDbTransactionStatus(
 
   const res = await query(sql, params);
   if (res.rows.length === 0) return null;
-  return mapRowToTransaction(res.rows[0]);
+  const updatedTx = mapRowToTransaction(res.rows[0]);
+
+  // Credit net sales to shop_balances if transaction is for a merchant shop
+  if ((status === "PAID" || status === "SETTLED") && updatedTx.shopId) {
+    const rawNet = Number(updatedTx.netAmount);
+    const subtotal = Number(updatedTx.itemsSubtotal || updatedTx.totalAmount || 0);
+    const disc = Number(updatedTx.discount || 0);
+    const fee = Number(updatedTx.platformFee || 0);
+    const finalNet = (!isNaN(rawNet) && rawNet > 0) ? rawNet : Math.max(0, subtotal - disc - fee);
+
+    if (finalNet > 0) {
+      try {
+        const { creditShopSales } = await import("./shop-balance");
+        await creditShopSales(updatedTx.shopId, finalNet, status === "SETTLED");
+      } catch (shopBalErr) {
+        console.warn("[SHOP BALANCE CREDIT WARN]", shopBalErr);
+      }
+    }
+  }
+
+  return updatedTx;
 }
 
 /**
@@ -331,7 +357,8 @@ export async function getDbTransactionByPrId(
 }
 
 /**
- * 5. Ambil Daftar Transaksi Pengguna (User Transactions)
+ * 5. Ambil Daftar Transaksi Pengguna (User Purchases / Pembelian)
+ * Hanya mengambil transaksi pembelian yang dilakukan pengguna (bukan order masuk ke toko miliknya).
  */
 export async function getDbTransactionsByUserId(
   userId: string,
@@ -339,7 +366,10 @@ export async function getDbTransactionsByUserId(
 ): Promise<TransactionRow[]> {
   await initDatabaseSchema();
   const res = await query(
-    `SELECT * FROM transactions WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2`,
+    `SELECT * FROM transactions 
+     WHERE user_id = $1 
+       AND (shop_id IS NULL OR shop_id != $1)
+     ORDER BY created_at DESC LIMIT $2`,
     [userId, limit]
   );
   return res.rows.map(mapRowToTransaction);

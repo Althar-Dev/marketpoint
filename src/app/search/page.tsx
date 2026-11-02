@@ -41,6 +41,20 @@ function SearchContent() {
   const [firestoreShops, setFirestoreShops] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+
+  useEffect(() => {
+    if (isOverlayOpen) {
+      document.body.setAttribute("data-search-open", "true");
+      window.dispatchEvent(new Event("search-overlay-change"));
+    } else {
+      document.body.removeAttribute("data-search-open");
+      window.dispatchEvent(new Event("search-overlay-change"));
+    }
+    return () => {
+      document.body.removeAttribute("data-search-open");
+      window.dispatchEvent(new Event("search-overlay-change"));
+    };
+  }, [isOverlayOpen]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
 
   // Sync searchQuery & activeTab when searchParams change
@@ -60,13 +74,40 @@ function SearchContent() {
 
     const loadData = async () => {
       try {
+        const reviewRatingsPromise = fetch("/api/reviews?shopSummary=true")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            const map = new Map<string, { ratingAvg: number; totalReviews: number }>();
+            if (d?.summaries && Array.isArray(d.summaries)) {
+              for (const s of d.summaries) {
+                if (s.shopId) {
+                  const stats = {
+                    ratingAvg: Number(s.ratingAvg) || 0,
+                    totalReviews: Number(s.totalReviews) || 0,
+                  };
+                  map.set(s.shopId, stats);
+                  map.set(s.shopId.toLowerCase(), stats);
+                  if (s.shopId === "7eiFB7ievpRHlVbdq049z3AhtT73" || s.shopId === "marketpoint") {
+                    map.set("marketpoint", stats);
+                    map.set("7eiFB7ievpRHlVbdq049z3AhtT73", stats);
+                  }
+                }
+              }
+            }
+            return map;
+          })
+          .catch(() => new Map<string, { ratingAvg: number; totalReviews: number }>());
+
         const res = await fetch("/api/products");
         const data = await res.json();
         let rawProducts = data.products && Array.isArray(data.products) ? data.products : [];
 
         if (db) {
           try {
-            const shopsSnap = await getDocs(collection(db, "shops"));
+            const [shopsSnap, ratingsMap] = await Promise.all([
+              getDocs(collection(db, "shops")),
+              reviewRatingsPromise,
+            ]);
             const shopsMap: Record<string, any> = {};
             const shopDocs: any[] = [];
 
@@ -82,6 +123,43 @@ function SearchContent() {
                 shopCity = rawCity.city || rawCity.cityName || rawCity.district || rawCity.province || rawCity.address || "";
               }
 
+              const isOfficial = Boolean(
+                shopData.official ||
+                shopData.isOfficial ||
+                shopData.is_official ||
+                shopData.isOfficialStore ||
+                shopData.subscription?.planId === "prime" ||
+                shopData.subscription?.planId === "admin" ||
+                shopData.slug === "marketpoint" ||
+                docSnap.id === "marketpoint" ||
+                docSnap.id === "7eiFB7ievpRHlVbdq049z3AhtT73"
+              );
+
+              const isVerified = Boolean(
+                shopData.verified ||
+                shopData.isVerified ||
+                shopData.is_verified ||
+                isOfficial ||
+                ["pro", "prime", "admin"].includes(shopData.subscription?.planId) ||
+                shopData.slug === "marketpoint" ||
+                docSnap.id === "marketpoint" ||
+                docSnap.id === "7eiFB7ievpRHlVbdq049z3AhtT73"
+              );
+
+              const shopStats =
+                ratingsMap.get(docSnap.id) ||
+                ratingsMap.get(docSnap.id.toLowerCase()) ||
+                ratingsMap.get(shopData.slug) ||
+                ratingsMap.get(shopData.slug?.toLowerCase()) ||
+                ratingsMap.get(shopData.ownerId) ||
+                ((docSnap.id === "marketpoint" || shopData.slug === "marketpoint" || isOfficial) ? ratingsMap.get("7eiFB7ievpRHlVbdq049z3AhtT73") : null) || {
+                  ratingAvg: Number(shopData.ratingAvg || shopData.rating || 0),
+                  totalReviews: Number(shopData.totalReviews || shopData.reviewCount || 0),
+                };
+
+              const finalRating = Number(shopStats.ratingAvg) || (isOfficial || shopData.slug === "marketpoint" ? 5.0 : 0);
+              const finalReviews = Number(shopStats.totalReviews) || (isOfficial || shopData.slug === "marketpoint" ? 2 : 0);
+
               shopDocs.push({
                 ...shopData,
                 id: docSnap.id,
@@ -89,9 +167,10 @@ function SearchContent() {
                 slug: shopData.slug || docSnap.id,
                 city: shopCity || "Jakarta Pusat",
                 logo: shopData.logoUrl || shopData.photoURL || shopData.logo,
-                isVerified: Boolean(shopData.verified || shopData.isVerified || shopData.is_verified || shopData.subscription?.planId === "pro" || shopData.subscription?.planId === "prime" || shopData.subscription?.planId === "admin"),
-                isOfficial: Boolean(shopData.official || shopData.isOfficial || shopData.is_official || shopData.isOfficialStore || shopData.subscription?.planId === "prime" || shopData.subscription?.planId === "admin" || shopData.slug === "marketpoint" || docSnap.id === "marketpoint"),
-                ratingAvg: shopData.ratingAvg || shopData.rating || 0,
+                isVerified,
+                isOfficial,
+                ratingAvg: finalRating,
+                totalReviews: finalReviews,
               });
             });
 
@@ -543,32 +622,34 @@ function SearchContent() {
                               <span className="text-xs sm:text-base font-bold text-foreground truncate min-w-0">
                                 {shop.name}
                               </span>
-                              {shop.isVerified && (
+                              {(shop.isVerified || shop.isOfficial || shop.slug === "marketpoint") && (
                                 /* eslint-disable-next-line @next/next/no-img-element */
                                 <img src="/assets/badge/verified.png" alt="Verified" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0" />
                               )}
-                              {shop.isOfficial && (
+                              {(shop.isOfficial || shop.slug === "marketpoint") && (
                                 /* eslint-disable-next-line @next/next/no-img-element */
                                 <img src="/assets/badge/officials.png" alt="Official" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0" />
                               )}
                             </div>
-                            <div className="flex items-center gap-1 mt-0.5">
+                            <div className="flex items-center gap-1 mt-0.5 text-[#FFC400]">
                               <Star
                                 className={cn(
                                   "w-3 h-3 shrink-0",
-                                  Number(shop.ratingAvg || shop.rating || 0) > 0
+                                  Number(shop.ratingAvg || 0) > 0
                                     ? "text-[#FFC400] fill-[#FFC400]"
                                     : "text-slate-300 fill-slate-200"
                                 )}
                               />
                               <span className="text-[10px] sm:text-xs font-bold text-foreground">
-                                {Number(shop.ratingAvg || shop.rating || 0) > 0
-                                  ? Number(shop.ratingAvg || shop.rating).toFixed(1)
-                                  : "0.0"}
+                                {Number(shop.ratingAvg || 0) > 0
+                                  ? Number(shop.ratingAvg).toFixed(1)
+                                  : "Baru"}
                               </span>
-                              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground/70">
-                                ({shop.totalReviews || shop.reviewsCount || 0} ulasan)
-                              </span>
+                              {Number(shop.totalReviews || 0) > 0 && (
+                                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground/70">
+                                  ({shop.totalReviews} ulasan)
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -649,7 +730,7 @@ function SearchContent() {
 
       {/* Interactive Search Overlay when input is focused/tapped */}
       {isOverlayOpen && (
-        <div className="fixed inset-0 z-50 bg-white flex flex-col animate-in fade-in duration-150">
+        <div data-mobile-search-overlay="true" className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in duration-150">
           <form onSubmit={handleSearchSubmit} className="p-3 sm:p-4 border-b border-border flex items-center gap-2.5 bg-white">
             <button
               type="button"
@@ -712,11 +793,11 @@ function SearchContent() {
                             <span className="text-xs sm:text-sm font-bold text-foreground group-hover:text-[#00AA5B] truncate">
                               {item.name}
                             </span>
-                            {item.isVerified && (
+                            {(item.isVerified || item.isOfficial || item.slug === "marketpoint") && (
                               /* eslint-disable-next-line @next/next/no-img-element */
                               <img src="/assets/badge/verified.png" alt="Verified" className="w-3.5 h-3.5 object-contain shrink-0" />
                             )}
-                            {item.isOfficial && (
+                            {(item.isOfficial || item.slug === "marketpoint") && (
                               /* eslint-disable-next-line @next/next/no-img-element */
                               <img src="/assets/badge/officials.png" alt="Official Store" className="w-3.5 h-3.5 object-contain shrink-0" />
                             )}
@@ -724,20 +805,25 @@ function SearchContent() {
                           <div className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-muted-foreground">
                             <span>Toko</span>
                             <span className="opacity-40">•</span>
-                            <div className="flex items-center gap-0.5">
+                            <div className="flex items-center gap-0.5 text-[#FFC400]">
                               <Star
                                 className={cn(
                                   "w-3 h-3",
-                                  Number(item.ratingAvg || item.rating || 0) > 0
+                                  Number(item.ratingAvg || 0) > 0
                                     ? "text-[#FFC400] fill-[#FFC400]"
                                     : "text-slate-300 fill-slate-200"
                                 )}
                               />
                               <span className="text-foreground font-bold text-[10px] sm:text-xs">
-                                {Number(item.ratingAvg || item.rating || 0) > 0
-                                  ? Number(item.ratingAvg || item.rating).toFixed(1)
-                                  : "0.0"}
+                                {Number(item.ratingAvg || 0) > 0
+                                  ? Number(item.ratingAvg).toFixed(1)
+                                  : "Baru"}
                               </span>
+                              {Number(item.totalReviews || 0) > 0 && (
+                                <span className="text-muted-foreground text-[10px] font-normal">
+                                  ({item.totalReviews})
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>

@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/firebase";
 import {
   MessageSquare,
   Phone,
@@ -50,6 +51,7 @@ interface LogEntry {
 }
 
 export default function AdminWABotPage() {
+  const { user } = useUser();
   const { toast } = useToast();
   const logContainerRef = useRef<HTMLDivElement>(null);
 
@@ -104,9 +106,13 @@ export default function AdminWABotPage() {
   const handleSaveConfig = async () => {
     setSavingConfig(true);
     try {
+      const token = await user?.getIdToken();
       const res = await fetch("/api/wa-bot/config", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(botConfig),
       });
       const data = await res.json();
@@ -462,7 +468,7 @@ export default function AdminWABotPage() {
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Socket Engine</p>
-            <p className="text-xs sm:text-sm font-extrabold text-foreground truncate">wa-socket v2.0</p>
+            <p className="text-xs sm:text-sm font-extrabold text-foreground truncate">EltherPro</p>
           </div>
         </Card>
       </div>

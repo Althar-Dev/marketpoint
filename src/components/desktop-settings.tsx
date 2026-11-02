@@ -57,7 +57,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { updatePassword, FacebookAuthProvider, linkWithPopup, updateEmail } from "firebase/auth";
+import { updatePassword, FacebookAuthProvider, GoogleAuthProvider, linkWithPopup, updateEmail } from "firebase/auth";
 import { doc, updateDoc, collection } from "firebase/firestore";
 import { useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -515,7 +515,7 @@ export function DesktopSettings({
   };
 
   const providers = user?.providerData?.map((p: any) => p.providerId) || [];
-  const isGoogleUser = providers.includes("google.com");
+  const isGoogleUser = providers.includes("google.com") || userData?.connectedAccounts?.google === true;
   const isFacebookUser = providers.includes("facebook.com") || userData?.connectedAccounts?.facebook === true;
   const hasPassword = providers.includes("password");
   const canCreatePassword = isGoogleUser && !hasPassword;
@@ -624,7 +624,69 @@ export function DesktopSettings({
     }
   };
 
-  // Connected Accounts handlers
+  // Connected Accounts handlers & states
+  const [isConnectingGoogle, setIsConnectingGoogle] = useState(false);
+  const [isConnectingFacebook, setIsConnectingFacebook] = useState(false);
+
+  const handleConnectGoogle = async () => {
+    if (!isGoogleLoginEnabled) {
+      toast({
+        variant: "destructive",
+        title: "Metode Dinonaktifkan",
+        description: "Metode login Google sedang dinonaktifkan oleh Administrator.",
+      });
+      return;
+    }
+    if (!user) return;
+
+    setIsConnectingGoogle(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      const result = await linkWithPopup(user, provider);
+
+      const gUser = result.user;
+      const gData = gUser.providerData.find((p) => p.providerId === "google.com");
+      const googleDisplayName = gData?.displayName || gUser.displayName || null;
+      const googleEmail = gData?.email || gUser.email || null;
+
+      await updateDoc(doc(db, "users", user.uid), {
+        "connectedAccounts.google": true,
+        googleEmail: googleEmail,
+        googleName: googleDisplayName,
+        updatedAt: new Date().toISOString(),
+      });
+
+      toast({
+        title: "Google Berhasil Terhubung",
+        description: `Akun Google (${googleEmail || "Anda"}) kini terhubung dan dapat digunakan untuk login cepat.`,
+      });
+    } catch (error: any) {
+      console.error("Gagal menghubungkan Google:", error);
+      if (error.code === "auth/popup-closed-by-user") {
+        return;
+      }
+      let errorMsg = "Terjadi kesalahan saat menghubungkan akun Google.";
+      if (error.code === "auth/credential-already-in-use") {
+        errorMsg = "Akun Google ini sudah terhubung ke akun MarketPoint lain.";
+      } else if (error.code === "auth/unauthorized-domain") {
+        errorMsg = "Domain ini belum diizinkan di Firebase Authentication (Authorized Domains).";
+      } else if (error.code === "auth/provider-already-linked") {
+        errorMsg = "Akun Google sudah terhubung pada akun Anda.";
+      } else if (error.message) {
+        errorMsg = error.message;
+      }
+
+      toast({
+        variant: "destructive",
+        title: "Gagal Menghubungkan Google",
+        description: errorMsg,
+      });
+    } finally {
+      setIsConnectingGoogle(false);
+    }
+  };
+
   const handleConnectFacebook = async () => {
     if (!isFacebookLoginEnabled) {
       toast({
@@ -635,6 +697,8 @@ export function DesktopSettings({
       return;
     }
     if (!user) return;
+
+    setIsConnectingFacebook(true);
     try {
       const provider = new FacebookAuthProvider();
       provider.addScope("email");
@@ -654,13 +718,30 @@ export function DesktopSettings({
       });
     } catch (error: any) {
       console.error(error);
+      if (error.code === "auth/popup-closed-by-user") {
+        return;
+      }
+      let desc = error.message || "Terjadi kesalahan saat menghubungkan Facebook.";
+      if (error.code === "auth/credential-already-in-use") {
+        desc = "Akun Facebook ini sudah terhubung ke akun MarketPoint lain.";
+      } else if (error.code === "auth/unauthorized-domain") {
+        desc = "Domain ini belum diizinkan di Firebase Authentication (Authorized Domains).";
+      }
       toast({
         variant: "destructive",
         title: "Gagal Menghubungkan",
-        description: error.message || "Terjadi kesalahan saat menghubungkan Facebook.",
+        description: desc,
       });
+    } finally {
+      setIsConnectingFacebook(false);
     }
   };
+
+  const googleIdentifier =
+    userData?.googleEmail ||
+    user?.providerData?.find((p: any) => p.providerId === "google.com")?.email ||
+    (isGoogleUser ? user?.email : null) ||
+    "Akun Google Terhubung";
 
   const fbIdentifier =
     userData?.facebookName ||
@@ -716,7 +797,7 @@ export function DesktopSettings({
                       <div className="relative">
                         <Avatar className="h-40 w-40 ring-2 ring-[#F8FAFC] rounded-xl overflow-hidden shadow-sm">
                           <AvatarImage
-                            src={user.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (user.photoURL || undefined)}
+                            src={user.photoURL === "/assets/avatar/duck.png" ? "/assets/avatar/duck.png" : (user.photoURL || undefined)}
                             className="object-cover"
                             referrerPolicy="no-referrer"
                           />
@@ -1372,7 +1453,11 @@ export function DesktopSettings({
                             )}
                           </div>
                           <p className="text-[11px] text-muted-foreground mt-0.5">
-                            {user?.email || "Masuk cepat dengan akun Google"}
+                            {isGoogleUser
+                              ? googleIdentifier
+                              : !isGoogleLoginEnabled
+                                ? "Metode Google dinonaktifkan oleh Admin"
+                                : "Masuk cepat dengan akun Google"}
                           </p>
                         </div>
                       </div>
@@ -1391,9 +1476,18 @@ export function DesktopSettings({
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="h-8 px-3 rounded-xl text-xs font-bold border-[#00AA5B] text-[#00AA5B] hover:bg-[#00AA5B]/10"
+                            disabled={isConnectingGoogle}
+                            onClick={handleConnectGoogle}
+                            className="h-8 px-3 rounded-xl text-xs font-bold border-[#00AA5B] text-[#00AA5B] hover:bg-[#00AA5B]/10 disabled:opacity-60"
                           >
-                            Hubungkan
+                            {isConnectingGoogle ? (
+                              <div className="flex items-center gap-1.5">
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Menghubungkan...</span>
+                              </div>
+                            ) : (
+                              "Hubungkan"
+                            )}
                           </Button>
                         )}
                       </div>
@@ -1440,10 +1534,18 @@ export function DesktopSettings({
                             type="button"
                             variant="outline"
                             size="sm"
+                            disabled={isConnectingFacebook}
                             onClick={handleConnectFacebook}
-                            className="h-8 px-3 rounded-xl text-xs font-bold border-[#00AA5B] text-[#00AA5B] hover:bg-[#00AA5B]/10"
+                            className="h-8 px-3 rounded-xl text-xs font-bold border-[#00AA5B] text-[#00AA5B] hover:bg-[#00AA5B]/10 disabled:opacity-60"
                           >
-                            Hubungkan
+                            {isConnectingFacebook ? (
+                              <div className="flex items-center gap-1.5">
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Menghubungkan...</span>
+                              </div>
+                            ) : (
+                              "Hubungkan"
+                            )}
                           </Button>
                         )}
                       </div>

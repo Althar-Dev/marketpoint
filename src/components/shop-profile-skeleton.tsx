@@ -107,18 +107,9 @@ export function ShopProfileSkeleton() {
             </div>
           </Card>
 
-          {/* Search & Filter Bar Skeleton */}
-          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-            <Skeleton className="h-10 w-full sm:w-72 rounded-xl" />
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Skeleton className="h-10 w-36 rounded-xl" />
-              <Skeleton className="h-10 w-36 rounded-xl" />
-            </div>
-          </div>
-
           {/* Product Cards Grid Skeleton */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
               <Card key={i} className="border-border border-[1.5px] shadow-sm rounded-2xl bg-white overflow-hidden">
                 <Skeleton className="aspect-square w-full rounded-none" />
                 <div className="p-3.5 space-y-2">

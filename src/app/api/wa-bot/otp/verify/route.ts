@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { verifyOTP, formatPhoneNumber } from "@/wa-bot";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   try {
+    const clientIp = getClientIp(req);
     const body = await req.json();
     const { phone, code } = body;
 
@@ -14,6 +16,20 @@ export async function POST(req: Request) {
     }
 
     const formattedPhone = formatPhoneNumber(phone);
+
+    // Rate Limiting: Max 5 attempts per 5 minutes per phone & IP
+    const rl = checkRateLimit(`wa-otp-verify:${formattedPhone}:${clientIp}`, {
+      intervalMs: 5 * 60 * 1000,
+      maxRequests: 5,
+    });
+
+    if (!rl.success) {
+      return NextResponse.json(
+        { success: false, error: "Terlalu banyak percobaan kode OTP WhatsApp yang salah. Silakan tunggu 5 menit." },
+        { status: 429 }
+      );
+    }
+
     const result = verifyOTP(formattedPhone, code);
 
     if (!result.success) {

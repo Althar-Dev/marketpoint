@@ -54,6 +54,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useMerchantShop } from "@/context/merchant-context";
+import { useShopBalance } from "@/hooks/use-shop-balance";
 
 export default function MerchantWalletPage() {
   const { toast } = useToast();
@@ -67,8 +68,20 @@ export default function MerchantWalletPage() {
     isOwner,
     isStaff,
     staffRole,
+    staffRoleLabel,
     staffPermissions,
   } = useMerchantShop();
+
+  const {
+    balance: shopBalanceData,
+    loading: shopBalanceLoading,
+    isAuthorized: isFinanceAuthorized,
+    refreshBalance: refreshShopBalance,
+  } = useShopBalance(shopId);
+
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -76,33 +89,20 @@ export default function MerchantWalletPage() {
 
   const activeTargetId = shopId || user?.uid;
 
-  const walletRef = useMemoFirebase(() => {
-    if (!activeTargetId) return null;
-    return doc(db, "users", activeTargetId, "wallet", "info");
-  }, [db, activeTargetId]);
-
-  const transactionQuery = useMemoFirebase(() => {
-    if (!activeTargetId) return null;
-    return query(
-      collection(db, "users", activeTargetId, "transactions"),
-      orderBy("timestamp", "desc"),
-      limit(20)
-    );
-  }, [db, activeTargetId]);
-
   const ordersQuery = useMemoFirebase(() => {
     if (!activeTargetId || !db) return null;
     return query(collection(db, "shops", activeTargetId, "orders"));
   }, [db, activeTargetId]);
 
-  const { data: wallet, loading: walletLoading } = useDoc(walletRef);
-  const { data: transactions, loading: transLoading } = useCollection(transactionQuery);
   const { data: rawOrders } = useCollection(ordersQuery);
+  const transactions: any[] = [];
   const [pgOrders, setPgOrders] = useState<any[]>([]);
+  const [transLoading, setTransLoading] = useState<boolean>(true);
 
   // Ambil transaksi toko dari PostgreSQL
   useEffect(() => {
     if (!activeTargetId) return;
+    setTransLoading(true);
     fetch(`/api/transactions?shopId=${activeTargetId}`)
       .then((res) => res.json())
       .then((data) => {
@@ -110,7 +110,8 @@ export default function MerchantWalletPage() {
           setPgOrders(data.transactions);
         }
       })
-      .catch((err) => console.warn("[WALLET PG ORDERS ERROR]", err));
+      .catch((err) => console.warn("[WALLET PG ORDERS ERROR]", err))
+      .finally(() => setTransLoading(false));
   }, [activeTargetId]);
 
   // Durasi settlement saldo penjualan: 3 Hari (72 jam)
@@ -118,11 +119,11 @@ export default function MerchantWalletPage() {
   const SETTLEMENT_MS = SETTLEMENT_DAYS * 24 * 60 * 60 * 1000;
 
   const totalWithdrawn = useMemo(() => {
-    if (!transactions) return 0;
-    return transactions
-      .filter((t: any) => t.type === "WITHDRAWAL" && t.status === "SUCCESS")
-      .reduce((acc: number, t: any) => acc + (Number(t.amount) || 0), 0);
-  }, [transactions]);
+    if (typeof shopBalanceData?.totalWithdrawn === "number") {
+      return shopBalanceData.totalWithdrawn;
+    }
+    return 0;
+  }, [shopBalanceData]);
 
   // Hitung Saldo Tertahan (Settlement 3 Hari) & Saldo Tersedia (Siap Ditarik)
   const { availableBalance, pendingBalance } = useMemo(() => {
@@ -172,11 +173,14 @@ export default function MerchantWalletPage() {
       }
     }
 
+    const computedAvailable = Math.max(0, readyAvailable - totalWithdrawn);
+    const computedPending = holdingPending;
+
     return {
-      availableBalance: Math.max(0, readyAvailable - totalWithdrawn),
-      pendingBalance: holdingPending,
+      availableBalance: Math.max(Number(shopBalanceData?.activeBalance || 0), computedAvailable),
+      pendingBalance: Math.max(Number(shopBalanceData?.pendingBalance || 0), computedPending),
     };
-  }, [rawOrders, pgOrders, totalWithdrawn]);
+  }, [rawOrders, pgOrders, totalWithdrawn, shopBalanceData]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -297,7 +301,7 @@ export default function MerchantWalletPage() {
 
   const canAccessFinance = isOwner || staffRole === "CO_OWNER" || !!staffPermissions?.finance;
 
-  if (!mounted || authLoading || walletLoading || merchantLoading) {
+  if (!mounted || authLoading || shopBalanceLoading || merchantLoading) {
     return (
       <div className="p-4 md:p-6 lg:p-8 space-y-6">
         <div className="flex justify-between items-center">
@@ -315,19 +319,22 @@ export default function MerchantWalletPage() {
   }
 
   // Permission guard: Only Owner, Co-Owner, or Staff with Finance permission
-  if (isStaff && !canAccessFinance) {
+  if (isStaff && !staffPermissions?.finance) {
     return (
-      <main className="flex-1 p-4 md:p-8 flex items-center justify-center min-h-[70vh]">
-        <Card className="max-w-md w-full border border-border shadow-md rounded-2xl p-6 text-center space-y-4 bg-white">
-          <div className="h-14 w-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
-            <ShieldAlert className="h-7 w-7" />
+      <main className="flex-1 p-4 md:p-6 lg:p-8 bg-[#F9FAFB] flex items-center justify-center min-h-[60vh]">
+        <Card className="max-w-md w-full p-8 text-center bg-white rounded-2xl border border-border shadow-xs space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+            <ShieldAlert className="w-7 h-7" />
           </div>
-          <div>
-            <h2 className="text-base font-bold text-foreground">Akses Saldo Dibatasi</h2>
-            <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-              Halaman <b>Saldo & Keuangan Toko</b> hanya dapat diakses oleh <b>Pemilik Toko</b>, <b>Co-Owner</b>, atau staf dengan izin <b>Keuangan</b>.
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-slate-900">Akses Keuangan Dibatasi</h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Anda terdaftar sebagai staf toko dengan peran <b>{staffRoleLabel || staffRole}</b>. Akun Anda tidak memiliki izin untuk melihat saldo atau menarik dana toko.
             </p>
           </div>
+          <p className="text-[11px] text-slate-400">
+            Hubungi pemilik toko jika Anda memerlukan akses ke modul keuangan ini.
+          </p>
           <Button asChild className="w-full bg-[#00AA5B] hover:bg-[#00924c] text-white rounded-xl text-xs font-bold h-9 shadow-sm">
             <Link href="/my-shop">Kembali ke Dashboard Toko</Link>
           </Button>
@@ -351,7 +358,7 @@ export default function MerchantWalletPage() {
               <Download className="w-3.5 h-3.5" /> Unduh Laporan
             </Button>
 
-            <Dialog>
+            <Dialog open={isWithdrawOpen} onOpenChange={setIsWithdrawOpen}>
               <DialogTrigger asChild>
                 <Button className="h-9 px-6 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-[11px] gap-2 shadow-md shadow-[#00AA5B]/10">
                   <ArrowUpRight className="w-3.5 h-3.5" /> Tarik Dana
@@ -373,7 +380,12 @@ export default function MerchantWalletPage() {
                     <label className="text-[10px] font-bold text-muted-foreground ml-1">NOMINAL PENARIKAN</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">Rp</span>
-                      <Input placeholder="0" className="h-10 pl-9 rounded-xl border-border font-black text-sm" />
+                      <Input
+                        placeholder="0"
+                        value={withdrawAmount}
+                        onChange={(e) => setWithdrawAmount(e.target.value)}
+                        className="h-10 pl-9 rounded-xl border-border font-black text-sm"
+                      />
                     </div>
                   </div>
                   <div className="p-3 rounded-xl border border-dashed border-border flex items-center gap-3">
@@ -387,8 +399,54 @@ export default function MerchantWalletPage() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-xs">
-                    Konfirmasi Penarikan
+                  <Button
+                    onClick={async () => {
+                      const num = Number(withdrawAmount.replace(/[^0-9]/g, ""));
+                      if (!num || num <= 0) {
+                        toast({ variant: "destructive", title: "Nominal Tidak Valid", description: "Masukkan nominal penarikan yang valid." });
+                        return;
+                      }
+                      if (num > availableBalance) {
+                        toast({ variant: "destructive", title: "Saldo Tidak Cukup", description: "Nominal penarikan melebihi saldo tersedia." });
+                        return;
+                      }
+
+                      setIsWithdrawing(true);
+                      try {
+                        const token = user ? await user.getIdToken() : "";
+                        const res = await fetch("/api/shops/balance", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                          },
+                          body: JSON.stringify({
+                            shopId,
+                            amount: num,
+                            action: "withdraw",
+                          }),
+                        });
+                        const data = await res.json();
+                        if (!data.success) {
+                          throw new Error(data.error || "Gagal memproses penarikan saldo.");
+                        }
+                        toast({
+                          title: "Penarikan Berhasil Diajukan",
+                          description: `Dana sebesar Rp ${num.toLocaleString("id-ID")} sedang diproses ke rekening bank toko.`,
+                        });
+                        setIsWithdrawOpen(false);
+                        setWithdrawAmount("");
+                        refreshShopBalance();
+                      } catch (err: any) {
+                        toast({ variant: "destructive", title: "Gagal Menarik Dana", description: err?.message || "Terjadi kendala teknis." });
+                      } finally {
+                        setIsWithdrawing(false);
+                      }
+                    }}
+                    disabled={isWithdrawing}
+                    className="w-full h-10 rounded-xl bg-[#00AA5B] hover:bg-[#00AA5B]/90 font-black text-white text-xs"
+                  >
+                    {isWithdrawing ? "Memproses..." : "Konfirmasi Penarikan"}
                   </Button>
                 </DialogFooter>
               </DialogContent>

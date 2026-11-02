@@ -60,13 +60,13 @@ export default function SignUpPage() {
       const userDoc = await getDoc(userDocRef);
 
       // Logika Avatar Acak untuk pendaftaran Google pertama kali
-      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
       const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
       const existingData = userDoc.exists() ? userDoc.data() : null;
       let finalDisplayName = existingData?.displayName || user.displayName || "Pengguna";
       let finalPhotoURL = existingData?.photoURL || user.photoURL || randomAvatar;
-      if (finalPhotoURL === "/assets/avatar/duck.png") finalPhotoURL = "/assets/avatar/duck.jpg";
+      if (finalPhotoURL === "/assets/avatar/duck.png") finalPhotoURL = "/assets/avatar/duck.png";
 
       await setDoc(userDocRef, {
         uid: user.uid,
@@ -130,13 +130,13 @@ export default function SignUpPage() {
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
-      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
       const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
       const existingData = userDoc.exists() ? userDoc.data() : null;
       let finalDisplayName = existingData?.displayName || user.displayName || "Pengguna";
       let finalPhotoURL = existingData?.photoURL || user.photoURL || randomAvatar;
-      if (finalPhotoURL === "/assets/avatar/duck.png") finalPhotoURL = "/assets/avatar/duck.jpg";
+      if (finalPhotoURL === "/assets/avatar/duck.png") finalPhotoURL = "/assets/avatar/duck.png";
 
       // Ekstraksi email secara menyeluruh dari semua sumber provider Firebase Auth
       const providerEmail = user.providerData?.find((p) => p.email)?.email;
@@ -264,7 +264,7 @@ export default function SignUpPage() {
     setLoading(true);
     try {
       // Logika Avatar Acak untuk pendaftaran Email
-      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.jpg"];
+      const defaultAvatars = ["/assets/avatar/hawk.png", "/assets/avatar/duck.png"];
       const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);

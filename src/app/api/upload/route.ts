@@ -1,6 +1,7 @@
-
 import { NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { verifyAdminRequest } from '@/lib/server-auth';
 
 const r2 = new S3Client({
   region: 'auto',
@@ -11,15 +12,51 @@ const r2 = new S3Client({
   },
 });
 
+const ALLOWED_EXTENSIONS = new Set([
+  'jpg', 'jpeg', 'png', 'webp', 'svg', 'gif',
+  'zip', 'pdf', 'mp4', 'txt'
+]);
+
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
+
 export async function POST(req: Request) {
   try {
+    // 1. Rate Limiting
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit(`${clientIp}:upload`, { intervalMs: 60_000, maxRequests: 25 });
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: 'Terlalu banyak permintaan unggah file. Silakan tunggu beberapa saat.' },
+        { status: 429 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const type = (formData.get('type') as string) || '';
     const folderParam = (formData.get('folder') as string) || '';
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: 'File tidak ditemukan dalam permintaan.' }, { status: 400 });
+    }
+
+    // 2. Validate File Size
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: `Ukuran file (${(file.size / (1024 * 1024)).toFixed(1)}MB) melebihi batas maksimum 25MB.` },
+        { status: 400 }
+      );
+    }
+
+    // 3. Validate File Extension
+    const rawExtension = file.name.split('.').pop() || '';
+    const extension = rawExtension.toLowerCase().trim();
+
+    if (!ALLOWED_EXTENSIONS.has(extension)) {
+      return NextResponse.json(
+        { error: `Format ekstensi file '.${extension}' tidak diizinkan demi keamanan platform.` },
+        { status: 400 }
+      );
     }
 
     // Determine target folder based on folderParam or type
@@ -35,8 +72,18 @@ export async function POST(req: Request) {
     else if (type === 'avatar') folder = 'avatar';
     else if (type === 'logo') folder = 'logo';
     else if (type === 'products' || type === 'product') folder = 'products';
-    
-    const extension = file.name.split('.').pop();
+
+    // 4. Protect gallery folder uploads: Admin only
+    if (folder.startsWith('gallery/')) {
+      const adminAuth = await verifyAdminRequest(req);
+      if (!adminAuth.authorized) {
+        return NextResponse.json(
+          { error: adminAuth.error || 'Hanya administrator yang diizinkan mengunggah ke galeri sistem.' },
+          { status: 403 }
+        );
+      }
+    }
+
     const uniqueId = crypto.randomUUID();
     const filename = `${folder}/${uniqueId}.${extension}`;
 
@@ -47,7 +94,7 @@ export async function POST(req: Request) {
         Bucket: process.env.R2_BUCKET_NAME,
         Key: filename,
         Body: buffer,
-        ContentType: file.type,
+        ContentType: file.type || 'application/octet-stream',
       })
     );
 

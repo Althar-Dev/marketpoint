@@ -552,9 +552,13 @@ export default function MerchantSubscriptionPage() {
     setIsSubmitting(true);
     try {
       const targetShopId = contextShopId || user.uid;
+      const token = user ? await user.getIdToken() : "";
       const res = await fetch("/api/subscription", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           shopId: targetShopId,
           planId: selectedPlan.id,

@@ -29,6 +29,7 @@ const VALID_ADMIN_PATHS = new Set([
   "/admin/products",
   "/admin/settings",
   "/admin/shops",
+  "/admin/topup",
   "/admin/transactions",
   "/admin/users",
   "/admin/wa-bot",

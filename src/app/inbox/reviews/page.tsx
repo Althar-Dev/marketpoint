@@ -271,9 +271,14 @@ export default function ReviewsPage() {
       {isMobile && (
         <header className="sticky top-0 z-30 bg-white border-b border-border/60 px-4 h-14 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
-            <Link href="/profile" className="p-1 -ml-1 rounded-full hover:bg-muted text-foreground transition-colors">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="p-1 -ml-1 rounded-full hover:bg-muted text-foreground transition-colors cursor-pointer"
+              title="Kembali"
+            >
               <ChevronLeft className="w-5 h-5" />
-            </Link>
+            </button>
             <div>
               <h1 className="text-sm font-bold leading-tight">Balasan Ulasan</h1>
               <p className="text-[10px] text-muted-foreground">Tanggapan resmi dari penjual</p>

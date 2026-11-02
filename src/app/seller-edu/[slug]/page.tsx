@@ -2,6 +2,7 @@
 
 import { use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import { LegalHeader } from "@/components/legal-header";
 import { MarketFooter } from "@/components/market-footer";
@@ -41,6 +42,7 @@ export default function SellerModuleDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
+  const router = useRouter();
   const isMobile = useIsMobile();
 
   const currentModule = SELLER_MODULES.find((m) => m.slug === slug);
@@ -64,12 +66,14 @@ export default function SellerModuleDetailPage({
       {isMobile && (
         <header className="sticky top-0 z-30 bg-white border-b border-border/60 px-4 h-14 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
-            <Link
-              href="/seller-edu"
-              className="p-1 -ml-1 rounded-full hover:bg-muted text-foreground transition-colors"
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="p-1 -ml-1 rounded-full hover:bg-muted text-foreground transition-colors cursor-pointer"
+              title="Kembali"
             >
               <ArrowLeft className="w-5 h-5" />
-            </Link>
+            </button>
             <h1 className="text-sm font-bold truncate max-w-[220px]">
               {currentModule.title}
             </h1>

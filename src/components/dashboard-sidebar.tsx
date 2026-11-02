@@ -8,7 +8,7 @@ import {
   Wallet,
   History,
   Package,
-  Store,
+  Zap,
   Key,
   FileText,
   ArrowLeft,
@@ -64,8 +64,8 @@ export function DashboardSidebar() {
     {
       label: "Marketplace",
       items: [
-        { label: "Explore Product", icon: Package, href: "/dashboard/products" },
-        { label: "Seller Center", icon: Store, href: "/dashboard/seller" },
+        { label: "Products", icon: Package, href: "/dashboard/products" },
+        { label: "Services", icon: Zap, href: "/dashboard/services" },
       ]
     },
     {
@@ -86,8 +86,8 @@ export function DashboardSidebar() {
           </div>
           {state !== "collapsed" && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-[10px] font-bold text-[#00AA5B] leading-none uppercase tracking-widest">Dashboard</span>
-              <span className="text-sm font-black tracking-tight truncate text-slate-900">MarketPointID</span>
+              <span className="text-[10px] font-bold text-[#00AA5B] leading-none">MarketPointID</span>
+              <span className="text-sm font-bold tracking-tight truncate">Buyer Area</span>
             </div>
           )}
         </div>
@@ -146,10 +146,10 @@ export function DashboardSidebar() {
         {state !== "collapsed" && user && (
           <div className="mt-4 p-2 rounded-xl bg-slate-50 border border-border flex items-center gap-2.5 shadow-2xs">
             <Avatar className="h-8 w-8 rounded-lg border border-white shadow-sm shrink-0">
-               <AvatarImage src={user.photoURL || undefined} />
-               <AvatarFallback className="bg-[#00AA5B] text-white text-[10px] font-bold">
-                 {user.displayName?.substring(0, 2).toUpperCase() || "US"}
-               </AvatarFallback>
+              <AvatarImage src={user.photoURL || undefined} />
+              <AvatarFallback className="bg-[#00AA5B] text-white text-[10px] font-bold">
+                {user.displayName?.substring(0, 2).toUpperCase() || "US"}
+              </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-bold text-slate-900 truncate leading-none">

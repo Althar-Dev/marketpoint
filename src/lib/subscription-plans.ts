@@ -151,3 +151,44 @@ export async function getPlanConfig(planId: string): Promise<PlanConfigItem | un
   return plans.find((p) => p.id === planId);
 }
 
+/**
+ * Memeriksa apakah suatu toko memiliki hak akses dan paket aktif untuk fitur Flash Sale.
+ * - Paket 'free': TIDAK ada akses flash sale (kuota 0).
+ * - Paket 'admin': selalu aktif.
+ * - Paket 'plus', 'pro', 'prime': aktif selama status bukan 'EXPIRED' dan belum melewati masa tenggang.
+ */
+export function canShopUseFlashSale(
+  planId?: string | null,
+  status?: string | null,
+  expiresAt?: string | null
+): boolean {
+  if (!planId) return false;
+  const p = planId.toLowerCase();
+  if (p === "admin") return true;
+  if (p === "free") return false;
+  if (status === "EXPIRED") return false;
+  if (expiresAt && new Date(expiresAt).getTime() < Date.now()) return false;
+  return p === "plus" || p === "pro" || p === "prime";
+}
+
+/**
+ * Memeriksa apakah suatu toko memiliki hak akses dan paket aktif untuk fitur Voucher Toko.
+ * - Paket 'free': TIDAK ada akses voucher toko (kuota 0).
+ * - Paket 'admin': selalu aktif.
+ * - Paket 'plus', 'pro', 'prime': aktif selama status bukan 'EXPIRED' dan belum melewati masa tenggang.
+ */
+export function canShopUseVouchers(
+  planId?: string | null,
+  status?: string | null,
+  expiresAt?: string | null
+): boolean {
+  if (!planId) return false;
+  const p = planId.toLowerCase();
+  if (p === "admin") return true;
+  if (p === "free") return false;
+  if (status === "EXPIRED") return false;
+  if (expiresAt && new Date(expiresAt).getTime() < Date.now()) return false;
+  return p === "plus" || p === "pro" || p === "prime";
+}
+
+

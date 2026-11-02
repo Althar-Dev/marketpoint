@@ -3,7 +3,7 @@ import { query, initDatabaseSchema } from "@/lib/database/db";
 
 export async function GET() {
   try {
-    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "studio-7299066318";
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "marketpointid";
     
     // 1. Fetch real shops from Firestore REST API
     let firestoreShops: any[] = [];
@@ -67,11 +67,40 @@ export async function GET() {
       console.warn("[DB SHOPS QUERY WARN]", dbErr);
     }
 
+    // 3. Fetch aggregated rating & review counts per shop
+    const ratingMap = new Map<string, { ratingAvg: number; totalReviews: number }>();
+    try {
+      const reviewRes = await query(`
+        SELECT shop_id as "shopId", ROUND(AVG(rating), 1)::float as "ratingAvg", COUNT(id)::int as "totalReviews"
+        FROM reviews
+        GROUP BY shop_id
+      `);
+      if (reviewRes.rows && Array.isArray(reviewRes.rows)) {
+        for (const r of reviewRes.rows) {
+          ratingMap.set(r.shopId, {
+            ratingAvg: Number(r.ratingAvg) || 0,
+            totalReviews: Number(r.totalReviews) || 0,
+          });
+        }
+      }
+    } catch (revErr) {
+      console.warn("[DB REVIEWS STATS WARN]", revErr);
+    }
+
     // Merge Firestore shops & DB shops by unique slug
     const shopsMap = new Map();
     for (const shop of [...firestoreShops, ...dbShops]) {
       if (shop.slug && !shopsMap.has(shop.slug)) {
-        shopsMap.set(shop.slug, shop);
+        const stats = ratingMap.get(shop.id) || ratingMap.get(shop.slug) || { ratingAvg: 0, totalReviews: 0 };
+        const isOfficial = Boolean(shop.isOfficial || shop.slug === "marketpoint" || shop.id === "marketpoint");
+        const isVerified = Boolean(shop.isVerified || isOfficial);
+        shopsMap.set(shop.slug, {
+          ...shop,
+          isOfficial,
+          isVerified,
+          ratingAvg: stats.ratingAvg,
+          totalReviews: stats.totalReviews,
+        });
       }
     }
 

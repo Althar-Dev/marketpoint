@@ -6,9 +6,15 @@ import {
 } from "@/lib/database/settings";
 import { testXenditConnection, getXenditPaymentChannels } from "@/lib/xendit";
 import { checkDigiFlazzBalance, getDigiFlazzPriceList } from "@/lib/digiflazz";
+import { verifyAdminRequest } from "@/lib/server-auth";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const auth = await verifyAdminRequest(req);
+    if (!auth.authorized) {
+      return NextResponse.json({ error: auth.error || "Akses ditolak." }, { status: 403 });
+    }
+
     const settings = await getPlatformSettings();
 
     let digiflazzStatus: { success: boolean; message: string; deposit?: number } = {
@@ -33,6 +39,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const auth = await verifyAdminRequest(req);
+    if (!auth.authorized) {
+      return NextResponse.json({ error: auth.error || "Akses ditolak." }, { status: 403 });
+    }
+
     const body = await req.json();
     const { action } = body;
 

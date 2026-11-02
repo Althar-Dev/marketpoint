@@ -440,7 +440,7 @@ export default function ProfileIdentityPage() {
 
   const hasShop = userData?.hasShop === true || !!shop;
   const rawPhoto = userData?.photoURL || user?.photoURL;
-  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.jpg" : (rawPhoto || undefined);
+  const photoURL = rawPhoto === "/assets/avatar/duck.png" ? "/assets/avatar/duck.png" : (rawPhoto || undefined);
   const userIdDisplay = user.uid;
 
   return (
@@ -457,8 +457,8 @@ export default function ProfileIdentityPage() {
             displayName={displayName}
             setDisplayName={setDisplayName}
             isEditing={false}
-            setIsEditing={() => {}}
-            handleUpdateProfile={() => {}}
+            setIsEditing={() => { }}
+            handleUpdateProfile={() => { }}
             handleLogout={handleLogout}
             updating={false}
             onAvatarUpload={handleAvatarUpload}
@@ -657,8 +657,8 @@ export default function ProfileIdentityPage() {
                   {gender === "L"
                     ? "Laki-laki"
                     : gender === "P"
-                    ? "Perempuan"
-                    : gender || "Pilih Jenis Kelamin"}
+                      ? "Perempuan"
+                      : gender || "Pilih Jenis Kelamin"}
                 </span>
                 <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
               </button>

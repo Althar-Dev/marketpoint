@@ -131,9 +131,14 @@ export default function DisputesPage() {
       {/* Mobile Top App Bar */}
       <div className="md:hidden sticky top-0 z-30 bg-white border-b border-border/60 px-4 h-12 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/profile" className="p-1 -ml-1 text-slate-700 hover:text-black">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="p-1 -ml-1 text-slate-700 hover:text-black cursor-pointer"
+            title="Kembali"
+          >
             <ChevronLeft className="w-5 h-5" />
-          </Link>
+          </button>
           <h1 className="text-sm font-bold text-slate-900">Pesanan Dikomplain</h1>
         </div>
         <Button variant="ghost" size="icon" onClick={fetchDisputes} className="h-8 w-8 text-muted-foreground">

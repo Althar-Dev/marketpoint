@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getShopSubscription, updateShopSubscription } from "@/lib/database/subscription";
 import { getPlatformSettings } from "@/lib/database/settings";
+import { extractBearerToken, verifyFirebaseIdToken, verifyShopAuthorization } from "@/lib/server-auth";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   try {
@@ -34,7 +37,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const { shopId, planId, billingCycle } = body;
 
     if (!shopId || !planId) {
@@ -44,6 +47,44 @@ export async function POST(req: Request) {
     const validPlanIds = ["free", "plus", "pro", "prime", "admin"];
     if (!validPlanIds.includes(planId)) {
       return NextResponse.json({ success: false, error: "Paket berlangganan tidak valid." }, { status: 400 });
+    }
+
+    // Check internal secret (e.g. payment webhook activating subscription)
+    const internalSecret = req.headers.get("x-internal-secret");
+    const isInternal = Boolean(process.env.INTERNAL_API_SECRET && internalSecret === process.env.INTERNAL_API_SECRET);
+
+    if (!isInternal) {
+      const token = extractBearerToken(req);
+      if (!token) {
+        return NextResponse.json(
+          { success: false, error: "Otentikasi diperlukan: Header Authorization: Bearer <TOKEN> wajib disertakan." },
+          { status: 401 }
+        );
+      }
+
+      const auth = await verifyFirebaseIdToken(token);
+      if (!auth.valid || !auth.uid) {
+        return NextResponse.json(
+          { success: false, error: auth.error || "Token autentikasi tidak valid." },
+          { status: 401 }
+        );
+      }
+
+      const access = await verifyShopAuthorization(auth.uid, shopId);
+      if (!access.authorized) {
+        return NextResponse.json(
+          { success: false, error: access.reason || "Akses ditolak: Anda tidak memiliki wewenang untuk toko ini." },
+          { status: 403 }
+        );
+      }
+
+      // Non-admins cannot grant themselves the 'admin' plan for free
+      if (planId === "admin" && !access.isAdmin) {
+        return NextResponse.json(
+          { success: false, error: "Akses ditolak: Paket Admin hanya dapat diaktifkan oleh Administrator Platform." },
+          { status: 403 }
+        );
+      }
     }
 
     const cycle = billingCycle === "yearly" ? "yearly" : "monthly";

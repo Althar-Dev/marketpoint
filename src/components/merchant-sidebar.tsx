@@ -226,8 +226,8 @@ export function MerchantSidebar() {
           </div>
           {state !== "collapsed" && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-[10px] font-bold text-[#00AA5B] leading-none">Seller Center</span>
-              <span className="text-sm font-bold tracking-tight truncate">MarketPointID</span>
+              <span className="text-[10px] font-bold text-[#00AA5B] leading-none">MarketPointID</span>
+              <span className="text-sm font-bold tracking-tight truncate">Seller Center</span>
             </div>
           )}
         </div>

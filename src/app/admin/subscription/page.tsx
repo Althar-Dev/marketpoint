@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -47,6 +48,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/firebase";
 import { PlanConfigItem, DEFAULT_PLANS_CONFIG } from "@/lib/subscription-plans";
 
 interface ShopSubRow {
@@ -63,6 +65,7 @@ interface ShopSubRow {
 }
 
 export default function AdminSubscriptionPage() {
+  const { user } = useUser();
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -86,9 +89,15 @@ export default function AdminSubscriptionPage() {
 
   // Fetch Settings & Subscriptions
   const loadData = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/subscription");
+      const token = await user.getIdToken();
+      const res = await fetch("/api/admin/subscription", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await res.json();
       if (res.ok && data.success) {
         if (data.settings?.plans && Array.isArray(data.settings.plans) && data.settings.plans.length > 0) {
@@ -115,13 +124,13 @@ export default function AdminSubscriptionPage() {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [user, toast]);
 
   useEffect(() => {
-    if (mounted) {
+    if (mounted && user) {
       loadData();
     }
-  }, [mounted, loadData]);
+  }, [mounted, user, loadData]);
 
   // Handle Plan Field Changes
   const handleUpdatePlan = (id: string, field: keyof PlanConfigItem, value: any) => {
@@ -246,15 +255,19 @@ export default function AdminSubscriptionPage() {
   };
 
   const handleSaveModal = async () => {
-    if (!editingPlan) return;
+    if (!editingPlan || !user) return;
     setSavingModal(true);
     try {
+      const token = await user.getIdToken();
       const updatedPlans = plans.map((p) => (p.id === editingPlan.id ? editingPlan : p));
       setPlans(updatedPlans);
 
       const res = await fetch("/api/admin/subscription", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           action: "update_plans",
           plans: updatedPlans,
@@ -291,11 +304,16 @@ export default function AdminSubscriptionPage() {
 
   // Save All Plans & Commissions
   const handleSave = async () => {
+    if (!user) return;
     setSaving(true);
     try {
+      const token = await user.getIdToken();
       const res = await fetch("/api/admin/subscription", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           action: "update_plans",
           plans,
@@ -341,11 +359,16 @@ export default function AdminSubscriptionPage() {
 
   // Cancel Shop Subscription Action
   const handleCancelShopSub = async (shopId: string) => {
+    if (!user) return;
     if (!confirm(`Batalkan status berlangganan untuk toko ${shopId}?`)) return;
     try {
+      const token = await user.getIdToken();
       const res = await fetch("/api/admin/subscription", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           action: "cancel_shop_subscription",
           shopId,
@@ -1223,7 +1246,20 @@ export default function AdminSubscriptionPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40 font-medium">
-                  {filteredSubs.length === 0 ? (
+                  {loading ? (
+                    Array.from({ length: 5 }).map((_, idx) => (
+                      <tr key={`sub-skel-${idx}`}>
+                        <td className="py-3 px-4"><Skeleton className="h-4 w-24" /></td>
+                        <td className="py-3 px-4"><Skeleton className="h-4 w-20" /></td>
+                        <td className="py-3 px-4"><Skeleton className="h-4 w-16" /></td>
+                        <td className="py-3 px-4"><Skeleton className="h-4 w-12" /></td>
+                        <td className="py-3 px-4"><Skeleton className="h-4 w-16" /></td>
+                        <td className="py-3 px-4"><Skeleton className="h-4 w-28" /></td>
+                        <td className="py-3 px-4"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                        <td className="py-3 px-4 text-right"><Skeleton className="h-7 w-16 ml-auto rounded-lg" /></td>
+                      </tr>
+                    ))
+                  ) : filteredSubs.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="py-8 text-center text-muted-foreground italic text-xs">
                         Tidak ada toko yang cocok dengan pencarian / belum ada yang berlangganan.

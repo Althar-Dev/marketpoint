@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contact Support',
+  title: 'Bantuan',
   description: 'Pusat bantuan resmi MarketPointID Care. Dapatkan solusi kendala transaksi, panduan aktivasi lisensi, bantuan pengembalian dana, dan hubungi tim support kami.',
   alternates: {
     canonical: '/support',

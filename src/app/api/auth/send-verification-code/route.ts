@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { sendOutgoingEmail } from "@/lib/mailer";
 import { renderVerificationCodeEmailHtml } from "@/lib/auth-mailer";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const AUTH_SECRET = process.env.NEXTAUTH_SECRET || "marketpoint_auth_secret_key_2026_salt";
 
 export async function POST(req: Request) {
   try {
+    const clientIp = getClientIp(req);
     const body = await req.json();
     const rawEmail = body?.email;
 
@@ -23,6 +25,19 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { success: false, error: "Format alamat email tidak valid." },
         { status: 400 }
+      );
+    }
+
+    // Rate Limiting: Max 3 sends per 5 minutes to prevent email spam / abuse
+    const rl = checkRateLimit(`send-code:${email}:${clientIp}`, {
+      intervalMs: 5 * 60 * 1000,
+      maxRequests: 3,
+    });
+
+    if (!rl.success) {
+      return NextResponse.json(
+        { success: false, error: "Terlalu banyak permintaan kode ke email ini. Silakan tunggu 5 menit sebelum meminta kode baru." },
+        { status: 429 }
       );
     }
 

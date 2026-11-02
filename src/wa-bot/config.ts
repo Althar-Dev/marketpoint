@@ -1,6 +1,6 @@
 /**
  * WA Bot Configuration for MarketPointID
- * Powered by @starvale-sdk/wa-socket & backed by database/config.json
+ * Powered by eltherpro & backed by database/config.json
  */
 
 import path from "path";

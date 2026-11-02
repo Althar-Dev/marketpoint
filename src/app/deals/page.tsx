@@ -27,6 +27,7 @@ import {
   formatCountdown,
 } from "@/lib/flash-sale";
 import { ProductCard } from "@/components/product-card";
+import { canShopUseFlashSale, canShopUseVouchers } from "@/lib/subscription-plans";
 
 export default function DealsPage() {
   const [mounted, setMounted] = useState(false);
@@ -70,8 +71,16 @@ export default function DealsPage() {
         // Decorate products with shop data
         rawProducts = rawProducts.map((p: any) => {
           const shop = sMap[p.shopId];
+          const hasFlashSaleFeature = canShopUseFlashSale(
+            shop?.subscription?.planId,
+            shop?.subscription?.status,
+            shop?.subscription?.expiresAt
+          );
           const isVerified = Boolean(
-            shop?.isVerified ?? shop?.verified ?? shop?.is_verified ?? p.shopIsVerified ?? false
+            shop?.subscription?.planId &&
+            shop?.subscription?.planId !== "free" &&
+            shop?.subscription?.status !== "EXPIRED" &&
+            (shop?.isVerified ?? shop?.verified ?? shop?.is_verified ?? p.shopIsVerified ?? false)
           );
           const isOfficial = Boolean(
             shop?.isOfficial ?? shop?.official ?? shop?.is_official ?? (shop?.slug === "marketpoint" || p.shopSlug === "marketpoint") ?? p.shopIsOfficial ?? false
@@ -83,7 +92,7 @@ export default function DealsPage() {
             shopLogoUrl: shop?.logoUrl || shop?.logo || shop?.avatar || shop?.photoUrl || p.shopLogoUrl || "",
             shopIsVerified: isVerified,
             shopIsOfficial: isOfficial,
-            shopFlashSales: Array.isArray(shop?.flashSales) ? shop.flashSales : [],
+            shopFlashSales: hasFlashSaleFeature && Array.isArray(shop?.flashSales) ? shop.flashSales : [],
             shopCity: shop?.city || shop?.province || p.shopCity || "",
           };
         });
@@ -119,10 +128,17 @@ export default function DealsPage() {
       .filter((x): x is { product: any; flashSale: any } => x !== null);
   }, [products, nowTime]);
 
-  // Available Shop Vouchers across all shops
+  // Available Shop Vouchers across all shops (only for shops on plans that support Vouchers)
   const availableVouchers = useMemo(() => {
     const list: any[] = [];
     Object.entries(shopsMap).forEach(([shopId, shopData]) => {
+      const hasVoucherFeature = canShopUseVouchers(
+        shopData?.subscription?.planId,
+        shopData?.subscription?.status,
+        shopData?.subscription?.expiresAt
+      );
+      if (!hasVoucherFeature) return;
+
       if (Array.isArray(shopData?.vouchers)) {
         shopData.vouchers.forEach((v: any) => {
           if (v.status === "ACTIVE") {
