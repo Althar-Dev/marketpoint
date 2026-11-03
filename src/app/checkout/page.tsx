@@ -255,6 +255,10 @@ function CheckoutContent() {
   );
   const { data: shopData } = useDoc(shopDocRef);
 
+  // Seller Subscription Tier & Platform Fee Rate
+  const [sellerSubscription, setSellerSubscription] = useState<any>(null);
+  const sellerShopId = product?.shopId || product?.shop_id;
+
   // Active Flash Sale check (only if shop plan supports Flash Sale and is active)
   const activeFlashSale = useMemo(() => {
     if (!product?.id || !shopData?.flashSales) return null;
@@ -265,10 +269,6 @@ function CheckoutContent() {
     if (!hasFlashSale) return null;
     return getProductActiveFlashSale(product.id, shopData.flashSales);
   }, [product?.id, shopData?.flashSales, shopData?.subscription, sellerSubscription]);
-
-  // Seller Subscription Tier & Platform Fee Rate
-  const [sellerSubscription, setSellerSubscription] = useState<any>(null);
-  const sellerShopId = product?.shopId || product?.shop_id;
 
   useEffect(() => {
     if (!sellerShopId) return;

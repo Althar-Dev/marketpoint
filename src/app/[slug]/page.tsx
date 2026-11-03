@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -936,9 +937,28 @@ export default function ShopProfilePage() {
 
               {/* Product Grid Render */}
               {loadingShopProducts ? (
-                <div className="text-center py-16 space-y-3">
-                  <Loader2 className="w-8 h-8 animate-spin text-[#00AA5B] mx-auto" />
-                  <p className="text-xs font-semibold text-slate-500">Memuat katalog produk toko...</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4 animate-in fade-in duration-300">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden flex flex-col"
+                    >
+                      <Skeleton className="aspect-square w-full rounded-none bg-slate-100" />
+                      <div className="p-3 sm:p-3.5 space-y-2 flex-1 flex flex-col justify-between">
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-3.5 w-full rounded-md bg-slate-100" />
+                          <Skeleton className="h-3.5 w-3/4 rounded-md bg-slate-100" />
+                        </div>
+                        <div className="space-y-2 pt-2">
+                          <Skeleton className="h-4 w-1/2 rounded-md bg-slate-100" />
+                          <div className="flex items-center justify-between pt-1">
+                            <Skeleton className="h-3 w-12 rounded-md bg-slate-100" />
+                            <Skeleton className="h-3 w-14 rounded-md bg-slate-100" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : decoratedProducts.length === 0 ? (
                 <div className="text-center py-16 px-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
@@ -1193,9 +1213,23 @@ export default function ShopProfilePage() {
                 </div>
 
                 {loadingShopReviews ? (
-                  <div className="text-center py-12 space-y-2">
-                    <Loader2 className="w-6 h-6 animate-spin text-[#00AA5B] mx-auto" />
-                    <p className="text-xs text-slate-500">Memuat ulasan pembeli...</p>
+                  <div className="space-y-3 animate-in fade-in duration-300">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="w-9 h-9 rounded-full bg-slate-100" />
+                            <div className="space-y-1.5">
+                              <Skeleton className="h-3.5 w-24 rounded-md bg-slate-100" />
+                              <Skeleton className="h-3 w-16 rounded-md bg-slate-100" />
+                            </div>
+                          </div>
+                          <Skeleton className="h-3.5 w-16 rounded-md bg-slate-100" />
+                        </div>
+                        <Skeleton className="h-4 w-full rounded-md bg-slate-100" />
+                        <Skeleton className="h-4 w-2/3 rounded-md bg-slate-100" />
+                      </div>
+                    ))}
                   </div>
                 ) : shopReviews.length === 0 ? (
                   <div className="text-center py-14 px-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-2">
@@ -1305,8 +1339,8 @@ export default function ShopProfilePage() {
 
             const isOpenNow = todaySched
               ? todaySched.active &&
-                currentTimeMinutes >= parseTimeToMinutes(todaySched.open) &&
-                currentTimeMinutes <= parseTimeToMinutes(todaySched.close)
+              currentTimeMinutes >= parseTimeToMinutes(todaySched.open) &&
+              currentTimeMinutes <= parseTimeToMinutes(todaySched.close)
               : true;
 
             const formatWaLink = (phone: string) => {
@@ -1460,7 +1494,7 @@ export default function ShopProfilePage() {
                       <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5">
                         <Headphones className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                         <p className="text-[11px] text-slate-500 leading-relaxed">
-                          Pemesanan otomatis instan berjalan 24 jam nonstop. Layanan tanya jawab teknis dan pesan chat aktif pada jam kerja reguler.
+                          Pemesanan otomatis instan berjalan 24 jam nonstop. Layanan support, tanya jawab teknis dan pesan chat aktif pada jam kerja reguler.
                         </p>
                       </div>
                     )}

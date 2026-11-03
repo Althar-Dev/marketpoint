@@ -149,18 +149,26 @@ export async function sendChatMessage(
 export function subscribeToChatMessages(
   db: Firestore,
   chatId: string,
-  onUpdate: (messages: ChatMessage[]) => void
+  onUpdate: (messages: ChatMessage[]) => void,
+  onError?: (err: any) => void
 ) {
   const messagesRef = collection(db, "chats", chatId, "messages");
   const q = query(messagesRef, orderBy("createdAt", "asc"), limit(100));
 
-  return onSnapshot(q, (snapshot) => {
-    const list: ChatMessage[] = [];
-    snapshot.forEach((d) => {
-      list.push({ id: d.id, ...d.data() } as ChatMessage);
-    });
-    onUpdate(list);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const list: ChatMessage[] = [];
+      snapshot.forEach((d) => {
+        list.push({ id: d.id, ...d.data() } as ChatMessage);
+      });
+      onUpdate(list);
+    },
+    (err) => {
+      if (onError) onError(err);
+      else console.warn("subscribeToChatMessages error:", err);
+    }
+  );
 }
 
 export function subscribeToShopChats(

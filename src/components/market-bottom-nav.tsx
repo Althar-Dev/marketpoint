@@ -33,8 +33,24 @@ export function MarketBottomNav() {
     };
   }, []);
 
-  // Logika untuk menyembunyikan bottom nav di rute tertentu (termasuk halaman detail produk ala Tokopedia /[shop]/[product] dan detail topup)
-  const hideOnPaths = ['/login', '/register', '/my-shop', '/products', '/topup/', '/admin', '/checkout', '/email', '/settings', '/wallet', '/transactions/', '/wishlist', '/favorites', '/inbox'];
+  // Logika untuk menyembunyikan bottom nav di rute tertentu (termasuk dashboard, toko, detail produk, admin, dsb.)
+  const hideOnPaths = [
+    '/login',
+    '/register',
+    '/my-shop',
+    '/dashboard',
+    '/products',
+    '/topup/',
+    '/admin',
+    '/checkout',
+    '/email',
+    '/settings',
+    '/wallet',
+    '/transactions/',
+    '/wishlist',
+    '/favorites',
+    '/inbox',
+  ];
   const isTransactionDetailPage = Boolean(pathname && pathname.startsWith('/transactions/') && pathname !== '/transactions');
   const segments = pathname ? pathname.split('/').filter(Boolean) : [];
   const isTokopediaProductPage = segments.length === 2 && !['admin', 'deals', 'official', 'transactions', 'profile', 'my-shop', 'login', 'register', 'checkout', 'api'].includes(segments[0]);

@@ -457,9 +457,15 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user || !db) return;
 
-    const unsubOwnerShop = onSnapshot(doc(db, "shops", user.uid), () => {
-      resolveMerchant();
-    });
+    const unsubOwnerShop = onSnapshot(
+      doc(db, "shops", user.uid),
+      () => {
+        resolveMerchant();
+      },
+      (err) => {
+        console.warn("Owner shop real-time sync notice:", err);
+      }
+    );
 
     return () => {
       unsubOwnerShop();

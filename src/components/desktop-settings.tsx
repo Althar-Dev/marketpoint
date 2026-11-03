@@ -239,6 +239,8 @@ export function DesktopSettings({
   ) || {
     id: currentDeviceId,
     name: fallbackDevice.name,
+    model: fallbackDevice.model,
+    brand: fallbackDevice.brand,
     browser: fallbackDevice.browser,
     os: fallbackDevice.os,
     deviceType: fallbackDevice.deviceType,
@@ -1241,13 +1243,15 @@ export function DesktopSettings({
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-[#212121]">{currentDeviceData.name}</p>
+                          <p className="text-xs font-bold text-[#212121]">
+                            {currentDeviceData.model || currentDeviceData.name}
+                          </p>
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#00AA5B] text-white">
                             Sedang Digunakan
                           </span>
                         </div>
                         <p className="text-[11px] text-muted-foreground mt-0.5">
-                          {currentDeviceData.location} • Sesi Aktif Sekarang
+                          {currentDeviceData.browser} • {currentDeviceData.os} • {currentDeviceData.location}
                         </p>
                       </div>
                     </div>
@@ -1294,9 +1298,11 @@ export function DesktopSettings({
                               {session.deviceType === "mobile" ? <Smartphone className="w-4.5 h-4.5" /> : <Laptop className="w-4.5 h-4.5" />}
                             </div>
                             <div>
-                              <p className="text-xs font-bold text-[#212121]">{session.name}</p>
+                              <p className="text-xs font-bold text-[#212121]">
+                                {session.model || session.name}
+                              </p>
                               <p className="text-[11px] text-muted-foreground mt-0.5">
-                                {session.location} • {formatLastActive(session.lastActiveAt)}
+                                {session.browser} • {session.os} • {session.location} • {formatLastActive(session.lastActiveAt)}
                               </p>
                             </div>
                           </div>

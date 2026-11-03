@@ -99,6 +99,8 @@ export default function DevicesPage() {
   ) || {
     id: currentDeviceId,
     name: fallbackDevice.name,
+    model: fallbackDevice.model,
+    brand: fallbackDevice.brand,
     browser: fallbackDevice.browser,
     os: fallbackDevice.os,
     deviceType: fallbackDevice.deviceType,
@@ -253,11 +255,13 @@ export default function DevicesPage() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-xs font-bold text-[#212121]">Perangkat Saat Ini</p>
+                    <p className="text-xs font-bold text-[#212121] truncate">
+                      {currentDeviceData.model || currentDeviceData.name}
+                    </p>
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
                   <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
-                    {currentDeviceData.name} • {currentDeviceData.location}
+                    {currentDeviceData.browser} • {currentDeviceData.os} • {currentDeviceData.location}
                   </p>
                 </div>
               </div>
@@ -315,14 +319,18 @@ export default function DevicesPage() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-[#212121] truncate">{dev.name}</p>
-                        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
-                          <span className="flex items-center gap-1">
+                        <p className="text-xs font-bold text-[#212121] truncate">{dev.model || dev.name}</p>
+                        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground flex-wrap">
+                          <span className="truncate">
+                            {dev.browser} • {dev.os}
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1 shrink-0">
                             <MapPin className="w-2.5 h-2.5 text-slate-400" />
                             {dev.location}
                           </span>
                           <span>•</span>
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1 shrink-0">
                             <Clock className="w-2.5 h-2.5 text-slate-400" />
                             {formatLastActive(dev.lastActiveAt)}
                           </span>

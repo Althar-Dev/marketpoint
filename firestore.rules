@@ -153,8 +153,10 @@ service cloud.firestore {
       
       match /messages/{messageId} {
         allow read, write: if isAuthenticated() && (
-          get(/databases/$(database)/documents/chats/$(chatId)).data.buyerId == request.auth.uid ||
-          get(/databases/$(database)/documents/chats/$(chatId)).data.shopId == request.auth.uid ||
+          (exists(/databases/$(database)/documents/chats/$(chatId)) && (
+            get(/databases/$(database)/documents/chats/$(chatId)).data.buyerId == request.auth.uid ||
+            get(/databases/$(database)/documents/chats/$(chatId)).data.shopId == request.auth.uid
+          )) ||
           isAdmin()
         );
       }

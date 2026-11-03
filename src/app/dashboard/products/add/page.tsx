@@ -360,11 +360,8 @@ export default function AddProductPage() {
               </Button>
             </Link>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-              Tambah Produk Marketplace
+              Tambah Produk
             </h1>
-            <Badge className="bg-[#00AA5B]/10 text-[#00AA5B] border-[#00AA5B]/20 text-[10px] font-bold py-0.5 px-2">
-              Katalog Real Seller
-            </Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-500">
             Pilih produk digital dari seller marketplace untuk dimasukkan ke katalog Anda.
